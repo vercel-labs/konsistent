@@ -4,6 +4,11 @@ export const ExportDefinitionV1Schema = z.object({
   name: z.string(),
 });
 
+export const ImportDefinitionV1Schema = z.object({
+  name: z.string(),
+  from: z.string().optional(),
+});
+
 export const InterfaceDefinitionV1Schema = z.object({
   name: z.string(),
   extend: z.string().optional(),
@@ -22,6 +27,9 @@ export const MustPredicatesV1Schema = z
       .optional(),
     exportInterfaces: z
       .array(z.union([z.string(), InterfaceDefinitionV1Schema]))
+      .optional(),
+    importTypes: z
+      .array(z.union([z.string(), ImportDefinitionV1Schema]))
       .optional(),
   })
   .passthrough();
