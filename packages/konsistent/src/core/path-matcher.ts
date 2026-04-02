@@ -114,14 +114,18 @@ export async function matchPaths(opts: {
   const anyPlaceholders = patterns.some((p) => hasPlaceholders(p));
   if (!anyPlaceholders) {
     const paths = await fileSystem.glob(patterns);
-    return paths.map((p) => ({ path: p, placeholders: {} }));
+    return paths.map((p) => ({
+      path: p.endsWith('/') ? p.slice(0, -1) : p,
+      placeholders: {},
+    }));
   }
 
   const globPatterns = patterns.map(patternToGlob);
   const matchedPaths = await fileSystem.glob(globPatterns);
   const results: MatchedPath[] = [];
 
-  for (const matchedPath of matchedPaths) {
+  for (const rawPath of matchedPaths) {
+    const matchedPath = rawPath.endsWith('/') ? rawPath.slice(0, -1) : rawPath;
     const pathSegments = matchedPath.split('/');
 
     for (const pattern of patterns) {

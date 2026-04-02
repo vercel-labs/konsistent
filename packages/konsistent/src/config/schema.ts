@@ -5,7 +5,7 @@ export const MustPredicatesV1Schema = z
     haveType: z.enum(['file', 'directory']).optional(),
     haveFiles: z.array(z.string()).optional(),
   })
-  .strict();
+  .passthrough();
 
 export const ConventionV1Schema = z.object({
   name: z

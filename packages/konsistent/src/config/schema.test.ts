@@ -109,7 +109,7 @@ describe('ConfigV1Schema', () => {
     expect(result.success).toBe(false);
   });
 
-  it('rejects unknown predicates in must', () => {
+  it('passes through unknown predicates in must', () => {
     const result = ConfigV1Schema.safeParse({
       version: 'v1',
       conventions: [
@@ -119,6 +119,6 @@ describe('ConfigV1Schema', () => {
         },
       ],
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 });

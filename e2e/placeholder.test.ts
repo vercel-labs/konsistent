@@ -58,3 +58,35 @@ describe('invalid-config fixture', () => {
     await expect(runCli({ args: ['check'], cwd })).rejects.toThrow();
   });
 });
+
+describe('plugin-system fixture', () => {
+  const cwd = resolve(fixturesDir, 'plugin-system');
+
+  it('konsistent check exits 0 when all conventions pass', async () => {
+    await expect(runCli({ args: ['check'], cwd })).resolves.not.toThrow();
+  });
+});
+
+describe('plugin-system-broken-files fixture', () => {
+  const cwd = resolve(fixturesDir, 'plugin-system-broken-files');
+
+  it('konsistent check exits 1 with missing file violations', async () => {
+    try {
+      await runCli({ args: ['check'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain('Missing required file');
+      expect(error.stdout).toContain('README.md');
+      expect(error.stdout).toContain('manifest.json');
+      expect(error.stdout).toContain('plugin-directories');
+      expect(error.stdout).toContain('Found 2 problems (2 errors)');
+    }
+  });
+});
