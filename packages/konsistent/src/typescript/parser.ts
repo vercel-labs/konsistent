@@ -44,7 +44,9 @@ function hasDefaultModifier(node: ts.Node): boolean {
 function extractTypeAnnotation(
   node: ts.TypeNode | undefined
 ): string | undefined {
-  if (!node) return undefined;
+  if (!node) {
+    return undefined;
+  }
   return node.getText();
 }
 
@@ -61,7 +63,9 @@ function extractExtendsFromHeritage(
   clauses: ts.NodeArray<ts.HeritageClause> | undefined,
   kind: ts.SyntaxKind
 ): string[] {
-  if (!clauses) return [];
+  if (!clauses) {
+    return [];
+  }
   const result: string[] = [];
   for (const clause of clauses) {
     if (clause.token === kind) {

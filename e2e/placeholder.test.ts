@@ -325,6 +325,7 @@ describe('ai-toolkit-broken-exports fixture --format markdown', () => {
       expect(output).toContain('|------|----------|---------|------------|');
       expect(output).toContain('| - | error | Missing export "openai" |');
       expect(output).toContain('**Found 3 problems (3 errors)**');
+      // biome-ignore lint/suspicious/noControlCharactersInRegex: checking for ANSI escape codes
       expect(output).not.toMatch(/\x1b\[/);
     }
   });

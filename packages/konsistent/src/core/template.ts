@@ -30,6 +30,6 @@ export function resolveTemplate(opts: {
       return original;
     }
 
-    return (placeholder as Record<string, () => string>)[method]();
+    return (placeholder as unknown as Record<string, () => string>)[method]();
   });
 }
