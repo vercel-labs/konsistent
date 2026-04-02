@@ -12,5 +12,6 @@ export {
   createDefaultReporter,
   createGithubReporter,
   createJsonReporter,
+  createMarkdownReporter,
 } from './reporter.js';
 export { run } from './runner.js';

@@ -299,6 +299,32 @@ describe('monorepo-with-negation fixture', () => {
   });
 });
 
+describe('ai-toolkit-broken-exports fixture --format markdown', () => {
+  const cwd = resolve(fixturesDir, 'ai-toolkit-broken-exports');
+
+  it('konsistent check --format markdown outputs Markdown table structure', async () => {
+    try {
+      await runCli({ args: ['check', '--format', 'markdown'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      const output = error.stdout.trim();
+      expect(output).toContain('**`packages/');
+      expect(output).toContain('| Line | Severity | Message | Convention |');
+      expect(output).toContain('|------|----------|---------|------------|');
+      expect(output).toContain('| - | error | Missing export "openai" |');
+      expect(output).toContain('**Found 3 problems (3 errors)**');
+      expect(output).not.toMatch(/\x1b\[/);
+    }
+  });
+});
+
 describe('monorepo-with-negation-broken fixture', () => {
   const cwd = resolve(fixturesDir, 'monorepo-with-negation-broken');
 

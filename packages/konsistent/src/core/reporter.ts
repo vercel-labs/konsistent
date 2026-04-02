@@ -101,6 +101,46 @@ export function createGithubReporter(): Reporter {
   };
 }
 
+export function createMarkdownReporter(): Reporter {
+  return {
+    format(diagnostics: Diagnostic[]): string {
+      if (diagnostics.length === 0) {
+        return '';
+      }
+
+      const grouped = groupByFile(diagnostics);
+      const sections: string[] = [];
+
+      for (const [filePath, fileDiags] of grouped) {
+        const sorted = sortDiagnostics(fileDiags);
+        const lines: string[] = [
+          `**\`${filePath}\`**`,
+          '',
+          '| Line | Severity | Message | Convention |',
+          '|------|----------|---------|------------|',
+        ];
+        for (const d of sorted) {
+          const lineStr = d.line != null ? String(d.line) : '-';
+          const convention = d.conventionName ?? '';
+          lines.push(
+            `| ${lineStr} | ${d.severity} | ${d.message} | ${convention} |`
+          );
+        }
+        sections.push(lines.join('\n'));
+      }
+
+      const errorCount = diagnostics.filter(
+        (d) => d.severity === 'error'
+      ).length;
+      sections.push(
+        `**Found ${diagnostics.length} problems (${errorCount} errors)**`
+      );
+
+      return sections.join('\n\n');
+    },
+  };
+}
+
 export function createDefaultReporter(): Reporter {
   return {
     format(diagnostics: Diagnostic[]): string {

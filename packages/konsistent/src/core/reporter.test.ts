@@ -5,6 +5,7 @@ import {
   createDefaultReporter,
   createGithubReporter,
   createJsonReporter,
+  createMarkdownReporter,
 } from './reporter.js';
 
 describe('createDefaultReporter', () => {
@@ -436,5 +437,186 @@ describe('createGithubReporter', () => {
     expect(lines[1]).toBe(
       '::error file=src/b.ts,line=5,title=conv-b::problem b'
     );
+  });
+});
+
+describe('createMarkdownReporter', () => {
+  const reporter = createMarkdownReporter();
+
+  it('returns empty string for no diagnostics', () => {
+    expect(reporter.format([])).toBe('');
+  });
+
+  it('formats diagnostics as Markdown tables grouped by file', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'packages/openai/src/index.ts',
+        predicateName: 'export',
+        message: 'Missing export "openai"',
+        conventionName: 'provider-packages',
+      },
+      {
+        severity: 'error',
+        filePath: 'packages/openai/src/index.ts',
+        predicateName: 'export',
+        message: 'Missing export type "OpenaiProvider"',
+        conventionName: 'provider-packages',
+      },
+      {
+        severity: 'error',
+        filePath: 'packages/openai/src/openai-provider.ts',
+        predicateName: 'importType',
+        message: 'Missing import type "ProviderV1"',
+        conventionName: 'provider-interface',
+      },
+      {
+        severity: 'error',
+        filePath: 'packages/openai/src/openai-provider.ts',
+        predicateName: 'exportInterfaces',
+        message: 'Interface "OpenaiProvider" must extend "ProviderV1"',
+        conventionName: 'provider-interface',
+        line: 3,
+      },
+    ];
+
+    const output = reporter.format(diagnostics);
+    expect(output).toContain('**`packages/openai/src/index.ts`**');
+    expect(output).toContain('**`packages/openai/src/openai-provider.ts`**');
+    expect(output).toContain('| Line | Severity | Message | Convention |');
+    expect(output).toContain('|------|----------|---------|------------|');
+    expect(output).toContain(
+      '| - | error | Missing export "openai" | provider-packages |'
+    );
+    expect(output).toContain(
+      '| 3 | error | Interface "OpenaiProvider" must extend "ProviderV1" | provider-interface |'
+    );
+    expect(output).toContain('**Found 4 problems (4 errors)**');
+  });
+
+  it('uses dash in Line column for file-level violations', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveType',
+        message: 'file-level issue',
+      },
+    ];
+    const output = reporter.format(diagnostics);
+    expect(output).toContain('| - | error | file-level issue |');
+  });
+
+  it('uses line number in Line column when provided', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveType',
+        message: 'line issue',
+        line: 42,
+      },
+    ];
+    const output = reporter.format(diagnostics);
+    expect(output).toContain('| 42 | error | line issue |');
+  });
+
+  it('lists file-level violations before line-specific ones', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveType',
+        message: 'line 10 issue',
+        line: 10,
+      },
+      {
+        severity: 'error',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveType',
+        message: 'file-level issue',
+      },
+      {
+        severity: 'error',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveType',
+        message: 'line 5 issue',
+        line: 5,
+      },
+    ];
+    const output = reporter.format(diagnostics);
+    const rows = output
+      .split('\n')
+      .filter(
+        (l) =>
+          l.startsWith('|') && !l.startsWith('| Line') && !l.startsWith('|--')
+      );
+    expect(rows[0]).toContain('file-level issue');
+    expect(rows[1]).toContain('line 5 issue');
+    expect(rows[2]).toContain('line 10 issue');
+  });
+
+  it('shows empty convention column when conventionName is absent', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveType',
+        message: 'Some problem',
+      },
+    ];
+    const output = reporter.format(diagnostics);
+    expect(output).toContain('| - | error | Some problem |  |');
+  });
+
+  it('shows bold summary line with correct counts', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'a.ts',
+        predicateName: 'haveType',
+        message: 'err1',
+      },
+      {
+        severity: 'error',
+        filePath: 'b.ts',
+        predicateName: 'haveType',
+        message: 'err2',
+      },
+    ];
+    const output = reporter.format(diagnostics);
+    expect(output).toContain('**Found 2 problems (2 errors)**');
+  });
+
+  it('separates file groups with blank lines', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/a.ts',
+        predicateName: 'haveType',
+        message: 'problem a',
+      },
+      {
+        severity: 'error',
+        filePath: 'src/b.ts',
+        predicateName: 'haveType',
+        message: 'problem b',
+      },
+    ];
+    const output = reporter.format(diagnostics);
+    expect(output).toContain('|  |\n\n**`src/b.ts`**');
+  });
+
+  it('wraps file paths in bold backticks', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveType',
+        message: 'test',
+      },
+    ];
+    const output = reporter.format(diagnostics);
+    expect(output).toContain('**`src/foo.ts`**');
   });
 });

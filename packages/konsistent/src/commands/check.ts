@@ -6,6 +6,7 @@ import {
   createDefaultReporter,
   createGithubReporter,
   createJsonReporter,
+  createMarkdownReporter,
   createRealFileSystem,
   run,
 } from '../core/index.js';
@@ -13,7 +14,7 @@ import {
 const checkArgs = {
   format: {
     type: 'string' as const,
-    description: 'Output format (default, json, github)',
+    description: 'Output format (default, json, github, markdown)',
     default: 'default',
   },
 };
@@ -24,6 +25,9 @@ function createReporter(opts: { format: string }): Reporter {
   }
   if (opts.format === 'github') {
     return createGithubReporter();
+  }
+  if (opts.format === 'markdown') {
+    return createMarkdownReporter();
   }
   return createDefaultReporter();
 }
