@@ -1,0 +1,35 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "description": "Each adapter module must export a class extending BaseAdapter",
+      "paths": "adapters/{adapterName}/adapter.ts",
+      "must": {
+        "exportClasses": [
+          {
+            "name": "${adapterName.toPascalCase()}Adapter",
+            "extend": "BaseAdapter"
+          }
+        ],
+        "importTypes": [{ "name": "BaseAdapter", "from": "@app/core" }]
+      }
+    },
+    {
+      "name": "adapter-factory-function",
+      "paths": "adapters/{adapterName}/factory.ts",
+      "must": {
+        "exportFunctions": [
+          {
+            "name": "create${adapterName.toPascalCase()}Adapter",
+            "receiveParamOfType": "${adapterName.toPascalCase()}AdapterConfig",
+            "returnValueOfType": "${adapterName.toPascalCase()}Adapter"
+          }
+        ],
+        "importTypes": [
+          { "name": "${adapterName.toPascalCase()}AdapterConfig", "from": "./types" },
+          { "name": "${adapterName.toPascalCase()}Adapter", "from": "./adapter" }
+        ]
+      }
+    }
+  ]
+}

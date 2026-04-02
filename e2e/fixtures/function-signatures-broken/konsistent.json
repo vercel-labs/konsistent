@@ -2,7 +2,7 @@
   "version": "v1",
   "conventions": [
     {
-      "name": "Service factory functions",
+      "description": "Each service must export a factory function with typed config param and typed return value",
       "paths": "services/{serviceName}/index.ts",
       "must": {
         "exportFunctions": [

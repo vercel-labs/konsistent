@@ -2,7 +2,8 @@
   "version": "v1",
   "conventions": [
     {
-      "name": "Package barrel exports",
+      "name": "package-barrel-exports",
+      "description": "Every package barrel must export a function named after the package, except test-utils",
       "paths": [
         "packages/{packageName}/src/index.ts",
         "!packages/test-utils/src/index.ts"

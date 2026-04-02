@@ -2,7 +2,6 @@
   "version": "v1",
   "conventions": [
     {
-      "name": "Component directories",
       "paths": "components/{componentName}",
       "must": [
         { "haveFiles": ["${componentName}.tsx"] },

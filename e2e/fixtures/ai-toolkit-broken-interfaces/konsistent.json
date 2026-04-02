@@ -2,7 +2,7 @@
   "version": "v1",
   "conventions": [
     {
-      "name": "Provider packages",
+      "name": "provider-packages",
       "paths": "packages/{providerId}",
       "must": {
         "haveType": "directory",
@@ -10,7 +10,7 @@
       }
     },
     {
-      "name": "Provider barrel exports",
+      "description": "Each provider barrel file must re-export the provider function and its types",
       "paths": "packages/{providerId}/src/index.ts",
       "must": {
         "export": ["${providerId}"],
@@ -21,7 +21,8 @@
       }
     },
     {
-      "name": "Provider interface",
+      "name": "provider-interface",
+      "description": "Provider implementation must export an interface extending ProviderV1",
       "paths": "packages/{providerId}/src/${providerId}-provider.ts",
       "must": {
         "exportInterfaces": [

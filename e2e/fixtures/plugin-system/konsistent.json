@@ -2,7 +2,7 @@
   "version": "v1",
   "conventions": [
     {
-      "name": "Plugin directories",
+      "name": "plugin-directories",
       "paths": "plugins/{pluginName}",
       "must": {
         "haveType": "directory",
@@ -10,7 +10,6 @@
       }
     },
     {
-      "name": "Plugin entry point",
       "paths": "plugins/{pluginName}/index.ts",
       "must": {
         "export": ["activate", "deactivate"],
