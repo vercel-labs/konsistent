@@ -285,4 +285,30 @@ describe('monorepo-with-negation-broken fixture', () => {
       expect(error.stdout).toContain('Found 1 problems (1 errors)');
     }
   });
+
+  it('konsistent check --format json outputs valid JSON with expected diagnostics', async () => {
+    try {
+      await runCli({ args: ['check', '--format', 'json'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      const parsed = JSON.parse(error.stdout.trim());
+      expect(Array.isArray(parsed)).toBe(true);
+      expect(parsed).toHaveLength(1);
+      expect(parsed[0]).toMatchObject({
+        severity: 'error',
+        conventionName: 'package-barrel-exports',
+        predicateName: 'export',
+        message: 'Missing export "cli"',
+      });
+      expect(parsed[0].filePath).toContain('packages/cli/src/index.ts');
+      expect(parsed[0]).not.toHaveProperty('column');
+    }
+  });
 });

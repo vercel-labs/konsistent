@@ -1,7 +1,7 @@
 import pc from 'picocolors';
 import { describe, expect, it } from 'vitest';
 import type { Diagnostic } from './diagnostics.js';
-import { createDefaultReporter } from './reporter.js';
+import { createDefaultReporter, createJsonReporter } from './reporter.js';
 
 describe('createDefaultReporter', () => {
   const reporter = createDefaultReporter();
@@ -234,5 +234,105 @@ describe('createDefaultReporter', () => {
     ];
     const output = reporter.format(diagnostics);
     expect(output).toContain('Found 2 problems (2 errors)');
+  });
+});
+
+describe('createJsonReporter', () => {
+  const reporter = createJsonReporter();
+
+  it('returns valid JSON parseable by JSON.parse', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveType',
+        message: 'Some problem',
+        conventionName: 'my-convention',
+      },
+    ];
+    const output = reporter.format(diagnostics);
+    expect(() => JSON.parse(output)).not.toThrow();
+  });
+
+  it('returns empty array for no diagnostics', () => {
+    const output = reporter.format([]);
+    expect(JSON.parse(output)).toEqual([]);
+  });
+
+  it('outputs correct fields for line-level diagnostic', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/foo.ts',
+        predicateName: 'exportInterfaces',
+        message: 'Missing interface',
+        conventionName: 'provider-interface',
+        line: 3,
+        column: 5,
+      },
+    ];
+    const parsed = JSON.parse(reporter.format(diagnostics));
+    expect(parsed).toEqual([
+      {
+        severity: 'error',
+        conventionName: 'provider-interface',
+        filePath: 'src/foo.ts',
+        predicateName: 'exportInterfaces',
+        message: 'Missing interface',
+        line: 3,
+      },
+    ]);
+  });
+
+  it('omits line for file-level diagnostic', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveFiles',
+        message: 'Missing required file',
+        conventionName: 'my-convention',
+      },
+    ];
+    const parsed = JSON.parse(reporter.format(diagnostics));
+    expect(parsed[0]).not.toHaveProperty('line');
+  });
+
+  it('omits column from JSON output', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/foo.ts',
+        predicateName: 'exportInterfaces',
+        message: 'test',
+        line: 10,
+        column: 5,
+      },
+    ];
+    const parsed = JSON.parse(reporter.format(diagnostics));
+    expect(parsed[0]).not.toHaveProperty('column');
+  });
+
+  it('includes multiple diagnostics as array elements', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/a.ts',
+        predicateName: 'haveType',
+        message: 'problem a',
+      },
+      {
+        severity: 'error',
+        filePath: 'src/b.ts',
+        predicateName: 'haveType',
+        message: 'problem b',
+        line: 5,
+      },
+    ];
+    const parsed = JSON.parse(reporter.format(diagnostics));
+    expect(parsed).toHaveLength(2);
+    expect(parsed[0].message).toBe('problem a');
+    expect(parsed[1].message).toBe('problem b');
+    expect(parsed[1].line).toBe(5);
   });
 });

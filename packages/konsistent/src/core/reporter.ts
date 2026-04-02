@@ -60,6 +60,27 @@ function formatFileGroup(opts: {
   return lines;
 }
 
+export function createJsonReporter(): Reporter {
+  return {
+    format(diagnostics: Diagnostic[]): string {
+      const output = diagnostics.map((d) => {
+        const obj: Record<string, unknown> = {
+          severity: d.severity,
+          conventionName: d.conventionName,
+          filePath: d.filePath,
+          predicateName: d.predicateName,
+          message: d.message,
+        };
+        if (d.line != null) {
+          obj.line = d.line;
+        }
+        return obj;
+      });
+      return JSON.stringify(output, null, 2);
+    },
+  };
+}
+
 export function createDefaultReporter(): Reporter {
   return {
     format(diagnostics: Diagnostic[]): string {

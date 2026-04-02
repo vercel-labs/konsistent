@@ -8,5 +8,5 @@ export type { MatchedPath } from './path-matcher.js';
 export type { FileSystem } from './filesystem.js';
 export { createRealFileSystem } from './filesystem.js';
 export type { Reporter } from './reporter.js';
-export { createDefaultReporter } from './reporter.js';
+export { createDefaultReporter, createJsonReporter } from './reporter.js';
 export { run } from './runner.js';
