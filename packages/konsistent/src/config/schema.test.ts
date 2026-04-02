@@ -151,6 +151,43 @@ describe('ConfigV1Schema', () => {
     expect(result.success).toBe(true);
   });
 
+  it('accepts a MustBlock with for field', () => {
+    const result = ConfigV1Schema.safeParse({
+      version: 'v1',
+      conventions: [
+        {
+          paths: 'components/{name}',
+          must: [
+            {
+              for: { files: '{storyFile}.stories.tsx' },
+              must: { exportConstants: ['meta'] },
+            },
+          ],
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts a MustBlock with both if and for fields', () => {
+    const result = ConfigV1Schema.safeParse({
+      version: 'v1',
+      conventions: [
+        {
+          paths: 'components/{name}',
+          must: [
+            {
+              if: { hasFile: '${name}.test.tsx' },
+              for: { files: '${name}.test.tsx' },
+              must: { export: ['describe'] },
+            },
+          ],
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
   it('rejects a MustBlock array with missing must property', () => {
     const result = ConfigV1Schema.safeParse({
       version: 'v1',

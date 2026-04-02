@@ -1,4 +1,4 @@
-import { dirname, join } from 'node:path';
+import { dirname, join, posix } from 'node:path';
 import type {
   ConfigV1,
   MustBlockV1,
@@ -234,6 +234,67 @@ function checkPredicates(opts: {
   return diagnostics;
 }
 
+async function evaluateForBlock(opts: {
+  block: MustBlockV1;
+  parentContext: PredicateContext;
+  fileSystem: FileSystem;
+  conventionName?: string;
+}): Promise<Diagnostic[]> {
+  const { block, parentContext, fileSystem, conventionName } = opts;
+
+  if (!block.for) {
+    return checkPredicates({
+      must: block.must,
+      conventionName,
+      context: parentContext,
+      fileSystem,
+    });
+  }
+
+  const resolvedPattern = parentContext.resolveTemplate(block.for.files);
+
+  const basePath = fileSystem.isDirectory(parentContext.path)
+    ? parentContext.path
+    : dirname(parentContext.path);
+
+  const fullPattern = posix.join(basePath, resolvedPattern);
+  const matched = await matchPaths({
+    patterns: [fullPattern],
+    fileSystem,
+  });
+
+  if (matched.length === 0) {
+    return [];
+  }
+
+  const diagnostics: Diagnostic[] = [];
+  for (const entry of matched) {
+    const mergedPlaceholders = { ...entry.placeholders };
+    for (const [key, value] of Object.entries(parentContext.placeholders)) {
+      mergedPlaceholders[key] = value;
+    }
+
+    const forContext = buildContext({
+      matched: {
+        path: entry.path,
+        placeholders: mergedPlaceholders,
+      },
+      fileSystem,
+    });
+
+    diagnostics.push(
+      ...checkPredicates({
+        must: block.must,
+        conventionName,
+        context: forContext,
+        fileSystem,
+      })
+    );
+  }
+
+  return diagnostics;
+}
+
 export async function run(opts: {
   config: ConfigV1;
   fileSystem: FileSystem;
@@ -257,12 +318,12 @@ export async function run(opts: {
           continue;
         }
         diagnostics.push(
-          ...checkPredicates({
-            must: block.must,
-            conventionName: convention.name,
-            context,
+          ...(await evaluateForBlock({
+            block,
+            parentContext: context,
             fileSystem,
-          })
+            conventionName: convention.name,
+          }))
         );
       }
     }

@@ -224,6 +224,178 @@ describe('run', () => {
     expect(result[0].conventionName).toBe('template-rule');
   });
 
+  it('iterates over for.files matches and evaluates predicates', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'for-iteration',
+          paths: 'components/{name}',
+          must: [
+            {
+              for: { files: '*.test.tsx' },
+              must: { haveType: 'file' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ['components/*', ['components/Button']],
+        ['components/Button/*.test.tsx', ['components/Button/Button.test.tsx']],
+      ]),
+      directories: new Set(['components/Button']),
+      files: new Set(['components/Button/Button.test.tsx']),
+    });
+    const result = await run({ config, fileSystem: fs });
+    expect(result).toEqual([]);
+  });
+
+  it('silently skips when for.files matches zero files', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'for-skip',
+          paths: 'components/{name}',
+          must: [
+            {
+              for: { files: '{storyFile}.stories.tsx' },
+              must: { haveType: 'directory' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ['components/*', ['components/Input']],
+        ['components/Input/*.stories.tsx', []],
+      ]),
+      directories: new Set(['components/Input']),
+    });
+    const result = await run({ config, fileSystem: fs });
+    expect(result).toEqual([]);
+  });
+
+  it('merges placeholders from for.files with parent placeholders', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'for-placeholders',
+          paths: 'components/{name}',
+          must: [
+            {
+              for: { files: '{storyFile}.stories.tsx' },
+              must: { haveType: 'file' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ['components/*', ['components/Button']],
+        [
+          'components/Button/*.stories.tsx',
+          ['components/Button/Button.stories.tsx'],
+        ],
+      ]),
+      directories: new Set(['components/Button']),
+      files: new Set(['components/Button/Button.stories.tsx']),
+    });
+    const result = await run({ config, fileSystem: fs });
+    expect(result).toEqual([]);
+  });
+
+  it('parent placeholder values take precedence over for.files placeholders', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'for-parent-precedence',
+          paths: 'components/{name}',
+          must: [
+            {
+              for: { files: '{name}.test.tsx' },
+              must: { haveType: 'file' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ['components/*', ['components/Button']],
+        ['components/Button/*.test.tsx', ['components/Button/Button.test.tsx']],
+      ]),
+      directories: new Set(['components/Button']),
+      files: new Set(['components/Button/Button.test.tsx']),
+    });
+    const result = await run({ config, fileSystem: fs });
+    expect(result).toEqual([]);
+  });
+
+  it('evaluates if condition before for iteration', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'if-and-for',
+          paths: 'components/{name}',
+          must: [
+            {
+              if: { hasFile: '${name}.test.tsx' },
+              for: { files: '${name}.test.tsx' },
+              must: { haveType: 'directory' },
+            },
+          ],
+        },
+      ],
+    };
+    const fsWithCondition = createMockFileSystem({
+      globResults: new Map([
+        ['components/*', ['components/Button']],
+        [
+          'components/Button/Button.test.tsx',
+          ['components/Button/Button.test.tsx'],
+        ],
+      ]),
+      directories: new Set(['components/Button']),
+      files: new Set(['components/Button/Button.test.tsx']),
+    });
+    const result = await run({ config, fileSystem: fsWithCondition });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe('Expected a directory but found a file');
+  });
+
+  it('skips for block when if condition is not met', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'if-and-for-skip',
+          paths: 'components/{name}',
+          must: [
+            {
+              if: { hasFile: '${name}.test.tsx' },
+              for: { files: '${name}.test.tsx' },
+              must: { haveType: 'directory' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([['components/*', ['components/Button']]]),
+      directories: new Set(['components/Button']),
+    });
+    const result = await run({ config, fileSystem: fs });
+    expect(result).toEqual([]);
+  });
+
   it('evaluates multiple must blocks independently', async () => {
     const config: ConfigV1 = {
       version: 'v1',

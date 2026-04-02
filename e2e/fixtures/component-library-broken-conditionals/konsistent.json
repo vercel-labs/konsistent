@@ -4,7 +4,7 @@
     {
       "paths": "components/{componentName}",
       "must": [
-        { "haveFiles": ["${componentName}.tsx"] },
+        { "must": { "haveFiles": ["${componentName}.tsx"] } },
         {
           "if": { "hasFile": "${componentName}.test.tsx" },
           "for": { "files": "${componentName}.test.tsx" },

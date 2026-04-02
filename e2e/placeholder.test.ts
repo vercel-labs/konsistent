@@ -227,3 +227,33 @@ describe('class-and-function-contracts-broken fixture', () => {
     }
   });
 });
+
+describe('component-library fixture', () => {
+  const cwd = resolve(fixturesDir, 'component-library');
+
+  it('konsistent check exits 0 when all conventions pass', async () => {
+    await expect(runCli({ args: ['check'], cwd })).resolves.not.toThrow();
+  });
+});
+
+describe('component-library-broken-conditionals fixture', () => {
+  const cwd = resolve(fixturesDir, 'component-library-broken-conditionals');
+
+  it('konsistent check exits 1 with export and export constant violations', async () => {
+    try {
+      await runCli({ args: ['check'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain('Missing export "describe"');
+      expect(error.stdout).toContain('Missing export constant "meta"');
+      expect(error.stdout).toContain('Found 2 problems (2 errors)');
+    }
+  });
+});

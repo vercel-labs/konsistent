@@ -54,6 +54,7 @@ export const MustPredicatesV1Schema = z
 
 export const MustBlockV1Schema = z.object({
   if: z.object({ hasFile: z.string() }).optional(),
+  for: z.object({ files: z.string() }).optional(),
   must: MustPredicatesV1Schema,
 });
 
