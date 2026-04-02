@@ -124,4 +124,68 @@ describe('matchPaths', () => {
     expect(results).toHaveLength(1);
     expect(results[0].placeholders.name.toString()).toBe('auth');
   });
+
+  it('negation filters out specific paths', async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        [
+          'packages/*/src/index.ts',
+          [
+            'packages/cli/src/index.ts',
+            'packages/core/src/index.ts',
+            'packages/test-utils/src/index.ts',
+          ],
+        ],
+        [
+          'packages/test-utils/src/index.ts',
+          ['packages/test-utils/src/index.ts'],
+        ],
+      ]),
+    });
+    const results = await matchPaths({
+      patterns: [
+        'packages/{packageName}/src/index.ts',
+        '!packages/test-utils/src/index.ts',
+      ],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(2);
+    expect(results[0].path).toBe('packages/cli/src/index.ts');
+    expect(results[1].path).toBe('packages/core/src/index.ts');
+  });
+
+  it('negation with placeholders resolves and excludes', async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        [
+          'plugins/*/index.ts',
+          [
+            'plugins/auth/index.ts',
+            'plugins/storage/index.ts',
+            'plugins/debug/index.ts',
+          ],
+        ],
+        ['plugins/debug/index.ts', ['plugins/debug/index.ts']],
+      ]),
+    });
+    const results = await matchPaths({
+      patterns: [
+        'plugins/{pluginName}/index.ts',
+        '!plugins/{pluginName}/index.ts',
+      ],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(0);
+  });
+
+  it('negation with no positive matches returns empty', async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([['src/nothing.ts', ['src/nothing.ts']]]),
+    });
+    const results = await matchPaths({
+      patterns: ['!src/nothing.ts'],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(0);
+  });
 });

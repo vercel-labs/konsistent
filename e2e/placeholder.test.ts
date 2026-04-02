@@ -257,3 +257,32 @@ describe('component-library-broken-conditionals fixture', () => {
     }
   });
 });
+
+describe('monorepo-with-negation fixture', () => {
+  const cwd = resolve(fixturesDir, 'monorepo-with-negation');
+
+  it('konsistent check exits 0 when negation excludes test-utils', async () => {
+    await expect(runCli({ args: ['check'], cwd })).resolves.not.toThrow();
+  });
+});
+
+describe('monorepo-with-negation-broken fixture', () => {
+  const cwd = resolve(fixturesDir, 'monorepo-with-negation-broken');
+
+  it('konsistent check exits 1 with missing export violation', async () => {
+    try {
+      await runCli({ args: ['check'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain('Missing export "cli"');
+      expect(error.stdout).toContain('Found 1 problems (1 errors)');
+    }
+  });
+});

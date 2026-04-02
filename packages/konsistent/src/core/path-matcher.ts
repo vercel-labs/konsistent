@@ -111,12 +111,15 @@ function toPlaceholderMap(
   return result;
 }
 
-export async function matchPaths(opts: {
+async function resolvePositivePatterns(opts: {
   patterns: string[];
   fileSystem: FileSystem;
 }): Promise<MatchedPath[]> {
-  const { patterns: rawPatterns, fileSystem } = opts;
-  const patterns = rawPatterns.map(normalizeTemplatesInPath);
+  const { patterns, fileSystem } = opts;
+
+  if (patterns.length === 0) {
+    return [];
+  }
 
   const anyPlaceholders = patterns.some((p) => hasPlaceholders(p));
   if (!anyPlaceholders) {
@@ -151,4 +154,40 @@ export async function matchPaths(opts: {
   }
 
   return results;
+}
+
+export async function matchPaths(opts: {
+  patterns: string[];
+  fileSystem: FileSystem;
+}): Promise<MatchedPath[]> {
+  const { patterns: rawPatterns, fileSystem } = opts;
+
+  const positivePatterns: string[] = [];
+  const negativePatterns: string[] = [];
+
+  for (const p of rawPatterns) {
+    const normalized = normalizeTemplatesInPath(p);
+    if (normalized.startsWith('!')) {
+      negativePatterns.push(normalized.slice(1));
+    } else {
+      positivePatterns.push(normalized);
+    }
+  }
+
+  const positiveResults = await resolvePositivePatterns({
+    patterns: positivePatterns,
+    fileSystem,
+  });
+
+  if (negativePatterns.length === 0) {
+    return positiveResults;
+  }
+
+  const negativeGlobs = negativePatterns.map(patternToGlob);
+  const negatedPaths = await fileSystem.glob(negativeGlobs);
+  const excludeSet = new Set(
+    negatedPaths.map((p) => (p.endsWith('/') ? p.slice(0, -1) : p))
+  );
+
+  return positiveResults.filter((r) => !excludeSet.has(r.path));
 }
