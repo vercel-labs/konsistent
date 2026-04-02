@@ -88,6 +88,7 @@ describe('plugin-system-broken-files fixture', () => {
       expect(error.stdout).toContain('README.md');
       expect(error.stdout).toContain('manifest.json');
       expect(error.stdout).toContain('plugin-directories');
+      expect(error.stdout).toContain('must-export-activate-and-more');
       expect(error.stdout).toContain('Missing export "deactivate"');
       expect(error.stdout).toContain('Missing export constant "pluginId"');
       expect(error.stdout).toContain('Found 4 problems (4 errors)');
@@ -159,6 +160,7 @@ describe('function-signatures-broken fixture', () => {
       expect(error.stdout).toContain(
         'Function "createPaymentsService" must return value of type "PaymentsService"'
       );
+      expect(error.stdout).toContain('must-export-create-service-function');
       expect(error.stdout).toContain('Found 2 problems (2 errors)');
     }
   });
@@ -184,6 +186,7 @@ describe('ai-toolkit-broken-exports fixture', () => {
         'Missing export type "OpenaiProviderSettings"'
       );
       expect(error.stdout).toContain('Missing export type "AnthropicProvider"');
+      expect(error.stdout).toContain('must-export-and-more');
       expect(error.stdout).toContain('Found 3 problems (3 errors)');
     }
   });
@@ -256,6 +259,7 @@ describe('class-and-function-contracts-broken fixture', () => {
       expect(error.stdout).toContain(
         'Function "createDatabaseAdapter" must return value of type "DatabaseAdapter"'
       );
+      expect(error.stdout).toContain('must-export-adapter-class-and-more');
       expect(error.stdout).toContain('Found 5 problems (5 errors)');
     }
   });
@@ -286,6 +290,7 @@ describe('component-library-broken-conditionals fixture', () => {
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain('Missing export "describe"');
       expect(error.stdout).toContain('Missing export constant "meta"');
+      expect(error.stdout).toContain('must-have-tsx');
       expect(error.stdout).toContain('Found 2 problems (2 errors)');
     }
   });

@@ -17,6 +17,7 @@ import { checkImportTypes } from '../typescript/predicates/import-types.js';
 import { checkImport } from '../typescript/predicates/import.js';
 import type { FileStructure } from '../typescript/types.js';
 import type { PredicateContext } from './context.js';
+import { generateConventionName } from './convention-name.js';
 import type { Diagnostic } from './diagnostics.js';
 import type { FileSystem } from './filesystem.js';
 import type { MatchedPath } from './path-matcher.js';
@@ -309,6 +310,8 @@ export async function run(opts: {
 
     const matched = await matchPaths({ patterns, fileSystem });
     const blocks = normalizeMustBlocks(convention.must);
+    const conventionName =
+      convention.name ?? generateConventionName({ must: convention.must });
 
     for (const entry of matched) {
       const context = buildContext({ matched: entry, fileSystem });
@@ -322,7 +325,7 @@ export async function run(opts: {
             block,
             parentContext: context,
             fileSystem,
-            conventionName: convention.name,
+            conventionName,
           }))
         );
       }
