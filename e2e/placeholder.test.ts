@@ -10,29 +10,51 @@ const cliBinary = resolve(
   '../packages/konsistent/dist/index.js'
 );
 
+const fixturesDir = resolve(import.meta.dirname, 'fixtures');
+
+function runCli(opts: { args?: string[]; cwd?: string }) {
+  return execFile('node', [cliBinary, ...(opts.args ?? [])], {
+    cwd: opts.cwd,
+  });
+}
+
 describe('CLI binary', () => {
-  it('exits 0 with no arguments (default check)', async () => {
-    const { stdout } = await execFile('node', [cliBinary]);
-    expect(stdout).toBeDefined();
-  });
-
-  it('konsistent check exits 0', async () => {
-    const { stdout } = await execFile('node', [cliBinary, 'check']);
-    expect(stdout).toBeDefined();
-  });
-
-  it('konsistent validate exits 0', async () => {
-    const { stdout } = await execFile('node', [cliBinary, 'validate']);
-    expect(stdout).toBeDefined();
-  });
-
   it('konsistent version prints the version', async () => {
-    const { stdout } = await execFile('node', [cliBinary, 'version']);
+    const { stdout } = await runCli({ args: ['version'] });
     expect(stdout.trim()).toBe('0.0.0');
   });
 
   it('konsistent --version prints the version', async () => {
-    const { stdout } = await execFile('node', [cliBinary, '--version']);
+    const { stdout } = await runCli({ args: ['--version'] });
     expect(stdout.trim()).toBe('0.0.0');
+  });
+});
+
+describe('empty-config fixture', () => {
+  const cwd = resolve(fixturesDir, 'empty-config');
+
+  it('konsistent validate exits 0', async () => {
+    const { stdout } = await runCli({ args: ['validate'], cwd });
+    expect(stdout).toContain('Configuration is valid');
+  });
+
+  it('konsistent check exits 0', async () => {
+    await expect(runCli({ args: ['check'], cwd })).resolves.not.toThrow();
+  });
+
+  it('default command (no args) exits 0', async () => {
+    await expect(runCli({ cwd })).resolves.not.toThrow();
+  });
+});
+
+describe('invalid-config fixture', () => {
+  const cwd = resolve(fixturesDir, 'invalid-config');
+
+  it('konsistent validate exits 1', async () => {
+    await expect(runCli({ args: ['validate'], cwd })).rejects.toThrow();
+  });
+
+  it('konsistent check exits 1', async () => {
+    await expect(runCli({ args: ['check'], cwd })).rejects.toThrow();
   });
 });
