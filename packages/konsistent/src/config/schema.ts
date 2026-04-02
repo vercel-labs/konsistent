@@ -4,6 +4,11 @@ export const ExportDefinitionV1Schema = z.object({
   name: z.string(),
 });
 
+export const InterfaceDefinitionV1Schema = z.object({
+  name: z.string(),
+  extend: z.string().optional(),
+});
+
 export const MustPredicatesV1Schema = z
   .object({
     haveType: z.enum(['file', 'directory']).optional(),
@@ -14,6 +19,9 @@ export const MustPredicatesV1Schema = z
       .optional(),
     exportConstants: z
       .array(z.union([z.string(), ExportDefinitionV1Schema]))
+      .optional(),
+    exportInterfaces: z
+      .array(z.union([z.string(), InterfaceDefinitionV1Schema]))
       .optional(),
   })
   .passthrough();

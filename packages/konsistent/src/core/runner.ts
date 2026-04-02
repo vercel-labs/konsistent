@@ -4,6 +4,7 @@ import { checkHaveFiles } from '../predicates/have-files.js';
 import { checkHaveType } from '../predicates/have-type.js';
 import { parseFileStructure } from '../typescript/parser.js';
 import { checkExportConstants } from '../typescript/predicates/export-constants.js';
+import { checkExportInterfaces } from '../typescript/predicates/export-interfaces.js';
 import { checkExportTypes } from '../typescript/predicates/export-types.js';
 import { checkExport } from '../typescript/predicates/export.js';
 import type { FileStructure } from '../typescript/types.js';
@@ -78,6 +79,14 @@ function checkTsPredicate(opts: {
   if (key === 'exportConstants' && convention.must.exportConstants) {
     return checkExportConstants({
       expected: convention.must.exportConstants,
+      context,
+      fileStructure,
+      conventionName,
+    });
+  }
+  if (key === 'exportInterfaces' && convention.must.exportInterfaces) {
+    return checkExportInterfaces({
+      expected: convention.must.exportInterfaces,
       context,
       fileStructure,
       conventionName,
