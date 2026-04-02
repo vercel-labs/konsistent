@@ -3,6 +3,7 @@ import type { ConfigV1, ConventionV1 } from '../config/schema.js';
 import { checkHaveFiles } from '../predicates/have-files.js';
 import { checkHaveType } from '../predicates/have-type.js';
 import { parseFileStructure } from '../typescript/parser.js';
+import { checkExportClasses } from '../typescript/predicates/export-classes.js';
 import { checkExportConstants } from '../typescript/predicates/export-constants.js';
 import { checkExportFunctions } from '../typescript/predicates/export-functions.js';
 import { checkExportInterfaces } from '../typescript/predicates/export-interfaces.js';
@@ -89,6 +90,14 @@ function checkTsPredicate(opts: {
   if (key === 'exportFunctions' && convention.must.exportFunctions) {
     return checkExportFunctions({
       expected: convention.must.exportFunctions,
+      context,
+      fileStructure,
+      conventionName,
+    });
+  }
+  if (key === 'exportClasses' && convention.must.exportClasses) {
+    return checkExportClasses({
+      expected: convention.must.exportClasses,
       context,
       fileStructure,
       conventionName,
