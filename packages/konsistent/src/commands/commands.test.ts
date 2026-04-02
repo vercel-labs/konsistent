@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 import { runCommand } from 'citty';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import checkCommand from './check.js';
+import checkCommand, { resolveFormat } from './check.js';
 import validateCommand from './validate.js';
 import versionCommand from './version.js';
 
@@ -29,6 +29,25 @@ describe('validate command', () => {
     const logSpy = vi.spyOn(console, 'log').mockImplementation(vi.fn());
     await runCommand(validateCommand, { rawArgs: [] });
     expect(logSpy).toHaveBeenCalled();
+  });
+});
+
+describe('resolveFormat', () => {
+  it('returns explicit format when not default', () => {
+    expect(resolveFormat({ format: 'json' })).toBe('json');
+    expect(resolveFormat({ format: 'github' })).toBe('github');
+    expect(resolveFormat({ format: 'markdown' })).toBe('markdown');
+  });
+
+  it('returns github when GITHUB_ACTIONS is true and format is default', () => {
+    process.env.GITHUB_ACTIONS = 'true';
+    expect(resolveFormat({ format: 'default' })).toBe('github');
+    process.env.GITHUB_ACTIONS = undefined;
+  });
+
+  it('returns default when GITHUB_ACTIONS is not set', () => {
+    process.env.GITHUB_ACTIONS = undefined;
+    expect(resolveFormat({ format: 'default' })).toBe('default');
   });
 });
 

@@ -41,6 +41,16 @@ const checkArgs = {
   },
 };
 
+export function resolveFormat(opts: { format: string }): string {
+  if (opts.format !== 'default') {
+    return opts.format;
+  }
+  if (process.env.GITHUB_ACTIONS === 'true') {
+    return 'github';
+  }
+  return 'default';
+}
+
 function createReporter(opts: { format: string; colors?: boolean }): Reporter {
   if (opts.format === 'json') {
     return createJsonReporter();
@@ -79,10 +89,8 @@ export default defineCommand({
       max: maxDiags,
     });
 
-    const reporter = createReporter({
-      format: args.format,
-      colors: args.colors,
-    });
+    const format = resolveFormat({ format: args.format });
+    const reporter = createReporter({ format, colors: args.colors });
     const formatted = reporter.format({ ...runResult, diagnostics: reported });
 
     const output: string[] = [];
