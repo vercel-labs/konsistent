@@ -376,3 +376,54 @@ describe('monorepo-with-negation-broken fixture', () => {
     }
   });
 });
+
+describe('--verbose flag', () => {
+  const cwd = resolve(fixturesDir, 'empty-config');
+
+  it('shows timing when --verbose is passed', async () => {
+    const { stdout } = await runCli({ args: ['check', '--verbose'], cwd });
+    expect(stdout).toMatch(/Done in \d+(ms|\.\d+s)/);
+  });
+});
+
+describe('--max-diagnostics flag', () => {
+  const cwd = resolve(fixturesDir, 'class-and-function-contracts-broken');
+
+  it('truncates output when --max-diagnostics is less than total violations', async () => {
+    try {
+      await runCli({ args: ['check', '--max-diagnostics', '1'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain(
+        '... and 4 more diagnostics (use --max-diagnostics to see more)'
+      );
+    }
+  });
+
+  it('shows timing together with truncation when --verbose is also passed', async () => {
+    try {
+      await runCli({
+        args: ['check', '--max-diagnostics', '1', '--verbose'],
+        cwd,
+      });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain('... and 4 more diagnostics');
+      expect(error.stdout).toMatch(/Done in \d+(ms|\.\d+s)/);
+    }
+  });
+});

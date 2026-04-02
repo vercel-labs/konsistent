@@ -1,6 +1,7 @@
 import { defineCommand } from 'citty';
 import pc from 'picocolors';
 import { loadConfig } from '../config/index.js';
+import { formatTime } from '../core/format-time.js';
 import type { Reporter } from '../core/index.js';
 import {
   createDefaultReporter,
@@ -10,12 +11,26 @@ import {
   createRealFileSystem,
   run,
 } from '../core/index.js';
+import {
+  formatTruncationMessage,
+  truncateDiagnostics,
+} from '../core/truncate-diagnostics.js';
 
 const checkArgs = {
   format: {
     type: 'string' as const,
     description: 'Output format (default, json, github, markdown)',
     default: 'default',
+  },
+  verbose: {
+    type: 'boolean' as const,
+    description: 'Show execution time and expanded details',
+    default: false,
+  },
+  'max-diagnostics': {
+    type: 'string' as const,
+    description: 'Maximum number of diagnostics to report',
+    default: '20',
   },
 };
 
@@ -45,16 +60,37 @@ export default defineCommand({
       process.exit(1);
     }
 
+    const startTime = performance.now();
     const fileSystem = createRealFileSystem({ cwd: process.cwd() });
     const diagnostics = await run({
       config: result.config,
       fileSystem,
     });
+    const elapsed = performance.now() - startTime;
 
     if (diagnostics.length > 0) {
+      const maxDiags = Number.parseInt(args['max-diagnostics'], 10) || 20;
+      const { diagnostics: reported, omitted } = truncateDiagnostics({
+        diagnostics,
+        max: maxDiags,
+      });
+
       const reporter = createReporter({ format: args.format });
-      console.log(reporter.format(diagnostics));
+      console.log(reporter.format(reported));
+
+      if (omitted > 0) {
+        console.log(formatTruncationMessage(omitted));
+      }
+
+      if (args.verbose) {
+        console.log(`Done in ${formatTime(elapsed)}`);
+      }
+
       process.exit(1);
+    }
+
+    if (args.verbose) {
+      console.log(`Done in ${formatTime(elapsed)}`);
     }
   },
 });
