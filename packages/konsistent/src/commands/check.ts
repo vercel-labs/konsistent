@@ -87,21 +87,21 @@ export default defineCommand({
         format: args.format,
         colors: args.colors,
       });
-      console.log(reporter.format(reported));
-
+      const output: string[] = [];
+      output.push(reporter.format(reported));
       if (omitted > 0) {
-        console.log(formatTruncationMessage(omitted));
+        output.push(formatTruncationMessage(omitted));
       }
-
       if (args.verbose) {
-        console.log(`Done in ${formatTime(elapsed)}`);
+        output.push(`Done in ${formatTime(elapsed)}`);
       }
+      process.stdout.write(`${output.join('\n')}\n`);
 
       process.exit(1);
     }
 
     if (args.verbose) {
-      console.log(`Done in ${formatTime(elapsed)}`);
+      process.stdout.write(`Done in ${formatTime(elapsed)}\n`);
     }
   },
 });

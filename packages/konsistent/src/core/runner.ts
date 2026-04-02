@@ -178,24 +178,42 @@ function checkTsPredicate(opts: {
   return handler(opts);
 }
 
+function getOrParseFileStructure(opts: {
+  filePath: string;
+  fileSystem: FileSystem;
+  cache: Map<string, FileStructure>;
+}): FileStructure {
+  const cached = opts.cache.get(opts.filePath);
+  if (cached) {
+    return cached;
+  }
+
+  const source = opts.fileSystem.readFile(opts.filePath);
+  const structure = parseFileStructure({ source, filePath: opts.filePath });
+  opts.cache.set(opts.filePath, structure);
+  return structure;
+}
+
 function checkPredicates(opts: {
   must: MustPredicatesV1;
   conventionName?: string;
   context: PredicateContext;
   fileSystem: FileSystem;
+  fileStructureCache: Map<string, FileStructure>;
 }): Diagnostic[] {
-  const { must, conventionName, context, fileSystem } = opts;
+  const { must, conventionName, context, fileSystem, fileStructureCache } =
+    opts;
   const diagnostics: Diagnostic[] = [];
   const keys = Object.keys(must);
 
-  let fileStructure: ReturnType<typeof parseFileStructure> | undefined;
+  let fileStructure: FileStructure | undefined;
 
   const needsTs = keys.some((k) => TS_PREDICATES.has(k));
   if (needsTs) {
-    const source = fileSystem.readFile(context.path);
-    fileStructure = parseFileStructure({
-      source,
+    fileStructure = getOrParseFileStructure({
       filePath: context.path,
+      fileSystem,
+      cache: fileStructureCache,
     });
   }
 
@@ -240,8 +258,15 @@ async function evaluateForBlock(opts: {
   parentContext: PredicateContext;
   fileSystem: FileSystem;
   conventionName?: string;
+  fileStructureCache: Map<string, FileStructure>;
 }): Promise<Diagnostic[]> {
-  const { block, parentContext, fileSystem, conventionName } = opts;
+  const {
+    block,
+    parentContext,
+    fileSystem,
+    conventionName,
+    fileStructureCache,
+  } = opts;
 
   if (!block.for) {
     return checkPredicates({
@@ -249,6 +274,7 @@ async function evaluateForBlock(opts: {
       conventionName,
       context: parentContext,
       fileSystem,
+      fileStructureCache,
     });
   }
 
@@ -289,6 +315,7 @@ async function evaluateForBlock(opts: {
         conventionName,
         context: forContext,
         fileSystem,
+        fileStructureCache,
       })
     );
   }
@@ -301,14 +328,22 @@ export async function run(opts: {
   fileSystem: FileSystem;
 }): Promise<Diagnostic[]> {
   const { config, fileSystem } = opts;
+  const fileStructureCache = new Map<string, FileStructure>();
+
+  const matchResults = await Promise.all(
+    config.conventions.map((convention) => {
+      const patterns = Array.isArray(convention.paths)
+        ? convention.paths
+        : [convention.paths];
+      return matchPaths({ patterns, fileSystem });
+    })
+  );
+
   const diagnostics: Diagnostic[] = [];
 
-  for (const convention of config.conventions) {
-    const patterns = Array.isArray(convention.paths)
-      ? convention.paths
-      : [convention.paths];
-
-    const matched = await matchPaths({ patterns, fileSystem });
+  for (let i = 0; i < config.conventions.length; i++) {
+    const convention = config.conventions[i];
+    const matched = matchResults[i];
     const blocks = normalizeMustBlocks(convention.must);
     const conventionName =
       convention.name ?? generateConventionName({ must: convention.must });
@@ -326,6 +361,7 @@ export async function run(opts: {
             parentContext: context,
             fileSystem,
             conventionName,
+            fileStructureCache,
           }))
         );
       }

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { ConfigV1 } from '../config/schema.js';
 import type { FileSystem } from './filesystem.js';
 import { run } from './runner.js';
@@ -419,5 +419,83 @@ describe('run', () => {
     });
     const result = await run({ config, fileSystem: fs });
     expect(result).toEqual([]);
+  });
+});
+
+describe('caching behavior', () => {
+  it('parses the same file only once across multiple conventions', async () => {
+    const readFileSpy = vi.fn().mockReturnValue('export const x = 1;');
+    const fs: FileSystem = {
+      glob: vi.fn((patterns: string[]) => {
+        const key = patterns.sort().join(',');
+        const results = new Map<string, string[]>([
+          ['src/shared.ts', ['src/shared.ts']],
+        ]);
+        return Promise.resolve(results.get(key) ?? []);
+      }),
+      isDirectory: () => false,
+      isFile: (p: string) => p === 'src/shared.ts',
+      fileExists: (p: string) => p === 'src/shared.ts',
+      readDir: () => [],
+      readFile: readFileSpy,
+    };
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'convention-a',
+          paths: 'src/shared.ts',
+          must: { export: [{ name: 'x' }] },
+        },
+        {
+          name: 'convention-b',
+          paths: 'src/shared.ts',
+          must: { export: [{ name: 'x' }] },
+        },
+      ],
+    };
+    await run({ config, fileSystem: fs });
+    expect(readFileSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('parses the same file only once when referenced in for blocks', async () => {
+    const readFileSpy = vi.fn().mockReturnValue('export const x = 1;');
+    const fs: FileSystem = {
+      glob: vi.fn((patterns: string[]) => {
+        const key = patterns.sort().join(',');
+        const results = new Map<string, string[]>([
+          ['components/*', ['components/Button']],
+          ['components/Button/*.ts', ['components/Button/shared.ts']],
+        ]);
+        return Promise.resolve(results.get(key) ?? []);
+      }),
+      isDirectory: (p: string) => p === 'components/Button',
+      isFile: (p: string) => p === 'components/Button/shared.ts',
+      fileExists: (p: string) =>
+        p === 'components/Button' || p === 'components/Button/shared.ts',
+      readDir: () => [],
+      readFile: readFileSpy,
+    };
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'convention-a',
+          paths: 'components/{name}',
+          must: [
+            {
+              for: { files: '*.ts' },
+              must: { export: [{ name: 'x' }] },
+            },
+            {
+              for: { files: '*.ts' },
+              must: { export: [{ name: 'x' }] },
+            },
+          ],
+        },
+      ],
+    };
+    await run({ config, fileSystem: fs });
+    expect(readFileSpy).toHaveBeenCalledTimes(1);
   });
 });

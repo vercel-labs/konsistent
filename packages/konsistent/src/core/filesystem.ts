@@ -12,13 +12,23 @@ export interface FileSystem {
 }
 
 export function createRealFileSystem(opts: { cwd: string }): FileSystem {
+  const globCache = new Map<string, Promise<string[]>>();
+
   return {
     glob(patterns: string[]): Promise<string[]> {
-      return glob(patterns, {
+      const key = patterns.join('\x00');
+      const cached = globCache.get(key);
+      if (cached) {
+        return cached;
+      }
+
+      const result = glob(patterns, {
         cwd: opts.cwd,
         expandDirectories: false,
         onlyFiles: false,
       });
+      globCache.set(key, result);
+      return result;
     },
     isDirectory(path: string): boolean {
       try {
