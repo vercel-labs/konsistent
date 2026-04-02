@@ -8,6 +8,7 @@
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
+    "generate-schema": "tsx scripts/generate-schema.ts",
     "test": "vitest run"
   },
   "dependencies": {
@@ -19,7 +20,10 @@
   },
   "devDependencies": {
     "@types/node": "^22",
+    "ajv": "^8.18.0",
     "tsup": "^8",
-    "vitest": "^3"
+    "tsx": "^4.21.0",
+    "vitest": "^3",
+    "zod-to-json-schema": "^3.25.2"
   }
 }
