@@ -1,6 +1,4 @@
-export interface PlaceholderValue {
-  raw: string;
-}
+import type { PlaceholderValue } from './placeholder.js';
 
 export interface PredicateContext {
   path: string;

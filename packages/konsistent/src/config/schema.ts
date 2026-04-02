@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const MustPredicatesV1Schema = z
   .object({
     haveType: z.enum(['file', 'directory']).optional(),
+    haveFiles: z.array(z.string()).optional(),
   })
   .strict();
 

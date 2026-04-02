@@ -1,0 +1,126 @@
+import { describe, expect, it } from 'vitest';
+import type { FileSystem } from './filesystem.js';
+import { hasPlaceholders, matchPaths, patternToGlob } from './path-matcher.js';
+
+function createMockFileSystem(opts: {
+  globResults?: Map<string, string[]>;
+  files?: Set<string>;
+  directories?: Set<string>;
+}): FileSystem {
+  const globResults = opts.globResults ?? new Map<string, string[]>();
+  const files = opts.files ?? new Set<string>();
+  const directories = opts.directories ?? new Set<string>();
+  return {
+    glob(patterns: string[]): Promise<string[]> {
+      const key = patterns.sort().join(',');
+      return Promise.resolve(globResults.get(key) ?? []);
+    },
+    isDirectory: (p: string) => directories.has(p),
+    isFile: (p: string) => files.has(p),
+    fileExists: (p: string) => files.has(p) || directories.has(p),
+    readDir: () => [],
+  };
+}
+
+describe('hasPlaceholders', () => {
+  it('returns true for patterns with placeholders', () => {
+    expect(hasPlaceholders('packages/{name}/src')).toBe(true);
+  });
+
+  it('returns false for patterns without placeholders', () => {
+    expect(hasPlaceholders('packages/*/src')).toBe(false);
+  });
+});
+
+describe('patternToGlob', () => {
+  it('replaces placeholders with *', () => {
+    expect(patternToGlob('packages/{name}/src')).toBe('packages/*/src');
+  });
+
+  it('replaces multiple placeholders', () => {
+    expect(patternToGlob('{scope}/{name}/index.ts')).toBe('*/*/index.ts');
+  });
+
+  it('leaves non-placeholder patterns unchanged', () => {
+    expect(patternToGlob('src/**/*.ts')).toBe('src/**/*.ts');
+  });
+});
+
+describe('matchPaths', () => {
+  it('handles patterns without placeholders', async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([['src/**/*.ts', ['src/index.ts', 'src/utils.ts']]]),
+    });
+    const results = await matchPaths({
+      patterns: ['src/**/*.ts'],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(2);
+    expect(results[0].placeholders).toEqual({});
+  });
+
+  it('extracts single placeholder', async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        [
+          'plugins/*/index.ts',
+          ['plugins/auth/index.ts', 'plugins/storage/index.ts'],
+        ],
+      ]),
+    });
+    const results = await matchPaths({
+      patterns: ['plugins/{pluginName}/index.ts'],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(2);
+    expect(results[0].placeholders.pluginName.toString()).toBe('auth');
+    expect(results[1].placeholders.pluginName.toString()).toBe('storage');
+  });
+
+  it('extracts multiple placeholders', async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([['*/*/src', ['packages/openai/src']]]),
+    });
+    const results = await matchPaths({
+      patterns: ['{scope}/{name}/src'],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(1);
+    expect(results[0].placeholders.scope.toString()).toBe('packages');
+    expect(results[0].placeholders.name.toString()).toBe('openai');
+  });
+
+  it('rejects values with dots or special chars', async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([['plugins/*', ['plugins/auth.v2']]]),
+    });
+    const results = await matchPaths({
+      patterns: ['plugins/{name}'],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(0);
+  });
+
+  it('enforces multi-placeholder consistency', async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([['*/*', ['foo/bar']]]),
+    });
+    const results = await matchPaths({
+      patterns: ['{name}/{name}'],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(0);
+  });
+
+  it('allows consistent multi-placeholder values', async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([['*/*', ['auth/auth']]]),
+    });
+    const results = await matchPaths({
+      patterns: ['{name}/{name}'],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(1);
+    expect(results[0].placeholders.name.toString()).toBe('auth');
+  });
+});
