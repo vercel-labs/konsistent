@@ -1,8 +1,10 @@
 import { defineCommand } from 'citty';
 import pc from 'picocolors';
 import { loadConfig } from '../config/index.js';
+import type { Reporter } from '../core/index.js';
 import {
   createDefaultReporter,
+  createGithubReporter,
   createJsonReporter,
   createRealFileSystem,
   run,
@@ -11,10 +13,20 @@ import {
 const checkArgs = {
   format: {
     type: 'string' as const,
-    description: 'Output format (default, json)',
+    description: 'Output format (default, json, github)',
     default: 'default',
   },
 };
+
+function createReporter(opts: { format: string }): Reporter {
+  if (opts.format === 'json') {
+    return createJsonReporter();
+  }
+  if (opts.format === 'github') {
+    return createGithubReporter();
+  }
+  return createDefaultReporter();
+}
 
 export default defineCommand({
   meta: {
@@ -36,8 +48,7 @@ export default defineCommand({
     });
 
     if (diagnostics.length > 0) {
-      const reporter =
-        args.format === 'json' ? createJsonReporter() : createDefaultReporter();
+      const reporter = createReporter({ format: args.format });
       console.log(reporter.format(diagnostics));
       process.exit(1);
     }

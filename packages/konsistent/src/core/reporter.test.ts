@@ -1,7 +1,11 @@
 import pc from 'picocolors';
 import { describe, expect, it } from 'vitest';
 import type { Diagnostic } from './diagnostics.js';
-import { createDefaultReporter, createJsonReporter } from './reporter.js';
+import {
+  createDefaultReporter,
+  createGithubReporter,
+  createJsonReporter,
+} from './reporter.js';
 
 describe('createDefaultReporter', () => {
   const reporter = createDefaultReporter();
@@ -334,5 +338,103 @@ describe('createJsonReporter', () => {
     expect(parsed[0].message).toBe('problem a');
     expect(parsed[1].message).toBe('problem b');
     expect(parsed[1].line).toBe(5);
+  });
+});
+
+describe('createGithubReporter', () => {
+  const reporter = createGithubReporter();
+
+  it('returns empty string for no diagnostics', () => {
+    expect(reporter.format([])).toBe('');
+  });
+
+  it('formats file-level violation without line parameter', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'packages/openai/src/index.ts',
+        predicateName: 'export',
+        message: 'Missing export "openai"',
+        conventionName: 'provider-packages',
+      },
+    ];
+    const output = reporter.format(diagnostics);
+    expect(output).toBe(
+      '::error file=packages/openai/src/index.ts,title=provider-packages::Missing export "openai"'
+    );
+  });
+
+  it('includes line parameter for line-specific violations', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'packages/openai/src/openai-provider.ts',
+        predicateName: 'exportInterfaces',
+        message: 'Interface "OpenaiProvider" must extend "ProviderV1"',
+        conventionName: 'provider-interface',
+        line: 3,
+      },
+    ];
+    const output = reporter.format(diagnostics);
+    expect(output).toBe(
+      '::error file=packages/openai/src/openai-provider.ts,line=3,title=provider-interface::Interface "OpenaiProvider" must extend "ProviderV1"'
+    );
+  });
+
+  it('omits column even when present on diagnostic', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveType',
+        message: 'test',
+        line: 10,
+        column: 5,
+      },
+    ];
+    const output = reporter.format(diagnostics);
+    expect(output).not.toContain('col=');
+    expect(output).not.toContain('column=');
+    expect(output).toBe('::error file=src/foo.ts,line=10::test');
+  });
+
+  it('omits title when conventionName is absent', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveType',
+        message: 'Some problem',
+      },
+    ];
+    const output = reporter.format(diagnostics);
+    expect(output).toBe('::error file=src/foo.ts::Some problem');
+  });
+
+  it('joins multiple diagnostics with newlines', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/a.ts',
+        predicateName: 'haveType',
+        message: 'problem a',
+        conventionName: 'conv-a',
+      },
+      {
+        severity: 'error',
+        filePath: 'src/b.ts',
+        predicateName: 'haveType',
+        message: 'problem b',
+        conventionName: 'conv-b',
+        line: 5,
+      },
+    ];
+    const output = reporter.format(diagnostics);
+    const lines = output.split('\n');
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toBe('::error file=src/a.ts,title=conv-a::problem a');
+    expect(lines[1]).toBe(
+      '::error file=src/b.ts,line=5,title=conv-b::problem b'
+    );
   });
 });

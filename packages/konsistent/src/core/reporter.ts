@@ -81,6 +81,26 @@ export function createJsonReporter(): Reporter {
   };
 }
 
+export function createGithubReporter(): Reporter {
+  return {
+    format(diagnostics: Diagnostic[]): string {
+      return diagnostics
+        .map((d) => {
+          let annotation = `::error file=${d.filePath}`;
+          if (d.line != null) {
+            annotation += `,line=${d.line}`;
+          }
+          if (d.conventionName) {
+            annotation += `,title=${d.conventionName}`;
+          }
+          annotation += `::${d.message}`;
+          return annotation;
+        })
+        .join('\n');
+    },
+  };
+}
+
 export function createDefaultReporter(): Reporter {
   return {
     format(diagnostics: Diagnostic[]): string {

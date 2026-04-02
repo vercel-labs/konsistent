@@ -12,6 +12,8 @@ const cliBinary = resolve(
 
 const fixturesDir = resolve(import.meta.dirname, 'fixtures');
 
+const githubAnnotationPattern = /^::error file=.+::.+/;
+
 function runCli(opts: { args?: string[]; cwd?: string }) {
   return execFile('node', [cliBinary, ...(opts.args ?? [])], {
     cwd: opts.cwd,
@@ -183,6 +185,37 @@ describe('ai-toolkit-broken-exports fixture', () => {
       );
       expect(error.stdout).toContain('Missing export type "AnthropicProvider"');
       expect(error.stdout).toContain('Found 3 problems (3 errors)');
+    }
+  });
+});
+
+describe('ai-toolkit-broken-interfaces fixture --format github', () => {
+  const cwd = resolve(fixturesDir, 'ai-toolkit-broken-interfaces');
+
+  it('konsistent check --format github outputs ::error annotations', async () => {
+    try {
+      await runCli({ args: ['check', '--format', 'github'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      const lines = error.stdout.trim().split('\n');
+      for (const line of lines) {
+        expect(line).toMatch(githubAnnotationPattern);
+      }
+      expect(error.stdout).toContain('::error file=');
+      expect(error.stdout).toContain(
+        'Interface "OpenaiProvider" must extend "ProviderV1"'
+      );
+      expect(error.stdout).toContain(',title=provider-interface');
+      expect(error.stdout).toContain(',line=');
+      expect(error.stdout).not.toContain('Found');
+      expect(error.stdout).not.toContain('column=');
     }
   });
 });
