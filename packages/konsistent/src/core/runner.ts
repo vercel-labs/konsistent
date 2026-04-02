@@ -9,6 +9,17 @@ import type { MatchedPath } from './path-matcher.js';
 import { matchPaths } from './path-matcher.js';
 import { resolveTemplate } from './template.js';
 
+export const TS_PREDICATES = new Set([
+  'export',
+  'exportTypes',
+  'exportConstants',
+  'exportFunctions',
+  'exportClasses',
+  'exportInterfaces',
+  'import',
+  'importTypes',
+]);
+
 function buildContext(opts: {
   matched: MatchedPath;
   fileSystem: FileSystem;

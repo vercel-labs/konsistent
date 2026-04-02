@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { glob } from 'tinyglobby';
 
@@ -8,6 +8,7 @@ export interface FileSystem {
   isFile(path: string): boolean;
   fileExists(path: string): boolean;
   readDir(path: string): string[];
+  readFile(path: string): string;
 }
 
 export function createRealFileSystem(opts: { cwd: string }): FileSystem {
@@ -42,6 +43,9 @@ export function createRealFileSystem(opts: { cwd: string }): FileSystem {
       } catch {
         return [];
       }
+    },
+    readFile(path: string): string {
+      return readFileSync(resolve(opts.cwd, path), 'utf-8');
     },
   };
 }

@@ -25,6 +25,7 @@ function createMockFileSystem(opts: {
     isFile: (p: string) => files.has(p),
     fileExists: (p: string) => files.has(p) || directories.has(p),
     readDir: () => [],
+    readFile: () => '',
   };
 }
 
