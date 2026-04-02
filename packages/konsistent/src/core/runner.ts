@@ -3,7 +3,10 @@ import type { ConfigV1, ConventionV1 } from '../config/schema.js';
 import { checkHaveFiles } from '../predicates/have-files.js';
 import { checkHaveType } from '../predicates/have-type.js';
 import { parseFileStructure } from '../typescript/parser.js';
+import { checkExportConstants } from '../typescript/predicates/export-constants.js';
+import { checkExportTypes } from '../typescript/predicates/export-types.js';
 import { checkExport } from '../typescript/predicates/export.js';
+import type { FileStructure } from '../typescript/types.js';
 import type { PredicateContext } from './context.js';
 import type { Diagnostic } from './diagnostics.js';
 import type { FileSystem } from './filesystem.js';
@@ -47,6 +50,42 @@ function buildContext(opts: {
   };
 }
 
+function checkTsPredicate(opts: {
+  key: string;
+  convention: ConventionV1;
+  context: PredicateContext;
+  fileStructure: FileStructure;
+}): Diagnostic[] {
+  const { key, convention, context, fileStructure } = opts;
+  const conventionName = convention.name;
+
+  if (key === 'export' && convention.must.export) {
+    return checkExport({
+      expected: convention.must.export,
+      context,
+      fileStructure,
+      conventionName,
+    });
+  }
+  if (key === 'exportTypes' && convention.must.exportTypes) {
+    return checkExportTypes({
+      expected: convention.must.exportTypes,
+      context,
+      fileStructure,
+      conventionName,
+    });
+  }
+  if (key === 'exportConstants' && convention.must.exportConstants) {
+    return checkExportConstants({
+      expected: convention.must.exportConstants,
+      context,
+      fileStructure,
+      conventionName,
+    });
+  }
+  return [];
+}
+
 function checkPredicates(opts: {
   convention: ConventionV1;
   context: PredicateContext;
@@ -87,13 +126,13 @@ function checkPredicates(opts: {
         })
       );
     }
-    if (key === 'export' && convention.must.export && fileStructure) {
+    if (fileStructure && TS_PREDICATES.has(key)) {
       diagnostics.push(
-        ...checkExport({
-          expected: convention.must.export,
+        ...checkTsPredicate({
+          key,
+          convention,
           context,
           fileStructure,
-          conventionName: convention.name,
         })
       );
     }

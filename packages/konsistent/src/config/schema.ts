@@ -9,6 +9,12 @@ export const MustPredicatesV1Schema = z
     haveType: z.enum(['file', 'directory']).optional(),
     haveFiles: z.array(z.string()).optional(),
     export: z.array(z.union([z.string(), ExportDefinitionV1Schema])).optional(),
+    exportTypes: z
+      .array(z.union([z.string(), ExportDefinitionV1Schema]))
+      .optional(),
+    exportConstants: z
+      .array(z.union([z.string(), ExportDefinitionV1Schema]))
+      .optional(),
   })
   .passthrough();
 
