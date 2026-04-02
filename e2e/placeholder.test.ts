@@ -128,6 +128,40 @@ describe('ai-toolkit-broken-interfaces fixture', () => {
   });
 });
 
+describe('function-signatures fixture', () => {
+  const cwd = resolve(fixturesDir, 'function-signatures');
+
+  it('konsistent check exits 0 when all conventions pass', async () => {
+    await expect(runCli({ args: ['check'], cwd })).resolves.not.toThrow();
+  });
+});
+
+describe('function-signatures-broken fixture', () => {
+  const cwd = resolve(fixturesDir, 'function-signatures-broken');
+
+  it('konsistent check exits 1 with function signature violations', async () => {
+    try {
+      await runCli({ args: ['check'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain(
+        'Function "createAuthService" must receive a parameter of type "AuthConfig"'
+      );
+      expect(error.stdout).toContain(
+        'Function "createPaymentsService" must return value of type "PaymentsService"'
+      );
+      expect(error.stdout).toContain('Found 2 problems (2 errors)');
+    }
+  });
+});
+
 describe('ai-toolkit-broken-exports fixture', () => {
   const cwd = resolve(fixturesDir, 'ai-toolkit-broken-exports');
 
