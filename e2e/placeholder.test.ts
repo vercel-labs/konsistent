@@ -15,7 +15,7 @@ const fixturesDir = resolve(import.meta.dirname, 'fixtures');
 const githubAnnotationPattern = /^::error file=.+::.+/;
 // biome-ignore lint/suspicious/noControlCharactersInRegex: checking for ANSI escape codes
 const ansiEscapePattern = /\x1b\[/;
-const timingPattern = /Done in \d+(ms|\.\d+s)/;
+const summaryPattern = /Checked \d+ files? in \d+(ms|\.\d+s)\./;
 
 function runCli(opts: { args?: string[]; cwd?: string }) {
   return execFile('node', [cliBinary, ...(opts.args ?? [])], {
@@ -94,7 +94,7 @@ describe('plugin-system-broken-files fixture', () => {
       expect(error.stdout).toContain('must-export-activate-and-more');
       expect(error.stdout).toContain('Missing export "deactivate"');
       expect(error.stdout).toContain('Missing export constant "pluginId"');
-      expect(error.stdout).toContain('Found 4 problems (4 errors)');
+      expect(error.stdout).toContain('Found 4 violations.');
     }
   });
 });
@@ -129,7 +129,7 @@ describe('ai-toolkit-broken-interfaces fixture', () => {
         'Missing export interface "AnthropicProvider"'
       );
       expect(error.stdout).toContain('Missing import type "ProviderV1"');
-      expect(error.stdout).toContain('Found 4 problems (4 errors)');
+      expect(error.stdout).toContain('Found 4 violations.');
     }
   });
 });
@@ -164,7 +164,7 @@ describe('function-signatures-broken fixture', () => {
         'Function "createPaymentsService" must return value of type "PaymentsService"'
       );
       expect(error.stdout).toContain('must-export-create-service-function');
-      expect(error.stdout).toContain('Found 2 problems (2 errors)');
+      expect(error.stdout).toContain('Found 2 violations.');
     }
   });
 });
@@ -190,7 +190,7 @@ describe('ai-toolkit-broken-exports fixture', () => {
       );
       expect(error.stdout).toContain('Missing export type "AnthropicProvider"');
       expect(error.stdout).toContain('must-export-and-more');
-      expect(error.stdout).toContain('Found 3 problems (3 errors)');
+      expect(error.stdout).toContain('Found 3 violations.');
     }
   });
 });
@@ -263,7 +263,7 @@ describe('class-and-function-contracts-broken fixture', () => {
         'Function "createDatabaseAdapter" must return value of type "DatabaseAdapter"'
       );
       expect(error.stdout).toContain('must-export-adapter-class-and-more');
-      expect(error.stdout).toContain('Found 5 problems (5 errors)');
+      expect(error.stdout).toContain('Found 5 violations.');
     }
   });
 });
@@ -294,7 +294,7 @@ describe('component-library-broken-conditionals fixture', () => {
       expect(error.stdout).toContain('Missing export "describe"');
       expect(error.stdout).toContain('Missing export constant "meta"');
       expect(error.stdout).toContain('must-have-tsx');
-      expect(error.stdout).toContain('Found 2 problems (2 errors)');
+      expect(error.stdout).toContain('Found 2 violations.');
     }
   });
 });
@@ -327,7 +327,7 @@ describe('ai-toolkit-broken-exports fixture --format markdown', () => {
       expect(output).toContain('| Line | Severity | Message | Convention |');
       expect(output).toContain('|------|----------|---------|------------|');
       expect(output).toContain('| - | error | Missing export "openai" |');
-      expect(output).toContain('**Found 3 problems (3 errors)**');
+      expect(output).toContain('Found 3 violations.**');
       expect(output).not.toMatch(ansiEscapePattern);
     }
   });
@@ -349,7 +349,7 @@ describe('monorepo-with-negation-broken fixture', () => {
       };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain('Missing export "cli"');
-      expect(error.stdout).toContain('Found 1 problems (1 errors)');
+      expect(error.stdout).toContain('Found 1 violation.');
     }
   });
 
@@ -380,12 +380,25 @@ describe('monorepo-with-negation-broken fixture', () => {
   });
 });
 
-describe('--verbose flag', () => {
-  const cwd = resolve(fixturesDir, 'empty-config');
+describe('summary output', () => {
+  it('shows summary with timing on clean runs', async () => {
+    const cwd = resolve(fixturesDir, 'empty-config');
+    const { stdout } = await runCli({ args: ['check'], cwd });
+    expect(stdout).toMatch(summaryPattern);
+    expect(stdout).toContain('No violations found.');
+  });
 
-  it('shows timing when --verbose is passed', async () => {
-    const { stdout } = await runCli({ args: ['check', '--verbose'], cwd });
-    expect(stdout).toMatch(timingPattern);
+  it('shows summary with timing on violation runs', async () => {
+    const cwd = resolve(fixturesDir, 'monorepo-with-negation-broken');
+    try {
+      await runCli({ args: ['check'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as { stdout: string; code: number; status: number };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toMatch(summaryPattern);
+      expect(error.stdout).toContain('Found 1 violation.');
+    }
   });
 });
 
@@ -464,12 +477,9 @@ describe('--max-diagnostics flag', () => {
     }
   });
 
-  it('shows timing together with truncation when --verbose is also passed', async () => {
+  it('shows summary line together with truncation message', async () => {
     try {
-      await runCli({
-        args: ['check', '--max-diagnostics', '1', '--verbose'],
-        cwd,
-      });
+      await runCli({ args: ['check', '--max-diagnostics', '1'], cwd });
       expect.fail('Expected check to exit with code 1');
     } catch (err: unknown) {
       const error = err as {
@@ -480,7 +490,7 @@ describe('--max-diagnostics flag', () => {
       };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain('... and 4 more diagnostics');
-      expect(error.stdout).toMatch(timingPattern);
+      expect(error.stdout).toMatch(summaryPattern);
     }
   });
 });

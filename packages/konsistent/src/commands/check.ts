@@ -1,7 +1,6 @@
 import { defineCommand } from 'citty';
 import pc from 'picocolors';
 import { loadConfig } from '../config/index.js';
-import { formatTime } from '../core/format-time.js';
 import type { Reporter } from '../core/index.js';
 import {
   createDefaultReporter,
@@ -68,40 +67,37 @@ export default defineCommand({
       process.exit(1);
     }
 
-    const startTime = performance.now();
     const fileSystem = createRealFileSystem({ cwd: process.cwd() });
-    const diagnostics = await run({
+    const runResult = await run({
       config: result.config,
       fileSystem,
     });
-    const elapsed = performance.now() - startTime;
 
-    if (diagnostics.length > 0) {
-      const maxDiags = Number.parseInt(args['max-diagnostics'], 10) || 20;
-      const { diagnostics: reported, omitted } = truncateDiagnostics({
-        diagnostics,
-        max: maxDiags,
-      });
+    const maxDiags = Number.parseInt(args['max-diagnostics'], 10) || 20;
+    const { diagnostics: reported, omitted } = truncateDiagnostics({
+      diagnostics: runResult.diagnostics,
+      max: maxDiags,
+    });
 
-      const reporter = createReporter({
-        format: args.format,
-        colors: args.colors,
-      });
-      const output: string[] = [];
-      output.push(reporter.format(reported));
-      if (omitted > 0) {
-        output.push(formatTruncationMessage(omitted));
-      }
-      if (args.verbose) {
-        output.push(`Done in ${formatTime(elapsed)}`);
-      }
+    const reporter = createReporter({
+      format: args.format,
+      colors: args.colors,
+    });
+    const formatted = reporter.format({ ...runResult, diagnostics: reported });
+
+    const output: string[] = [];
+    if (formatted) {
+      output.push(formatted);
+    }
+    if (omitted > 0) {
+      output.push(formatTruncationMessage(omitted));
+    }
+    if (output.length > 0) {
       process.stdout.write(`${output.join('\n')}\n`);
-
-      process.exit(1);
     }
 
-    if (args.verbose) {
-      process.stdout.write(`Done in ${formatTime(elapsed)}\n`);
+    if (runResult.diagnostics.length > 0) {
+      process.exit(1);
     }
   },
 });

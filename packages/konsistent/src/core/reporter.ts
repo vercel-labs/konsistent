@@ -1,8 +1,10 @@
 import pc from 'picocolors';
 import type { Diagnostic } from './diagnostics.js';
+import { formatTime } from './format-time.js';
+import type { RunResult } from './runner.js';
 
 export interface Reporter {
-  format(diagnostics: Diagnostic[]): string;
+  format(result: RunResult): string;
 }
 
 function sortDiagnostics(diagnostics: Diagnostic[]): Diagnostic[] {
@@ -70,10 +72,25 @@ function formatFileGroup(opts: {
   return lines;
 }
 
+function formatSummary(opts: {
+  filesChecked: number;
+  violationCount: number;
+  elapsed: number;
+}): string {
+  const { filesChecked, violationCount, elapsed } = opts;
+  const fileWord = filesChecked === 1 ? 'file' : 'files';
+  const checked = `Checked ${filesChecked} ${fileWord} in ${formatTime(elapsed)}.`;
+  if (violationCount === 0) {
+    return `${checked} No violations found.`;
+  }
+  const violationWord = violationCount === 1 ? 'violation' : 'violations';
+  return `${checked} Found ${violationCount} ${violationWord}.`;
+}
+
 export function createJsonReporter(): Reporter {
   return {
-    format(diagnostics: Diagnostic[]): string {
-      const output = diagnostics.map((d) => {
+    format(result: RunResult): string {
+      const output = result.diagnostics.map((d) => {
         const obj: Record<string, unknown> = {
           severity: d.severity,
           conventionName: d.conventionName,
@@ -93,8 +110,8 @@ export function createJsonReporter(): Reporter {
 
 export function createGithubReporter(): Reporter {
   return {
-    format(diagnostics: Diagnostic[]): string {
-      return diagnostics
+    format(result: RunResult): string {
+      return result.diagnostics
         .map((d) => {
           let annotation = `::error file=${d.filePath}`;
           if (d.line != null) {
@@ -113,37 +130,33 @@ export function createGithubReporter(): Reporter {
 
 export function createMarkdownReporter(): Reporter {
   return {
-    format(diagnostics: Diagnostic[]): string {
-      if (diagnostics.length === 0) {
-        return '';
-      }
-
-      const grouped = groupByFile(diagnostics);
+    format(result: RunResult): string {
+      const { diagnostics, filesChecked, elapsed } = result;
       const sections: string[] = [];
 
-      for (const [filePath, fileDiags] of grouped) {
-        const sorted = sortDiagnostics(fileDiags);
-        const lines: string[] = [
-          `**\`${filePath}\`**`,
-          '',
-          '| Line | Severity | Message | Convention |',
-          '|------|----------|---------|------------|',
-        ];
-        for (const d of sorted) {
-          const lineStr = d.line != null ? String(d.line) : '-';
-          const convention = d.conventionName ?? '';
-          lines.push(
-            `| ${lineStr} | ${d.severity} | ${d.message} | ${convention} |`
-          );
+      if (diagnostics.length > 0) {
+        const grouped = groupByFile(diagnostics);
+        for (const [filePath, fileDiags] of grouped) {
+          const sorted = sortDiagnostics(fileDiags);
+          const lines: string[] = [
+            `**\`${filePath}\`**`,
+            '',
+            '| Line | Severity | Message | Convention |',
+            '|------|----------|---------|------------|',
+          ];
+          for (const d of sorted) {
+            const lineStr = d.line != null ? String(d.line) : '-';
+            const convention = d.conventionName ?? '';
+            lines.push(
+              `| ${lineStr} | ${d.severity} | ${d.message} | ${convention} |`
+            );
+          }
+          sections.push(lines.join('\n'));
         }
-        sections.push(lines.join('\n'));
       }
 
-      const errorCount = diagnostics.filter(
-        (d) => d.severity === 'error'
-      ).length;
       sections.push(
-        `**Found ${diagnostics.length} problems (${errorCount} errors)**`
+        `**${formatSummary({ filesChecked, violationCount: diagnostics.length, elapsed })}**`
       );
 
       return sections.join('\n\n');
@@ -158,29 +171,32 @@ export function createDefaultReporter(opts?: { colors?: boolean }): Reporter {
   const dim = useColors ? pc.dim : identity;
 
   return {
-    format(diagnostics: Diagnostic[]): string {
-      if (diagnostics.length === 0) {
-        return '';
-      }
-
-      const grouped = groupByFile(diagnostics);
+    format(result: RunResult): string {
+      const { diagnostics, filesChecked, elapsed } = result;
       const lines: string[] = [];
-      for (const [filePath, fileDiags] of grouped) {
-        lines.push(
-          ...formatFileGroup({
-            filePath,
-            diagnostics: fileDiags,
-            bold,
-            red,
-            dim,
-          })
-        );
+
+      if (diagnostics.length > 0) {
+        const grouped = groupByFile(diagnostics);
+        for (const [filePath, fileDiags] of grouped) {
+          lines.push(
+            ...formatFileGroup({
+              filePath,
+              diagnostics: fileDiags,
+              bold,
+              red,
+              dim,
+            })
+          );
+        }
       }
 
-      const errorCount = diagnostics.filter(
-        (d) => d.severity === 'error'
-      ).length;
-      lines.push(`Found ${diagnostics.length} problems (${errorCount} errors)`);
+      lines.push(
+        formatSummary({
+          filesChecked,
+          violationCount: diagnostics.length,
+          elapsed,
+        })
+      );
 
       return lines.join('\n');
     },

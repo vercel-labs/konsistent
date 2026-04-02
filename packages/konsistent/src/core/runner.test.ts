@@ -27,11 +27,12 @@ function createMockFileSystem(opts: {
 describe('run', () => {
   it('returns empty diagnostics for empty conventions', async () => {
     const config: ConfigV1 = { version: 'v1', conventions: [] };
-    const result = await run({
+    const { diagnostics, filesChecked } = await run({
       config,
       fileSystem: createMockFileSystem({}),
     });
-    expect(result).toEqual([]);
+    expect(diagnostics).toEqual([]);
+    expect(filesChecked).toBe(0);
   });
 
   it('returns diagnostics when haveType fails', async () => {
@@ -49,10 +50,12 @@ describe('run', () => {
       globResults: new Map([['src/**/*.ts', ['src/utils']]]),
       directories: new Set(['src/utils']),
     });
-    const result = await run({ config, fileSystem: fs });
-    expect(result).toHaveLength(1);
-    expect(result[0].message).toBe('Expected a file but found a directory');
-    expect(result[0].conventionName).toBe('source-files');
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].message).toBe(
+      'Expected a file but found a directory'
+    );
+    expect(diagnostics[0].conventionName).toBe('source-files');
   });
 
   it('returns no diagnostics when haveType matches', async () => {
@@ -69,8 +72,12 @@ describe('run', () => {
       globResults: new Map([['src/**/*.ts', ['src/index.ts']]]),
       files: new Set(['src/index.ts']),
     });
-    const result = await run({ config, fileSystem: fs });
-    expect(result).toEqual([]);
+    const { diagnostics, filesChecked } = await run({
+      config,
+      fileSystem: fs,
+    });
+    expect(diagnostics).toEqual([]);
+    expect(filesChecked).toBe(1);
   });
 
   it('normalizes paths string to array', async () => {
@@ -87,8 +94,8 @@ describe('run', () => {
       globResults: new Map([['src/**', ['src/components']]]),
       directories: new Set(['src/components']),
     });
-    const result = await run({ config, fileSystem: fs });
-    expect(result).toEqual([]);
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
   });
 
   it('handles array paths', async () => {
@@ -107,8 +114,12 @@ describe('run', () => {
       ]),
       files: new Set(['src/a.ts', 'lib/b.ts']),
     });
-    const result = await run({ config, fileSystem: fs });
-    expect(result).toEqual([]);
+    const { diagnostics, filesChecked } = await run({
+      config,
+      fileSystem: fs,
+    });
+    expect(diagnostics).toEqual([]);
+    expect(filesChecked).toBe(2);
   });
 
   it('silently skips unrecognized predicate keys', async () => {
@@ -125,8 +136,8 @@ describe('run', () => {
       globResults: new Map([['src/**', ['src/index.ts']]]),
       files: new Set(['src/index.ts']),
     });
-    const result = await run({ config, fileSystem: fs });
-    expect(result).toEqual([]);
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
   });
 
   it('evaluates must block when if.hasFile condition is met', async () => {
@@ -149,10 +160,12 @@ describe('run', () => {
       globResults: new Map([['src/**/*.ts', ['src/models/index.ts']]]),
       files: new Set(['src/models/index.ts', 'src/models/schema.ts']),
     });
-    const result = await run({ config, fileSystem: fs });
-    expect(result).toHaveLength(1);
-    expect(result[0].message).toBe('Expected a directory but found a file');
-    expect(result[0].conventionName).toBe('conditional-rule');
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].message).toBe(
+      'Expected a directory but found a file'
+    );
+    expect(diagnostics[0].conventionName).toBe('conditional-rule');
   });
 
   it('skips must block when if.hasFile condition is not met', async () => {
@@ -175,8 +188,8 @@ describe('run', () => {
       globResults: new Map([['src/**/*.ts', ['src/models/index.ts']]]),
       files: new Set(['src/models/index.ts']),
     });
-    const result = await run({ config, fileSystem: fs });
-    expect(result).toEqual([]);
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
   });
 
   it('evaluates must block unconditionally when no if is present', async () => {
@@ -194,9 +207,11 @@ describe('run', () => {
       globResults: new Map([['src/**/*.ts', ['src/utils']]]),
       directories: new Set(['src/utils']),
     });
-    const result = await run({ config, fileSystem: fs });
-    expect(result).toHaveLength(1);
-    expect(result[0].message).toBe('Expected a file but found a directory');
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].message).toBe(
+      'Expected a file but found a directory'
+    );
   });
 
   it('supports template expansion in if.hasFile', async () => {
@@ -219,9 +234,9 @@ describe('run', () => {
       globResults: new Map([['src/*/index.ts', ['src/utils/index.ts']]]),
       files: new Set(['src/utils/index.ts', 'src/utils/utils.test.ts']),
     });
-    const result = await run({ config, fileSystem: fs });
-    expect(result).toHaveLength(1);
-    expect(result[0].conventionName).toBe('template-rule');
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].conventionName).toBe('template-rule');
   });
 
   it('iterates over for.files matches and evaluates predicates', async () => {
@@ -248,8 +263,8 @@ describe('run', () => {
       directories: new Set(['components/Button']),
       files: new Set(['components/Button/Button.test.tsx']),
     });
-    const result = await run({ config, fileSystem: fs });
-    expect(result).toEqual([]);
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
   });
 
   it('silently skips when for.files matches zero files', async () => {
@@ -275,8 +290,8 @@ describe('run', () => {
       ]),
       directories: new Set(['components/Input']),
     });
-    const result = await run({ config, fileSystem: fs });
-    expect(result).toEqual([]);
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
   });
 
   it('merges placeholders from for.files with parent placeholders', async () => {
@@ -306,8 +321,8 @@ describe('run', () => {
       directories: new Set(['components/Button']),
       files: new Set(['components/Button/Button.stories.tsx']),
     });
-    const result = await run({ config, fileSystem: fs });
-    expect(result).toEqual([]);
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
   });
 
   it('parent placeholder values take precedence over for.files placeholders', async () => {
@@ -334,8 +349,8 @@ describe('run', () => {
       directories: new Set(['components/Button']),
       files: new Set(['components/Button/Button.test.tsx']),
     });
-    const result = await run({ config, fileSystem: fs });
-    expect(result).toEqual([]);
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
   });
 
   it('evaluates if condition before for iteration', async () => {
@@ -366,9 +381,11 @@ describe('run', () => {
       directories: new Set(['components/Button']),
       files: new Set(['components/Button/Button.test.tsx']),
     });
-    const result = await run({ config, fileSystem: fsWithCondition });
-    expect(result).toHaveLength(1);
-    expect(result[0].message).toBe('Expected a directory but found a file');
+    const { diagnostics } = await run({ config, fileSystem: fsWithCondition });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].message).toBe(
+      'Expected a directory but found a file'
+    );
   });
 
   it('skips for block when if condition is not met', async () => {
@@ -392,8 +409,8 @@ describe('run', () => {
       globResults: new Map([['components/*', ['components/Button']]]),
       directories: new Set(['components/Button']),
     });
-    const result = await run({ config, fileSystem: fs });
-    expect(result).toEqual([]);
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
   });
 
   it('evaluates multiple must blocks independently', async () => {
@@ -417,8 +434,8 @@ describe('run', () => {
       globResults: new Map([['src/**/*.ts', ['src/a.ts']]]),
       files: new Set(['src/a.ts']),
     });
-    const result = await run({ config, fileSystem: fs });
-    expect(result).toEqual([]);
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
   });
 });
 

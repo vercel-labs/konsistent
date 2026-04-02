@@ -15,3 +15,4 @@ export {
   createMarkdownReporter,
 } from './reporter.js';
 export { run } from './runner.js';
+export type { RunResult } from './runner.js';

@@ -323,10 +323,17 @@ async function evaluateForBlock(opts: {
   return diagnostics;
 }
 
+export interface RunResult {
+  diagnostics: Diagnostic[];
+  filesChecked: number;
+  elapsed: number;
+}
+
 export async function run(opts: {
   config: ConfigV1;
   fileSystem: FileSystem;
-}): Promise<Diagnostic[]> {
+}): Promise<RunResult> {
+  const startTime = performance.now();
   const { config, fileSystem } = opts;
   const fileStructureCache = new Map<string, FileStructure>();
 
@@ -339,6 +346,7 @@ export async function run(opts: {
     })
   );
 
+  const checkedPaths = new Set<string>();
   const diagnostics: Diagnostic[] = [];
 
   for (let i = 0; i < config.conventions.length; i++) {
@@ -349,6 +357,7 @@ export async function run(opts: {
       convention.name ?? generateConventionName({ must: convention.must });
 
     for (const entry of matched) {
+      checkedPaths.add(entry.path);
       const context = buildContext({ matched: entry, fileSystem });
 
       for (const block of blocks) {
@@ -368,5 +377,9 @@ export async function run(opts: {
     }
   }
 
-  return diagnostics;
+  return {
+    diagnostics,
+    filesChecked: checkedPaths.size,
+    elapsed: performance.now() - startTime,
+  };
 }
