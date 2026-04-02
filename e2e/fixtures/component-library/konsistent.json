@@ -1,0 +1,21 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "Component directories",
+      "paths": "components/{componentName}",
+      "must": [
+        { "haveFiles": ["${componentName}.tsx"] },
+        {
+          "if": { "hasFile": "${componentName}.test.tsx" },
+          "for": { "files": "${componentName}.test.tsx" },
+          "must": { "export": ["describe"] }
+        },
+        {
+          "for": { "files": "{storyFile}.stories.tsx" },
+          "must": { "exportConstants": ["meta"] }
+        }
+      ]
+    }
+  ]
+}

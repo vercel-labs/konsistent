@@ -1,0 +1,25 @@
+{
+  "name": "konsistent",
+  "version": "0.0.0",
+  "type": "module",
+  "bin": {
+    "konsistent": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "citty": "^0.1",
+    "picocolors": "^1",
+    "tinyglobby": "^0.2",
+    "typescript": "^5",
+    "zod": "^3"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "tsup": "^8",
+    "vitest": "^3"
+  }
+}

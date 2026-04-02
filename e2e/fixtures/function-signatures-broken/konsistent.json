@@ -1,0 +1,18 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "Service factory functions",
+      "paths": "services/{serviceName}/index.ts",
+      "must": {
+        "exportFunctions": [
+          {
+            "name": "create${serviceName.toPascalCase()}Service",
+            "receiveParamOfType": "${serviceName.toPascalCase()}Config",
+            "returnValueOfType": "${serviceName.toPascalCase()}Service"
+          }
+        ]
+      }
+    }
+  ]
+}

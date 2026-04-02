@@ -1,0 +1,10 @@
+{
+  "conventions": [
+    {
+      "paths": ["src/*.ts"],
+      "must": {
+        "unknownPredicate": ["foo"]
+      }
+    }
+  ]
+}

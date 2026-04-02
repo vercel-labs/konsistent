@@ -1,0 +1,23 @@
+{
+  "name": "konsistent-monorepo",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "build": "turbo build",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "test:e2e": "vitest run -c e2e/vitest.config.ts",
+    "check": "ultracite lint",
+    "fix": "ultracite format"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "konsistent": "workspace:*",
+    "turbo": "^2",
+    "ultracite": "^4",
+    "vitest": "^3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  }
+}
