@@ -13,6 +13,9 @@ const cliBinary = resolve(
 const fixturesDir = resolve(import.meta.dirname, 'fixtures');
 
 const githubAnnotationPattern = /^::error file=.+::.+/;
+// biome-ignore lint/suspicious/noControlCharactersInRegex: checking for ANSI escape codes
+const ansiEscapePattern = /\x1b\[/;
+const timingPattern = /Done in \d+(ms|\.\d+s)/;
 
 function runCli(opts: { args?: string[]; cwd?: string }) {
   return execFile('node', [cliBinary, ...(opts.args ?? [])], {
@@ -325,8 +328,7 @@ describe('ai-toolkit-broken-exports fixture --format markdown', () => {
       expect(output).toContain('|------|----------|---------|------------|');
       expect(output).toContain('| - | error | Missing export "openai" |');
       expect(output).toContain('**Found 3 problems (3 errors)**');
-      // biome-ignore lint/suspicious/noControlCharactersInRegex: checking for ANSI escape codes
-      expect(output).not.toMatch(/\x1b\[/);
+      expect(output).not.toMatch(ansiEscapePattern);
     }
   });
 });
@@ -383,7 +385,7 @@ describe('--verbose flag', () => {
 
   it('shows timing when --verbose is passed', async () => {
     const { stdout } = await runCli({ args: ['check', '--verbose'], cwd });
-    expect(stdout).toMatch(/Done in \d+(ms|\.\d+s)/);
+    expect(stdout).toMatch(timingPattern);
   });
 });
 
@@ -478,7 +480,7 @@ describe('--max-diagnostics flag', () => {
       };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain('... and 4 more diagnostics');
-      expect(error.stdout).toMatch(/Done in \d+(ms|\.\d+s)/);
+      expect(error.stdout).toMatch(timingPattern);
     }
   });
 });

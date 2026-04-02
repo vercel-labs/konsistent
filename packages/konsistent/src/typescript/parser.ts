@@ -174,6 +174,155 @@ function processExportedDeclaration(opts: {
   return undefined;
 }
 
+interface ParseCollector {
+  exports: ExportInfo[];
+  imports: ImportInfo[];
+  interfaces: InterfaceInfo[];
+  classes: ClassInfo[];
+  functions: FunctionInfo[];
+  constants: ConstantInfo[];
+  typeAliases: TypeAliasInfo[];
+}
+
+function processImportDeclaration(opts: {
+  node: ts.ImportDeclaration;
+  sourceFile: ts.SourceFile;
+  collector: ParseCollector;
+}): void {
+  const { node, sourceFile, collector } = opts;
+  const pos = getPosition({ sourceFile, node });
+  const moduleSpecifier = (node.moduleSpecifier as ts.StringLiteral).text;
+  const isTypeOnly = node.importClause?.isTypeOnly ?? false;
+
+  if (node.importClause?.namedBindings) {
+    if (ts.isNamedImports(node.importClause.namedBindings)) {
+      for (const element of node.importClause.namedBindings.elements) {
+        collector.imports.push({
+          name: element.name.getText(sourceFile),
+          from: moduleSpecifier,
+          isType: isTypeOnly || element.isTypeOnly,
+          pos,
+        });
+      }
+    } else if (ts.isNamespaceImport(node.importClause.namedBindings)) {
+      collector.imports.push({
+        name: node.importClause.namedBindings.name.getText(sourceFile),
+        from: moduleSpecifier,
+        isType: isTypeOnly,
+        pos,
+      });
+    }
+  }
+
+  if (node.importClause?.name) {
+    collector.imports.push({
+      name: node.importClause.name.getText(sourceFile),
+      from: moduleSpecifier,
+      isType: isTypeOnly,
+      pos,
+    });
+  }
+}
+
+function processVariableStatement(opts: {
+  node: ts.VariableStatement;
+  sourceFile: ts.SourceFile;
+  collector: ParseCollector;
+}): void {
+  const { node, sourceFile, collector } = opts;
+  const isConst = (node.declarationList.flags & ts.NodeFlags.Const) !== 0;
+  if (!isConst) {
+    return;
+  }
+  for (const decl of node.declarationList.declarations) {
+    if (ts.isIdentifier(decl.name)) {
+      const pos = getPosition({ sourceFile, node });
+      collector.constants.push({
+        name: decl.name.getText(sourceFile),
+        typeName: extractTypeAnnotation(decl.type),
+        pos,
+      });
+    }
+  }
+}
+
+function processDeclaration(opts: {
+  node: ts.Node;
+  sourceFile: ts.SourceFile;
+  collector: ParseCollector;
+}): void {
+  const { node, sourceFile, collector } = opts;
+
+  if (ts.isInterfaceDeclaration(node)) {
+    const pos = getPosition({ sourceFile, node });
+    collector.interfaces.push({
+      name: node.name.getText(sourceFile),
+      extends: extractExtendsFromHeritage(
+        node.heritageClauses,
+        ts.SyntaxKind.ExtendsKeyword
+      ),
+      pos,
+    });
+  }
+
+  if (ts.isClassDeclaration(node) && node.name) {
+    const pos = getPosition({ sourceFile, node });
+    const extendsNames = extractExtendsFromHeritage(
+      node.heritageClauses,
+      ts.SyntaxKind.ExtendsKeyword
+    );
+    collector.classes.push({
+      name: node.name.getText(sourceFile),
+      extends: extendsNames[0],
+      pos,
+    });
+  }
+
+  if (ts.isFunctionDeclaration(node) && node.name) {
+    const pos = getPosition({ sourceFile, node });
+    collector.functions.push({
+      name: node.name.getText(sourceFile),
+      params: extractParams(node.parameters),
+      returnType: extractTypeAnnotation(node.type),
+      pos,
+    });
+  }
+
+  if (ts.isVariableStatement(node)) {
+    processVariableStatement({ node, sourceFile, collector });
+  }
+
+  if (ts.isTypeAliasDeclaration(node)) {
+    const pos = getPosition({ sourceFile, node });
+    collector.typeAliases.push({
+      name: node.name.getText(sourceFile),
+      pos,
+    });
+  }
+}
+
+function processExportModifier(opts: {
+  node: ts.Node;
+  sourceFile: ts.SourceFile;
+  collector: ParseCollector;
+}): void {
+  const { node, sourceFile, collector } = opts;
+  if (hasDefaultModifier(node)) {
+    const pos = getPosition({ sourceFile, node });
+    collector.exports.push({
+      name: 'default',
+      kind: 'const',
+      isType: false,
+      pos,
+    });
+  } else {
+    const exportInfo = processExportedDeclaration({ node, sourceFile });
+    if (exportInfo) {
+      collector.exports.push(exportInfo);
+    }
+  }
+}
+
 export function parseFileStructure(opts: {
   source: string;
   filePath?: string;
@@ -185,23 +334,25 @@ export function parseFileStructure(opts: {
     true
   );
 
-  const exports: ExportInfo[] = [];
-  const imports: ImportInfo[] = [];
-  const interfaces: InterfaceInfo[] = [];
-  const classes: ClassInfo[] = [];
-  const functions: FunctionInfo[] = [];
-  const constants: ConstantInfo[] = [];
-  const typeAliases: TypeAliasInfo[] = [];
+  const collector: ParseCollector = {
+    exports: [],
+    imports: [],
+    interfaces: [],
+    classes: [],
+    functions: [],
+    constants: [],
+    typeAliases: [],
+  };
 
   ts.forEachChild(sourceFile, (node) => {
     if (ts.isExportDeclaration(node)) {
-      exports.push(...processExportDeclaration({ node, sourceFile }));
+      collector.exports.push(...processExportDeclaration({ node, sourceFile }));
       return;
     }
 
     if (ts.isExportAssignment(node)) {
       const pos = getPosition({ sourceFile, node });
-      exports.push({
+      collector.exports.push({
         name: 'default',
         kind: 'const',
         isType: false,
@@ -211,127 +362,16 @@ export function parseFileStructure(opts: {
     }
 
     if (ts.isImportDeclaration(node)) {
-      const pos = getPosition({ sourceFile, node });
-      const moduleSpecifier = (node.moduleSpecifier as ts.StringLiteral).text;
-      const isTypeOnly = node.importClause?.isTypeOnly ?? false;
-
-      if (node.importClause?.namedBindings) {
-        if (ts.isNamedImports(node.importClause.namedBindings)) {
-          for (const element of node.importClause.namedBindings.elements) {
-            imports.push({
-              name: element.name.getText(sourceFile),
-              from: moduleSpecifier,
-              isType: isTypeOnly || element.isTypeOnly,
-              pos,
-            });
-          }
-        } else if (ts.isNamespaceImport(node.importClause.namedBindings)) {
-          imports.push({
-            name: node.importClause.namedBindings.name.getText(sourceFile),
-            from: moduleSpecifier,
-            isType: isTypeOnly,
-            pos,
-          });
-        }
-      }
-
-      if (node.importClause?.name) {
-        imports.push({
-          name: node.importClause.name.getText(sourceFile),
-          from: moduleSpecifier,
-          isType: isTypeOnly,
-          pos,
-        });
-      }
-
+      processImportDeclaration({ node, sourceFile, collector });
       return;
     }
 
-    if (ts.isInterfaceDeclaration(node)) {
-      const pos = getPosition({ sourceFile, node });
-      const extendsNames = extractExtendsFromHeritage(
-        node.heritageClauses,
-        ts.SyntaxKind.ExtendsKeyword
-      );
-      interfaces.push({
-        name: node.name.getText(sourceFile),
-        extends: extendsNames,
-        pos,
-      });
-    }
-
-    if (ts.isClassDeclaration(node) && node.name) {
-      const pos = getPosition({ sourceFile, node });
-      const extendsNames = extractExtendsFromHeritage(
-        node.heritageClauses,
-        ts.SyntaxKind.ExtendsKeyword
-      );
-      classes.push({
-        name: node.name.getText(sourceFile),
-        extends: extendsNames[0],
-        pos,
-      });
-    }
-
-    if (ts.isFunctionDeclaration(node) && node.name) {
-      const pos = getPosition({ sourceFile, node });
-      functions.push({
-        name: node.name.getText(sourceFile),
-        params: extractParams(node.parameters),
-        returnType: extractTypeAnnotation(node.type),
-        pos,
-      });
-    }
-
-    if (ts.isVariableStatement(node)) {
-      const isConst = (node.declarationList.flags & ts.NodeFlags.Const) !== 0;
-      if (isConst) {
-        for (const decl of node.declarationList.declarations) {
-          if (ts.isIdentifier(decl.name)) {
-            const pos = getPosition({ sourceFile, node });
-            constants.push({
-              name: decl.name.getText(sourceFile),
-              typeName: extractTypeAnnotation(decl.type),
-              pos,
-            });
-          }
-        }
-      }
-    }
-
-    if (ts.isTypeAliasDeclaration(node)) {
-      const pos = getPosition({ sourceFile, node });
-      typeAliases.push({
-        name: node.name.getText(sourceFile),
-        pos,
-      });
-    }
+    processDeclaration({ node, sourceFile, collector });
 
     if (hasExportModifier(node)) {
-      if (hasDefaultModifier(node)) {
-        const pos = getPosition({ sourceFile, node });
-        exports.push({
-          name: 'default',
-          kind: 'const',
-          isType: false,
-          pos,
-        });
-      } else {
-        const exportInfo = processExportedDeclaration({ node, sourceFile });
-        if (exportInfo) {
-          exports.push(exportInfo);
-        }
-      }
+      processExportModifier({ node, sourceFile, collector });
     }
   });
 
-  return {
-    exports,
-    imports,
-    interfaces,
-    classes,
-    functions,
-    constants,
-    typeAliases,
-  };
+  return collector;
 }

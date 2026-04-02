@@ -1,17 +1,68 @@
 import type { PredicateContext } from '../../core/context.js';
 import { createDiagnostic } from '../../core/diagnostics.js';
 import type { Diagnostic } from '../../core/diagnostics.js';
-import type { FileStructure } from '../types.js';
+import type { FileStructure, FunctionInfo } from '../types.js';
+
+type FunctionDef = {
+  name: string;
+  receiveParamOfType?: string;
+  returnValueOfType?: string;
+};
+
+function checkSignature(opts: {
+  funcInfo: FunctionInfo;
+  resolvedName: string;
+  resolvedParamType: string | undefined;
+  resolvedReturnType: string | undefined;
+  context: PredicateContext;
+  conventionName?: string;
+}): Diagnostic[] {
+  const {
+    funcInfo,
+    resolvedName,
+    resolvedParamType,
+    resolvedReturnType,
+    context,
+    conventionName,
+  } = opts;
+  const diagnostics: Diagnostic[] = [];
+
+  if (resolvedParamType) {
+    const hasParam = funcInfo.params.some(
+      (p) => p.typeName === resolvedParamType
+    );
+    if (!hasParam) {
+      diagnostics.push(
+        createDiagnostic({
+          filePath: context.path,
+          predicateName: 'exportFunctions',
+          message: `Function "${resolvedName}" must receive a parameter of type "${resolvedParamType}"`,
+          conventionName,
+          line: funcInfo.pos.line,
+          column: funcInfo.pos.column,
+        })
+      );
+    }
+  }
+
+  if (resolvedReturnType && funcInfo.returnType !== resolvedReturnType) {
+    diagnostics.push(
+      createDiagnostic({
+        filePath: context.path,
+        predicateName: 'exportFunctions',
+        message: `Function "${resolvedName}" must return value of type "${resolvedReturnType}"`,
+        conventionName,
+        line: funcInfo.pos.line,
+        column: funcInfo.pos.column,
+      })
+    );
+  }
+
+  return diagnostics;
+}
 
 export function checkExportFunctions(opts: {
-  expected: (
-    | string
-    | {
-        name: string;
-        receiveParamOfType?: string;
-        returnValueOfType?: string;
-      }
-  )[];
+  expected: (string | FunctionDef)[];
   context: PredicateContext;
   fileStructure: FileStructure;
   conventionName?: string;
@@ -20,14 +71,8 @@ export function checkExportFunctions(opts: {
   const diagnostics: Diagnostic[] = [];
 
   for (const entry of expected) {
-    const definition =
-      typeof entry === 'string'
-        ? {
-            name: entry,
-            receiveParamOfType: undefined,
-            returnValueOfType: undefined,
-          }
-        : entry;
+    const definition: FunctionDef =
+      typeof entry === 'string' ? { name: entry } : entry;
 
     const resolvedName = context.resolveTemplate(definition.name);
     const resolvedParamType = definition.receiveParamOfType
@@ -56,36 +101,16 @@ export function checkExportFunctions(opts: {
       continue;
     }
 
-    if (resolvedParamType) {
-      const hasParam = funcInfo.params.some(
-        (p) => p.typeName === resolvedParamType
-      );
-      if (!hasParam) {
-        diagnostics.push(
-          createDiagnostic({
-            filePath: context.path,
-            predicateName: 'exportFunctions',
-            message: `Function "${resolvedName}" must receive a parameter of type "${resolvedParamType}"`,
-            conventionName,
-            line: funcInfo.pos.line,
-            column: funcInfo.pos.column,
-          })
-        );
-      }
-    }
-
-    if (resolvedReturnType && funcInfo.returnType !== resolvedReturnType) {
-      diagnostics.push(
-        createDiagnostic({
-          filePath: context.path,
-          predicateName: 'exportFunctions',
-          message: `Function "${resolvedName}" must return value of type "${resolvedReturnType}"`,
-          conventionName,
-          line: funcInfo.pos.line,
-          column: funcInfo.pos.column,
-        })
-      );
-    }
+    diagnostics.push(
+      ...checkSignature({
+        funcInfo,
+        resolvedName,
+        resolvedParamType,
+        resolvedReturnType,
+        context,
+        conventionName,
+      })
+    );
   }
 
   return diagnostics;
