@@ -29,6 +29,8 @@ Consistency has always been a crucial part of good API design, but there has nev
 
 Every change needs test coverage. Include Vitest unit tests, but more holistically every feature must also be covered by e2e CLI tests using fixtures, which in this case are actual TypeScript demo projects with their own `konsistent.json` configuration files each.
 
+Additionally, you can use the locally built `konsistent` tool via `pnpm konsistent`.
+
 <!-- opensrc:start -->
 
 ## Source Code Reference
