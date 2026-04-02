@@ -2,6 +2,8 @@ import { dirname, join } from 'node:path';
 import type { ConfigV1, ConventionV1 } from '../config/schema.js';
 import { checkHaveFiles } from '../predicates/have-files.js';
 import { checkHaveType } from '../predicates/have-type.js';
+import { parseFileStructure } from '../typescript/parser.js';
+import { checkExport } from '../typescript/predicates/export.js';
 import type { PredicateContext } from './context.js';
 import type { Diagnostic } from './diagnostics.js';
 import type { FileSystem } from './filesystem.js';
@@ -52,8 +54,20 @@ function checkPredicates(opts: {
 }): Diagnostic[] {
   const { convention, context, fileSystem } = opts;
   const diagnostics: Diagnostic[] = [];
+  const keys = Object.keys(convention.must);
 
-  for (const key of Object.keys(convention.must)) {
+  let fileStructure: ReturnType<typeof parseFileStructure> | undefined;
+
+  const needsTs = keys.some((k) => TS_PREDICATES.has(k));
+  if (needsTs) {
+    const source = fileSystem.readFile(context.path);
+    fileStructure = parseFileStructure({
+      source,
+      filePath: context.path,
+    });
+  }
+
+  for (const key of keys) {
     if (key === 'haveType' && convention.must.haveType) {
       diagnostics.push(
         ...checkHaveType({
@@ -69,6 +83,16 @@ function checkPredicates(opts: {
         ...checkHaveFiles({
           expected: convention.must.haveFiles,
           context,
+          conventionName: convention.name,
+        })
+      );
+    }
+    if (key === 'export' && convention.must.export && fileStructure) {
+      diagnostics.push(
+        ...checkExport({
+          expected: convention.must.export,
+          context,
+          fileStructure,
           conventionName: convention.name,
         })
       );

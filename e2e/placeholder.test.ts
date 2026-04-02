@@ -86,7 +86,8 @@ describe('plugin-system-broken-files fixture', () => {
       expect(error.stdout).toContain('README.md');
       expect(error.stdout).toContain('manifest.json');
       expect(error.stdout).toContain('plugin-directories');
-      expect(error.stdout).toContain('Found 2 problems (2 errors)');
+      expect(error.stdout).toContain('Missing export "deactivate"');
+      expect(error.stdout).toContain('Found 3 problems (3 errors)');
     }
   });
 });
