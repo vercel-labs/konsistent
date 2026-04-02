@@ -101,6 +101,33 @@ describe('ai-toolkit fixture', () => {
   });
 });
 
+describe('ai-toolkit-broken-interfaces fixture', () => {
+  const cwd = resolve(fixturesDir, 'ai-toolkit-broken-interfaces');
+
+  it('konsistent check exits 1 with interface and import violations', async () => {
+    try {
+      await runCli({ args: ['check'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain(
+        'Interface "OpenaiProvider" must extend "ProviderV1"'
+      );
+      expect(error.stdout).toContain(
+        'Missing export interface "AnthropicProvider"'
+      );
+      expect(error.stdout).toContain('Missing import type "ProviderV1"');
+      expect(error.stdout).toContain('Found 4 problems (4 errors)');
+    }
+  });
+});
+
 describe('ai-toolkit-broken-exports fixture', () => {
   const cwd = resolve(fixturesDir, 'ai-toolkit-broken-exports');
 

@@ -2,12 +2,18 @@ import type { FileSystem } from './filesystem.js';
 import { PlaceholderValue } from './placeholder.js';
 
 const PLACEHOLDER_REGEX = /\{([a-zA-Z][a-zA-Z0-9]*)\}/g;
+const TEMPLATE_IN_PATH_REGEX = /\$\{([a-zA-Z][a-zA-Z0-9]*)\}/g;
 const VALID_VALUE_REGEX = /^[a-zA-Z0-9_-]+$/;
 const ESCAPE_REGEX = /[.*+?^${}()|[\]\\]/g;
 
 export interface MatchedPath {
   path: string;
   placeholders: Record<string, PlaceholderValue>;
+}
+
+function normalizeTemplatesInPath(pattern: string): string {
+  TEMPLATE_IN_PATH_REGEX.lastIndex = 0;
+  return pattern.replace(TEMPLATE_IN_PATH_REGEX, '{$1}');
 }
 
 export function hasPlaceholders(pattern: string): boolean {
@@ -109,7 +115,8 @@ export async function matchPaths(opts: {
   patterns: string[];
   fileSystem: FileSystem;
 }): Promise<MatchedPath[]> {
-  const { patterns, fileSystem } = opts;
+  const { patterns: rawPatterns, fileSystem } = opts;
+  const patterns = rawPatterns.map(normalizeTemplatesInPath);
 
   const anyPlaceholders = patterns.some((p) => hasPlaceholders(p));
   if (!anyPlaceholders) {
