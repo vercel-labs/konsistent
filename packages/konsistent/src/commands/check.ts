@@ -17,6 +17,10 @@ import {
 } from '../core/truncate-diagnostics.js';
 
 const checkArgs = {
+  'config-path': {
+    type: 'string' as const,
+    description: 'Path to konsistent.json config file',
+  },
   format: {
     type: 'string' as const,
     description: 'Output format (default, json, github, markdown)',
@@ -32,9 +36,13 @@ const checkArgs = {
     description: 'Maximum number of diagnostics to report',
     default: '20',
   },
+  colors: {
+    type: 'boolean' as const,
+    description: 'Enable or disable colored output',
+  },
 };
 
-function createReporter(opts: { format: string }): Reporter {
+function createReporter(opts: { format: string; colors?: boolean }): Reporter {
   if (opts.format === 'json') {
     return createJsonReporter();
   }
@@ -44,7 +52,7 @@ function createReporter(opts: { format: string }): Reporter {
   if (opts.format === 'markdown') {
     return createMarkdownReporter();
   }
-  return createDefaultReporter();
+  return createDefaultReporter({ colors: opts.colors });
 }
 
 export default defineCommand({
@@ -54,7 +62,7 @@ export default defineCommand({
   },
   args: checkArgs,
   async run({ args }) {
-    const result = await loadConfig({});
+    const result = await loadConfig({ configPath: args['config-path'] });
     if ('error' in result) {
       console.error(pc.red(result.error));
       process.exit(1);
@@ -75,7 +83,10 @@ export default defineCommand({
         max: maxDiags,
       });
 
-      const reporter = createReporter({ format: args.format });
+      const reporter = createReporter({
+        format: args.format,
+        colors: args.colors,
+      });
       console.log(reporter.format(reported));
 
       if (omitted > 0) {

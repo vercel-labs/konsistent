@@ -242,6 +242,60 @@ describe('createDefaultReporter', () => {
   });
 });
 
+describe('createDefaultReporter with colors disabled', () => {
+  const reporter = createDefaultReporter({ colors: false });
+
+  it('does not include ANSI escape codes in output', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveType',
+        message: 'Missing export',
+        conventionName: 'provider-packages',
+        line: 5,
+      },
+    ];
+    const output = reporter.format(diagnostics);
+    expect(output.includes('\x1b[')).toBe(false);
+  });
+
+  it('still contains all diagnostic content', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/bar.ts',
+        predicateName: 'haveType',
+        message: 'Something wrong',
+        conventionName: 'my-convention',
+      },
+    ];
+    const output = reporter.format(diagnostics);
+    expect(output).toContain('src/bar.ts');
+    expect(output).toContain('error');
+    expect(output).toContain('Something wrong');
+    expect(output).toContain('[my-convention]');
+    expect(output).toContain('Found 1 problems (1 errors)');
+  });
+
+  it('returns plain severity without red', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveType',
+        message: 'test',
+      },
+    ];
+    const output = reporter.format(diagnostics);
+    const lines = output.split('\n');
+    const diagLine = lines.find((l) => l.includes('test'));
+    expect(diagLine).toBeDefined();
+    expect(diagLine).toContain('error');
+    expect(diagLine).toBe('  -  error  test');
+  });
+});
+
 describe('createJsonReporter', () => {
   const reporter = createJsonReporter();
 

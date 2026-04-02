@@ -33,28 +33,38 @@ function maxLineWidth(diagnostics: Diagnostic[]): number {
   }, 1);
 }
 
+type ColorFn = (s: string) => string;
+
+const identity: ColorFn = (s: string) => s;
+
 function formatDiagnosticLine(opts: {
   diagnostic: Diagnostic;
   lineWidth: number;
+  red: ColorFn;
+  dim: ColorFn;
 }): string {
-  const { diagnostic: d, lineWidth } = opts;
+  const { diagnostic: d, lineWidth, red, dim } = opts;
   const lineStr = d.line != null ? String(d.line) : '-';
   const paddedLine = lineStr.padStart(lineWidth);
-  const severity = pc.red(d.severity);
+  const severity = red(d.severity);
   const convention =
-    d.conventionName != null ? `  ${pc.dim(`[${d.conventionName}]`)}` : '';
+    d.conventionName != null ? `  ${dim(`[${d.conventionName}]`)}` : '';
   return `  ${paddedLine}  ${severity}  ${d.message}${convention}`;
 }
 
 function formatFileGroup(opts: {
   filePath: string;
   diagnostics: Diagnostic[];
+  bold: ColorFn;
+  red: ColorFn;
+  dim: ColorFn;
 }): string[] {
+  const { bold, red, dim } = opts;
   const sorted = sortDiagnostics(opts.diagnostics);
   const lineWidth = maxLineWidth(sorted);
-  const lines: string[] = [pc.bold(opts.filePath)];
+  const lines: string[] = [bold(opts.filePath)];
   for (const d of sorted) {
-    lines.push(formatDiagnosticLine({ diagnostic: d, lineWidth }));
+    lines.push(formatDiagnosticLine({ diagnostic: d, lineWidth, red, dim }));
   }
   lines.push('');
   return lines;
@@ -141,7 +151,12 @@ export function createMarkdownReporter(): Reporter {
   };
 }
 
-export function createDefaultReporter(): Reporter {
+export function createDefaultReporter(opts?: { colors?: boolean }): Reporter {
+  const useColors = opts?.colors ?? true;
+  const bold = useColors ? pc.bold : identity;
+  const red = useColors ? pc.red : identity;
+  const dim = useColors ? pc.dim : identity;
+
   return {
     format(diagnostics: Diagnostic[]): string {
       if (diagnostics.length === 0) {
@@ -151,7 +166,15 @@ export function createDefaultReporter(): Reporter {
       const grouped = groupByFile(diagnostics);
       const lines: string[] = [];
       for (const [filePath, fileDiags] of grouped) {
-        lines.push(...formatFileGroup({ filePath, diagnostics: fileDiags }));
+        lines.push(
+          ...formatFileGroup({
+            filePath,
+            diagnostics: fileDiags,
+            bold,
+            red,
+            dim,
+          })
+        );
       }
 
       const errorCount = diagnostics.filter(

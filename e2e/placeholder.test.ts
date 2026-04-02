@@ -386,6 +386,60 @@ describe('--verbose flag', () => {
   });
 });
 
+describe('--config-path flag', () => {
+  it('loads config from a custom path', async () => {
+    const configPath = resolve(fixturesDir, 'empty-config/konsistent.json');
+    const cwd = resolve(fixturesDir, 'empty-config');
+    await expect(
+      runCli({ args: ['check', '--config-path', configPath], cwd })
+    ).resolves.not.toThrow();
+  });
+
+  it('loads config from a custom path for validate', async () => {
+    const configPath = resolve(fixturesDir, 'empty-config/konsistent.json');
+    const { stdout } = await runCli({
+      args: ['validate', '--config-path', configPath],
+      cwd: fixturesDir,
+    });
+    expect(stdout).toContain('Configuration is valid');
+  });
+
+  it('exits 1 with error when config-path does not exist', async () => {
+    try {
+      await runCli({
+        args: ['check', '--config-path', '/nonexistent/konsistent.json'],
+        cwd: fixturesDir,
+      });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as { stderr: string; code: number; status: number };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stderr).toContain('Could not read config file');
+    }
+  });
+});
+
+describe('--colors flag', () => {
+  const cwd = resolve(fixturesDir, 'plugin-system-broken-files');
+
+  it('--colors=false strips ANSI escape codes from default output', async () => {
+    try {
+      await runCli({ args: ['check', '--colors', 'false'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout.includes('\x1b[')).toBe(false);
+      expect(error.stdout).toContain('Missing required file');
+    }
+  });
+});
+
 describe('--max-diagnostics flag', () => {
   const cwd = resolve(fixturesDir, 'class-and-function-contracts-broken');
 
