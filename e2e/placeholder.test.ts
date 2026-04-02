@@ -92,3 +92,36 @@ describe('plugin-system-broken-files fixture', () => {
     }
   });
 });
+
+describe('ai-toolkit fixture', () => {
+  const cwd = resolve(fixturesDir, 'ai-toolkit');
+
+  it('konsistent check exits 0 when all conventions pass', async () => {
+    await expect(runCli({ args: ['check'], cwd })).resolves.not.toThrow();
+  });
+});
+
+describe('ai-toolkit-broken-exports fixture', () => {
+  const cwd = resolve(fixturesDir, 'ai-toolkit-broken-exports');
+
+  it('konsistent check exits 1 with export violations', async () => {
+    try {
+      await runCli({ args: ['check'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain('Missing export "openai"');
+      expect(error.stdout).toContain(
+        'Missing export type "OpenaiProviderSettings"'
+      );
+      expect(error.stdout).toContain('Missing export type "AnthropicProvider"');
+      expect(error.stdout).toContain('Found 3 problems (3 errors)');
+    }
+  });
+});
