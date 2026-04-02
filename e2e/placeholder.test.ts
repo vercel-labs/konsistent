@@ -186,3 +186,44 @@ describe('ai-toolkit-broken-exports fixture', () => {
     }
   });
 });
+
+describe('class-and-function-contracts fixture', () => {
+  const cwd = resolve(fixturesDir, 'class-and-function-contracts');
+
+  it('konsistent check exits 0 when all conventions pass', async () => {
+    await expect(runCli({ args: ['check'], cwd })).resolves.not.toThrow();
+  });
+});
+
+describe('class-and-function-contracts-broken fixture', () => {
+  const cwd = resolve(fixturesDir, 'class-and-function-contracts-broken');
+
+  it('konsistent check exits 1 with class and function contract violations', async () => {
+    try {
+      await runCli({ args: ['check'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain(
+        'Class "CacheAdapter" must extend "BaseAdapter"'
+      );
+      expect(error.stdout).toContain('Missing import type "BaseAdapter"');
+      expect(error.stdout).toContain(
+        'Class "DatabaseAdapter" must extend "BaseAdapter"'
+      );
+      expect(error.stdout).toContain(
+        'Function "createDatabaseAdapter" must receive a parameter of type "DatabaseAdapterConfig"'
+      );
+      expect(error.stdout).toContain(
+        'Function "createDatabaseAdapter" must return value of type "DatabaseAdapter"'
+      );
+      expect(error.stdout).toContain('Found 5 problems (5 errors)');
+    }
+  });
+});
