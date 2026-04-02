@@ -10,6 +10,7 @@ import { checkExportInterfaces } from '../typescript/predicates/export-interface
 import { checkExportTypes } from '../typescript/predicates/export-types.js';
 import { checkExport } from '../typescript/predicates/export.js';
 import { checkImportTypes } from '../typescript/predicates/import-types.js';
+import { checkImport } from '../typescript/predicates/import.js';
 import type { FileStructure } from '../typescript/types.js';
 import type { PredicateContext } from './context.js';
 import type { Diagnostic } from './diagnostics.js';
@@ -106,6 +107,14 @@ function checkTsPredicate(opts: {
   if (key === 'exportInterfaces' && convention.must.exportInterfaces) {
     return checkExportInterfaces({
       expected: convention.must.exportInterfaces,
+      context,
+      fileStructure,
+      conventionName,
+    });
+  }
+  if (key === 'import' && convention.must['import']) {
+    return checkImport({
+      expected: convention.must['import'],
       context,
       fileStructure,
       conventionName,

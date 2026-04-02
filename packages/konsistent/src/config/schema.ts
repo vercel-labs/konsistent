@@ -45,6 +45,7 @@ export const MustPredicatesV1Schema = z
     exportClasses: z
       .array(z.union([z.string(), ClassDefinitionV1Schema]))
       .optional(),
+    import: z.array(z.union([z.string(), ImportDefinitionV1Schema])).optional(),
     importTypes: z
       .array(z.union([z.string(), ImportDefinitionV1Schema]))
       .optional(),
