@@ -1,5 +1,9 @@
 import { dirname, join } from 'node:path';
-import type { ConfigV1, ConventionV1 } from '../config/schema.js';
+import type {
+  ConfigV1,
+  MustBlockV1,
+  MustPredicatesV1,
+} from '../config/schema.js';
 import { checkHaveFiles } from '../predicates/have-files.js';
 import { checkHaveType } from '../predicates/have-type.js';
 import { parseFileStructure } from '../typescript/parser.js';
@@ -55,90 +59,133 @@ function buildContext(opts: {
   };
 }
 
+function normalizeMustBlocks(
+  must: MustPredicatesV1 | MustBlockV1[]
+): MustBlockV1[] {
+  if (Array.isArray(must)) {
+    return must;
+  }
+  return [{ must }];
+}
+
+function evaluateCondition(opts: {
+  block: MustBlockV1;
+  context: PredicateContext;
+}): boolean {
+  const { block, context } = opts;
+  if (!block.if) {
+    return true;
+  }
+  const resolvedPath = context.resolveTemplate(block.if.hasFile);
+  return context.fileExists(resolvedPath);
+}
+
+const TS_PREDICATE_HANDLERS: Record<
+  string,
+  (opts: {
+    must: MustPredicatesV1;
+    conventionName?: string;
+    context: PredicateContext;
+    fileStructure: FileStructure;
+  }) => Diagnostic[]
+> = {
+  export: ({ must, context, fileStructure, conventionName }) =>
+    must.export
+      ? checkExport({
+          expected: must.export,
+          context,
+          fileStructure,
+          conventionName,
+        })
+      : [],
+  exportTypes: ({ must, context, fileStructure, conventionName }) =>
+    must.exportTypes
+      ? checkExportTypes({
+          expected: must.exportTypes,
+          context,
+          fileStructure,
+          conventionName,
+        })
+      : [],
+  exportConstants: ({ must, context, fileStructure, conventionName }) =>
+    must.exportConstants
+      ? checkExportConstants({
+          expected: must.exportConstants,
+          context,
+          fileStructure,
+          conventionName,
+        })
+      : [],
+  exportFunctions: ({ must, context, fileStructure, conventionName }) =>
+    must.exportFunctions
+      ? checkExportFunctions({
+          expected: must.exportFunctions,
+          context,
+          fileStructure,
+          conventionName,
+        })
+      : [],
+  exportClasses: ({ must, context, fileStructure, conventionName }) =>
+    must.exportClasses
+      ? checkExportClasses({
+          expected: must.exportClasses,
+          context,
+          fileStructure,
+          conventionName,
+        })
+      : [],
+  exportInterfaces: ({ must, context, fileStructure, conventionName }) =>
+    must.exportInterfaces
+      ? checkExportInterfaces({
+          expected: must.exportInterfaces,
+          context,
+          fileStructure,
+          conventionName,
+        })
+      : [],
+  import: ({ must, context, fileStructure, conventionName }) =>
+    must.import
+      ? checkImport({
+          expected: must.import,
+          context,
+          fileStructure,
+          conventionName,
+        })
+      : [],
+  importTypes: ({ must, context, fileStructure, conventionName }) =>
+    must.importTypes
+      ? checkImportTypes({
+          expected: must.importTypes,
+          context,
+          fileStructure,
+          conventionName,
+        })
+      : [],
+};
+
 function checkTsPredicate(opts: {
   key: string;
-  convention: ConventionV1;
+  must: MustPredicatesV1;
+  conventionName?: string;
   context: PredicateContext;
   fileStructure: FileStructure;
 }): Diagnostic[] {
-  const { key, convention, context, fileStructure } = opts;
-  const conventionName = convention.name;
-
-  if (key === 'export' && convention.must.export) {
-    return checkExport({
-      expected: convention.must.export,
-      context,
-      fileStructure,
-      conventionName,
-    });
+  const handler = TS_PREDICATE_HANDLERS[opts.key];
+  if (!handler) {
+    return [];
   }
-  if (key === 'exportTypes' && convention.must.exportTypes) {
-    return checkExportTypes({
-      expected: convention.must.exportTypes,
-      context,
-      fileStructure,
-      conventionName,
-    });
-  }
-  if (key === 'exportConstants' && convention.must.exportConstants) {
-    return checkExportConstants({
-      expected: convention.must.exportConstants,
-      context,
-      fileStructure,
-      conventionName,
-    });
-  }
-  if (key === 'exportFunctions' && convention.must.exportFunctions) {
-    return checkExportFunctions({
-      expected: convention.must.exportFunctions,
-      context,
-      fileStructure,
-      conventionName,
-    });
-  }
-  if (key === 'exportClasses' && convention.must.exportClasses) {
-    return checkExportClasses({
-      expected: convention.must.exportClasses,
-      context,
-      fileStructure,
-      conventionName,
-    });
-  }
-  if (key === 'exportInterfaces' && convention.must.exportInterfaces) {
-    return checkExportInterfaces({
-      expected: convention.must.exportInterfaces,
-      context,
-      fileStructure,
-      conventionName,
-    });
-  }
-  if (key === 'import' && convention.must['import']) {
-    return checkImport({
-      expected: convention.must['import'],
-      context,
-      fileStructure,
-      conventionName,
-    });
-  }
-  if (key === 'importTypes' && convention.must.importTypes) {
-    return checkImportTypes({
-      expected: convention.must.importTypes,
-      context,
-      fileStructure,
-      conventionName,
-    });
-  }
-  return [];
+  return handler(opts);
 }
 
 function checkPredicates(opts: {
-  convention: ConventionV1;
+  must: MustPredicatesV1;
+  conventionName?: string;
   context: PredicateContext;
   fileSystem: FileSystem;
 }): Diagnostic[] {
-  const { convention, context, fileSystem } = opts;
+  const { must, conventionName, context, fileSystem } = opts;
   const diagnostics: Diagnostic[] = [];
-  const keys = Object.keys(convention.must);
+  const keys = Object.keys(must);
 
   let fileStructure: ReturnType<typeof parseFileStructure> | undefined;
 
@@ -152,22 +199,22 @@ function checkPredicates(opts: {
   }
 
   for (const key of keys) {
-    if (key === 'haveType' && convention.must.haveType) {
+    if (key === 'haveType' && must.haveType) {
       diagnostics.push(
         ...checkHaveType({
-          expected: convention.must.haveType,
+          expected: must.haveType,
           context,
           fileSystem,
-          conventionName: convention.name,
+          conventionName,
         })
       );
     }
-    if (key === 'haveFiles' && convention.must.haveFiles) {
+    if (key === 'haveFiles' && must.haveFiles) {
       diagnostics.push(
         ...checkHaveFiles({
-          expected: convention.must.haveFiles,
+          expected: must.haveFiles,
           context,
-          conventionName: convention.name,
+          conventionName,
         })
       );
     }
@@ -175,7 +222,8 @@ function checkPredicates(opts: {
       diagnostics.push(
         ...checkTsPredicate({
           key,
-          convention,
+          must,
+          conventionName,
           context,
           fileStructure,
         })
@@ -199,10 +247,24 @@ export async function run(opts: {
       : [convention.paths];
 
     const matched = await matchPaths({ patterns, fileSystem });
+    const blocks = normalizeMustBlocks(convention.must);
 
     for (const entry of matched) {
       const context = buildContext({ matched: entry, fileSystem });
-      diagnostics.push(...checkPredicates({ convention, context, fileSystem }));
+
+      for (const block of blocks) {
+        if (!evaluateCondition({ block, context })) {
+          continue;
+        }
+        diagnostics.push(
+          ...checkPredicates({
+            must: block.must,
+            conventionName: convention.name,
+            context,
+            fileSystem,
+          })
+        );
+      }
     }
   }
 

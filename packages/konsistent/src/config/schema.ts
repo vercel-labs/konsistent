@@ -52,6 +52,11 @@ export const MustPredicatesV1Schema = z
   })
   .passthrough();
 
+export const MustBlockV1Schema = z.object({
+  if: z.object({ hasFile: z.string() }).optional(),
+  must: MustPredicatesV1Schema,
+});
+
 export const ConventionV1Schema = z.object({
   name: z
     .string()
@@ -59,7 +64,7 @@ export const ConventionV1Schema = z.object({
     .optional(),
   description: z.string().optional(),
   paths: z.union([z.string(), z.array(z.string())]),
-  must: MustPredicatesV1Schema,
+  must: z.union([MustPredicatesV1Schema, z.array(MustBlockV1Schema)]),
 });
 
 export const ConfigV1Schema = z.object({
@@ -71,3 +76,4 @@ export const ConfigV1Schema = z.object({
 export type ConfigV1 = z.infer<typeof ConfigV1Schema>;
 export type ConventionV1 = z.infer<typeof ConventionV1Schema>;
 export type MustPredicatesV1 = z.infer<typeof MustPredicatesV1Schema>;
+export type MustBlockV1 = z.infer<typeof MustBlockV1Schema>;

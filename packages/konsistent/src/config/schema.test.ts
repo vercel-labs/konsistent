@@ -121,4 +121,46 @@ describe('ConfigV1Schema', () => {
     });
     expect(result.success).toBe(true);
   });
+
+  it('accepts must as an array of MustBlocks', () => {
+    const result = ConfigV1Schema.safeParse({
+      version: 'v1',
+      conventions: [
+        {
+          paths: 'src/*.ts',
+          must: [
+            { must: { haveType: 'file' } },
+            { if: { hasFile: 'index.ts' }, must: { haveType: 'file' } },
+          ],
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts a MustBlock without if condition', () => {
+    const result = ConfigV1Schema.safeParse({
+      version: 'v1',
+      conventions: [
+        {
+          paths: 'src/*.ts',
+          must: [{ must: { haveType: 'file' } }],
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects a MustBlock array with missing must property', () => {
+    const result = ConfigV1Schema.safeParse({
+      version: 'v1',
+      conventions: [
+        {
+          paths: 'src/*.ts',
+          must: [{ if: { hasFile: 'index.ts' } }],
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
 });

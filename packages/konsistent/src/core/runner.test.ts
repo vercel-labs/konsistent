@@ -128,4 +128,124 @@ describe('run', () => {
     const result = await run({ config, fileSystem: fs });
     expect(result).toEqual([]);
   });
+
+  it('evaluates must block when if.hasFile condition is met', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'conditional-rule',
+          paths: 'src/**/*.ts',
+          must: [
+            {
+              if: { hasFile: 'schema.ts' },
+              must: { haveType: 'directory' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([['src/**/*.ts', ['src/models/index.ts']]]),
+      files: new Set(['src/models/index.ts', 'src/models/schema.ts']),
+    });
+    const result = await run({ config, fileSystem: fs });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe('Expected a directory but found a file');
+    expect(result[0].conventionName).toBe('conditional-rule');
+  });
+
+  it('skips must block when if.hasFile condition is not met', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'conditional-rule',
+          paths: 'src/**/*.ts',
+          must: [
+            {
+              if: { hasFile: 'schema.ts' },
+              must: { haveType: 'directory' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([['src/**/*.ts', ['src/models/index.ts']]]),
+      files: new Set(['src/models/index.ts']),
+    });
+    const result = await run({ config, fileSystem: fs });
+    expect(result).toEqual([]);
+  });
+
+  it('evaluates must block unconditionally when no if is present', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'unconditional-rule',
+          paths: 'src/**/*.ts',
+          must: [{ must: { haveType: 'file' } }],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([['src/**/*.ts', ['src/utils']]]),
+      directories: new Set(['src/utils']),
+    });
+    const result = await run({ config, fileSystem: fs });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe('Expected a file but found a directory');
+  });
+
+  it('supports template expansion in if.hasFile', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'template-rule',
+          paths: 'src/{name}/index.ts',
+          must: [
+            {
+              if: { hasFile: '${name}.test.ts' },
+              must: { haveType: 'directory' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([['src/*/index.ts', ['src/utils/index.ts']]]),
+      files: new Set(['src/utils/index.ts', 'src/utils/utils.test.ts']),
+    });
+    const result = await run({ config, fileSystem: fs });
+    expect(result).toHaveLength(1);
+    expect(result[0].conventionName).toBe('template-rule');
+  });
+
+  it('evaluates multiple must blocks independently', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'multi-block',
+          paths: 'src/**/*.ts',
+          must: [
+            { must: { haveType: 'file' } },
+            {
+              if: { hasFile: 'missing.ts' },
+              must: { haveType: 'directory' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([['src/**/*.ts', ['src/a.ts']]]),
+      files: new Set(['src/a.ts']),
+    });
+    const result = await run({ config, fileSystem: fs });
+    expect(result).toEqual([]);
+  });
 });
