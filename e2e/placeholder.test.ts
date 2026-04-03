@@ -17,9 +17,14 @@ const githubAnnotationPattern = /^::error file=.+::.+/;
 const ansiEscapePattern = /\x1b\[/;
 const summaryPattern = /Checked \d+ files? in \d+(ms|\.\d+s)\./;
 
-function runCli(opts: { args?: string[]; cwd?: string }) {
+function runCli(opts: {
+  args?: string[];
+  cwd?: string;
+  env?: Record<string, string>;
+}) {
   return execFile('node', [cliBinary, ...(opts.args ?? [])], {
     cwd: opts.cwd,
+    env: { ...process.env, GITHUB_ACTIONS: '', ...opts.env },
   });
 }
 

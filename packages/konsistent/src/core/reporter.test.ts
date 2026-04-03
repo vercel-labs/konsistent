@@ -117,7 +117,13 @@ describe('createDefaultReporter', () => {
     const output = reporter.format(makeResult({ diagnostics }));
     const diagLine = output.split('\n').find((l) => l.includes('Some problem'));
     expect(diagLine).toBeDefined();
-    expect(diagLine).not.toContain('[');
+    const esc = String.fromCharCode(27);
+    const stripped = diagLine?.replace(
+      new RegExp(`${esc}\\[[0-9;]*m`, 'g'),
+      ''
+    );
+
+    expect(stripped).not.toContain('[');
   });
 
   it('sorts file-level violations before line-specific ones', () => {
