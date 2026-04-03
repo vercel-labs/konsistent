@@ -17,7 +17,7 @@ Check options:
   --format <format>       Output format (default, json, github, markdown)
   --verbose               Show execution time and expanded details
   --max-diagnostics <n>   Maximum number of diagnostics to report (default: 20)
-  --colors                Enable or disable colored output
+  --no-colors             Disable colored output (only for default format)
 
 Validate options:
   --config-path <path>    Path to konsistent.json config file
