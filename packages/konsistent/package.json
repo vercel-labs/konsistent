@@ -1,5 +1,6 @@
 {
   "name": "konsistent",
+  "description": "konsistent is a CLI tool that enforces structural conventions in TypeScript codebases.",
   "version": "0.0.0",
   "type": "module",
   "license": "MIT",
