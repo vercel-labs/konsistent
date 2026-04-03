@@ -77,6 +77,16 @@ When everything passes:
 Checked 6 files in 8ms. No violations found.
 ```
 
+## Commands
+
+| Command | Description |
+| --- | --- |
+| `konsistent` | Shorthand for `konsistent check` |
+| `konsistent check` | Check structural conventions |
+| `konsistent validate` | Validate the `konsistent.json` configuration file |
+| `konsistent help` | Show a quick reference of all commands and options |
+| `konsistent version` | Print the version number |
+
 ## CI integration
 
 In GitHub Actions, konsistent automatically emits `::error` annotations so violations appear inline on pull request diffs. No flags needed.
