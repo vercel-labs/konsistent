@@ -20,6 +20,11 @@
           "description": {
             "type": "string"
           },
+          "severity": {
+            "type": "string",
+            "enum": ["error", "warning"],
+            "default": "error"
+          },
           "paths": {
             "anyOf": [
               {

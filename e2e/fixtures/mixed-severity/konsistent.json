@@ -1,0 +1,28 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "module-directories",
+      "paths": "modules/{moduleName}",
+      "must": {
+        "haveType": "directory"
+      }
+    },
+    {
+      "name": "module-must-have-index",
+      "severity": "error",
+      "paths": "modules/{moduleName}",
+      "must": {
+        "haveFiles": ["index.ts"]
+      }
+    },
+    {
+      "name": "module-should-have-readme",
+      "severity": "warning",
+      "paths": "modules/{moduleName}",
+      "must": {
+        "haveFiles": ["README.md"]
+      }
+    }
+  ]
+}

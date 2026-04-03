@@ -439,6 +439,80 @@ describe('run', () => {
   });
 });
 
+describe('severity propagation', () => {
+  it('produces warning diagnostics when convention severity is warning', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'warn-rule',
+          severity: 'warning',
+          paths: 'src/**/*.ts',
+          must: { haveType: 'file' },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([['src/**/*.ts', ['src/utils']]]),
+      directories: new Set(['src/utils']),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].severity).toBe('warning');
+  });
+
+  it('defaults to error severity when convention omits severity', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'error-rule',
+          paths: 'src/**/*.ts',
+          must: { haveType: 'file' },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([['src/**/*.ts', ['src/utils']]]),
+      directories: new Set(['src/utils']),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].severity).toBe('error');
+  });
+
+  it('produces mixed severities from different conventions', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'error-rule',
+          severity: 'error',
+          paths: 'src/**/*.ts',
+          must: { haveType: 'file' },
+        },
+        {
+          name: 'warn-rule',
+          severity: 'warning',
+          paths: 'lib/**/*.ts',
+          must: { haveType: 'file' },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ['src/**/*.ts', ['src/dir']],
+        ['lib/**/*.ts', ['lib/dir']],
+      ]),
+      directories: new Set(['src/dir', 'lib/dir']),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(2);
+    const severities = diagnostics.map((d) => d.severity).sort();
+    expect(severities).toEqual(['error', 'warning']);
+  });
+});
+
 describe('caching behavior', () => {
   it('parses the same file only once across multiple conventions', async () => {
     const readFileSpy = vi.fn().mockReturnValue('export const x = 1;');

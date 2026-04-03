@@ -11,6 +11,16 @@ const emptyConfigPath = resolve(
   '../../../../e2e/fixtures/empty-config'
 );
 
+const warningsOnlyPath = resolve(
+  import.meta.dirname,
+  '../../../../e2e/fixtures/warnings-only'
+);
+
+const mixedSeverityPath = resolve(
+  import.meta.dirname,
+  '../../../../e2e/fixtures/mixed-severity'
+);
+
 afterEach(() => {
   vi.restoreAllMocks();
 });
@@ -21,6 +31,92 @@ describe('check command', () => {
     await expect(
       runCommand(checkCommand, { rawArgs: [] })
     ).resolves.not.toThrow();
+  });
+});
+
+describe('check command --error-on-warnings', () => {
+  it('exits 1 when warnings exist and flag is set', async () => {
+    vi.spyOn(process, 'cwd').mockReturnValue(warningsOnlyPath);
+    const exitSpy = vi
+      .spyOn(process, 'exit')
+      .mockImplementation(() => undefined as never);
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    await runCommand(checkCommand, { rawArgs: ['--error-on-warnings'] });
+    expect(exitSpy).toHaveBeenCalledWith(1);
+  });
+
+  it('exits 0 when no diagnostics and flag is set', async () => {
+    vi.spyOn(process, 'cwd').mockReturnValue(emptyConfigPath);
+    const exitSpy = vi
+      .spyOn(process, 'exit')
+      .mockImplementation(() => undefined as never);
+    await runCommand(checkCommand, { rawArgs: ['--error-on-warnings'] });
+    expect(exitSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('check command --diagnostic-level', () => {
+  it('skips warning conventions when set to error', async () => {
+    vi.spyOn(process, 'cwd').mockReturnValue(warningsOnlyPath);
+    const exitSpy = vi
+      .spyOn(process, 'exit')
+      .mockImplementation(() => undefined as never);
+    const writeSpy = vi
+      .spyOn(process.stdout, 'write')
+      .mockImplementation(() => true);
+    await runCommand(checkCommand, {
+      rawArgs: ['--diagnostic-level', 'error'],
+    });
+    expect(exitSpy).not.toHaveBeenCalled();
+    const output = writeSpy.mock.calls.map((c) => c[0]).join('');
+    expect(output).not.toContain('warning');
+  });
+
+  it('evaluates warning conventions when set to warning', async () => {
+    vi.spyOn(process, 'cwd').mockReturnValue(warningsOnlyPath);
+    const exitSpy = vi
+      .spyOn(process, 'exit')
+      .mockImplementation(() => undefined as never);
+    const writeSpy = vi
+      .spyOn(process.stdout, 'write')
+      .mockImplementation(() => true);
+    await runCommand(checkCommand, {
+      rawArgs: ['--diagnostic-level', 'warning'],
+    });
+    expect(exitSpy).not.toHaveBeenCalled();
+    const output = writeSpy.mock.calls.map((c) => c[0]).join('');
+    expect(output).toContain('warning');
+  });
+
+  it('still reports errors when set to error', async () => {
+    vi.spyOn(process, 'cwd').mockReturnValue(mixedSeverityPath);
+    const exitSpy = vi
+      .spyOn(process, 'exit')
+      .mockImplementation(() => undefined as never);
+    const writeSpy = vi
+      .spyOn(process.stdout, 'write')
+      .mockImplementation(() => true);
+    await runCommand(checkCommand, {
+      rawArgs: ['--diagnostic-level', 'error'],
+    });
+    expect(exitSpy).toHaveBeenCalledWith(1);
+    const output = writeSpy.mock.calls.map((c) => c[0]).join('');
+    expect(output).toContain('error');
+    expect(output).not.toContain('warning');
+  });
+
+  it('defaults to warning when not specified', async () => {
+    vi.spyOn(process, 'cwd').mockReturnValue(warningsOnlyPath);
+    const exitSpy = vi
+      .spyOn(process, 'exit')
+      .mockImplementation(() => undefined as never);
+    const writeSpy = vi
+      .spyOn(process.stdout, 'write')
+      .mockImplementation(() => true);
+    await runCommand(checkCommand, { rawArgs: [] });
+    expect(exitSpy).not.toHaveBeenCalled();
+    const output = writeSpy.mock.calls.map((c) => c[0]).join('');
+    expect(output).toContain('warning');
   });
 });
 

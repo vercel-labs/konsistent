@@ -1,13 +1,14 @@
 import type { PredicateContext } from '../core/context.js';
 import { createDiagnostic } from '../core/diagnostics.js';
-import type { Diagnostic } from '../core/diagnostics.js';
+import type { Diagnostic, DiagnosticSeverity } from '../core/diagnostics.js';
 
 export function checkHaveFiles(opts: {
   expected: string[];
   context: PredicateContext;
   conventionName?: string;
+  severity?: DiagnosticSeverity;
 }): Diagnostic[] {
-  const { expected, context, conventionName } = opts;
+  const { expected, context, conventionName, severity } = opts;
   const diagnostics: Diagnostic[] = [];
 
   for (const fileTemplate of expected) {
@@ -19,6 +20,7 @@ export function checkHaveFiles(opts: {
           predicateName: 'haveFiles',
           message: `Missing required file: ${resolved}`,
           conventionName,
+          severity,
         })
       );
     }

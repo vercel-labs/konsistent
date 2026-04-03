@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "module-should-have-readme",
+      "severity": "warning",
+      "paths": "modules/{moduleName}",
+      "must": {
+        "haveFiles": ["README.md"]
+      }
+    }
+  ]
+}

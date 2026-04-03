@@ -1,6 +1,6 @@
 import type { PredicateContext } from '../../core/context.js';
 import { createDiagnostic } from '../../core/diagnostics.js';
-import type { Diagnostic } from '../../core/diagnostics.js';
+import type { Diagnostic, DiagnosticSeverity } from '../../core/diagnostics.js';
 import type { FileStructure } from '../types.js';
 
 export function checkExportInterfaces(opts: {
@@ -8,8 +8,9 @@ export function checkExportInterfaces(opts: {
   context: PredicateContext;
   fileStructure: FileStructure;
   conventionName?: string;
+  severity?: DiagnosticSeverity;
 }): Diagnostic[] {
-  const { expected, context, fileStructure, conventionName } = opts;
+  const { expected, context, fileStructure, conventionName, severity } = opts;
   const diagnostics: Diagnostic[] = [];
 
   for (const entry of expected) {
@@ -33,6 +34,7 @@ export function checkExportInterfaces(opts: {
           predicateName: 'exportInterfaces',
           message: `Missing export interface "${resolvedName}"`,
           conventionName,
+          severity,
         })
       );
       continue;
@@ -45,6 +47,7 @@ export function checkExportInterfaces(opts: {
           predicateName: 'exportInterfaces',
           message: `Missing export interface "${resolvedName}"`,
           conventionName,
+          severity,
         })
       );
       continue;
@@ -61,6 +64,7 @@ export function checkExportInterfaces(opts: {
             conventionName,
             line: interfaceInfo.pos.line,
             column: interfaceInfo.pos.column,
+            severity,
           })
         );
       }

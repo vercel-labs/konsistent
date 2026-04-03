@@ -68,7 +68,7 @@ packages/openai/src/index.ts
   -  error  Missing export "openai"  [must-export-and-more]
   -  error  Missing export type "OpenaiProviderSettings"  [must-export-and-more]
 
-Checked 6 files in 10ms. Found 3 violations.
+Checked 6 files in 10ms. Found 3 errors.
 ```
 
 When everything passes:
@@ -87,9 +87,30 @@ Checked 6 files in 8ms. No violations found.
 | `konsistent help` | Show a quick reference of all commands and options |
 | `konsistent version` | Print the version number |
 
+## Severity
+
+By default, convention violations are errors and cause a non-zero exit code. To mark a convention as a warning instead, add `"severity": "warning"`:
+
+```json
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "paths": "packages/{name}/src/index.ts",
+      "severity": "warning",
+      "must": {
+        "exportTypes": ["${name.toPascalCase()}Config"]
+      }
+    }
+  ]
+}
+```
+
+Warnings are displayed in yellow and do not cause a non-zero exit code. Use `--error-on-warnings` to treat warnings as errors in strict CI pipelines, or `--diagnostic-level error` to skip warning conventions entirely.
+
 ## CI integration
 
-In GitHub Actions, konsistent automatically emits `::error` annotations so violations appear inline on pull request diffs. No flags needed.
+In GitHub Actions, konsistent automatically emits `::error` and `::warning` annotations so violations appear inline on pull request diffs. No flags needed.
 
 Output formats are also available via `--format`:
 

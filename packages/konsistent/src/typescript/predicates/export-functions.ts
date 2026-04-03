@@ -1,6 +1,6 @@
 import type { PredicateContext } from '../../core/context.js';
 import { createDiagnostic } from '../../core/diagnostics.js';
-import type { Diagnostic } from '../../core/diagnostics.js';
+import type { Diagnostic, DiagnosticSeverity } from '../../core/diagnostics.js';
 import type { FileStructure, FunctionInfo } from '../types.js';
 
 type FunctionDef = {
@@ -16,6 +16,7 @@ function checkSignature(opts: {
   resolvedReturnType: string | undefined;
   context: PredicateContext;
   conventionName?: string;
+  severity?: DiagnosticSeverity;
 }): Diagnostic[] {
   const {
     funcInfo,
@@ -24,6 +25,7 @@ function checkSignature(opts: {
     resolvedReturnType,
     context,
     conventionName,
+    severity,
   } = opts;
   const diagnostics: Diagnostic[] = [];
 
@@ -40,6 +42,7 @@ function checkSignature(opts: {
           conventionName,
           line: funcInfo.pos.line,
           column: funcInfo.pos.column,
+          severity,
         })
       );
     }
@@ -54,6 +57,7 @@ function checkSignature(opts: {
         conventionName,
         line: funcInfo.pos.line,
         column: funcInfo.pos.column,
+        severity,
       })
     );
   }
@@ -66,8 +70,9 @@ export function checkExportFunctions(opts: {
   context: PredicateContext;
   fileStructure: FileStructure;
   conventionName?: string;
+  severity?: DiagnosticSeverity;
 }): Diagnostic[] {
-  const { expected, context, fileStructure, conventionName } = opts;
+  const { expected, context, fileStructure, conventionName, severity } = opts;
   const diagnostics: Diagnostic[] = [];
 
   for (const entry of expected) {
@@ -96,6 +101,7 @@ export function checkExportFunctions(opts: {
           predicateName: 'exportFunctions',
           message: `Missing export function "${resolvedName}"`,
           conventionName,
+          severity,
         })
       );
       continue;
@@ -109,6 +115,7 @@ export function checkExportFunctions(opts: {
         resolvedReturnType,
         context,
         conventionName,
+        severity,
       })
     );
   }

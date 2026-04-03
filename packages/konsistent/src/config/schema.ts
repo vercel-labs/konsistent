@@ -64,6 +64,7 @@ export const ConventionV1Schema = z.object({
     .regex(/^[a-z0-9-]+$/, 'Convention name must match [a-z0-9-]+')
     .optional(),
   description: z.string().optional(),
+  severity: z.enum(['error', 'warning']).default('error').optional(),
   paths: z.union([z.string(), z.array(z.string())]),
   must: z.union([MustPredicatesV1Schema, z.array(MustBlockV1Schema)]),
 });

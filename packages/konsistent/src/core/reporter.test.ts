@@ -59,7 +59,7 @@ describe('createDefaultReporter', () => {
     expect(output).toContain(pc.bold('src/foo.ts'));
     expect(output).toContain(pc.bold('src/bar.ts'));
     expect(output).toContain('Expected a file but found a directory');
-    expect(output).toContain('Checked 2 files in 10ms. Found 3 violations.');
+    expect(output).toContain('Checked 2 files in 10ms. Found 3 errors.');
   });
 
   it('uses dash for line number when line is undefined', () => {
@@ -258,7 +258,7 @@ describe('createDefaultReporter', () => {
     const output = reporter.format(
       makeResult({ diagnostics, filesChecked: 1, elapsed: 2 })
     );
-    expect(output).toContain('Checked 1 file in 2ms. Found 1 violation.');
+    expect(output).toContain('Checked 1 file in 2ms. Found 1 error.');
   });
 
   it('uses plural for multiple violations', () => {
@@ -279,7 +279,7 @@ describe('createDefaultReporter', () => {
     const output = reporter.format(
       makeResult({ diagnostics, filesChecked: 2, elapsed: 3 })
     );
-    expect(output).toContain('Checked 2 files in 3ms. Found 2 violations.');
+    expect(output).toContain('Checked 2 files in 3ms. Found 2 errors.');
   });
 });
 
@@ -316,7 +316,7 @@ describe('createDefaultReporter with colors disabled', () => {
     expect(output).toContain('error');
     expect(output).toContain('Something wrong');
     expect(output).toContain('[my-convention]');
-    expect(output).toContain('Found 1 violation.');
+    expect(output).toContain('Found 1 error.');
   });
 
   it('returns plain severity without red', () => {
@@ -591,7 +591,7 @@ describe('createMarkdownReporter', () => {
     expect(output).toContain(
       '| 3 | error | Interface "OpenaiProvider" must extend "ProviderV1" | provider-interface |'
     );
-    expect(output).toContain('**Checked 2 files in 8ms. Found 4 violations.**');
+    expect(output).toContain('**Checked 2 files in 8ms. Found 4 errors.**');
   });
 
   it('uses dash in Line column for file-level violations', () => {
@@ -699,5 +699,279 @@ describe('createMarkdownReporter', () => {
     ];
     const output = reporter.format(makeResult({ diagnostics }));
     expect(output).toContain('**`src/foo.ts`**');
+  });
+});
+
+describe('createDefaultReporter warning formatting', () => {
+  const reporter = createDefaultReporter();
+
+  it('colors warning severity in yellow', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'warning',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveType',
+        message: 'test warning',
+      },
+    ];
+    const output = reporter.format(makeResult({ diagnostics }));
+    expect(output).toContain(pc.yellow('warning'));
+  });
+
+  it('shows warning-only summary', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'warning',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveType',
+        message: 'test warning',
+      },
+    ];
+    const output = reporter.format(
+      makeResult({ diagnostics, filesChecked: 1, elapsed: 5 })
+    );
+    expect(output).toContain('Found 1 warning.');
+  });
+
+  it('shows error-only summary when all errors', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveType',
+        message: 'test error',
+      },
+    ];
+    const output = reporter.format(
+      makeResult({ diagnostics, filesChecked: 1, elapsed: 5 })
+    );
+    expect(output).toContain('Found 1 error.');
+  });
+
+  it('shows mixed summary with errors and warnings', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveType',
+        message: 'test error',
+      },
+      {
+        severity: 'warning',
+        filePath: 'src/bar.ts',
+        predicateName: 'haveType',
+        message: 'test warning 1',
+      },
+      {
+        severity: 'warning',
+        filePath: 'src/baz.ts',
+        predicateName: 'haveType',
+        message: 'test warning 2',
+      },
+    ];
+    const output = reporter.format(
+      makeResult({ diagnostics, filesChecked: 3, elapsed: 5 })
+    );
+    expect(output).toContain('Found 1 error and 2 warnings.');
+  });
+
+  it('shows no violations summary when empty', () => {
+    const output = reporter.format(
+      makeResult({ diagnostics: [], filesChecked: 1, elapsed: 5 })
+    );
+    expect(output).toContain('No violations found.');
+  });
+});
+
+describe('createGithubReporter warning formatting', () => {
+  const reporter = createGithubReporter();
+
+  it('uses ::warning annotation for warning-severity diagnostics', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'warning',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveFiles',
+        message: 'Missing recommended file',
+        conventionName: 'should-have-readme',
+      },
+    ];
+    const output = reporter.format(makeResult({ diagnostics }));
+    expect(output).toBe(
+      '::warning file=src/foo.ts,title=should-have-readme::Missing recommended file'
+    );
+  });
+
+  it('uses ::error for error-severity and ::warning for warning-severity in same output', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/a.ts',
+        predicateName: 'haveType',
+        message: 'critical issue',
+        conventionName: 'conv-a',
+      },
+      {
+        severity: 'warning',
+        filePath: 'src/b.ts',
+        predicateName: 'haveFiles',
+        message: 'minor issue',
+        conventionName: 'conv-b',
+      },
+    ];
+    const output = reporter.format(makeResult({ diagnostics }));
+    const lines = output.split('\n');
+    expect(lines[0]).toBe('::error file=src/a.ts,title=conv-a::critical issue');
+    expect(lines[1]).toBe('::warning file=src/b.ts,title=conv-b::minor issue');
+  });
+
+  it('includes line parameter for warning-severity line-specific violations', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'warning',
+        filePath: 'src/foo.ts',
+        predicateName: 'exportInterfaces',
+        message: 'Recommended interface missing',
+        conventionName: 'iface-convention',
+        line: 7,
+      },
+    ];
+    const output = reporter.format(makeResult({ diagnostics }));
+    expect(output).toBe(
+      '::warning file=src/foo.ts,line=7,title=iface-convention::Recommended interface missing'
+    );
+  });
+});
+
+describe('createJsonReporter warning formatting', () => {
+  const reporter = createJsonReporter();
+
+  it('outputs severity "warning" for warning-severity diagnostics', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'warning',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveFiles',
+        message: 'Missing recommended file',
+        conventionName: 'should-have-readme',
+      },
+    ];
+    const parsed = JSON.parse(reporter.format(makeResult({ diagnostics })));
+    expect(parsed[0].severity).toBe('warning');
+  });
+
+  it('outputs mixed severity values correctly', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/a.ts',
+        predicateName: 'haveType',
+        message: 'critical issue',
+      },
+      {
+        severity: 'warning',
+        filePath: 'src/b.ts',
+        predicateName: 'haveFiles',
+        message: 'minor issue',
+      },
+    ];
+    const parsed = JSON.parse(reporter.format(makeResult({ diagnostics })));
+    expect(parsed[0].severity).toBe('error');
+    expect(parsed[1].severity).toBe('warning');
+  });
+});
+
+describe('createMarkdownReporter warning formatting', () => {
+  const reporter = createMarkdownReporter();
+
+  it('shows "warning" in severity column for warning-severity diagnostics', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'warning',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveFiles',
+        message: 'Missing recommended file',
+        conventionName: 'should-have-readme',
+      },
+    ];
+    const output = reporter.format(makeResult({ diagnostics }));
+    expect(output).toContain(
+      '| - | warning | Missing recommended file | should-have-readme |'
+    );
+  });
+
+  it('shows mixed severity values in table rows', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveType',
+        message: 'critical issue',
+      },
+      {
+        severity: 'warning',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveFiles',
+        message: 'minor issue',
+      },
+    ];
+    const output = reporter.format(makeResult({ diagnostics }));
+    expect(output).toContain('| - | error | critical issue |');
+    expect(output).toContain('| - | warning | minor issue |');
+  });
+
+  it('shows warning-only summary', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'warning',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveFiles',
+        message: 'minor issue',
+      },
+    ];
+    const output = reporter.format(
+      makeResult({ diagnostics, filesChecked: 1, elapsed: 5 })
+    );
+    expect(output).toContain('Found 1 warning.**');
+  });
+
+  it('shows mixed summary with errors and warnings', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'error',
+        filePath: 'src/a.ts',
+        predicateName: 'haveType',
+        message: 'critical',
+      },
+      {
+        severity: 'warning',
+        filePath: 'src/b.ts',
+        predicateName: 'haveFiles',
+        message: 'minor',
+      },
+    ];
+    const output = reporter.format(
+      makeResult({ diagnostics, filesChecked: 2, elapsed: 5 })
+    );
+    expect(output).toContain('Found 1 error and 1 warning.**');
+  });
+});
+
+describe('createDefaultReporter with colors disabled and warnings', () => {
+  const reporter = createDefaultReporter({ colors: false });
+
+  it('shows plain warning severity without color', () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: 'warning',
+        filePath: 'src/foo.ts',
+        predicateName: 'haveType',
+        message: 'test warning',
+      },
+    ];
+    const output = reporter.format(makeResult({ diagnostics }));
+    const lines = output.split('\n');
+    const diagLine = lines.find((l) => l.includes('test warning'));
+    expect(diagLine).toBe('  -  warning  test warning');
   });
 });

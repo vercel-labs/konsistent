@@ -33,4 +33,33 @@ describe('createDiagnostic', () => {
     expect(d.line).toBe(10);
     expect(d.column).toBe(5);
   });
+
+  it('defaults severity to error when not specified', () => {
+    const d = createDiagnostic({
+      filePath: 'src/foo.ts',
+      predicateName: 'export',
+      message: 'Missing export',
+    });
+    expect(d.severity).toBe('error');
+  });
+
+  it('creates a warning diagnostic when severity is warning', () => {
+    const d = createDiagnostic({
+      filePath: 'src/foo.ts',
+      predicateName: 'export',
+      message: 'Missing export',
+      severity: 'warning',
+    });
+    expect(d.severity).toBe('warning');
+  });
+
+  it('creates an error diagnostic when severity is explicitly error', () => {
+    const d = createDiagnostic({
+      filePath: 'src/foo.ts',
+      predicateName: 'export',
+      message: 'Missing export',
+      severity: 'error',
+    });
+    expect(d.severity).toBe('error');
+  });
 });

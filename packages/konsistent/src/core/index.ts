@@ -1,4 +1,4 @@
-export type { Diagnostic } from './diagnostics.js';
+export type { Diagnostic, DiagnosticSeverity } from './diagnostics.js';
 export { createDiagnostic } from './diagnostics.js';
 export type { PredicateContext } from './context.js';
 export { PlaceholderValue } from './placeholder.js';

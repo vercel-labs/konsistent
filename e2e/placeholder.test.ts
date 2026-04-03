@@ -12,10 +12,11 @@ const cliBinary = resolve(
 
 const fixturesDir = resolve(import.meta.dirname, 'fixtures');
 
-const githubAnnotationPattern = /^::error file=.+::.+/;
+const githubAnnotationPattern = /^::(error|warning) file=.+::.+/;
 // biome-ignore lint/suspicious/noControlCharactersInRegex: checking for ANSI escape codes
 const ansiEscapePattern = /\x1b\[/;
 const summaryPattern = /Checked \d+ files? in \d+(ms|\.\d+s)\./;
+const githubWarningPattern = /^::warning file=/;
 
 function runCli(opts: {
   args?: string[];
@@ -99,7 +100,7 @@ describe('plugin-system-broken-files fixture', () => {
       expect(error.stdout).toContain('must-export-activate-and-more');
       expect(error.stdout).toContain('Missing export "deactivate"');
       expect(error.stdout).toContain('Missing export constant "pluginId"');
-      expect(error.stdout).toContain('Found 4 violations.');
+      expect(error.stdout).toContain('Found 4 errors.');
     }
   });
 });
@@ -134,7 +135,7 @@ describe('ai-toolkit-broken-interfaces fixture', () => {
         'Missing export interface "AnthropicProvider"'
       );
       expect(error.stdout).toContain('Missing import type "ProviderV1"');
-      expect(error.stdout).toContain('Found 4 violations.');
+      expect(error.stdout).toContain('Found 4 errors.');
     }
   });
 });
@@ -169,7 +170,7 @@ describe('function-signatures-broken fixture', () => {
         'Function "createPaymentsService" must return value of type "PaymentsService"'
       );
       expect(error.stdout).toContain('must-export-create-service-function');
-      expect(error.stdout).toContain('Found 2 violations.');
+      expect(error.stdout).toContain('Found 2 errors.');
     }
   });
 });
@@ -195,7 +196,7 @@ describe('ai-toolkit-broken-exports fixture', () => {
       );
       expect(error.stdout).toContain('Missing export type "AnthropicProvider"');
       expect(error.stdout).toContain('must-export-and-more');
-      expect(error.stdout).toContain('Found 3 violations.');
+      expect(error.stdout).toContain('Found 3 errors.');
     }
   });
 });
@@ -268,7 +269,7 @@ describe('class-and-function-contracts-broken fixture', () => {
         'Function "createDatabaseAdapter" must return value of type "DatabaseAdapter"'
       );
       expect(error.stdout).toContain('must-export-adapter-class-and-more');
-      expect(error.stdout).toContain('Found 5 violations.');
+      expect(error.stdout).toContain('Found 5 errors.');
     }
   });
 });
@@ -299,7 +300,7 @@ describe('component-library-broken-conditionals fixture', () => {
       expect(error.stdout).toContain('Missing export "describe"');
       expect(error.stdout).toContain('Missing export constant "meta"');
       expect(error.stdout).toContain('must-have-tsx');
-      expect(error.stdout).toContain('Found 2 violations.');
+      expect(error.stdout).toContain('Found 2 errors.');
     }
   });
 });
@@ -332,7 +333,7 @@ describe('ai-toolkit-broken-exports fixture --format markdown', () => {
       expect(output).toContain('| Line | Severity | Message | Convention |');
       expect(output).toContain('|------|----------|---------|------------|');
       expect(output).toContain('| - | error | Missing export "openai" |');
-      expect(output).toContain('Found 3 violations.**');
+      expect(output).toContain('Found 3 errors.**');
       expect(output).not.toMatch(ansiEscapePattern);
     }
   });
@@ -354,7 +355,7 @@ describe('monorepo-with-negation-broken fixture', () => {
       };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain('Missing export "cli"');
-      expect(error.stdout).toContain('Found 1 violation.');
+      expect(error.stdout).toContain('Found 1 error.');
     }
   });
 
@@ -402,7 +403,7 @@ describe('summary output', () => {
       const error = err as { stdout: string; code: number; status: number };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toMatch(summaryPattern);
-      expect(error.stdout).toContain('Found 1 violation.');
+      expect(error.stdout).toContain('Found 1 error.');
     }
   });
 });
@@ -458,6 +459,310 @@ describe('--colors flag', () => {
       expect(error.stdout.includes('\x1b[')).toBe(false);
       expect(error.stdout).toContain('Missing required file');
     }
+  });
+});
+
+describe('warnings-only fixture', () => {
+  const cwd = resolve(fixturesDir, 'warnings-only');
+
+  it('konsistent check exits 0 when only warnings exist', async () => {
+    const { stdout } = await runCli({
+      args: ['check', '--colors', 'false'],
+      cwd,
+    });
+    expect(stdout).toContain('warning');
+    expect(stdout).toContain('Missing required file: README.md');
+    expect(stdout).toContain('Found 1 warning.');
+  });
+
+  it('output contains yellow ANSI for warning severity', async () => {
+    const { stdout } = await runCli({ args: ['check'], cwd });
+    expect(stdout).toContain('warning');
+    expect(stdout).toContain('Missing required file: README.md');
+  });
+});
+
+describe('mixed-severity fixture', () => {
+  const cwd = resolve(fixturesDir, 'mixed-severity');
+
+  it('konsistent check exits 1 when errors exist alongside warnings', async () => {
+    try {
+      await runCli({ args: ['check', '--colors', 'false'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain('error');
+      expect(error.stdout).toContain('warning');
+      expect(error.stdout).toContain('Missing required file: index.ts');
+      expect(error.stdout).toContain('Missing required file: README.md');
+      expect(error.stdout).toContain('Found 1 error and 2 warnings.');
+    }
+  });
+
+  it('default format shows red for errors and yellow for warnings', async () => {
+    try {
+      await runCli({ args: ['check'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain('error');
+      expect(error.stdout).toContain('warning');
+    }
+  });
+});
+
+describe('--error-on-warnings flag', () => {
+  it('exits 1 when warnings exist and flag is set', async () => {
+    const cwd = resolve(fixturesDir, 'warnings-only');
+    try {
+      await runCli({ args: ['check', '--error-on-warnings'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain('warning');
+      expect(error.stdout).toContain('Missing required file: README.md');
+    }
+  });
+
+  it('exits 0 when no diagnostics and flag is set', async () => {
+    const cwd = resolve(fixturesDir, 'empty-config');
+    await expect(
+      runCli({ args: ['check', '--error-on-warnings'], cwd })
+    ).resolves.not.toThrow();
+  });
+
+  it('exits 1 when errors exist regardless of flag', async () => {
+    const cwd = resolve(fixturesDir, 'mixed-severity');
+    try {
+      await runCli({ args: ['check', '--error-on-warnings'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain('error');
+      expect(error.stdout).toContain('warning');
+    }
+  });
+});
+
+describe('warnings-only fixture --format github', () => {
+  const cwd = resolve(fixturesDir, 'warnings-only');
+
+  it('konsistent check --format github outputs ::warning annotations', async () => {
+    const { stdout } = await runCli({
+      args: ['check', '--format', 'github'],
+      cwd,
+    });
+    expect(stdout.trim()).toMatch(githubWarningPattern);
+    expect(stdout).toContain('::warning file=');
+    expect(stdout).toContain('Missing required file: README.md');
+    expect(stdout).not.toContain('::error');
+  });
+});
+
+describe('warnings-only fixture --format json', () => {
+  const cwd = resolve(fixturesDir, 'warnings-only');
+
+  it('konsistent check --format json outputs severity "warning"', async () => {
+    const { stdout } = await runCli({
+      args: ['check', '--format', 'json'],
+      cwd,
+    });
+    const parsed = JSON.parse(stdout.trim());
+    expect(Array.isArray(parsed)).toBe(true);
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0]).toMatchObject({
+      severity: 'warning',
+      conventionName: 'module-should-have-readme',
+      message: 'Missing required file: README.md',
+    });
+  });
+});
+
+describe('warnings-only fixture --format markdown', () => {
+  const cwd = resolve(fixturesDir, 'warnings-only');
+
+  it('konsistent check --format markdown shows warning severity in table', async () => {
+    const { stdout } = await runCli({
+      args: ['check', '--format', 'markdown'],
+      cwd,
+    });
+    expect(stdout).toContain('| Line | Severity | Message | Convention |');
+    expect(stdout).toContain(
+      '| - | warning | Missing required file: README.md |'
+    );
+    expect(stdout).toContain('Found 1 warning.**');
+    expect(stdout).not.toMatch(ansiEscapePattern);
+  });
+});
+
+describe('mixed-severity fixture --format github', () => {
+  const cwd = resolve(fixturesDir, 'mixed-severity');
+
+  it('konsistent check --format github outputs both ::error and ::warning', async () => {
+    try {
+      await runCli({ args: ['check', '--format', 'github'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      const lines = error.stdout.trim().split('\n');
+      for (const line of lines) {
+        expect(line).toMatch(githubAnnotationPattern);
+      }
+      expect(error.stdout).toContain('::error file=');
+      expect(error.stdout).toContain('::warning file=');
+    }
+  });
+});
+
+describe('mixed-severity fixture --format json', () => {
+  const cwd = resolve(fixturesDir, 'mixed-severity');
+
+  it('konsistent check --format json outputs both error and warning severities', async () => {
+    try {
+      await runCli({ args: ['check', '--format', 'json'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      const parsed = JSON.parse(error.stdout.trim());
+      expect(Array.isArray(parsed)).toBe(true);
+      const severities = parsed.map((d: { severity: string }) => d.severity);
+      expect(severities).toContain('error');
+      expect(severities).toContain('warning');
+    }
+  });
+});
+
+describe('mixed-severity fixture --format markdown', () => {
+  const cwd = resolve(fixturesDir, 'mixed-severity');
+
+  it('konsistent check --format markdown shows both error and warning in table', async () => {
+    try {
+      await runCli({ args: ['check', '--format', 'markdown'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      const output = error.stdout.trim();
+      expect(output).toContain('| Line | Severity | Message | Convention |');
+      expect(output).toContain('| - | error |');
+      expect(output).toContain('| - | warning |');
+      expect(output).toContain('Found 1 error and 2 warnings.**');
+      expect(output).not.toMatch(ansiEscapePattern);
+    }
+  });
+});
+
+describe('--diagnostic-level flag', () => {
+  it('skips warning conventions when set to error on warnings-only fixture', async () => {
+    const cwd = resolve(fixturesDir, 'warnings-only');
+    const { stdout } = await runCli({
+      args: ['check', '--diagnostic-level', 'error', '--colors', 'false'],
+      cwd,
+    });
+    expect(stdout).not.toContain('warning');
+    expect(stdout).toContain('No violations found.');
+  });
+
+  it('exits 0 when only warning conventions exist and set to error', async () => {
+    const cwd = resolve(fixturesDir, 'warnings-only');
+    await expect(
+      runCli({ args: ['check', '--diagnostic-level', 'error'], cwd })
+    ).resolves.not.toThrow();
+  });
+
+  it('still reports errors from mixed-severity fixture when set to error', async () => {
+    const cwd = resolve(fixturesDir, 'mixed-severity');
+    try {
+      await runCli({
+        args: ['check', '--diagnostic-level', 'error', '--colors', 'false'],
+        cwd,
+      });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain('error');
+      expect(error.stdout).not.toContain('warning');
+      expect(error.stdout).toContain('Missing required file: index.ts');
+      expect(error.stdout).not.toContain('Missing required file: README.md');
+    }
+  });
+
+  it('reports both errors and warnings when set to warning', async () => {
+    const cwd = resolve(fixturesDir, 'mixed-severity');
+    try {
+      await runCli({
+        args: ['check', '--diagnostic-level', 'warning', '--colors', 'false'],
+        cwd,
+      });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain('error');
+      expect(error.stdout).toContain('warning');
+    }
+  });
+
+  it('defaults to warning when flag is not provided', async () => {
+    const cwd = resolve(fixturesDir, 'warnings-only');
+    const { stdout } = await runCli({
+      args: ['check', '--colors', 'false'],
+      cwd,
+    });
+    expect(stdout).toContain('warning');
+    expect(stdout).toContain('Missing required file: README.md');
   });
 });
 

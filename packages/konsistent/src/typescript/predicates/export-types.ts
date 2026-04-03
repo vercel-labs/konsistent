@@ -1,6 +1,6 @@
 import type { PredicateContext } from '../../core/context.js';
 import { createDiagnostic } from '../../core/diagnostics.js';
-import type { Diagnostic } from '../../core/diagnostics.js';
+import type { Diagnostic, DiagnosticSeverity } from '../../core/diagnostics.js';
 import type { FileStructure } from '../types.js';
 
 export function checkExportTypes(opts: {
@@ -8,8 +8,9 @@ export function checkExportTypes(opts: {
   context: PredicateContext;
   fileStructure: FileStructure;
   conventionName?: string;
+  severity?: DiagnosticSeverity;
 }): Diagnostic[] {
-  const { expected, context, fileStructure, conventionName } = opts;
+  const { expected, context, fileStructure, conventionName, severity } = opts;
   const diagnostics: Diagnostic[] = [];
 
   for (const entry of expected) {
@@ -27,6 +28,7 @@ export function checkExportTypes(opts: {
           predicateName: 'exportTypes',
           message: `Missing export type "${resolvedName}"`,
           conventionName,
+          severity,
         })
       );
     }

@@ -18,7 +18,7 @@ import { checkImport } from '../typescript/predicates/import.js';
 import type { FileStructure } from '../typescript/types.js';
 import type { PredicateContext } from './context.js';
 import { generateConventionName } from './convention-name.js';
-import type { Diagnostic } from './diagnostics.js';
+import type { Diagnostic, DiagnosticSeverity } from './diagnostics.js';
 import type { FileSystem } from './filesystem.js';
 import type { MatchedPath } from './path-matcher.js';
 import { matchPaths } from './path-matcher.js';
@@ -88,78 +88,111 @@ const TS_PREDICATE_HANDLERS: Record<
     conventionName?: string;
     context: PredicateContext;
     fileStructure: FileStructure;
+    severity?: DiagnosticSeverity;
   }) => Diagnostic[]
 > = {
-  export: ({ must, context, fileStructure, conventionName }) =>
+  export: ({ must, context, fileStructure, conventionName, severity }) =>
     must.export
       ? checkExport({
           expected: must.export,
           context,
           fileStructure,
           conventionName,
+          severity,
         })
       : [],
-  exportTypes: ({ must, context, fileStructure, conventionName }) =>
+  exportTypes: ({ must, context, fileStructure, conventionName, severity }) =>
     must.exportTypes
       ? checkExportTypes({
           expected: must.exportTypes,
           context,
           fileStructure,
           conventionName,
+          severity,
         })
       : [],
-  exportConstants: ({ must, context, fileStructure, conventionName }) =>
+  exportConstants: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
     must.exportConstants
       ? checkExportConstants({
           expected: must.exportConstants,
           context,
           fileStructure,
           conventionName,
+          severity,
         })
       : [],
-  exportFunctions: ({ must, context, fileStructure, conventionName }) =>
+  exportFunctions: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
     must.exportFunctions
       ? checkExportFunctions({
           expected: must.exportFunctions,
           context,
           fileStructure,
           conventionName,
+          severity,
         })
       : [],
-  exportClasses: ({ must, context, fileStructure, conventionName }) =>
+  exportClasses: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
     must.exportClasses
       ? checkExportClasses({
           expected: must.exportClasses,
           context,
           fileStructure,
           conventionName,
+          severity,
         })
       : [],
-  exportInterfaces: ({ must, context, fileStructure, conventionName }) =>
+  exportInterfaces: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
     must.exportInterfaces
       ? checkExportInterfaces({
           expected: must.exportInterfaces,
           context,
           fileStructure,
           conventionName,
+          severity,
         })
       : [],
-  import: ({ must, context, fileStructure, conventionName }) =>
+  import: ({ must, context, fileStructure, conventionName, severity }) =>
     must.import
       ? checkImport({
           expected: must.import,
           context,
           fileStructure,
           conventionName,
+          severity,
         })
       : [],
-  importTypes: ({ must, context, fileStructure, conventionName }) =>
+  importTypes: ({ must, context, fileStructure, conventionName, severity }) =>
     must.importTypes
       ? checkImportTypes({
           expected: must.importTypes,
           context,
           fileStructure,
           conventionName,
+          severity,
         })
       : [],
 };
@@ -170,6 +203,7 @@ function checkTsPredicate(opts: {
   conventionName?: string;
   context: PredicateContext;
   fileStructure: FileStructure;
+  severity?: DiagnosticSeverity;
 }): Diagnostic[] {
   const handler = TS_PREDICATE_HANDLERS[opts.key];
   if (!handler) {
@@ -200,9 +234,16 @@ function checkPredicates(opts: {
   context: PredicateContext;
   fileSystem: FileSystem;
   fileStructureCache: Map<string, FileStructure>;
+  severity?: DiagnosticSeverity;
 }): Diagnostic[] {
-  const { must, conventionName, context, fileSystem, fileStructureCache } =
-    opts;
+  const {
+    must,
+    conventionName,
+    context,
+    fileSystem,
+    fileStructureCache,
+    severity,
+  } = opts;
   const diagnostics: Diagnostic[] = [];
   const keys = Object.keys(must);
 
@@ -225,6 +266,7 @@ function checkPredicates(opts: {
           context,
           fileSystem,
           conventionName,
+          severity,
         })
       );
     }
@@ -234,6 +276,7 @@ function checkPredicates(opts: {
           expected: must.haveFiles,
           context,
           conventionName,
+          severity,
         })
       );
     }
@@ -245,6 +288,7 @@ function checkPredicates(opts: {
           conventionName,
           context,
           fileStructure,
+          severity,
         })
       );
     }
@@ -259,6 +303,7 @@ async function evaluateForBlock(opts: {
   fileSystem: FileSystem;
   conventionName?: string;
   fileStructureCache: Map<string, FileStructure>;
+  severity?: DiagnosticSeverity;
 }): Promise<Diagnostic[]> {
   const {
     block,
@@ -266,6 +311,7 @@ async function evaluateForBlock(opts: {
     fileSystem,
     conventionName,
     fileStructureCache,
+    severity,
   } = opts;
 
   if (!block.for) {
@@ -275,6 +321,7 @@ async function evaluateForBlock(opts: {
       context: parentContext,
       fileSystem,
       fileStructureCache,
+      severity,
     });
   }
 
@@ -316,6 +363,7 @@ async function evaluateForBlock(opts: {
         context: forContext,
         fileSystem,
         fileStructureCache,
+        severity,
       })
     );
   }
@@ -355,6 +403,7 @@ export async function run(opts: {
     const blocks = normalizeMustBlocks(convention.must);
     const conventionName =
       convention.name ?? generateConventionName({ must: convention.must });
+    const severity: DiagnosticSeverity = convention.severity ?? 'error';
 
     for (const entry of matched) {
       checkedPaths.add(entry.path);
@@ -371,6 +420,7 @@ export async function run(opts: {
             fileSystem,
             conventionName,
             fileStructureCache,
+            severity,
           }))
         );
       }

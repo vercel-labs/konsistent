@@ -39,6 +39,17 @@ const checkArgs = {
     type: 'boolean' as const,
     description: 'Enable or disable colored output',
   },
+  'error-on-warnings': {
+    type: 'boolean' as const,
+    description: 'Treat warnings as errors for exit code purposes',
+    default: false,
+  },
+  'diagnostic-level': {
+    type: 'string' as const,
+    description:
+      'Minimum diagnostic severity to evaluate (warning or error). When set to "error", warning-severity conventions are skipped entirely.',
+    default: 'warning',
+  },
 };
 
 export function resolveFormat(opts: { format: string }): string {
@@ -77,9 +88,21 @@ export default defineCommand({
       process.exit(1);
     }
 
+    const diagnosticLevel =
+      args['diagnostic-level'] === 'error' ? 'error' : 'warning';
+    const config =
+      diagnosticLevel === 'error'
+        ? {
+            ...result.config,
+            conventions: result.config.conventions.filter(
+              (c) => (c.severity ?? 'error') !== 'warning'
+            ),
+          }
+        : result.config;
+
     const fileSystem = createRealFileSystem({ cwd: process.cwd() });
     const runResult = await run({
-      config: result.config,
+      config,
       fileSystem,
     });
 
@@ -104,7 +127,11 @@ export default defineCommand({
       process.stdout.write(`${output.join('\n')}\n`);
     }
 
-    if (runResult.diagnostics.length > 0) {
+    const hasErrors = runResult.diagnostics.some((d) => d.severity === 'error');
+    const hasWarnings = runResult.diagnostics.some(
+      (d) => d.severity === 'warning'
+    );
+    if (hasErrors || (args['error-on-warnings'] && hasWarnings)) {
       process.exit(1);
     }
   },

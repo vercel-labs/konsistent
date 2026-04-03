@@ -200,4 +200,59 @@ describe('ConfigV1Schema', () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it('accepts a convention with severity error', () => {
+    const result = ConfigV1Schema.safeParse({
+      version: 'v1',
+      conventions: [
+        {
+          paths: 'src/*.ts',
+          severity: 'error',
+          must: { haveType: 'file' },
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts a convention with severity warning', () => {
+    const result = ConfigV1Schema.safeParse({
+      version: 'v1',
+      conventions: [
+        {
+          paths: 'src/*.ts',
+          severity: 'warning',
+          must: { haveType: 'file' },
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts a convention without severity (defaults to error)', () => {
+    const result = ConfigV1Schema.safeParse({
+      version: 'v1',
+      conventions: [
+        {
+          paths: 'src/*.ts',
+          must: { haveType: 'file' },
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects a convention with invalid severity value', () => {
+    const result = ConfigV1Schema.safeParse({
+      version: 'v1',
+      conventions: [
+        {
+          paths: 'src/*.ts',
+          severity: 'info',
+          must: { haveType: 'file' },
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
 });

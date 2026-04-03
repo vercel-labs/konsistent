@@ -43,12 +43,14 @@ function formatDiagnosticLine(opts: {
   diagnostic: Diagnostic;
   lineWidth: number;
   red: ColorFn;
+  yellow: ColorFn;
   dim: ColorFn;
 }): string {
-  const { diagnostic: d, lineWidth, red, dim } = opts;
+  const { diagnostic: d, lineWidth, red, yellow, dim } = opts;
   const lineStr = d.line != null ? String(d.line) : '-';
   const paddedLine = lineStr.padStart(lineWidth);
-  const severity = red(d.severity);
+  const colorFn = d.severity === 'warning' ? yellow : red;
+  const severity = colorFn(d.severity);
   const convention =
     d.conventionName != null ? `  ${dim(`[${d.conventionName}]`)}` : '';
   return `  ${paddedLine}  ${severity}  ${d.message}${convention}`;
@@ -59,14 +61,17 @@ function formatFileGroup(opts: {
   diagnostics: Diagnostic[];
   bold: ColorFn;
   red: ColorFn;
+  yellow: ColorFn;
   dim: ColorFn;
 }): string[] {
-  const { bold, red, dim } = opts;
+  const { bold, red, yellow, dim } = opts;
   const sorted = sortDiagnostics(opts.diagnostics);
   const lineWidth = maxLineWidth(sorted);
   const lines: string[] = [bold(opts.filePath)];
   for (const d of sorted) {
-    lines.push(formatDiagnosticLine({ diagnostic: d, lineWidth, red, dim }));
+    lines.push(
+      formatDiagnosticLine({ diagnostic: d, lineWidth, red, yellow, dim })
+    );
   }
   lines.push('');
   return lines;
@@ -74,17 +79,26 @@ function formatFileGroup(opts: {
 
 function formatSummary(opts: {
   filesChecked: number;
-  violationCount: number;
+  errorCount: number;
+  warningCount: number;
   elapsed: number;
 }): string {
-  const { filesChecked, violationCount, elapsed } = opts;
+  const { filesChecked, errorCount, warningCount, elapsed } = opts;
   const fileWord = filesChecked === 1 ? 'file' : 'files';
   const checked = `Checked ${filesChecked} ${fileWord} in ${formatTime(elapsed)}.`;
-  if (violationCount === 0) {
+
+  if (errorCount === 0 && warningCount === 0) {
     return `${checked} No violations found.`;
   }
-  const violationWord = violationCount === 1 ? 'violation' : 'violations';
-  return `${checked} Found ${violationCount} ${violationWord}.`;
+
+  const parts: string[] = [];
+  if (errorCount > 0) {
+    parts.push(`${errorCount} error${errorCount === 1 ? '' : 's'}`);
+  }
+  if (warningCount > 0) {
+    parts.push(`${warningCount} warning${warningCount === 1 ? '' : 's'}`);
+  }
+  return `${checked} Found ${parts.join(' and ')}.`;
 }
 
 export function createJsonReporter(): Reporter {
@@ -113,7 +127,7 @@ export function createGithubReporter(): Reporter {
     format(result: RunResult): string {
       return result.diagnostics
         .map((d) => {
-          let annotation = `::error file=${d.filePath}`;
+          let annotation = `::${d.severity} file=${d.filePath}`;
           if (d.line != null) {
             annotation += `,line=${d.line}`;
           }
@@ -133,6 +147,13 @@ export function createMarkdownReporter(): Reporter {
     format(result: RunResult): string {
       const { diagnostics, filesChecked, elapsed } = result;
       const sections: string[] = [];
+
+      const errorCount = diagnostics.filter(
+        (d) => d.severity === 'error'
+      ).length;
+      const warningCount = diagnostics.filter(
+        (d) => d.severity === 'warning'
+      ).length;
 
       if (diagnostics.length > 0) {
         const grouped = groupByFile(diagnostics);
@@ -156,7 +177,7 @@ export function createMarkdownReporter(): Reporter {
       }
 
       sections.push(
-        `**${formatSummary({ filesChecked, violationCount: diagnostics.length, elapsed })}**`
+        `**${formatSummary({ filesChecked, errorCount, warningCount, elapsed })}**`
       );
 
       return sections.join('\n\n');
@@ -168,12 +189,20 @@ export function createDefaultReporter(opts?: { colors?: boolean }): Reporter {
   const useColors = opts?.colors ?? true;
   const bold = useColors ? pc.bold : identity;
   const red = useColors ? pc.red : identity;
+  const yellow = useColors ? pc.yellow : identity;
   const dim = useColors ? pc.dim : identity;
 
   return {
     format(result: RunResult): string {
       const { diagnostics, filesChecked, elapsed } = result;
       const lines: string[] = [];
+
+      const errorCount = diagnostics.filter(
+        (d) => d.severity === 'error'
+      ).length;
+      const warningCount = diagnostics.filter(
+        (d) => d.severity === 'warning'
+      ).length;
 
       if (diagnostics.length > 0) {
         const grouped = groupByFile(diagnostics);
@@ -184,6 +213,7 @@ export function createDefaultReporter(opts?: { colors?: boolean }): Reporter {
               diagnostics: fileDiags,
               bold,
               red,
+              yellow,
               dim,
             })
           );
@@ -193,7 +223,8 @@ export function createDefaultReporter(opts?: { colors?: boolean }): Reporter {
       lines.push(
         formatSummary({
           filesChecked,
-          violationCount: diagnostics.length,
+          errorCount,
+          warningCount,
           elapsed,
         })
       );
