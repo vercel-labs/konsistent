@@ -6,8 +6,6 @@ konsistent is a CLI linter that checks whether files and directories in your Typ
 
 Consistent project structure reduces cognitive overhead, simplifies onboarding, and makes codebases predictable. It also directly improves coding agent performance — agents exposed to consistent API conventions produce better code, faster.
 
-## Install
-
 ## Usage
 
 Create a `konsistent.json` in your project root:
@@ -40,9 +38,9 @@ Create a `konsistent.json` in your project root:
 
 Then install it in the project:
 
-```bash
-npm install konsistent --save-dev
-```
+| NPM | PNPM | Bun |
+| --- | --- | --- |
+| `npm install konsistent --save-dev` | `pnpm add konsistent --save-dev` | `bun add konsistent --dev` |
 
 Add it to your `package.json scripts:
 
@@ -56,9 +54,9 @@ Add it to your `package.json scripts:
 
 Run it:
 
-```bash
-npm run konsistent
-```
+| NPM | PNPM | Bun |
+| --- | --- | --- |
+| `npm run konsistent` | `pnpm konsistent` | `bun konsistent` |
 
 When violations are found:
 
