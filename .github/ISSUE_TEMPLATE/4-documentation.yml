@@ -1,0 +1,16 @@
+name: Documentation Improvmeent
+description: Suggest improvements to the documentation of the konsistent CLI.
+labels: ['documentation']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please include as much context as possible to help us understand the suggested documentation improvement.
+  - type: textarea
+    attributes:
+      label: Documentation Description
+      description: Please describe clearly and concisely which documentation should be added or improved.
+      placeholder: |
+        What additional documentation is needed? Or which documentation needs to be improved? If you are suggesting a comprehensive new section, please provide a suggested outline or breakdown.
+    validations:
+      required: true

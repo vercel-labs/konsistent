@@ -1,0 +1,24 @@
+name: Feature Request
+description: Suggest a new feature to add to the konsistent CLI.
+labels: ['feature']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please include as much context as possible to help us understand what problem the feature would address.
+  - type: textarea
+    attributes:
+      label: Feature Description
+      description: Please describe clearly and concisely what the feature is.
+      placeholder: |
+        What is the feature? What problem does it solve? Code examples can be helpful if available.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Suggested Implementation
+      description: Please provide any ideas you have on how this feature could be implemented.
+      placeholder: |
+        Implementation details, code examples, etc...
+    validations:
+      required: false

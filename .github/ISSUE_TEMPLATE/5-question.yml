@@ -1,0 +1,14 @@
+name: Question
+description: Ask a question about using the konsistent CLI.
+labels: ['question']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please provide as much context as possible to help us answer your question.
+  - type: textarea
+    attributes:
+      label: Question
+      description: What question do you have?
+    validations:
+      required: true
