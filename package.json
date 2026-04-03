@@ -1,6 +1,7 @@
 {
   "name": "konsistent-monorepo",
   "private": true,
+  "license": "MIT",
   "packageManager": "pnpm@10.33.0",
   "scripts": {
     "build": "turbo build",
