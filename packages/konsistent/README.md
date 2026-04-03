@@ -2,7 +2,7 @@
 
 _Enforce consistent code, for agents and humans._
 
-konsistent is a CLI linter that checks whether files and directories in your TypeScript codebase match declared structural patterns. It fills a gap that ESLint, Biome, and oxlint don't cover: they enforce code style and best practices within files, but none of them verify project-level structural conventions — like "every provider package must export the same shape" or "every adapter must extend the base class."
+`konsistent` is a CLI linter that checks whether files and directories in your TypeScript codebase match declared structural patterns. It fills a gap that ESLint, Biome, and oxlint don't cover: they enforce code style and best practices within files, but none of them verify project-level structural conventions — like "every provider package must export the same shape" or "every adapter must extend the base class."
 
 Consistent project structure reduces cognitive overhead, simplifies onboarding, and makes codebases predictable. It also directly improves coding agent performance — agents exposed to consistent API conventions produce better code, faster.
 
