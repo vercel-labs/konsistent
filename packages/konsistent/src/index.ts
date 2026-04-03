@@ -1,7 +1,7 @@
 import { defineCommand, runMain } from 'citty';
 import { getVersion } from './version.js';
 
-const SUBCOMMANDS = new Set(['check', 'validate', 'version']);
+const SUBCOMMANDS = new Set(['check', 'validate', 'version', 'help']);
 
 const main = defineCommand({
   meta: {
@@ -13,6 +13,7 @@ const main = defineCommand({
     check: () => import('./commands/check.js').then((m) => m.default),
     validate: () => import('./commands/validate.js').then((m) => m.default),
     version: () => import('./commands/version.js').then((m) => m.default),
+    help: () => import('./commands/help.js').then((m) => m.default),
   },
 });
 

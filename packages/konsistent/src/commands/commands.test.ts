@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 import { runCommand } from 'citty';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import checkCommand, { resolveFormat } from './check.js';
+import helpCommand from './help.js';
 import validateCommand from './validate.js';
 import versionCommand from './version.js';
 
@@ -48,6 +49,17 @@ describe('resolveFormat', () => {
   it('returns default when GITHUB_ACTIONS is not set', () => {
     process.env.GITHUB_ACTIONS = undefined;
     expect(resolveFormat({ format: 'default' })).toBe('default');
+  });
+});
+
+describe('help command', () => {
+  it('prints help text to stdout', async () => {
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(vi.fn());
+    await runCommand(helpCommand, { rawArgs: [] });
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Usage:'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('check'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('validate'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('version'));
   });
 });
 
