@@ -21,7 +21,7 @@
     "zod": "^3"
   },
   "devDependencies": {
-    "@types/node": "^22",
+    "@types/node": "^24",
     "ajv": "^8.18.0",
     "tsup": "^8",
     "tsx": "^4.21.0",
