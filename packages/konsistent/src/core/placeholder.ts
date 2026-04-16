@@ -1,12 +1,9 @@
-const CAMEL_BOUNDARY = /([a-z])([A-Z])/g;
-const SEPARATORS = /[-_]/;
-
-function splitWords(value: string): string[] {
-  return value
-    .replace(CAMEL_BOUNDARY, '$1-$2')
-    .split(SEPARATORS)
-    .filter((w) => w.length > 0);
-}
+import {
+  toCamelCase,
+  toKebabCase,
+  toPascalCase,
+  toSnakeCase,
+} from './case-utils.js';
 
 export class PlaceholderValue {
   readonly raw: string;
@@ -14,6 +11,8 @@ export class PlaceholderValue {
   private readonly kebabToCamelMap?: Record<string, string>;
   private readonly pascalToKebabMap?: Record<string, string>;
   private readonly camelToKebabMap?: Record<string, string>;
+  private readonly camelToPascalMap?: Record<string, string>;
+  private readonly pascalToCamelMap?: Record<string, string>;
 
   constructor(opts: {
     value: string;
@@ -21,12 +20,16 @@ export class PlaceholderValue {
     kebabToCamelMap?: Record<string, string>;
     pascalToKebabMap?: Record<string, string>;
     camelToKebabMap?: Record<string, string>;
+    camelToPascalMap?: Record<string, string>;
+    pascalToCamelMap?: Record<string, string>;
   }) {
     this.raw = opts.value;
     this.kebabToPascalMap = opts.kebabToPascalMap;
     this.kebabToCamelMap = opts.kebabToCamelMap;
     this.pascalToKebabMap = opts.pascalToKebabMap;
     this.camelToKebabMap = opts.camelToKebabMap;
+    this.camelToPascalMap = opts.camelToPascalMap;
+    this.pascalToCamelMap = opts.pascalToCamelMap;
   }
 
   toString(): string {
@@ -34,17 +37,17 @@ export class PlaceholderValue {
   }
 
   toPascalCase(): string {
-    const mapped = this.kebabToPascalMap?.[this.raw];
+    const mapped =
+      this.kebabToPascalMap?.[this.raw] ?? this.camelToPascalMap?.[this.raw];
     if (mapped) {
       return mapped;
     }
-    return splitWords(this.raw)
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-      .join('');
+    return toPascalCase(this.raw);
   }
 
   toCamelCase(): string {
-    const mapped = this.kebabToCamelMap?.[this.raw];
+    const mapped =
+      this.kebabToCamelMap?.[this.raw] ?? this.pascalToCamelMap?.[this.raw];
     if (mapped) {
       return mapped;
     }
@@ -52,16 +55,7 @@ export class PlaceholderValue {
     if (pascalMapped) {
       return pascalMapped.charAt(0).toLowerCase() + pascalMapped.slice(1);
     }
-    const words = splitWords(this.raw);
-    if (words.length === 0) {
-      return '';
-    }
-    return [
-      words[0].toLowerCase(),
-      ...words
-        .slice(1)
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()),
-    ].join('');
+    return toCamelCase(this.raw);
   }
 
   toKebabCase(): string {
@@ -70,9 +64,7 @@ export class PlaceholderValue {
     if (mapped) {
       return mapped;
     }
-    return splitWords(this.raw)
-      .map((w) => w.toLowerCase())
-      .join('-');
+    return toKebabCase(this.raw);
   }
 
   toSnakeCase(): string {
@@ -81,9 +73,7 @@ export class PlaceholderValue {
     if (mapped) {
       return mapped.replace(/-/g, '_');
     }
-    return splitWords(this.raw)
-      .map((w) => w.toLowerCase())
-      .join('_');
+    return toSnakeCase(this.raw);
   }
 
   toNthSegment(n: number): string {

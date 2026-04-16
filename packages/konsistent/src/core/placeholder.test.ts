@@ -78,6 +78,34 @@ describe('PlaceholderValue', () => {
         }).toPascalCase()
       ).toBe('Cache');
     });
+
+    it('uses camelToPascalMap when entry exists', () => {
+      expect(
+        new PlaceholderValue({
+          value: 'openAI',
+          camelToPascalMap: { openAI: 'OpenAI' },
+        }).toPascalCase()
+      ).toBe('OpenAI');
+    });
+
+    it('prefers kebabToPascalMap over camelToPascalMap', () => {
+      expect(
+        new PlaceholderValue({
+          value: 'openai',
+          kebabToPascalMap: { openai: 'OpenAI' },
+          camelToPascalMap: { openai: 'Openai' },
+        }).toPascalCase()
+      ).toBe('OpenAI');
+    });
+
+    it('falls back to default when camelToPascalMap has no entry', () => {
+      expect(
+        new PlaceholderValue({
+          value: 'testUtils',
+          camelToPascalMap: { openAI: 'OpenAI' },
+        }).toPascalCase()
+      ).toBe('TestUtils');
+    });
   });
 
   describe('toCamelCase', () => {
@@ -138,6 +166,34 @@ describe('PlaceholderValue', () => {
           kebabToPascalMap: { openai: 'OpenAI' },
         }).toCamelCase()
       ).toBe('cache');
+    });
+
+    it('uses pascalToCamelMap when entry exists', () => {
+      expect(
+        new PlaceholderValue({
+          value: 'OpenAI',
+          pascalToCamelMap: { OpenAI: 'openAI' },
+        }).toCamelCase()
+      ).toBe('openAI');
+    });
+
+    it('prefers kebabToCamelMap over pascalToCamelMap', () => {
+      expect(
+        new PlaceholderValue({
+          value: 'openai',
+          kebabToCamelMap: { openai: 'openAI' },
+          pascalToCamelMap: { openai: 'openai' },
+        }).toCamelCase()
+      ).toBe('openAI');
+    });
+
+    it('falls back to default when pascalToCamelMap has no entry', () => {
+      expect(
+        new PlaceholderValue({
+          value: 'TestUtils',
+          pascalToCamelMap: { OpenAI: 'openAI' },
+        }).toCamelCase()
+      ).toBe('testUtils');
     });
   });
 

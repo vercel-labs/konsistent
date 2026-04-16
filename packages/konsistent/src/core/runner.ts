@@ -16,6 +16,7 @@ import { checkExport } from '../typescript/predicates/export.js';
 import { checkImportTypes } from '../typescript/predicates/import-types.js';
 import { checkImport } from '../typescript/predicates/import.js';
 import type { FileStructure } from '../typescript/types.js';
+import { toCamelCase, toPascalCase } from './case-utils.js';
 import type { PredicateContext } from './context.js';
 import { generateConventionName } from './convention-name.js';
 import type { Diagnostic, DiagnosticSeverity } from './diagnostics.js';
@@ -46,6 +47,29 @@ function invertMap(
     inverted[value] = key;
   }
   return inverted;
+}
+
+function deriveCamelToPascalMap(opts: {
+  kebabToPascalMap?: Record<string, string>;
+  kebabToCamelMap?: Record<string, string>;
+}): Record<string, string> | undefined {
+  const { kebabToPascalMap, kebabToCamelMap } = opts;
+  if (!kebabToPascalMap && !kebabToCamelMap) {
+    return undefined;
+  }
+
+  const allKebabKeys = new Set([
+    ...Object.keys(kebabToPascalMap ?? {}),
+    ...Object.keys(kebabToCamelMap ?? {}),
+  ]);
+
+  const result: Record<string, string> = {};
+  for (const kebabKey of allKebabKeys) {
+    const camelValue = kebabToCamelMap?.[kebabKey] ?? toCamelCase(kebabKey);
+    const pascalValue = kebabToPascalMap?.[kebabKey] ?? toPascalCase(kebabKey);
+    result[camelValue] = pascalValue;
+  }
+  return result;
 }
 
 function buildContext(opts: {
@@ -321,6 +345,8 @@ async function evaluateForBlock(opts: {
   kebabToCamelMap?: Record<string, string>;
   pascalToKebabMap?: Record<string, string>;
   camelToKebabMap?: Record<string, string>;
+  camelToPascalMap?: Record<string, string>;
+  pascalToCamelMap?: Record<string, string>;
 }): Promise<Diagnostic[]> {
   const {
     block,
@@ -333,6 +359,8 @@ async function evaluateForBlock(opts: {
     kebabToCamelMap,
     pascalToKebabMap,
     camelToKebabMap,
+    camelToPascalMap,
+    pascalToCamelMap,
   } = opts;
 
   if (!block.for) {
@@ -360,6 +388,8 @@ async function evaluateForBlock(opts: {
     kebabToCamelMap,
     pascalToKebabMap,
     camelToKebabMap,
+    camelToPascalMap,
+    pascalToCamelMap,
   });
 
   if (matched.length === 0) {
@@ -413,6 +443,11 @@ export async function run(opts: {
   const { kebabToPascalMap, kebabToCamelMap } = config;
   const pascalToKebabMap = invertMap(kebabToPascalMap);
   const camelToKebabMap = invertMap(kebabToCamelMap);
+  const camelToPascalMap = deriveCamelToPascalMap({
+    kebabToPascalMap,
+    kebabToCamelMap,
+  });
+  const pascalToCamelMap = invertMap(camelToPascalMap);
 
   const matchResults = await Promise.all(
     config.conventions.map((convention) => {
@@ -426,6 +461,8 @@ export async function run(opts: {
         kebabToCamelMap,
         pascalToKebabMap,
         camelToKebabMap,
+        camelToPascalMap,
+        pascalToCamelMap,
       });
     })
   );
@@ -461,6 +498,8 @@ export async function run(opts: {
             kebabToCamelMap,
             pascalToKebabMap,
             camelToKebabMap,
+            camelToPascalMap,
+            pascalToCamelMap,
           }))
         );
       }

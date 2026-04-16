@@ -107,6 +107,8 @@ function toPlaceholderMap(opts: {
   kebabToCamelMap?: Record<string, string>;
   pascalToKebabMap?: Record<string, string>;
   camelToKebabMap?: Record<string, string>;
+  camelToPascalMap?: Record<string, string>;
+  pascalToCamelMap?: Record<string, string>;
 }): Record<string, PlaceholderValue> {
   const {
     raw,
@@ -114,6 +116,8 @@ function toPlaceholderMap(opts: {
     kebabToCamelMap,
     pascalToKebabMap,
     camelToKebabMap,
+    camelToPascalMap,
+    pascalToCamelMap,
   } = opts;
   const result: Record<string, PlaceholderValue> = {};
   for (const [name, value] of Object.entries(raw)) {
@@ -123,6 +127,8 @@ function toPlaceholderMap(opts: {
       kebabToCamelMap,
       pascalToKebabMap,
       camelToKebabMap,
+      camelToPascalMap,
+      pascalToCamelMap,
     });
   }
   return result;
@@ -135,6 +141,8 @@ async function resolvePositivePatterns(opts: {
   kebabToCamelMap?: Record<string, string>;
   pascalToKebabMap?: Record<string, string>;
   camelToKebabMap?: Record<string, string>;
+  camelToPascalMap?: Record<string, string>;
+  pascalToCamelMap?: Record<string, string>;
 }): Promise<MatchedPath[]> {
   const {
     patterns,
@@ -143,6 +151,8 @@ async function resolvePositivePatterns(opts: {
     kebabToCamelMap,
     pascalToKebabMap,
     camelToKebabMap,
+    camelToPascalMap,
+    pascalToCamelMap,
   } = opts;
 
   if (patterns.length === 0) {
@@ -180,6 +190,8 @@ async function resolvePositivePatterns(opts: {
             kebabToCamelMap,
             pascalToKebabMap,
             camelToKebabMap,
+            camelToPascalMap,
+            pascalToCamelMap,
           }),
         });
         break;
@@ -197,6 +209,8 @@ export async function matchPaths(opts: {
   kebabToCamelMap?: Record<string, string>;
   pascalToKebabMap?: Record<string, string>;
   camelToKebabMap?: Record<string, string>;
+  camelToPascalMap?: Record<string, string>;
+  pascalToCamelMap?: Record<string, string>;
 }): Promise<MatchedPath[]> {
   const {
     patterns: rawPatterns,
@@ -205,6 +219,8 @@ export async function matchPaths(opts: {
     kebabToCamelMap,
     pascalToKebabMap,
     camelToKebabMap,
+    camelToPascalMap,
+    pascalToCamelMap,
   } = opts;
 
   const positivePatterns: string[] = [];
@@ -226,6 +242,8 @@ export async function matchPaths(opts: {
     kebabToCamelMap,
     pascalToKebabMap,
     camelToKebabMap,
+    camelToPascalMap,
+    pascalToCamelMap,
   });
 
   if (negativePatterns.length === 0) {
