@@ -1,6 +1,10 @@
+import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { runCommand } from 'citty';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+
+const require = createRequire(import.meta.url);
+const pkg = require('../../package.json') as { version: string };
 import checkCommand, { resolveFormat } from './check.js';
 import helpCommand from './help.js';
 import validateCommand from './validate.js';
@@ -163,6 +167,6 @@ describe('version command', () => {
   it('prints the version to stdout', async () => {
     const logSpy = vi.spyOn(console, 'log').mockImplementation(vi.fn());
     await runCommand(versionCommand, { rawArgs: [] });
-    expect(logSpy).toHaveBeenCalledWith('0.0.0');
+    expect(logSpy).toHaveBeenCalledWith(pkg.version);
   });
 });
