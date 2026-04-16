@@ -304,6 +304,8 @@ async function evaluateForBlock(opts: {
   conventionName?: string;
   fileStructureCache: Map<string, FileStructure>;
   severity?: DiagnosticSeverity;
+  kebabToPascalMap?: Record<string, string>;
+  kebabToCamelMap?: Record<string, string>;
 }): Promise<Diagnostic[]> {
   const {
     block,
@@ -312,6 +314,8 @@ async function evaluateForBlock(opts: {
     conventionName,
     fileStructureCache,
     severity,
+    kebabToPascalMap,
+    kebabToCamelMap,
   } = opts;
 
   if (!block.for) {
@@ -335,6 +339,8 @@ async function evaluateForBlock(opts: {
   const matched = await matchPaths({
     patterns: [fullPattern],
     fileSystem,
+    kebabToPascalMap,
+    kebabToCamelMap,
   });
 
   if (matched.length === 0) {
@@ -385,12 +391,19 @@ export async function run(opts: {
   const { config, fileSystem } = opts;
   const fileStructureCache = new Map<string, FileStructure>();
 
+  const { kebabToPascalMap, kebabToCamelMap } = config;
+
   const matchResults = await Promise.all(
     config.conventions.map((convention) => {
       const patterns = Array.isArray(convention.paths)
         ? convention.paths
         : [convention.paths];
-      return matchPaths({ patterns, fileSystem });
+      return matchPaths({
+        patterns,
+        fileSystem,
+        kebabToPascalMap,
+        kebabToCamelMap,
+      });
     })
   );
 
@@ -421,6 +434,8 @@ export async function run(opts: {
             conventionName,
             fileStructureCache,
             severity,
+            kebabToPascalMap,
+            kebabToCamelMap,
           }))
         );
       }

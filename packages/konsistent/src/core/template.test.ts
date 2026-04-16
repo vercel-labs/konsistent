@@ -3,11 +3,19 @@ import { PlaceholderValue } from './placeholder.js';
 import { resolveTemplate } from './template.js';
 
 function makePlaceholders(
-  map: Record<string, string>
+  map: Record<string, string>,
+  opts?: {
+    kebabToPascalMap?: Record<string, string>;
+    kebabToCamelMap?: Record<string, string>;
+  }
 ): Record<string, PlaceholderValue> {
   const result: Record<string, PlaceholderValue> = {};
   for (const [key, value] of Object.entries(map)) {
-    result[key] = new PlaceholderValue({ value });
+    result[key] = new PlaceholderValue({
+      value,
+      kebabToPascalMap: opts?.kebabToPascalMap,
+      kebabToCamelMap: opts?.kebabToCamelMap,
+    });
   }
   return result;
 }
@@ -83,5 +91,27 @@ describe('resolveTemplate', () => {
       placeholders: makePlaceholders({ name: 'openai' }),
     });
     expect(result).toBe('index.ts');
+  });
+
+  it('resolves toPascalCase using kebabToPascalMap', () => {
+    const result = resolveTemplate({
+      template: '${name.toPascalCase()}Provider.ts',
+      placeholders: makePlaceholders(
+        { name: 'openai' },
+        { kebabToPascalMap: { openai: 'OpenAI' } }
+      ),
+    });
+    expect(result).toBe('OpenAIProvider.ts');
+  });
+
+  it('resolves toCamelCase falling back to kebabToPascalMap', () => {
+    const result = resolveTemplate({
+      template: 'create${name.toPascalCase()}',
+      placeholders: makePlaceholders(
+        { name: 'graphql' },
+        { kebabToPascalMap: { graphql: 'GraphQL' } }
+      ),
+    });
+    expect(result).toBe('createGraphQL');
   });
 });

@@ -101,12 +101,19 @@ function tryExtractPlaceholders(opts: {
   return extracted;
 }
 
-function toPlaceholderMap(
-  raw: Record<string, string>
-): Record<string, PlaceholderValue> {
+function toPlaceholderMap(opts: {
+  raw: Record<string, string>;
+  kebabToPascalMap?: Record<string, string>;
+  kebabToCamelMap?: Record<string, string>;
+}): Record<string, PlaceholderValue> {
+  const { raw, kebabToPascalMap, kebabToCamelMap } = opts;
   const result: Record<string, PlaceholderValue> = {};
   for (const [name, value] of Object.entries(raw)) {
-    result[name] = new PlaceholderValue({ value });
+    result[name] = new PlaceholderValue({
+      value,
+      kebabToPascalMap,
+      kebabToCamelMap,
+    });
   }
   return result;
 }
@@ -114,8 +121,10 @@ function toPlaceholderMap(
 async function resolvePositivePatterns(opts: {
   patterns: string[];
   fileSystem: FileSystem;
+  kebabToPascalMap?: Record<string, string>;
+  kebabToCamelMap?: Record<string, string>;
 }): Promise<MatchedPath[]> {
-  const { patterns, fileSystem } = opts;
+  const { patterns, fileSystem, kebabToPascalMap, kebabToCamelMap } = opts;
 
   if (patterns.length === 0) {
     return [];
@@ -146,7 +155,11 @@ async function resolvePositivePatterns(opts: {
       if (extracted !== null) {
         results.push({
           path: matchedPath,
-          placeholders: toPlaceholderMap(extracted),
+          placeholders: toPlaceholderMap({
+            raw: extracted,
+            kebabToPascalMap,
+            kebabToCamelMap,
+          }),
         });
         break;
       }
@@ -159,8 +172,15 @@ async function resolvePositivePatterns(opts: {
 export async function matchPaths(opts: {
   patterns: string[];
   fileSystem: FileSystem;
+  kebabToPascalMap?: Record<string, string>;
+  kebabToCamelMap?: Record<string, string>;
 }): Promise<MatchedPath[]> {
-  const { patterns: rawPatterns, fileSystem } = opts;
+  const {
+    patterns: rawPatterns,
+    fileSystem,
+    kebabToPascalMap,
+    kebabToCamelMap,
+  } = opts;
 
   const positivePatterns: string[] = [];
   const negativePatterns: string[] = [];
@@ -177,6 +197,8 @@ export async function matchPaths(opts: {
   const positiveResults = await resolvePositivePatterns({
     patterns: positivePatterns,
     fileSystem,
+    kebabToPascalMap,
+    kebabToCamelMap,
   });
 
   if (negativePatterns.length === 0) {

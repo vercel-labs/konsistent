@@ -8,6 +8,18 @@
       "type": "string",
       "const": "v1"
     },
+    "kebabToPascalMap": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "kebabToCamelMap": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
     "conventions": {
       "type": "array",
       "items": {

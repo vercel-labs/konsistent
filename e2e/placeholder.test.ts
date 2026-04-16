@@ -812,3 +812,36 @@ describe('--max-diagnostics flag', () => {
     }
   });
 });
+
+describe('case-maps fixture', () => {
+  const cwd = resolve(fixturesDir, 'case-maps');
+
+  it('konsistent check exits 0 when kebabToPascalMap resolves acronyms', async () => {
+    await expect(runCli({ args: ['check'], cwd })).resolves.not.toThrow();
+  });
+});
+
+describe('case-maps-broken fixture', () => {
+  const cwd = resolve(fixturesDir, 'case-maps-broken');
+
+  it('konsistent check exits 1 when exports use wrong casing from map', async () => {
+    try {
+      await runCli({ args: ['check'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain(
+        'Missing export function "createOpenAIProvider"'
+      );
+      expect(error.stdout).toContain(
+        'Missing export type "OpenAIProviderConfig"'
+      );
+    }
+  });
+});

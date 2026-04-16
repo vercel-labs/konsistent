@@ -72,6 +72,8 @@ export const ConventionV1Schema = z.object({
 export const ConfigV1Schema = z.object({
   $schema: z.string().optional(),
   version: z.literal('v1'),
+  kebabToPascalMap: z.record(z.string(), z.string()).optional(),
+  kebabToCamelMap: z.record(z.string(), z.string()).optional(),
   conventions: z.array(ConventionV1Schema),
 });
 

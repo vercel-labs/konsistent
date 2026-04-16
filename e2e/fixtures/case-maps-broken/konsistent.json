@@ -1,0 +1,27 @@
+{
+  "version": "v1",
+  "kebabToPascalMap": {
+    "openai": "OpenAI",
+    "graphql": "GraphQL"
+  },
+  "conventions": [
+    {
+      "name": "provider-module",
+      "paths": "providers/{providerId}",
+      "must": {
+        "haveType": "directory",
+        "haveFiles": ["index.ts"]
+      }
+    },
+    {
+      "name": "provider-exports",
+      "paths": "providers/{providerId}/index.ts",
+      "must": {
+        "exportFunctions": [
+          { "name": "create${providerId.toPascalCase()}Provider" }
+        ],
+        "exportTypes": ["${providerId.toPascalCase()}ProviderConfig"]
+      }
+    }
+  ]
+}
