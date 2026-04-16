@@ -33,7 +33,7 @@ const checkArgs = {
   'max-diagnostics': {
     type: 'string' as const,
     description: 'Maximum number of diagnostics to report',
-    default: '20',
+    default: '100',
   },
   colors: {
     type: 'boolean' as const,
