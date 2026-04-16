@@ -12,15 +12,21 @@ export class PlaceholderValue {
   readonly raw: string;
   private readonly kebabToPascalMap?: Record<string, string>;
   private readonly kebabToCamelMap?: Record<string, string>;
+  private readonly pascalToKebabMap?: Record<string, string>;
+  private readonly camelToKebabMap?: Record<string, string>;
 
   constructor(opts: {
     value: string;
     kebabToPascalMap?: Record<string, string>;
     kebabToCamelMap?: Record<string, string>;
+    pascalToKebabMap?: Record<string, string>;
+    camelToKebabMap?: Record<string, string>;
   }) {
     this.raw = opts.value;
     this.kebabToPascalMap = opts.kebabToPascalMap;
     this.kebabToCamelMap = opts.kebabToCamelMap;
+    this.pascalToKebabMap = opts.pascalToKebabMap;
+    this.camelToKebabMap = opts.camelToKebabMap;
   }
 
   toString(): string {
@@ -59,12 +65,22 @@ export class PlaceholderValue {
   }
 
   toKebabCase(): string {
+    const mapped =
+      this.pascalToKebabMap?.[this.raw] ?? this.camelToKebabMap?.[this.raw];
+    if (mapped) {
+      return mapped;
+    }
     return splitWords(this.raw)
       .map((w) => w.toLowerCase())
       .join('-');
   }
 
   toSnakeCase(): string {
+    const mapped =
+      this.pascalToKebabMap?.[this.raw] ?? this.camelToKebabMap?.[this.raw];
+    if (mapped) {
+      return mapped.replace(/-/g, '_');
+    }
     return splitWords(this.raw)
       .map((w) => w.toLowerCase())
       .join('_');

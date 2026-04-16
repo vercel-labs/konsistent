@@ -165,6 +165,43 @@ describe('PlaceholderValue', () => {
         'test-utils'
       );
     });
+
+    it('uses pascalToKebabMap when entry exists', () => {
+      expect(
+        new PlaceholderValue({
+          value: 'OpenAI',
+          pascalToKebabMap: { OpenAI: 'openai' },
+        }).toKebabCase()
+      ).toBe('openai');
+    });
+
+    it('uses camelToKebabMap when entry exists', () => {
+      expect(
+        new PlaceholderValue({
+          value: 'openAI',
+          camelToKebabMap: { openAI: 'openai' },
+        }).toKebabCase()
+      ).toBe('openai');
+    });
+
+    it('prefers pascalToKebabMap over camelToKebabMap', () => {
+      expect(
+        new PlaceholderValue({
+          value: 'OpenAI',
+          pascalToKebabMap: { OpenAI: 'openai' },
+          camelToKebabMap: { OpenAI: 'open-ai' },
+        }).toKebabCase()
+      ).toBe('openai');
+    });
+
+    it('falls back to default when no map entry exists', () => {
+      expect(
+        new PlaceholderValue({
+          value: 'cache',
+          pascalToKebabMap: { OpenAI: 'openai' },
+        }).toKebabCase()
+      ).toBe('cache');
+    });
   });
 
   describe('toNthSegment', () => {
@@ -298,6 +335,42 @@ describe('PlaceholderValue', () => {
       expect(new PlaceholderValue({ value: 'testUtils' }).toSnakeCase()).toBe(
         'test_utils'
       );
+    });
+
+    it('uses pascalToKebabMap when entry exists', () => {
+      expect(
+        new PlaceholderValue({
+          value: 'OpenAI',
+          pascalToKebabMap: { OpenAI: 'openai' },
+        }).toSnakeCase()
+      ).toBe('openai');
+    });
+
+    it('uses camelToKebabMap when entry exists', () => {
+      expect(
+        new PlaceholderValue({
+          value: 'openAI',
+          camelToKebabMap: { openAI: 'openai' },
+        }).toSnakeCase()
+      ).toBe('openai');
+    });
+
+    it('converts hyphens in mapped value to underscores', () => {
+      expect(
+        new PlaceholderValue({
+          value: 'GraphQL',
+          pascalToKebabMap: { GraphQL: 'graph-ql' },
+        }).toSnakeCase()
+      ).toBe('graph_ql');
+    });
+
+    it('falls back to default when no map entry exists', () => {
+      expect(
+        new PlaceholderValue({
+          value: 'cache',
+          pascalToKebabMap: { OpenAI: 'openai' },
+        }).toSnakeCase()
+      ).toBe('cache');
     });
   });
 });

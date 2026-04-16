@@ -35,6 +35,19 @@ export const TS_PREDICATES = new Set([
   'importTypes',
 ]);
 
+function invertMap(
+  map: Record<string, string> | undefined
+): Record<string, string> | undefined {
+  if (!map) {
+    return undefined;
+  }
+  const inverted: Record<string, string> = {};
+  for (const [key, value] of Object.entries(map)) {
+    inverted[value] = key;
+  }
+  return inverted;
+}
+
 function buildContext(opts: {
   matched: MatchedPath;
   fileSystem: FileSystem;
@@ -306,6 +319,8 @@ async function evaluateForBlock(opts: {
   severity?: DiagnosticSeverity;
   kebabToPascalMap?: Record<string, string>;
   kebabToCamelMap?: Record<string, string>;
+  pascalToKebabMap?: Record<string, string>;
+  camelToKebabMap?: Record<string, string>;
 }): Promise<Diagnostic[]> {
   const {
     block,
@@ -316,6 +331,8 @@ async function evaluateForBlock(opts: {
     severity,
     kebabToPascalMap,
     kebabToCamelMap,
+    pascalToKebabMap,
+    camelToKebabMap,
   } = opts;
 
   if (!block.for) {
@@ -341,6 +358,8 @@ async function evaluateForBlock(opts: {
     fileSystem,
     kebabToPascalMap,
     kebabToCamelMap,
+    pascalToKebabMap,
+    camelToKebabMap,
   });
 
   if (matched.length === 0) {
@@ -392,6 +411,8 @@ export async function run(opts: {
   const fileStructureCache = new Map<string, FileStructure>();
 
   const { kebabToPascalMap, kebabToCamelMap } = config;
+  const pascalToKebabMap = invertMap(kebabToPascalMap);
+  const camelToKebabMap = invertMap(kebabToCamelMap);
 
   const matchResults = await Promise.all(
     config.conventions.map((convention) => {
@@ -403,6 +424,8 @@ export async function run(opts: {
         fileSystem,
         kebabToPascalMap,
         kebabToCamelMap,
+        pascalToKebabMap,
+        camelToKebabMap,
       });
     })
   );
@@ -436,6 +459,8 @@ export async function run(opts: {
             severity,
             kebabToPascalMap,
             kebabToCamelMap,
+            pascalToKebabMap,
+            camelToKebabMap,
           }))
         );
       }
