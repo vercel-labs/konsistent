@@ -106,7 +106,7 @@ export default defineCommand({
       fileSystem,
     });
 
-    const maxDiags = Number.parseInt(args['max-diagnostics'], 10) || 20;
+    const maxDiags = Number.parseInt(args['max-diagnostics'], 10) || 100;
     const { diagnostics: reported, omitted } = truncateDiagnostics({
       diagnostics: runResult.diagnostics,
       max: maxDiags,
