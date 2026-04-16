@@ -1,6 +1,3 @@
 node_modules/
 dist/
 .turbo/
-
-# opensrc - source code for packages
-opensrc/
