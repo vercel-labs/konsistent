@@ -821,6 +821,14 @@ describe('case-maps fixture', () => {
   });
 });
 
+describe('nth-segment fixture', () => {
+  const cwd = resolve(fixturesDir, 'nth-segment');
+
+  it('konsistent check exits 0 when toNthSegment and toNthSegmentPascalCase resolve correctly', async () => {
+    await expect(runCli({ args: ['check'], cwd })).resolves.not.toThrow();
+  });
+});
+
 describe('case-maps-broken fixture', () => {
   const cwd = resolve(fixturesDir, 'case-maps-broken');
 

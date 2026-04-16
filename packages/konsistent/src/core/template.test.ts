@@ -104,6 +104,57 @@ describe('resolveTemplate', () => {
     expect(result).toBe('OpenAIProvider.ts');
   });
 
+  it('resolves ${name.toNthSegment(0)}', () => {
+    const result = resolveTemplate({
+      template: '${name.toNthSegment(0)}-provider.ts',
+      placeholders: makePlaceholders({ name: 'openai-chat' }),
+    });
+    expect(result).toBe('openai-provider.ts');
+  });
+
+  it('resolves ${name.toNthSegment(1)}', () => {
+    const result = resolveTemplate({
+      template: '${name.toNthSegment(1)}.ts',
+      placeholders: makePlaceholders({ name: 'openai-chat' }),
+    });
+    expect(result).toBe('chat.ts');
+  });
+
+  it('resolves ${name.toNthSegmentPascalCase(0)}', () => {
+    const result = resolveTemplate({
+      template: '${name.toNthSegmentPascalCase(0)}Provider.ts',
+      placeholders: makePlaceholders({ name: 'openai-chat' }),
+    });
+    expect(result).toBe('OpenaiProvider.ts');
+  });
+
+  it('resolves ${name.toNthSegmentCamelCase(1)}', () => {
+    const result = resolveTemplate({
+      template: 'create${name.toNthSegmentCamelCase(1)}.ts',
+      placeholders: makePlaceholders({ name: 'openai-Chat' }),
+    });
+    expect(result).toBe('createchat.ts');
+  });
+
+  it('resolves toNthSegment out of bounds to empty string', () => {
+    const result = resolveTemplate({
+      template: '${name.toNthSegment(5)}.ts',
+      placeholders: makePlaceholders({ name: 'openai' }),
+    });
+    expect(result).toBe('.ts');
+  });
+
+  it('resolves toNthSegmentPascalCase using kebabToPascalMap', () => {
+    const result = resolveTemplate({
+      template: '${name.toNthSegmentPascalCase(0)}Provider.ts',
+      placeholders: makePlaceholders(
+        { name: 'openai-chat' },
+        { kebabToPascalMap: { openai: 'OpenAI' } }
+      ),
+    });
+    expect(result).toBe('OpenAIProvider.ts');
+  });
+
   it('resolves toCamelCase falling back to kebabToPascalMap', () => {
     const result = resolveTemplate({
       template: 'create${name.toPascalCase()}',

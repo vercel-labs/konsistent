@@ -167,6 +167,114 @@ describe('PlaceholderValue', () => {
     });
   });
 
+  describe('toNthSegment', () => {
+    it('returns first segment of hyphenated value', () => {
+      expect(
+        new PlaceholderValue({ value: 'foo-bar-baz' }).toNthSegment(0)
+      ).toBe('foo');
+    });
+
+    it('returns second segment', () => {
+      expect(
+        new PlaceholderValue({ value: 'foo-bar-baz' }).toNthSegment(1)
+      ).toBe('bar');
+    });
+
+    it('returns last segment', () => {
+      expect(
+        new PlaceholderValue({ value: 'foo-bar-baz' }).toNthSegment(2)
+      ).toBe('baz');
+    });
+
+    it('returns empty string when index out of bounds', () => {
+      expect(new PlaceholderValue({ value: 'foo-bar' }).toNthSegment(5)).toBe(
+        ''
+      );
+    });
+
+    it('returns whole value when no hyphens and index is 0', () => {
+      expect(new PlaceholderValue({ value: 'openai' }).toNthSegment(0)).toBe(
+        'openai'
+      );
+    });
+
+    it('returns empty string when no hyphens and index is 1', () => {
+      expect(new PlaceholderValue({ value: 'openai' }).toNthSegment(1)).toBe(
+        ''
+      );
+    });
+  });
+
+  describe('toNthSegmentPascalCase', () => {
+    it('capitalizes segment', () => {
+      expect(
+        new PlaceholderValue({ value: 'foo-bar' }).toNthSegmentPascalCase(0)
+      ).toBe('Foo');
+    });
+
+    it('capitalizes second segment', () => {
+      expect(
+        new PlaceholderValue({ value: 'foo-bar' }).toNthSegmentPascalCase(1)
+      ).toBe('Bar');
+    });
+
+    it('uses kebabToPascalMap when entry exists', () => {
+      expect(
+        new PlaceholderValue({
+          value: 'openai-graphql',
+          kebabToPascalMap: { openai: 'OpenAI' },
+        }).toNthSegmentPascalCase(0)
+      ).toBe('OpenAI');
+    });
+
+    it('falls back to default when no map entry', () => {
+      expect(
+        new PlaceholderValue({
+          value: 'openai-graphql',
+          kebabToPascalMap: { graphql: 'GraphQL' },
+        }).toNthSegmentPascalCase(0)
+      ).toBe('Openai');
+    });
+
+    it('returns empty string when out of bounds', () => {
+      expect(
+        new PlaceholderValue({ value: 'foo-bar' }).toNthSegmentPascalCase(5)
+      ).toBe('');
+    });
+  });
+
+  describe('toNthSegmentCamelCase', () => {
+    it('lowercases single-word segment', () => {
+      expect(
+        new PlaceholderValue({ value: 'Foo-bar' }).toNthSegmentCamelCase(0)
+      ).toBe('foo');
+    });
+
+    it('uses kebabToCamelMap when entry exists', () => {
+      expect(
+        new PlaceholderValue({
+          value: 'openai-graphql',
+          kebabToCamelMap: { openai: 'openAI' },
+        }).toNthSegmentCamelCase(0)
+      ).toBe('openAI');
+    });
+
+    it('falls back to kebabToPascalMap with lowercased first char', () => {
+      expect(
+        new PlaceholderValue({
+          value: 'openai-graphql',
+          kebabToPascalMap: { graphql: 'GraphQL' },
+        }).toNthSegmentCamelCase(1)
+      ).toBe('graphQL');
+    });
+
+    it('returns empty string when out of bounds', () => {
+      expect(
+        new PlaceholderValue({ value: 'foo-bar' }).toNthSegmentCamelCase(5)
+      ).toBe('');
+    });
+  });
+
   describe('toSnakeCase', () => {
     it('lowercases single word', () => {
       expect(new PlaceholderValue({ value: 'Openai' }).toSnakeCase()).toBe(

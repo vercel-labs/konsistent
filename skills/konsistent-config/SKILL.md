@@ -63,6 +63,9 @@ Placeholders become available as templates `${pkgName}` inside `must` predicates
 - `${name.toCamelCase()}` — `my-thing` → `myThing`
 - `${name.toKebabCase()}` — `MyThing` → `my-thing`
 - `${name.toSnakeCase()}` — `MyThing` → `my_thing`
+- `${name.toNthSegment(0)}` — `my-thing` → `my` (split by `-`, return nth segment)
+- `${name.toNthSegmentPascalCase(0)}` — `my-thing` → `My` (nth segment with PascalCase)
+- `${name.toNthSegmentCamelCase(0)}` — `my-thing` → `my` (nth segment with camelCase)
 
 ### Path Negation
 
