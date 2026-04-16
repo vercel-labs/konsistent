@@ -178,6 +178,29 @@ describe('matchPaths', () => {
     expect(results).toHaveLength(0);
   });
 
+  it('negation of directory excludes files within it', async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        [
+          'packages/*/src/index.ts',
+          [
+            'packages/ai/src/index.ts',
+            'packages/openai/src/index.ts',
+            'packages/anthropic/src/index.ts',
+          ],
+        ],
+        ['packages/ai', ['packages/ai']],
+      ]),
+    });
+    const results = await matchPaths({
+      patterns: ['packages/{providerId}/src/index.ts', '!packages/ai'],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(2);
+    expect(results[0].path).toBe('packages/openai/src/index.ts');
+    expect(results[1].path).toBe('packages/anthropic/src/index.ts');
+  });
+
   it('negation with no positive matches returns empty', async () => {
     const fs = createMockFileSystem({
       globResults: new Map([['src/nothing.ts', ['src/nothing.ts']]]),

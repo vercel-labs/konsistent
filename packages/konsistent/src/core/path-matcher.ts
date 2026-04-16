@@ -185,9 +185,12 @@ export async function matchPaths(opts: {
 
   const negativeGlobs = negativePatterns.map(patternToGlob);
   const negatedPaths = await fileSystem.glob(negativeGlobs);
-  const excludeSet = new Set(
-    negatedPaths.map((p) => (p.endsWith('/') ? p.slice(0, -1) : p))
+  const excludePaths = negatedPaths.map((p) =>
+    p.endsWith('/') ? p.slice(0, -1) : p
   );
 
-  return positiveResults.filter((r) => !excludeSet.has(r.path));
+  return positiveResults.filter(
+    (r) =>
+      !excludePaths.some((ex) => r.path === ex || r.path.startsWith(`${ex}/`))
+  );
 }
