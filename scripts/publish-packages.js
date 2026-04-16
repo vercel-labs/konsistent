@@ -297,7 +297,7 @@ async function main() {
       };
     })
   );
-  const packagesToPublish: Record<string, unknown>[] = [];
+  const packagesToPublish = [];
 
   for (const {
     pkg,
