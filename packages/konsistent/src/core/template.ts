@@ -8,6 +8,7 @@ const VALID_METHODS = new Set([
   'toCamelCase',
   'toKebabCase',
   'toSnakeCase',
+  'toFlatCase',
   'toNthSegment',
   'toNthSegmentPascalCase',
   'toNthSegmentCamelCase',

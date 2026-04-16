@@ -76,6 +76,10 @@ export class PlaceholderValue {
     return toSnakeCase(this.raw);
   }
 
+  toFlatCase(): string {
+    return this.raw.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  }
+
   toNthSegment(n: number): string {
     const segments = this.raw.split('-');
     return n < segments.length ? segments[n] : '';

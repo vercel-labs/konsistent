@@ -260,6 +260,42 @@ describe('PlaceholderValue', () => {
     });
   });
 
+  describe('toFlatCase', () => {
+    it('lowercases single word', () => {
+      expect(new PlaceholderValue({ value: 'openai' }).toFlatCase()).toBe(
+        'openai'
+      );
+    });
+
+    it('strips hyphens and lowercases', () => {
+      expect(new PlaceholderValue({ value: 'test-utils' }).toFlatCase()).toBe(
+        'testutils'
+      );
+    });
+
+    it('strips underscores and lowercases', () => {
+      expect(new PlaceholderValue({ value: 'test_utils' }).toFlatCase()).toBe(
+        'testutils'
+      );
+    });
+
+    it('handles camelCase input', () => {
+      expect(new PlaceholderValue({ value: 'testUtils' }).toFlatCase()).toBe(
+        'testutils'
+      );
+    });
+
+    it('handles PascalCase input', () => {
+      expect(new PlaceholderValue({ value: 'TestUtils' }).toFlatCase()).toBe(
+        'testutils'
+      );
+    });
+
+    it('handles single character', () => {
+      expect(new PlaceholderValue({ value: 'A' }).toFlatCase()).toBe('a');
+    });
+  });
+
   describe('toNthSegment', () => {
     it('returns first segment of hyphenated value', () => {
       expect(
