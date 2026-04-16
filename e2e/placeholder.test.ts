@@ -1,4 +1,5 @@
 import { execFile as execFileCb } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { describe, expect, it } from 'vitest';
@@ -11,6 +12,13 @@ const cliBinary = resolve(
 );
 
 const fixturesDir = resolve(import.meta.dirname, 'fixtures');
+
+const pkgVersion = JSON.parse(
+  readFileSync(
+    resolve(import.meta.dirname, '../packages/konsistent/package.json'),
+    'utf-8'
+  )
+).version as string;
 
 const githubAnnotationPattern = /^::(error|warning) file=.+::.+/;
 // biome-ignore lint/suspicious/noControlCharactersInRegex: checking for ANSI escape codes
@@ -32,12 +40,12 @@ function runCli(opts: {
 describe('CLI binary', () => {
   it('konsistent version prints the version', async () => {
     const { stdout } = await runCli({ args: ['version'] });
-    expect(stdout.trim()).toBe('0.0.0');
+    expect(stdout.trim()).toBe(pkgVersion);
   });
 
   it('konsistent --version prints the version', async () => {
     const { stdout } = await runCli({ args: ['--version'] });
-    expect(stdout.trim()).toBe('0.0.0');
+    expect(stdout.trim()).toBe(pkgVersion);
   });
 });
 
