@@ -25,14 +25,20 @@ Create a `konsistent.json` in your project root:
     {
       "paths": "packages/{providerId}/src/index.ts",
       "must": {
-        "export": ["${providerId}"],
+        "export": ["${providerId.toFlatCase()}"],
         "exportTypes": [
           "${providerId.toPascalCase()}Provider",
           "${providerId.toPascalCase()}ProviderSettings"
         ]
       }
     }
-  ]
+  ],
+  "kebabToPascalMap": {
+    "openai": "OpenAI"
+  },
+  "kebabToCamelMap": {
+    "openai": "openAI"
+  }
 }
 ```
 
@@ -66,7 +72,7 @@ packages/anthropic/src/index.ts
 
 packages/openai/src/index.ts
   -  error  Missing export "openai"  [must-export-and-more]
-  -  error  Missing export type "OpenaiProviderSettings"  [must-export-and-more]
+  -  error  Missing export type "OpenAIProviderSettings"  [must-export-and-more]
 
 Checked 6 files in 10ms. Found 3 errors.
 ```
