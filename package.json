@@ -10,7 +10,8 @@
     "test:e2e": "turbo test:e2e:run",
     "test:e2e:run": "vitest run -c e2e/vitest.config.ts",
     "check": "ultracite lint",
-    "fix": "ultracite format"
+    "fix": "ultracite format",
+    "publish:packages": "node scripts/publish-packages.js"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
