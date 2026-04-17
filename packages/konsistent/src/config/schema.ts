@@ -1,38 +1,50 @@
 import { z } from 'zod';
 
-export const ExportDefinitionV1Schema = z.object({
-  name: z.string(),
-  from: z.string().optional(),
-});
+export const ExportDefinitionV1Schema = z
+  .object({
+    name: z.string(),
+    from: z.string().optional(),
+  })
+  .strict();
 
-export const ImportDefinitionV1Schema = z.object({
-  name: z.string(),
-  from: z.string().optional(),
-});
+export const ImportDefinitionV1Schema = z
+  .object({
+    name: z.string(),
+    from: z.string().optional(),
+  })
+  .strict();
 
-export const FunctionDefinitionV1Schema = z.object({
-  name: z.string(),
-  receiveParamOfType: z.string().optional(),
-  returnValueOfType: z.string().optional(),
-});
+export const FunctionDefinitionV1Schema = z
+  .object({
+    name: z.string(),
+    receiveParamOfType: z.string().optional(),
+    returnValueOfType: z.string().optional(),
+  })
+  .strict();
 
 const ExtendDefinitionV1Schema = z.union([
   z.string(),
-  z.object({
-    type: z.string(),
-    allowOmissions: z.boolean().optional(),
-  }),
+  z
+    .object({
+      type: z.string(),
+      allowOmissions: z.boolean().optional(),
+    })
+    .strict(),
 ]);
 
-export const InterfaceDefinitionV1Schema = z.object({
-  name: z.string(),
-  extend: ExtendDefinitionV1Schema.optional(),
-});
+export const InterfaceDefinitionV1Schema = z
+  .object({
+    name: z.string(),
+    extend: ExtendDefinitionV1Schema.optional(),
+  })
+  .strict();
 
-export const ClassDefinitionV1Schema = z.object({
-  name: z.string(),
-  extend: ExtendDefinitionV1Schema.optional(),
-});
+export const ClassDefinitionV1Schema = z
+  .object({
+    name: z.string(),
+    extend: ExtendDefinitionV1Schema.optional(),
+  })
+  .strict();
 
 export const MustPredicatesV1Schema = z
   .object({
@@ -59,34 +71,40 @@ export const MustPredicatesV1Schema = z
       .array(z.union([z.string(), ImportDefinitionV1Schema]))
       .optional(),
   })
-  .passthrough();
+  .strict();
 
-export const MustBlockV1Schema = z.object({
-  if: z.object({ hasFile: z.string() }).optional(),
-  for: z.object({ files: z.string() }).optional(),
-  excludeFiles: z.array(z.string()).optional(),
-  must: MustPredicatesV1Schema,
-});
+export const MustBlockV1Schema = z
+  .object({
+    if: z.object({ hasFile: z.string() }).strict().optional(),
+    for: z.object({ files: z.string() }).strict().optional(),
+    excludeFiles: z.array(z.string()).optional(),
+    must: MustPredicatesV1Schema,
+  })
+  .strict();
 
-export const ConventionV1Schema = z.object({
-  name: z
-    .string()
-    .regex(/^[a-z0-9-]+$/, 'Convention name must match [a-z0-9-]+')
-    .optional(),
-  description: z.string().optional(),
-  severity: z.enum(['error', 'warning']).default('error').optional(),
-  excludeFiles: z.array(z.string()).optional(),
-  paths: z.union([z.string(), z.array(z.string())]),
-  must: z.union([MustPredicatesV1Schema, z.array(MustBlockV1Schema)]),
-});
+export const ConventionV1Schema = z
+  .object({
+    name: z
+      .string()
+      .regex(/^[a-z0-9-]+$/, 'Convention name must match [a-z0-9-]+')
+      .optional(),
+    description: z.string().optional(),
+    severity: z.enum(['error', 'warning']).default('error').optional(),
+    excludeFiles: z.array(z.string()).optional(),
+    paths: z.union([z.string(), z.array(z.string())]),
+    must: z.union([MustPredicatesV1Schema, z.array(MustBlockV1Schema)]),
+  })
+  .strict();
 
-export const ConfigV1Schema = z.object({
-  $schema: z.string().optional(),
-  version: z.literal('v1'),
-  kebabToPascalMap: z.record(z.string(), z.string()).optional(),
-  kebabToCamelMap: z.record(z.string(), z.string()).optional(),
-  conventions: z.array(ConventionV1Schema),
-});
+export const ConfigV1Schema = z
+  .object({
+    $schema: z.string().optional(),
+    version: z.literal('v1'),
+    kebabToPascalMap: z.record(z.string(), z.string()).optional(),
+    kebabToCamelMap: z.record(z.string(), z.string()).optional(),
+    conventions: z.array(ConventionV1Schema),
+  })
+  .strict();
 
 export type ConfigV1 = z.infer<typeof ConfigV1Schema>;
 export type ConventionV1 = z.infer<typeof ConventionV1Schema>;
