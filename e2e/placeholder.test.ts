@@ -121,6 +121,35 @@ describe('ai-toolkit fixture', () => {
   });
 });
 
+describe('ai-toolkit-with-omissions fixture', () => {
+  const cwd = resolve(fixturesDir, 'ai-toolkit-with-omissions');
+
+  it('konsistent check exits 0 when interfaces extend Pick/Omit of target with allowOmissions', async () => {
+    await expect(runCli({ args: ['check'], cwd })).resolves.not.toThrow();
+  });
+});
+
+describe('ai-toolkit-with-omissions-broken fixture', () => {
+  const cwd = resolve(fixturesDir, 'ai-toolkit-with-omissions-broken');
+
+  it('konsistent check exits 1 when interfaces use Pick/Omit without allowOmissions', async () => {
+    try {
+      await runCli({ args: ['check'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err) {
+      const error = err as { stdout: string; code: number };
+      expect(error.code).toBe(1);
+      expect(error.stdout).toContain(
+        'Interface "OpenaiProvider" must extend "ProviderV1"'
+      );
+      expect(error.stdout).toContain(
+        'Interface "AnthropicProvider" must extend "ProviderV1"'
+      );
+      expect(error.stdout).toContain('Found 2 errors.');
+    }
+  });
+});
+
 describe('ai-toolkit-broken-interfaces fixture', () => {
   const cwd = resolve(fixturesDir, 'ai-toolkit-broken-interfaces');
 

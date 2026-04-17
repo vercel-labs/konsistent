@@ -221,4 +221,29 @@ describe('checkExportClasses', () => {
     });
     expect(result).toEqual([]);
   });
+
+  it('accepts object form for extend with type field', () => {
+    const result = checkExportClasses({
+      expected: [{ name: 'MyClass', extend: { type: 'BaseClass' } }],
+      context: createMockContext({ path: 'src/index.ts' }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: 'MyClass',
+            kind: 'class',
+            isType: false,
+            pos: { line: 1, column: 1 },
+          },
+        ],
+        classes: [
+          {
+            name: 'MyClass',
+            extends: 'BaseClass',
+            pos: { line: 1, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toEqual([]);
+  });
 });

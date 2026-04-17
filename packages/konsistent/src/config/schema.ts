@@ -15,14 +15,22 @@ export const FunctionDefinitionV1Schema = z.object({
   returnValueOfType: z.string().optional(),
 });
 
+const ExtendDefinitionV1Schema = z.union([
+  z.string(),
+  z.object({
+    type: z.string(),
+    allowOmissions: z.boolean().optional(),
+  }),
+]);
+
 export const InterfaceDefinitionV1Schema = z.object({
   name: z.string(),
-  extend: z.string().optional(),
+  extend: ExtendDefinitionV1Schema.optional(),
 });
 
 export const ClassDefinitionV1Schema = z.object({
   name: z.string(),
-  extend: z.string().optional(),
+  extend: ExtendDefinitionV1Schema.optional(),
 });
 
 export const MustPredicatesV1Schema = z

@@ -165,7 +165,24 @@
                               "type": "string"
                             },
                             "extend": {
-                              "type": "string"
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "type": {
+                                      "type": "string"
+                                    },
+                                    "allowOmissions": {
+                                      "type": "boolean"
+                                    }
+                                  },
+                                  "required": ["type"],
+                                  "additionalProperties": false
+                                }
+                              ]
                             }
                           },
                           "required": ["name"],
@@ -188,7 +205,24 @@
                               "type": "string"
                             },
                             "extend": {
-                              "type": "string"
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "type": {
+                                      "type": "string"
+                                    },
+                                    "allowOmissions": {
+                                      "type": "boolean"
+                                    }
+                                  },
+                                  "required": ["type"],
+                                  "additionalProperties": false
+                                }
+                              ]
                             }
                           },
                           "required": ["name"],
@@ -384,7 +418,24 @@
                                     "type": "string"
                                   },
                                   "extend": {
-                                    "type": "string"
+                                    "anyOf": [
+                                      {
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "type": {
+                                            "type": "string"
+                                          },
+                                          "allowOmissions": {
+                                            "type": "boolean"
+                                          }
+                                        },
+                                        "required": ["type"],
+                                        "additionalProperties": false
+                                      }
+                                    ]
                                   }
                                 },
                                 "required": ["name"],
@@ -407,7 +458,24 @@
                                     "type": "string"
                                   },
                                   "extend": {
-                                    "type": "string"
+                                    "anyOf": [
+                                      {
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "type": {
+                                            "type": "string"
+                                          },
+                                          "allowOmissions": {
+                                            "type": "boolean"
+                                          }
+                                        },
+                                        "required": ["type"],
+                                        "additionalProperties": false
+                                      }
+                                    ]
                                   }
                                 },
                                 "required": ["name"],

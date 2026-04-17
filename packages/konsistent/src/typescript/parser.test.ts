@@ -250,7 +250,54 @@ describe('parseFileStructure', () => {
       expect(result.interfaces).toHaveLength(1);
       expect(result.interfaces[0]).toMatchObject({
         name: 'Foo',
-        extends: ['Bar', 'Baz'],
+        extends: [
+          { name: 'Bar', typeArguments: [] },
+          { name: 'Baz', typeArguments: [] },
+        ],
+      });
+    });
+
+    it('extracts interface extending Pick with type arguments', () => {
+      const result = parseFileStructure({
+        source: "interface Foo extends Pick<Bar, 'a' | 'b'> {}",
+      });
+      expect(result.interfaces).toHaveLength(1);
+      expect(result.interfaces[0]).toMatchObject({
+        name: 'Foo',
+        extends: [{ name: 'Pick', typeArguments: ['Bar', "'a' | 'b'"] }],
+      });
+    });
+
+    it('extracts interface extending Omit with type arguments', () => {
+      const result = parseFileStructure({
+        source: "interface Foo extends Omit<Bar, 'x'> {}",
+      });
+      expect(result.interfaces[0]).toMatchObject({
+        name: 'Foo',
+        extends: [{ name: 'Omit', typeArguments: ['Bar', "'x'"] }],
+      });
+    });
+
+    it('extracts interface extending Partial', () => {
+      const result = parseFileStructure({
+        source: 'interface Foo extends Partial<Bar> {}',
+      });
+      expect(result.interfaces[0]).toMatchObject({
+        name: 'Foo',
+        extends: [{ name: 'Partial', typeArguments: ['Bar'] }],
+      });
+    });
+
+    it('extracts mixed extends with and without type arguments', () => {
+      const result = parseFileStructure({
+        source: "interface Foo extends Pick<Bar, 'a'>, Baz {}",
+      });
+      expect(result.interfaces[0]).toMatchObject({
+        name: 'Foo',
+        extends: [
+          { name: 'Pick', typeArguments: ['Bar', "'a'"] },
+          { name: 'Baz', typeArguments: [] },
+        ],
       });
     });
   });
@@ -452,7 +499,9 @@ describe('parseFileStructure', () => {
       expect(result.imports[1].isType).toBe(true);
 
       expect(result.interfaces).toHaveLength(1);
-      expect(result.interfaces[0].extends).toEqual(['BaseConfig']);
+      expect(result.interfaces[0].extends).toEqual([
+        { name: 'BaseConfig', typeArguments: [] },
+      ]);
 
       expect(result.classes).toHaveLength(1);
       expect(result.classes[0].extends).toBe('BaseService');

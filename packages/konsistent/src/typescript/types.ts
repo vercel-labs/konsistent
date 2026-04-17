@@ -18,9 +18,14 @@ export interface ImportInfo {
   pos: SourcePosition;
 }
 
+export interface ExtendsClauseInfo {
+  name: string;
+  typeArguments: string[];
+}
+
 export interface InterfaceInfo {
   name: string;
-  extends: string[];
+  extends: ExtendsClauseInfo[];
   pos: SourcePosition;
 }
 

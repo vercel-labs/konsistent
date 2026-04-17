@@ -79,7 +79,7 @@ describe('checkExportInterfaces', () => {
         interfaces: [
           {
             name: 'MyInterface',
-            extends: ['BaseInterface'],
+            extends: [{ name: 'BaseInterface', typeArguments: [] }],
             pos: { line: 5, column: 1 },
           },
         ],
@@ -104,7 +104,7 @@ describe('checkExportInterfaces', () => {
         interfaces: [
           {
             name: 'MyInterface',
-            extends: ['OtherInterface'],
+            extends: [{ name: 'OtherInterface', typeArguments: [] }],
             pos: { line: 10, column: 3 },
           },
         ],
@@ -185,7 +185,7 @@ describe('checkExportInterfaces', () => {
         interfaces: [
           {
             name: 'MyInterface',
-            extends: ['BaseInterface'],
+            extends: [{ name: 'BaseInterface', typeArguments: [] }],
             pos: { line: 1, column: 1 },
           },
         ],
@@ -221,6 +221,203 @@ describe('checkExportInterfaces', () => {
           {
             name: 'Foo',
             extends: [],
+            pos: { line: 1, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it('returns no diagnostics when allowOmissions is true and interface extends Pick of target', () => {
+    const result = checkExportInterfaces({
+      expected: [
+        {
+          name: 'MyInterface',
+          extend: { type: 'BaseInterface', allowOmissions: true },
+        },
+      ],
+      context: createMockContext({ path: 'src/index.ts' }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: 'MyInterface',
+            kind: 'interface',
+            isType: true,
+            pos: { line: 1, column: 1 },
+          },
+        ],
+        interfaces: [
+          {
+            name: 'MyInterface',
+            extends: [
+              { name: 'Pick', typeArguments: ['BaseInterface', "'a' | 'b'"] },
+            ],
+            pos: { line: 1, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it('returns diagnostic when allowOmissions is false and interface extends Pick of target', () => {
+    const result = checkExportInterfaces({
+      expected: [
+        {
+          name: 'MyInterface',
+          extend: { type: 'BaseInterface' },
+        },
+      ],
+      context: createMockContext({ path: 'src/index.ts' }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: 'MyInterface',
+            kind: 'interface',
+            isType: true,
+            pos: { line: 1, column: 1 },
+          },
+        ],
+        interfaces: [
+          {
+            name: 'MyInterface',
+            extends: [
+              { name: 'Pick', typeArguments: ['BaseInterface', "'a'"] },
+            ],
+            pos: { line: 1, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe(
+      'Interface "MyInterface" must extend "BaseInterface"'
+    );
+  });
+
+  it('returns no diagnostics when allowOmissions is true and interface extends Omit of target', () => {
+    const result = checkExportInterfaces({
+      expected: [
+        {
+          name: 'MyInterface',
+          extend: { type: 'BaseInterface', allowOmissions: true },
+        },
+      ],
+      context: createMockContext({ path: 'src/index.ts' }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: 'MyInterface',
+            kind: 'interface',
+            isType: true,
+            pos: { line: 1, column: 1 },
+          },
+        ],
+        interfaces: [
+          {
+            name: 'MyInterface',
+            extends: [
+              { name: 'Omit', typeArguments: ['BaseInterface', "'x'"] },
+            ],
+            pos: { line: 1, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it('returns no diagnostics when allowOmissions is true and direct match exists', () => {
+    const result = checkExportInterfaces({
+      expected: [
+        {
+          name: 'MyInterface',
+          extend: { type: 'BaseInterface', allowOmissions: true },
+        },
+      ],
+      context: createMockContext({ path: 'src/index.ts' }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: 'MyInterface',
+            kind: 'interface',
+            isType: true,
+            pos: { line: 1, column: 1 },
+          },
+        ],
+        interfaces: [
+          {
+            name: 'MyInterface',
+            extends: [{ name: 'BaseInterface', typeArguments: [] }],
+            pos: { line: 1, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it('returns diagnostic when allowOmissions is true but target is not referenced', () => {
+    const result = checkExportInterfaces({
+      expected: [
+        {
+          name: 'MyInterface',
+          extend: { type: 'BaseInterface', allowOmissions: true },
+        },
+      ],
+      context: createMockContext({ path: 'src/index.ts' }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: 'MyInterface',
+            kind: 'interface',
+            isType: true,
+            pos: { line: 1, column: 1 },
+          },
+        ],
+        interfaces: [
+          {
+            name: 'MyInterface',
+            extends: [
+              { name: 'Pick', typeArguments: ['OtherInterface', "'a'"] },
+            ],
+            pos: { line: 1, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe(
+      'Interface "MyInterface" must extend "BaseInterface"'
+    );
+  });
+
+  it('resolves template placeholders in extend object type', () => {
+    const result = checkExportInterfaces({
+      expected: [
+        {
+          name: 'MyInterface',
+          extend: { type: '${base}Interface', allowOmissions: true },
+        },
+      ],
+      context: createMockContext({
+        path: 'src/index.ts',
+        placeholders: { base: { toString: () => 'Base' } },
+      }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: 'MyInterface',
+            kind: 'interface',
+            isType: true,
+            pos: { line: 1, column: 1 },
+          },
+        ],
+        interfaces: [
+          {
+            name: 'MyInterface',
+            extends: [{ name: 'Partial', typeArguments: ['BaseInterface'] }],
             pos: { line: 1, column: 1 },
           },
         ],

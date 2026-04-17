@@ -3,8 +3,27 @@ import { createDiagnostic } from '../../core/diagnostics.js';
 import type { Diagnostic, DiagnosticSeverity } from '../../core/diagnostics.js';
 import type { FileStructure } from '../types.js';
 
+type ExtendConfig =
+  | string
+  | { type: string; allowOmissions?: boolean }
+  | undefined;
+
+function resolveExtendType(opts: {
+  extend: ExtendConfig;
+  context: PredicateContext;
+}): string | undefined {
+  const { extend, context } = opts;
+  if (!extend) {
+    return undefined;
+  }
+  if (typeof extend === 'string') {
+    return context.resolveTemplate(extend);
+  }
+  return context.resolveTemplate(extend.type);
+}
+
 export function checkExportClasses(opts: {
-  expected: (string | { name: string; extend?: string })[];
+  expected: (string | { name: string; extend?: ExtendConfig })[];
   context: PredicateContext;
   fileStructure: FileStructure;
   conventionName?: string;
@@ -53,21 +72,22 @@ export function checkExportClasses(opts: {
       continue;
     }
 
-    if (definition.extend && classInfo) {
-      const resolvedExtend = context.resolveTemplate(definition.extend);
-      if (classInfo.extends !== resolvedExtend) {
-        diagnostics.push(
-          createDiagnostic({
-            filePath: context.path,
-            predicateName: 'exportClasses',
-            message: `Class "${resolvedName}" must extend "${resolvedExtend}"`,
-            conventionName,
-            line: classInfo.pos.line,
-            column: classInfo.pos.column,
-            severity,
-          })
-        );
-      }
+    const resolvedExtend = resolveExtendType({
+      extend: definition.extend,
+      context,
+    });
+    if (resolvedExtend && classInfo && classInfo.extends !== resolvedExtend) {
+      diagnostics.push(
+        createDiagnostic({
+          filePath: context.path,
+          predicateName: 'exportClasses',
+          message: `Class "${resolvedName}" must extend "${resolvedExtend}"`,
+          conventionName,
+          line: classInfo.pos.line,
+          column: classInfo.pos.column,
+          severity,
+        })
+      );
     }
   }
 

@@ -3,6 +3,7 @@ import type {
   ClassInfo,
   ConstantInfo,
   ExportInfo,
+  ExtendsClauseInfo,
   FileStructure,
   FunctionInfo,
   ImportInfo,
@@ -62,15 +63,20 @@ function extractParams(
 function extractExtendsFromHeritage(
   clauses: ts.NodeArray<ts.HeritageClause> | undefined,
   kind: ts.SyntaxKind
-): string[] {
+): ExtendsClauseInfo[] {
   if (!clauses) {
     return [];
   }
-  const result: string[] = [];
+  const result: ExtendsClauseInfo[] = [];
   for (const clause of clauses) {
     if (clause.token === kind) {
       for (const type of clause.types) {
-        result.push(type.expression.getText());
+        result.push({
+          name: type.expression.getText(),
+          typeArguments: type.typeArguments
+            ? type.typeArguments.map((arg) => arg.getText())
+            : [],
+        });
       }
     }
   }
@@ -267,13 +273,13 @@ function processDeclaration(opts: {
 
   if (ts.isClassDeclaration(node) && node.name) {
     const pos = getPosition({ sourceFile, node });
-    const extendsNames = extractExtendsFromHeritage(
+    const extendsClauses = extractExtendsFromHeritage(
       node.heritageClauses,
       ts.SyntaxKind.ExtendsKeyword
     );
     collector.classes.push({
       name: node.name.getText(sourceFile),
-      extends: extendsNames[0],
+      extends: extendsClauses[0]?.name,
       pos,
     });
   }
