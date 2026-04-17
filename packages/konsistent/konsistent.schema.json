@@ -83,6 +83,9 @@
                           "properties": {
                             "name": {
                               "type": "string"
+                            },
+                            "from": {
+                              "type": "string"
                             }
                           },
                           "required": ["name"],
@@ -102,6 +105,9 @@
                           "type": "object",
                           "properties": {
                             "name": {
+                              "type": "string"
+                            },
+                            "from": {
                               "type": "string"
                             }
                           },
@@ -342,6 +348,9 @@
                                 "properties": {
                                   "name": {
                                     "type": "string"
+                                  },
+                                  "from": {
+                                    "type": "string"
                                   }
                                 },
                                 "required": ["name"],
@@ -361,6 +370,9 @@
                                 "type": "object",
                                 "properties": {
                                   "name": {
+                                    "type": "string"
+                                  },
+                                  "from": {
                                     "type": "string"
                                   }
                                 },

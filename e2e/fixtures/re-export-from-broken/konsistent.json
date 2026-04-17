@@ -1,0 +1,19 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "barrel-re-exports",
+      "description": "Barrel files must re-export from the correct source modules",
+      "paths": "packages/{providerId}/src/index.ts",
+      "must": {
+        "export": [{ "name": "${providerId}", "from": "./${providerId}-core" }],
+        "exportTypes": [
+          {
+            "name": "${providerId.toPascalCase()}Provider",
+            "from": "./${providerId}-core"
+          }
+        ]
+      }
+    }
+  ]
+}

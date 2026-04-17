@@ -138,6 +138,88 @@ describe('checkExportTypes', () => {
     expect(result).toEqual([]);
   });
 
+  it('returns no diagnostics when type re-export with matching from is found', () => {
+    const result = checkExportTypes({
+      expected: [{ name: 'MyType', from: './types' }],
+      context: createMockContext({ path: 'src/index.ts' }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: 'MyType',
+            kind: 're-export',
+            from: './types',
+            isType: true,
+            pos: { line: 1, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it('returns diagnostic when from does not match', () => {
+    const result = checkExportTypes({
+      expected: [{ name: 'MyType', from: './types' }],
+      context: createMockContext({ path: 'src/index.ts' }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: 'MyType',
+            kind: 're-export',
+            from: './other',
+            isType: true,
+            pos: { line: 1, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe(
+      'Missing export type "MyType" from "./types"'
+    );
+  });
+
+  it('resolves template placeholders in from', () => {
+    const result = checkExportTypes({
+      expected: [{ name: 'MyType', from: './${name}' }],
+      context: createMockContext({
+        path: 'src/index.ts',
+        placeholders: { name: { toString: () => 'types' } },
+      }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: 'MyType',
+            kind: 're-export',
+            from: './types',
+            isType: true,
+            pos: { line: 1, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it('does not require from when not specified in object form', () => {
+    const result = checkExportTypes({
+      expected: [{ name: 'MyType' }],
+      context: createMockContext({ path: 'src/index.ts' }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: 'MyType',
+            kind: 're-export',
+            from: './anywhere',
+            isType: true,
+            pos: { line: 1, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
   it('includes conventionName when provided', () => {
     const result = checkExportTypes({
       expected: ['Missing'],

@@ -883,6 +883,40 @@ describe('case-maps-broken fixture', () => {
   });
 });
 
+describe('re-export-from fixture', () => {
+  const cwd = resolve(fixturesDir, 're-export-from');
+
+  it('konsistent check exits 0 when re-exports match the from constraint', async () => {
+    await expect(runCli({ args: ['check'], cwd })).resolves.not.toThrow();
+  });
+});
+
+describe('re-export-from-broken fixture', () => {
+  const cwd = resolve(fixturesDir, 're-export-from-broken');
+
+  it('konsistent check exits 1 when re-exports have wrong from source', async () => {
+    try {
+      await runCli({ args: ['check'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain(
+        'Missing export "openai" from "./openai-core"'
+      );
+      expect(error.stdout).toContain(
+        'Missing export type "OpenaiProvider" from "./openai-core"'
+      );
+      expect(error.stdout).toContain('Found 2 errors.');
+    }
+  });
+});
+
 describe('exclude-files fixture', () => {
   const cwd = resolve(fixturesDir, 'exclude-files');
 

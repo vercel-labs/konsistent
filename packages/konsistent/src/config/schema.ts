@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const ExportDefinitionV1Schema = z.object({
   name: z.string(),
+  from: z.string().optional(),
 });
 
 export const ImportDefinitionV1Schema = z.object({

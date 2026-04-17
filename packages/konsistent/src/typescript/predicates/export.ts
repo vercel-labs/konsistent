@@ -4,7 +4,7 @@ import type { Diagnostic, DiagnosticSeverity } from '../../core/diagnostics.js';
 import type { FileStructure } from '../types.js';
 
 export function checkExport(opts: {
-  expected: (string | { name: string })[];
+  expected: (string | { name: string; from?: string })[];
   context: PredicateContext;
   fileStructure: FileStructure;
   conventionName?: string;
@@ -16,9 +16,15 @@ export function checkExport(opts: {
   for (const entry of expected) {
     const definition = typeof entry === 'string' ? { name: entry } : entry;
     const resolvedName = context.resolveTemplate(definition.name);
+    const resolvedFrom = definition.from
+      ? context.resolveTemplate(definition.from)
+      : undefined;
 
     const found = fileStructure.exports.some(
-      (e) => e.name === resolvedName && !e.isType
+      (e) =>
+        e.name === resolvedName &&
+        !e.isType &&
+        (resolvedFrom === undefined || e.from === resolvedFrom)
     );
 
     if (!found) {
@@ -26,7 +32,9 @@ export function checkExport(opts: {
         createDiagnostic({
           filePath: context.path,
           predicateName: 'export',
-          message: `Missing export "${resolvedName}"`,
+          message: resolvedFrom
+            ? `Missing export "${resolvedName}" from "${resolvedFrom}"`
+            : `Missing export "${resolvedName}"`,
           conventionName,
           severity,
         })
