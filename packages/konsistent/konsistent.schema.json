@@ -37,6 +37,12 @@
             "enum": ["error", "warning"],
             "default": "error"
           },
+          "excludeFiles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "paths": {
             "anyOf": [
               {
@@ -304,6 +310,12 @@
                       },
                       "required": ["files"],
                       "additionalProperties": false
+                    },
+                    "excludeFiles": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
                     },
                     "must": {
                       "type": "object",

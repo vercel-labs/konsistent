@@ -106,6 +106,24 @@ function normalizeMustBlocks(
   return [{ must }];
 }
 
+function isFileExcluded(opts: {
+  filePath: string;
+  excludeFiles: string[] | undefined;
+  context: PredicateContext;
+}): boolean {
+  const { filePath, excludeFiles, context } = opts;
+  if (!excludeFiles || excludeFiles.length === 0) {
+    return false;
+  }
+  for (const pattern of excludeFiles) {
+    const resolved = context.resolveTemplate(pattern);
+    if (filePath === resolved) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function evaluateCondition(opts: {
   block: MustBlockV1;
   context: PredicateContext;
@@ -364,6 +382,15 @@ async function evaluateForBlock(opts: {
   } = opts;
 
   if (!block.for) {
+    if (
+      isFileExcluded({
+        filePath: parentContext.path,
+        excludeFiles: block.excludeFiles,
+        context: parentContext,
+      })
+    ) {
+      return [];
+    }
     return checkPredicates({
       must: block.must,
       conventionName,
@@ -410,6 +437,16 @@ async function evaluateForBlock(opts: {
       },
       fileSystem,
     });
+
+    if (
+      isFileExcluded({
+        filePath: entry.path,
+        excludeFiles: block.excludeFiles,
+        context: forContext,
+      })
+    ) {
+      continue;
+    }
 
     diagnostics.push(
       ...checkPredicates({
@@ -481,6 +518,16 @@ export async function run(opts: {
     for (const entry of matched) {
       checkedPaths.add(entry.path);
       const context = buildContext({ matched: entry, fileSystem });
+
+      if (
+        isFileExcluded({
+          filePath: entry.path,
+          excludeFiles: convention.excludeFiles,
+          context,
+        })
+      ) {
+        continue;
+      }
 
       for (const block of blocks) {
         if (!evaluateCondition({ block, context })) {

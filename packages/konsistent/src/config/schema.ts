@@ -63,6 +63,7 @@ export const MustPredicatesV1Schema = z
 export const MustBlockV1Schema = z.object({
   if: z.object({ hasFile: z.string() }).optional(),
   for: z.object({ files: z.string() }).optional(),
+  excludeFiles: z.array(z.string()).optional(),
   must: MustPredicatesV1Schema,
 });
 
@@ -73,6 +74,7 @@ export const ConventionV1Schema = z.object({
     .optional(),
   description: z.string().optional(),
   severity: z.enum(['error', 'warning']).default('error').optional(),
+  excludeFiles: z.array(z.string()).optional(),
   paths: z.union([z.string(), z.array(z.string())]),
   must: z.union([MustPredicatesV1Schema, z.array(MustBlockV1Schema)]),
 });

@@ -513,6 +513,234 @@ describe('severity propagation', () => {
   });
 });
 
+describe('excludeFiles', () => {
+  it('convention-level excludeFiles skips matching file', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'source-files',
+          paths: 'src/**/*.ts',
+          excludeFiles: ['src/internal.ts'],
+          must: { haveType: 'file' },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ['src/**/*.ts', ['src/internal.ts', 'src/utils.ts']],
+      ]),
+      directories: new Set(['src/internal.ts']),
+      files: new Set(['src/utils.ts']),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
+  });
+
+  it('convention-level excludeFiles does not skip non-matching file', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'source-files',
+          paths: 'src/**/*.ts',
+          excludeFiles: ['src/other.ts'],
+          must: { haveType: 'file' },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([['src/**/*.ts', ['src/utils']]]),
+      directories: new Set(['src/utils']),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+  });
+
+  it('convention-level excludeFiles with template placeholder', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'provider-files',
+          paths: 'packages/{name}/src/index.ts',
+          excludeFiles: ['packages/${name}/src/index.ts'],
+          must: { haveType: 'directory' },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ['packages/*/src/index.ts', ['packages/openai/src/index.ts']],
+      ]),
+      files: new Set(['packages/openai/src/index.ts']),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
+  });
+
+  it('block-level excludeFiles without for skips matching file', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'block-exclude',
+          paths: 'src/**/*.ts',
+          must: [
+            {
+              excludeFiles: ['src/special.ts'],
+              must: { haveType: 'file' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([['src/**/*.ts', ['src/special.ts']]]),
+      directories: new Set(['src/special.ts']),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
+  });
+
+  it('block-level excludeFiles with for excludes specific iterated files', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'for-exclude',
+          paths: 'components/{name}',
+          must: [
+            {
+              for: { files: '*.ts' },
+              excludeFiles: ['components/Button/helpers.ts'],
+              must: { haveType: 'directory' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ['components/*', ['components/Button']],
+        [
+          'components/Button/*.ts',
+          ['components/Button/helpers.ts', 'components/Button/Button.ts'],
+        ],
+      ]),
+      directories: new Set(['components/Button']),
+      files: new Set([
+        'components/Button/helpers.ts',
+        'components/Button/Button.ts',
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].filePath).toBe('components/Button/Button.ts');
+  });
+
+  it('block-level excludeFiles with if condition', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'if-exclude',
+          paths: 'src/{name}/index.ts',
+          must: [
+            {
+              if: { hasFile: 'config.ts' },
+              excludeFiles: ['src/auth/index.ts'],
+              must: { haveType: 'directory' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ['src/*/index.ts', ['src/auth/index.ts', 'src/billing/index.ts']],
+      ]),
+      files: new Set([
+        'src/auth/index.ts',
+        'src/auth/config.ts',
+        'src/billing/index.ts',
+        'src/billing/config.ts',
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].filePath).toBe('src/billing/index.ts');
+  });
+
+  it('block-level excludeFiles with if and for combined', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'if-for-exclude',
+          paths: 'components/{name}',
+          must: [
+            {
+              if: { hasFile: '${name}.test.tsx' },
+              for: { files: '*.test.tsx' },
+              excludeFiles: ['components/Button/Button.test.tsx'],
+              must: { haveType: 'directory' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ['components/*', ['components/Button']],
+        [
+          'components/Button/*.test.tsx',
+          [
+            'components/Button/Button.test.tsx',
+            'components/Button/utils.test.tsx',
+          ],
+        ],
+      ]),
+      directories: new Set(['components/Button']),
+      files: new Set([
+        'components/Button/Button.test.tsx',
+        'components/Button/utils.test.tsx',
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].filePath).toBe('components/Button/utils.test.tsx');
+  });
+
+  it('convention-level and block-level excludeFiles coexist', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'coexist-exclude',
+          paths: 'src/**/*.ts',
+          excludeFiles: ['src/a.ts'],
+          must: [
+            {
+              excludeFiles: ['src/b.ts'],
+              must: { haveType: 'file' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ['src/**/*.ts', ['src/a.ts', 'src/b.ts', 'src/c.ts']],
+      ]),
+      directories: new Set(['src/a.ts', 'src/b.ts', 'src/c.ts']),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].filePath).toBe('src/c.ts');
+  });
+});
+
 describe('caching behavior', () => {
   it('parses the same file only once across multiple conventions', async () => {
     const readFileSpy = vi.fn().mockReturnValue('export const x = 1;');

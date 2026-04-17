@@ -882,3 +882,33 @@ describe('case-maps-broken fixture', () => {
     }
   });
 });
+
+describe('exclude-files fixture', () => {
+  const cwd = resolve(fixturesDir, 'exclude-files');
+
+  it('konsistent check exits 0 when excludeFiles skips non-conforming files', async () => {
+    await expect(runCli({ args: ['check'], cwd })).resolves.not.toThrow();
+  });
+});
+
+describe('exclude-files-broken fixture', () => {
+  const cwd = resolve(fixturesDir, 'exclude-files-broken');
+
+  it('konsistent check exits 1 without excludeFiles to suppress violations', async () => {
+    try {
+      await runCli({ args: ['check'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain('Missing export "activate"');
+      expect(error.stdout).toContain('Missing export constant "pluginId"');
+      expect(error.stdout).toContain('Missing export "describe"');
+    }
+  });
+});

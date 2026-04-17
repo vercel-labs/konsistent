@@ -1,0 +1,25 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "plugin-exports",
+      "paths": "plugins/{pluginName}/index.ts",
+      "must": {
+        "export": ["activate"],
+        "exportConstants": ["pluginId"]
+      }
+    },
+    {
+      "name": "plugin-tests",
+      "paths": "plugins/{pluginName}",
+      "must": [
+        {
+          "for": { "files": "{testFile}.spec.ts" },
+          "must": {
+            "export": ["describe"]
+          }
+        }
+      ]
+    }
+  ]
+}
