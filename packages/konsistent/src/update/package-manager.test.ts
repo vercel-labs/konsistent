@@ -7,6 +7,7 @@ import {
   getGlobalInstallCommand,
   getInstallCommand,
   isGlobalInstall,
+  isMonorepo,
   isPackageInDeps,
   updatePackageJsonVersion,
 } from './package-manager.js';
@@ -69,6 +70,36 @@ describe('detectPackageManager', () => {
   });
 });
 
+describe('isMonorepo', () => {
+  it('detects pnpm workspace via pnpm-workspace.yaml', () => {
+    fs.writeFileSync(
+      path.join(tmpDir, 'pnpm-workspace.yaml'),
+      'packages:\n  - packages/*'
+    );
+    expect(isMonorepo(tmpDir)).toBe(true);
+  });
+
+  it('detects npm/yarn workspace via workspaces field', () => {
+    fs.writeFileSync(
+      path.join(tmpDir, 'package.json'),
+      JSON.stringify({ workspaces: ['packages/*'] })
+    );
+    expect(isMonorepo(tmpDir)).toBe(true);
+  });
+
+  it('returns false for non-monorepo', () => {
+    fs.writeFileSync(
+      path.join(tmpDir, 'package.json'),
+      JSON.stringify({ name: 'my-app' })
+    );
+    expect(isMonorepo(tmpDir)).toBe(false);
+  });
+
+  it('returns false when no package.json and no workspace file', () => {
+    expect(isMonorepo(tmpDir)).toBe(false);
+  });
+});
+
 describe('getInstallCommand', () => {
   it('returns npm install command', () => {
     expect(
@@ -106,6 +137,48 @@ describe('getInstallCommand', () => {
         packageManager: 'bun',
         packageName: 'konsistent',
         version: '1.0.0',
+      })
+    ).toEqual({ command: 'bun', args: ['add', 'konsistent@1.0.0'] });
+  });
+
+  it('adds -w flag for pnpm in workspace root', () => {
+    expect(
+      getInstallCommand({
+        packageManager: 'pnpm',
+        packageName: 'konsistent',
+        version: '1.0.0',
+        workspaceRoot: true,
+      })
+    ).toEqual({ command: 'pnpm', args: ['add', '-w', 'konsistent@1.0.0'] });
+  });
+
+  it('adds -W flag for yarn in workspace root', () => {
+    expect(
+      getInstallCommand({
+        packageManager: 'yarn',
+        packageName: 'konsistent',
+        version: '1.0.0',
+        workspaceRoot: true,
+      })
+    ).toEqual({ command: 'yarn', args: ['add', '-W', 'konsistent@1.0.0'] });
+  });
+
+  it('does not add workspace flag for npm or bun', () => {
+    expect(
+      getInstallCommand({
+        packageManager: 'npm',
+        packageName: 'konsistent',
+        version: '1.0.0',
+        workspaceRoot: true,
+      })
+    ).toEqual({ command: 'npm', args: ['install', 'konsistent@1.0.0'] });
+
+    expect(
+      getInstallCommand({
+        packageManager: 'bun',
+        packageName: 'konsistent',
+        version: '1.0.0',
+        workspaceRoot: true,
       })
     ).toEqual({ command: 'bun', args: ['add', 'konsistent@1.0.0'] });
   });

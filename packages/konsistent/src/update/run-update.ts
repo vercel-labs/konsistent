@@ -5,6 +5,7 @@ import {
   getGlobalInstallCommand,
   getInstallCommand,
   isGlobalInstall,
+  isMonorepo,
   isPackageInDeps,
   updatePackageJsonVersion,
 } from './package-manager.js';
@@ -35,11 +36,13 @@ export function canAutoUpdate(cwd: string): {
 export function getManualInstallHint(opts: {
   packageManager: PackageManager;
   version: string;
+  workspaceRoot?: boolean;
 }): string {
   const { command, args } = getInstallCommand({
     packageManager: opts.packageManager,
     packageName: PACKAGE_NAME,
     version: opts.version,
+    workspaceRoot: opts.workspaceRoot,
   });
   return `${command} ${args.join(' ')}`;
 }
@@ -51,11 +54,14 @@ export function runUpdate(opts: {
   const cwd = process.cwd();
   const updateInfo = canAutoUpdate(cwd);
 
+  const workspaceRoot = isMonorepo(cwd);
+
   if (!updateInfo) {
     const pm = detectPackageManager(cwd);
     const hint = getManualInstallHint({
       packageManager: pm,
       version: opts.latestVersion,
+      workspaceRoot,
     });
     console.error(
       `Run the following command to update manually:\n  ${pc.bold(hint)}`
@@ -87,6 +93,7 @@ export function runUpdate(opts: {
           packageManager: updateInfo.packageManager,
           packageName: PACKAGE_NAME,
           version: opts.latestVersion,
+          workspaceRoot,
         });
 
   try {
@@ -101,6 +108,7 @@ export function runUpdate(opts: {
     const hint = getManualInstallHint({
       packageManager: updateInfo.packageManager,
       version: opts.latestVersion,
+      workspaceRoot,
     });
     console.error(
       `\n${pc.red('✗')} Failed to update. Run the following command manually:\n  ${pc.bold(hint)}`

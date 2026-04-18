@@ -11,6 +11,7 @@ vi.mock('./package-manager.js', async () => {
   return {
     ...actual,
     isGlobalInstall: vi.fn(),
+    isMonorepo: vi.fn().mockReturnValue(false),
     isPackageInDeps: vi.fn(),
     detectPackageManager: vi.fn(),
     updatePackageJsonVersion: vi.fn(),

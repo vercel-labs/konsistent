@@ -22,6 +22,7 @@ export {
   getInstallCommand,
   getGlobalInstallCommand,
   isGlobalInstall,
+  isMonorepo,
   isPackageInDeps,
   updatePackageJsonVersion,
 } from './package-manager.js';

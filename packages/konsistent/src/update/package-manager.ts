@@ -52,10 +52,25 @@ function readPackageManagerField(cwd: string): PackageManager | null {
   }
 }
 
+export function isMonorepo(cwd: string): boolean {
+  if (fs.existsSync(path.join(cwd, 'pnpm-workspace.yaml'))) {
+    return true;
+  }
+
+  try {
+    const raw = fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8');
+    const pkg = JSON.parse(raw) as Record<string, unknown>;
+    return Array.isArray(pkg.workspaces);
+  } catch {
+    return false;
+  }
+}
+
 export function getInstallCommand(opts: {
   packageManager: PackageManager;
   packageName: string;
   version: string;
+  workspaceRoot?: boolean;
 }): { command: string; args: string[] } {
   const spec = `${opts.packageName}@${opts.version}`;
 
@@ -64,9 +79,15 @@ export function getInstallCommand(opts: {
     case 'bun':
       return { command: 'bun', args: ['add', spec] };
     case 'pnpm':
-      return { command: 'pnpm', args: ['add', spec] };
+      return {
+        command: 'pnpm',
+        args: opts.workspaceRoot ? ['add', '-w', spec] : ['add', spec],
+      };
     case 'yarn':
-      return { command: 'yarn', args: ['add', spec] };
+      return {
+        command: 'yarn',
+        args: opts.workspaceRoot ? ['add', '-W', spec] : ['add', spec],
+      };
     case 'npm':
       return { command: 'npm', args: ['install', spec] };
   }

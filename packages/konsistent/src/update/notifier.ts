@@ -1,6 +1,6 @@
 import pc from 'picocolors';
 import { isCacheStale, readCache, writeCache } from './cache.js';
-import { detectPackageManager } from './package-manager.js';
+import { detectPackageManager, isMonorepo } from './package-manager.js';
 import { PACKAGE_NAME } from './package-name.js';
 import { promptYesNo } from './prompt.js';
 import { fetchLatestVersion } from './registry.js';
@@ -78,6 +78,7 @@ export async function checkAndPrompt(opts: {
     const hint = getManualInstallHint({
       packageManager: pm,
       version: latestVersion,
+      workspaceRoot: isMonorepo(cwd),
     });
     console.error(`Run the following command to update:\n  ${pc.bold(hint)}`);
     return false;
