@@ -9,6 +9,7 @@ Usage:
 Commands:
   check       Check structural conventions (default)
   validate    Validate configuration
+  update      Update konsistent to the latest version
   version     Print the version number
   help        Show this help message
 

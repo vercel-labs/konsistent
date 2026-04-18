@@ -11,7 +11,8 @@
     "test:e2e:run": "vitest run -c e2e/vitest.config.ts",
     "check": "ultracite lint",
     "fix": "ultracite format",
-    "publish:packages": "node scripts/publish-packages.js"
+    "publish:packages": "node scripts/publish-packages.js",
+    "konsistent": "KONSISTENT_NO_UPDATE_CHECK=true konsistent"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
