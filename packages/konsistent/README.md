@@ -10,41 +10,7 @@ Consistent project structure reduces cognitive overhead, simplifies onboarding, 
 
 ## Usage
 
-Create a `konsistent.json` in your project root:
-
-```json
-{
-  "version": "v1",
-  "conventions": [
-    {
-      "name": "provider-packages",
-      "paths": "packages/{providerId}",
-      "must": {
-        "haveType": "directory",
-        "haveFiles": ["src/index.ts", "src/${providerId}-provider.ts"]
-      }
-    },
-    {
-      "paths": "packages/{providerId}/src/index.ts",
-      "must": {
-        "export": ["${providerId.toFlatCase()}"],
-        "exportTypes": [
-          "${providerId.toPascalCase()}Provider",
-          "${providerId.toPascalCase()}ProviderSettings"
-        ]
-      }
-    }
-  ],
-  "kebabToPascalMap": {
-    "openai": "OpenAI"
-  },
-  "kebabToCamelMap": {
-    "openai": "openAI"
-  }
-}
-```
-
-Then install it in the project:
+Install it in the project:
 
 | NPM | PNPM | Bun |
 | --- | --- | --- |
@@ -84,6 +50,55 @@ When everything passes:
 ```
 Checked 6 files in 8ms. No violations found.
 ```
+
+When you don't have a `konsistent.json` yet:
+
+```
+Could not read config file: /path/to/project/konsistent.json
+```
+
+### Creating your `konsistent.json`
+
+The `konsistent.json` file lives in your project root. Here is an example of what it could look like:
+
+```json
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "provider-packages",
+      "paths": "packages/{providerId}",
+      "must": {
+        "haveType": "directory",
+        "haveFiles": ["src/index.ts", "src/${providerId}-provider.ts"]
+      }
+    },
+    {
+      "paths": "packages/{providerId}/src/index.ts",
+      "must": {
+        "export": ["${providerId.toFlatCase()}"],
+        "exportTypes": [
+          "${providerId.toPascalCase()}Provider",
+          "${providerId.toPascalCase()}ProviderSettings"
+        ]
+      }
+    }
+  ],
+  "kebabToPascalMap": {
+    "openai": "OpenAI"
+  },
+  "kebabToCamelMap": {
+    "openai": "openAI"
+  }
+}
+```
+
+> [!TIP]
+> **There's a skill for that!** Let an agent create or update your `konsistent.json` for you:
+>
+> ```
+> npx skills add https://github.com/vercel-labs/konsistent --skill konsistent-config
+> ```
 
 ## Commands
 
