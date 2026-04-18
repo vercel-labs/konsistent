@@ -278,6 +278,50 @@ describe('matchPaths', () => {
     expect(results[0].placeholders.modelName.toString()).toBe('user-role');
   });
 
+  it('glob wildcard segment alongside constrained placeholder', async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        [
+          'src/*/openai-*-model.ts',
+          [
+            'src/chat/openai-chat-model.ts',
+            'src/responses/openai-responses-language-model.ts',
+            'src/image/openai-image-model.ts',
+          ],
+        ],
+      ]),
+    });
+    const seg1 = await matchPaths({
+      patterns: ['src/*/openai-{modelKind:segments(1)}-model.ts'],
+      fileSystem: fs,
+    });
+    expect(seg1).toHaveLength(2);
+    expect(seg1[0].placeholders.modelKind.toString()).toBe('chat');
+    expect(seg1[1].placeholders.modelKind.toString()).toBe('image');
+
+    const seg2 = await matchPaths({
+      patterns: ['src/*/openai-{modelKind:segments(2)}-model.ts'],
+      fileSystem: fs,
+    });
+    expect(seg2).toHaveLength(1);
+    expect(seg2[0].placeholders.modelKind.toString()).toBe(
+      'responses-language'
+    );
+  });
+
+  it('glob wildcard segment without placeholders still matches', async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ['src/*/index.ts', ['src/utils/index.ts', 'src/core/index.ts']],
+      ]),
+    });
+    const results = await matchPaths({
+      patterns: ['src/*/index.ts'],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(2);
+  });
+
   it('unconstrained placeholders still work normally', async () => {
     const fs = createMockFileSystem({
       globResults: new Map([

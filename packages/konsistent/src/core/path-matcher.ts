@@ -82,6 +82,25 @@ interface ExtractedValues {
   constraints: Record<string, string>;
 }
 
+const GLOB_WILDCARD_REGEX = /[*?[\]]/;
+
+function matchSegmentAsGlob(opts: {
+  patternSegment: string;
+  pathSegment: string;
+}): boolean {
+  const { patternSegment, pathSegment } = opts;
+  const regexStr = patternSegment.replace(ESCAPE_REGEX, (ch) => {
+    if (ch === '*') {
+      return '[^/]*';
+    }
+    if (ch === '?') {
+      return '[^/]';
+    }
+    return `\\${ch}`;
+  });
+  return new RegExp(`^${regexStr}$`).test(pathSegment);
+}
+
 function extractValueFromSegment(opts: {
   patternSegment: string;
   pathSegment: string;
@@ -90,9 +109,15 @@ function extractValueFromSegment(opts: {
   const placeholders = collectPlaceholders(patternSegment);
 
   if (placeholders.length === 0) {
-    return patternSegment === pathSegment
-      ? { values: {}, constraints: {} }
-      : null;
+    if (patternSegment === pathSegment) {
+      return { values: {}, constraints: {} };
+    }
+    if (GLOB_WILDCARD_REGEX.test(patternSegment)) {
+      return matchSegmentAsGlob({ patternSegment, pathSegment })
+        ? { values: {}, constraints: {} }
+        : null;
+    }
+    return null;
   }
 
   const CAPTURE_MARKER = '\x00CAPTURE\x00';

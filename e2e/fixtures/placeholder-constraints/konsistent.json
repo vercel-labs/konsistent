@@ -7,7 +7,7 @@
       "must": [
         {
           "for": {
-            "files": "src/${providerId}-{modelKind:segments(2)}-model.ts"
+            "files": "*/${providerId}-{modelKind:segments(2)}-model.ts"
           },
           "must": {
             "exportFunctions": [
@@ -17,7 +17,7 @@
         },
         {
           "for": {
-            "files": "src/${providerId}-{modelKind:segments(1)}-model.ts"
+            "files": "*/${providerId}-{modelKind:segments(1)}-model.ts"
           },
           "must": {
             "export": [
