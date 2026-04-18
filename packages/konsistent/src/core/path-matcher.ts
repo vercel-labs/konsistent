@@ -1,7 +1,39 @@
 import type { FileSystem } from './filesystem.js';
+import {
+  parsePlaceholderConstraint,
+  validatePlaceholderConstraint,
+} from './placeholder-constraint.js';
 import { PlaceholderValue } from './placeholder.js';
 
-const PLACEHOLDER_REGEX = /\{([a-zA-Z][a-zA-Z0-9]*)\}/g;
+/*
+ * Matches placeholder expressions in path patterns, with optional inline constraints.
+ *
+ * Syntax variants:
+ *   {name}                  — plain placeholder, no constraint
+ *   {name:constraint}       — placeholder with a constraint (no argument)
+ *   {name:constraint(arg)}  — placeholder with a constraint and an argument
+ *
+ * Examples:
+ *   {providerId}            — captures "providerId", no constraint
+ *   {modelKind:segments(2)} — captures "modelKind", constraint raw = "segments(2)"
+ *
+ * Capture groups:
+ *   [1] — placeholder name       (e.g. "modelKind")
+ *   [2] — raw constraint string  (e.g. "segments(2)"), undefined when no constraint
+ *
+ * Breakdown:
+ *   \{                                        — literal opening brace
+ *   ([a-zA-Z][a-zA-Z0-9]*)                    — group 1: placeholder name (letter, then alphanumeric)
+ *   (?:                                       — optional non-capturing group for constraint:
+ *     :                                       —   literal colon separator
+ *     ([a-zA-Z][a-zA-Z0-9]*                   —   group 2 start: constraint name
+ *       (?:\([a-zA-Z0-9]+\))?                 —     optional parenthesised argument
+ *     )                                       —   group 2 end
+ *   )?                                        — end optional constraint group
+ *   }                                         — literal closing brace
+ */
+const PLACEHOLDER_REGEX =
+  /\{([a-zA-Z][a-zA-Z0-9]*)(?::([a-zA-Z][a-zA-Z0-9]*(?:\([a-zA-Z0-9]+\))?))?}/g;
 const TEMPLATE_IN_PATH_REGEX = /\$\{([a-zA-Z][a-zA-Z0-9]*)\}/g;
 const VALID_VALUE_REGEX = /^[a-zA-Z0-9_-]+$/;
 const ESCAPE_REGEX = /[.*+?^${}()|[\]\\]/g;
@@ -26,47 +58,99 @@ export function patternToGlob(pattern: string): string {
   return pattern.replace(PLACEHOLDER_REGEX, '*');
 }
 
-function collectPlaceholderNames(segment: string): string[] {
+interface CollectedPlaceholder {
+  name: string;
+  constraintRaw?: string;
+}
+
+function collectPlaceholders(segment: string): CollectedPlaceholder[] {
   PLACEHOLDER_REGEX.lastIndex = 0;
-  const names: string[] = [];
+  const result: CollectedPlaceholder[] = [];
   let match = PLACEHOLDER_REGEX.exec(segment);
   while (match !== null) {
-    names.push(match[1]);
+    result.push({
+      name: match[1],
+      constraintRaw: match[2],
+    });
     match = PLACEHOLDER_REGEX.exec(segment);
   }
-  return names;
+  return result;
+}
+
+interface ExtractedValues {
+  values: Record<string, string>;
+  constraints: Record<string, string>;
 }
 
 function extractValueFromSegment(opts: {
   patternSegment: string;
   pathSegment: string;
-}): Record<string, string> | null {
+}): ExtractedValues | null {
   const { patternSegment, pathSegment } = opts;
-  const placeholderNames = collectPlaceholderNames(patternSegment);
+  const placeholders = collectPlaceholders(patternSegment);
 
-  if (placeholderNames.length === 0) {
-    return patternSegment === pathSegment ? {} : null;
+  if (placeholders.length === 0) {
+    return patternSegment === pathSegment
+      ? { values: {}, constraints: {} }
+      : null;
   }
 
-  const escaped = patternSegment.replace(ESCAPE_REGEX, (ch) => {
-    if (ch === '{' || ch === '}') {
-      return ch;
-    }
-    return `\\${ch}`;
-  });
+  const CAPTURE_MARKER = '\x00CAPTURE\x00';
   PLACEHOLDER_REGEX.lastIndex = 0;
-  const regexStr = escaped.replace(PLACEHOLDER_REGEX, '([a-zA-Z0-9_-]+)');
+  const withMarkers = patternSegment.replace(PLACEHOLDER_REGEX, CAPTURE_MARKER);
+  const escaped = withMarkers.replace(ESCAPE_REGEX, (ch) => `\\${ch}`);
+  const regexStr = escaped.replaceAll(CAPTURE_MARKER, '([a-zA-Z0-9_-]+)');
   const regex = new RegExp(`^${regexStr}$`);
   const segmentMatch = regex.exec(pathSegment);
   if (!segmentMatch) {
     return null;
   }
 
-  const result: Record<string, string> = {};
-  for (let i = 0; i < placeholderNames.length; i++) {
-    result[placeholderNames[i]] = segmentMatch[i + 1];
+  const values: Record<string, string> = {};
+  const constraints: Record<string, string> = {};
+  for (let i = 0; i < placeholders.length; i++) {
+    values[placeholders[i].name] = segmentMatch[i + 1];
+    const { constraintRaw } = placeholders[i];
+    if (constraintRaw) {
+      constraints[placeholders[i].name] = constraintRaw;
+    }
   }
-  return result;
+  return { values, constraints };
+}
+
+function satisfiesConstraints(opts: {
+  values: Record<string, string>;
+  constraints: Record<string, string>;
+}): boolean {
+  for (const [name, raw] of Object.entries(opts.constraints)) {
+    const constraint = parsePlaceholderConstraint(raw);
+    if (
+      constraint &&
+      !validatePlaceholderConstraint({
+        value: opts.values[name],
+        constraint,
+      })
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function mergeExtracted(opts: {
+  existing: Record<string, string>;
+  incoming: Record<string, string>;
+}): boolean {
+  for (const [name, value] of Object.entries(opts.incoming)) {
+    if (!VALID_VALUE_REGEX.test(value)) {
+      return false;
+    }
+    if (name in opts.existing && opts.existing[name] !== value) {
+      return false;
+    }
+    opts.existing[name] = value;
+  }
+  return true;
 }
 
 function tryExtractPlaceholders(opts: {
@@ -80,6 +164,7 @@ function tryExtractPlaceholders(opts: {
   }
 
   const extracted: Record<string, string> = {};
+  const allConstraints: Record<string, string> = {};
   for (let i = 0; i < patternSegments.length; i++) {
     const segmentResult = extractValueFromSegment({
       patternSegment: patternSegments[i],
@@ -88,16 +173,20 @@ function tryExtractPlaceholders(opts: {
     if (segmentResult === null) {
       return null;
     }
-    for (const [name, value] of Object.entries(segmentResult)) {
-      if (!VALID_VALUE_REGEX.test(value)) {
-        return null;
-      }
-      if (name in extracted && extracted[name] !== value) {
-        return null;
-      }
-      extracted[name] = value;
+    if (
+      !mergeExtracted({ existing: extracted, incoming: segmentResult.values })
+    ) {
+      return null;
     }
+    Object.assign(allConstraints, segmentResult.constraints);
   }
+
+  if (
+    !satisfiesConstraints({ values: extracted, constraints: allConstraints })
+  ) {
+    return null;
+  }
+
   return extracted;
 }
 

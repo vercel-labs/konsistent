@@ -1,0 +1,31 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "provider-packages",
+      "paths": "packages/{providerId}",
+      "must": [
+        {
+          "for": {
+            "files": "src/${providerId}-{modelKind:segments(2)}-model.ts"
+          },
+          "must": {
+            "exportFunctions": [
+              "create${providerId.toPascalCase()}${modelKind.toNthSegmentPascalCase(1)}Model${modelKind.toNthSegmentPascalCase(0)}"
+            ]
+          }
+        },
+        {
+          "for": {
+            "files": "src/${providerId}-{modelKind:segments(1)}-model.ts"
+          },
+          "must": {
+            "export": [
+              "${providerId.toPascalCase()}${modelKind.toPascalCase()}ModelConfig"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

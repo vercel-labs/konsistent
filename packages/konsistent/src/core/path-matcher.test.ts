@@ -31,6 +31,10 @@ describe('hasPlaceholders', () => {
   it('returns false for patterns without placeholders', () => {
     expect(hasPlaceholders('packages/*/src')).toBe(false);
   });
+
+  it('returns true for patterns with constrained placeholders', () => {
+    expect(hasPlaceholders('packages/{name:segments(2)}/src')).toBe(true);
+  });
 });
 
 describe('patternToGlob', () => {
@@ -44,6 +48,10 @@ describe('patternToGlob', () => {
 
   it('leaves non-placeholder patterns unchanged', () => {
     expect(patternToGlob('src/**/*.ts')).toBe('src/**/*.ts');
+  });
+
+  it('replaces constrained placeholders with *', () => {
+    expect(patternToGlob('{name:segments(2)}/src')).toBe('*/src');
   });
 });
 
@@ -210,5 +218,79 @@ describe('matchPaths', () => {
       fileSystem: fs,
     });
     expect(results).toHaveLength(0);
+  });
+
+  it('segments(1) constraint filters out multi-segment values', async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        [
+          'src/openai-*-model.ts',
+          [
+            'src/openai-chat-model.ts',
+            'src/openai-chat-language-model.ts',
+            'src/openai-image-model.ts',
+          ],
+        ],
+      ]),
+    });
+    const results = await matchPaths({
+      patterns: ['src/openai-{modelKind:segments(1)}-model.ts'],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(2);
+    expect(results[0].placeholders.modelKind.toString()).toBe('chat');
+    expect(results[1].placeholders.modelKind.toString()).toBe('image');
+  });
+
+  it('segments(2) constraint filters out single-segment values', async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        [
+          'src/openai-*-model.ts',
+          [
+            'src/openai-chat-model.ts',
+            'src/openai-chat-language-model.ts',
+            'src/openai-image-model.ts',
+          ],
+        ],
+      ]),
+    });
+    const results = await matchPaths({
+      patterns: ['src/openai-{modelKind:segments(2)}-model.ts'],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(1);
+    expect(results[0].placeholders.modelKind.toString()).toBe('chat-language');
+  });
+
+  it('constraint on one placeholder does not affect others', async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ['plugins/*/models/*', ['plugins/auth/models/user-role']],
+      ]),
+    });
+    const results = await matchPaths({
+      patterns: ['plugins/{pluginName}/models/{modelName:segments(2)}'],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(1);
+    expect(results[0].placeholders.pluginName.toString()).toBe('auth');
+    expect(results[0].placeholders.modelName.toString()).toBe('user-role');
+  });
+
+  it('unconstrained placeholders still work normally', async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        [
+          'src/openai-*-model.ts',
+          ['src/openai-chat-model.ts', 'src/openai-chat-language-model.ts'],
+        ],
+      ]),
+    });
+    const results = await matchPaths({
+      patterns: ['src/openai-{modelKind}-model.ts'],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(2);
   });
 });

@@ -946,3 +946,37 @@ describe('exclude-files-broken fixture', () => {
     }
   });
 });
+
+describe('placeholder-constraints fixture', () => {
+  const cwd = resolve(fixturesDir, 'placeholder-constraints');
+
+  it('konsistent check exits 0 when constraints partition matches correctly', async () => {
+    await expect(runCli({ args: ['check'], cwd })).resolves.not.toThrow();
+  });
+});
+
+describe('placeholder-constraints-broken fixture', () => {
+  const cwd = resolve(fixturesDir, 'placeholder-constraints-broken');
+
+  it('konsistent check exits 1 with missing exports for constrained matches', async () => {
+    try {
+      await runCli({ args: ['check'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain(
+        'Missing export function "createOpenaiLanguageModelChat"'
+      );
+      expect(error.stdout).toContain(
+        'Missing export "AnthropicChatModelConfig"'
+      );
+      expect(error.stdout).toContain('Found 2 errors.');
+    }
+  });
+});
