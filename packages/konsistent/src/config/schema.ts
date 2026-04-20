@@ -76,6 +76,11 @@ export const MustPredicatesV1Schema = z
 
 export const MustBlockV1Schema = z
   .object({
+    name: z
+      .string()
+      .regex(/^[a-z0-9-]+$/, 'Must block name must match [a-z0-9-]+')
+      .optional(),
+    description: z.string().optional(),
     if: z.object({ hasFile: z.string() }).strict().optional(),
     for: z.object({ files: z.string() }).strict().optional(),
     excludeFiles: z.array(z.string()).optional(),

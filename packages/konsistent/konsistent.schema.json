@@ -320,6 +320,13 @@
                 "items": {
                   "type": "object",
                   "properties": {
+                    "name": {
+                      "type": "string",
+                      "pattern": "^[a-z0-9-]+$"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
                     "if": {
                       "type": "object",
                       "properties": {

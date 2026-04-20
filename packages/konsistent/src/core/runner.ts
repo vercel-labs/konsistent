@@ -106,6 +106,13 @@ function normalizeMustBlocks(
   return [{ must }];
 }
 
+function resolveBlockConventionName(opts: {
+  block: MustBlockV1;
+  conventionName: string;
+}): string {
+  return opts.block.name ?? opts.conventionName;
+}
+
 function isFileExcluded(opts: {
   filePath: string;
   excludeFiles: string[] | undefined;
@@ -538,7 +545,10 @@ export async function run(opts: {
             block,
             parentContext: context,
             fileSystem,
-            conventionName,
+            conventionName: resolveBlockConventionName({
+              block,
+              conventionName,
+            }),
             fileStructureCache,
             severity,
             kebabToPascalMap,

@@ -741,6 +741,88 @@ describe('excludeFiles', () => {
   });
 });
 
+describe('must block name', () => {
+  it('uses block-level name instead of convention-level name', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'convention-name',
+          paths: 'src/**/*.ts',
+          must: [
+            {
+              name: 'block-name',
+              must: { haveType: 'file' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([['src/**/*.ts', ['src/utils']]]),
+      directories: new Set(['src/utils']),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].conventionName).toBe('block-name');
+  });
+
+  it('falls back to convention-level name when block has no name', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'convention-name',
+          paths: 'src/**/*.ts',
+          must: [
+            {
+              must: { haveType: 'file' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([['src/**/*.ts', ['src/utils']]]),
+      directories: new Set(['src/utils']),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].conventionName).toBe('convention-name');
+  });
+
+  it('mixed blocks: some with name, some without', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'convention-name',
+          paths: 'src/**/*.ts',
+          must: [
+            {
+              name: 'block-a',
+              must: { haveType: 'file' },
+            },
+            {
+              must: { haveType: 'directory' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([['src/**/*.ts', ['src/utils']]]),
+      directories: new Set(['src/utils']),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].conventionName).toBe('block-a');
+    expect(diagnostics[0].message).toBe(
+      'Expected a file but found a directory'
+    );
+  });
+});
+
 describe('caching behavior', () => {
   it('parses the same file only once across multiple conventions', async () => {
     const readFileSpy = vi.fn().mockReturnValue('export const x = 1;');

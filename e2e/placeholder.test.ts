@@ -348,6 +348,30 @@ describe('component-library-broken-conditionals fixture', () => {
   });
 });
 
+describe('must-block-names fixture', () => {
+  const cwd = resolve(fixturesDir, 'must-block-names');
+
+  it('konsistent check exits 1 and shows block-level names instead of convention name', async () => {
+    try {
+      await runCli({ args: ['check'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain('[test-exports]');
+      expect(error.stdout).toContain('[story-meta]');
+      expect(error.stdout).toContain('Missing export "describe"');
+      expect(error.stdout).toContain('Missing export constant "meta"');
+      expect(error.stdout).toContain('Found 2 errors.');
+    }
+  });
+});
+
 describe('monorepo-with-negation fixture', () => {
   const cwd = resolve(fixturesDir, 'monorepo-with-negation');
 
