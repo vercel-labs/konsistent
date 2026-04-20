@@ -277,9 +277,14 @@ function processDeclaration(opts: {
       node.heritageClauses,
       ts.SyntaxKind.ExtendsKeyword
     );
+    const implementsClauses = extractExtendsFromHeritage(
+      node.heritageClauses,
+      ts.SyntaxKind.ImplementsKeyword
+    );
     collector.classes.push({
       name: node.name.getText(sourceFile),
       extends: extendsClauses[0]?.name,
+      implements: implementsClauses.map((c) => c.name),
       pos,
     });
   }

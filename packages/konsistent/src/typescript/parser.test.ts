@@ -324,6 +324,47 @@ describe('parseFileStructure', () => {
         extends: 'Parent',
       });
     });
+
+    it('extracts empty implements for class without implements', () => {
+      const result = parseFileStructure({
+        source: 'class MyClass {}',
+      });
+      expect(result.classes[0].implements).toEqual([]);
+    });
+
+    it('extracts class with implements', () => {
+      const result = parseFileStructure({
+        source: 'class MyClass implements Serializable {}',
+      });
+      expect(result.classes).toHaveLength(1);
+      expect(result.classes[0]).toMatchObject({
+        name: 'MyClass',
+        implements: ['Serializable'],
+      });
+    });
+
+    it('extracts class with multiple implements', () => {
+      const result = parseFileStructure({
+        source: 'class MyClass implements Serializable, Disposable {}',
+      });
+      expect(result.classes).toHaveLength(1);
+      expect(result.classes[0]).toMatchObject({
+        name: 'MyClass',
+        implements: ['Serializable', 'Disposable'],
+      });
+    });
+
+    it('extracts class with extends and implements', () => {
+      const result = parseFileStructure({
+        source: 'class MyClass extends BaseClass implements Serializable {}',
+      });
+      expect(result.classes).toHaveLength(1);
+      expect(result.classes[0]).toMatchObject({
+        name: 'MyClass',
+        extends: 'BaseClass',
+        implements: ['Serializable'],
+      });
+    });
   });
 
   describe('functions', () => {

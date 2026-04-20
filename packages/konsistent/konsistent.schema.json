@@ -235,6 +235,29 @@
                                   "additionalProperties": false
                                 }
                               ]
+                            },
+                            "implement": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "type": {
+                                        "type": "string"
+                                      },
+                                      "allowOmissions": {
+                                        "type": "boolean"
+                                      }
+                                    },
+                                    "required": ["type"],
+                                    "additionalProperties": false
+                                  }
+                                ]
+                              }
                             }
                           },
                           "required": ["name"],

@@ -43,6 +43,7 @@ export const ClassDefinitionV1Schema = z
   .object({
     name: z.string(),
     extend: ExtendDefinitionV1Schema.optional(),
+    implement: z.array(ExtendDefinitionV1Schema).optional(),
   })
   .strict();
 

@@ -305,8 +305,14 @@ describe('class-and-function-contracts-broken fixture', () => {
       expect(error.stdout).toContain(
         'Function "createDatabaseAdapter" must return value of type "DatabaseAdapter"'
       );
+      expect(error.stdout).toContain(
+        'Class "CacheAdapter" must implement "Connectable"'
+      );
+      expect(error.stdout).toContain(
+        'Class "DatabaseAdapter" must implement "Connectable"'
+      );
       expect(error.stdout).toContain('must-export-adapter-class-and-more');
-      expect(error.stdout).toContain('Found 5 errors.');
+      expect(error.stdout).toContain('Found 7 errors.');
     }
   });
 });
@@ -819,7 +825,7 @@ describe('--max-diagnostics flag', () => {
       };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain(
-        '... and 4 more diagnostics (use --max-diagnostics to see more)'
+        '... and 6 more diagnostics (use --max-diagnostics to see more)'
       );
     }
   });
@@ -836,7 +842,7 @@ describe('--max-diagnostics flag', () => {
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
-      expect(error.stdout).toContain('... and 4 more diagnostics');
+      expect(error.stdout).toContain('... and 6 more diagnostics');
       expect(error.stdout).toMatch(summaryPattern);
     }
   });

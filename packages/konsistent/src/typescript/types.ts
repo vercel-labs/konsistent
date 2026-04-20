@@ -32,6 +32,7 @@ export interface InterfaceInfo {
 export interface ClassInfo {
   name: string;
   extends?: string;
+  implements: string[];
   pos: SourcePosition;
 }
 

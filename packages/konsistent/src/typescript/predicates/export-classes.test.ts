@@ -30,7 +30,10 @@ function createMockFileStructure(opts: {
     exports: opts.exports ?? [],
     imports: [],
     interfaces: [],
-    classes: opts.classes ?? [],
+    classes: (opts.classes ?? []).map((c) => ({
+      implements: [],
+      ...c,
+    })),
     functions: [],
     constants: [],
     typeAliases: [],
@@ -239,6 +242,170 @@ describe('checkExportClasses', () => {
           {
             name: 'MyClass',
             extends: 'BaseClass',
+            pos: { line: 1, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it('returns no diagnostics when implement is satisfied', () => {
+    const result = checkExportClasses({
+      expected: [{ name: 'MyClass', implement: ['Serializable'] }],
+      context: createMockContext({ path: 'src/index.ts' }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: 'MyClass',
+            kind: 'class',
+            isType: false,
+            pos: { line: 1, column: 1 },
+          },
+        ],
+        classes: [
+          {
+            name: 'MyClass',
+            implements: ['Serializable'],
+            pos: { line: 1, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it('returns no diagnostics when multiple implements are satisfied', () => {
+    const result = checkExportClasses({
+      expected: [
+        { name: 'MyClass', implement: ['Serializable', 'Disposable'] },
+      ],
+      context: createMockContext({ path: 'src/index.ts' }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: 'MyClass',
+            kind: 'class',
+            isType: false,
+            pos: { line: 1, column: 1 },
+          },
+        ],
+        classes: [
+          {
+            name: 'MyClass',
+            implements: ['Serializable', 'Disposable'],
+            pos: { line: 1, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it('returns diagnostic when implement is violated', () => {
+    const result = checkExportClasses({
+      expected: [{ name: 'MyClass', implement: ['Serializable'] }],
+      context: createMockContext({ path: 'src/index.ts' }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: 'MyClass',
+            kind: 'class',
+            isType: false,
+            pos: { line: 5, column: 1 },
+          },
+        ],
+        classes: [
+          {
+            name: 'MyClass',
+            implements: [],
+            pos: { line: 5, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe(
+      'Class "MyClass" must implement "Serializable"'
+    );
+    expect(result[0].line).toBe(5);
+  });
+
+  it('returns diagnostics for each missing implement', () => {
+    const result = checkExportClasses({
+      expected: [
+        { name: 'MyClass', implement: ['Serializable', 'Disposable'] },
+      ],
+      context: createMockContext({ path: 'src/index.ts' }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: 'MyClass',
+            kind: 'class',
+            isType: false,
+            pos: { line: 1, column: 1 },
+          },
+        ],
+        classes: [
+          {
+            name: 'MyClass',
+            implements: ['Serializable'],
+            pos: { line: 1, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe(
+      'Class "MyClass" must implement "Disposable"'
+    );
+  });
+
+  it('resolves template placeholders in implement values', () => {
+    const result = checkExportClasses({
+      expected: [{ name: 'MyClass', implement: ['${name}Handler'] }],
+      context: createMockContext({
+        path: 'src/index.ts',
+        placeholders: { name: { toString: () => 'Event' } },
+      }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: 'MyClass',
+            kind: 'class',
+            isType: false,
+            pos: { line: 1, column: 1 },
+          },
+        ],
+        classes: [
+          {
+            name: 'MyClass',
+            implements: ['EventHandler'],
+            pos: { line: 1, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it('accepts object form for implement with type field', () => {
+    const result = checkExportClasses({
+      expected: [{ name: 'MyClass', implement: [{ type: 'Serializable' }] }],
+      context: createMockContext({ path: 'src/index.ts' }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: 'MyClass',
+            kind: 'class',
+            isType: false,
+            pos: { line: 1, column: 1 },
+          },
+        ],
+        classes: [
+          {
+            name: 'MyClass',
+            implements: ['Serializable'],
             pos: { line: 1, column: 1 },
           },
         ],

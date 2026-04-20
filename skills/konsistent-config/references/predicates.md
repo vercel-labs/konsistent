@@ -89,18 +89,23 @@ Options:
 
 ### exportClasses
 
-Check for class exports with optional inheritance validation.
+Check for class exports with optional inheritance and interface implementation validation.
 
 ```json
 "must": {
   "exportClasses": [
-    { "name": "${name.toPascalCase()}Adapter", "extend": "BaseAdapter" }
+    {
+      "name": "${name.toPascalCase()}Adapter",
+      "extend": "BaseAdapter",
+      "implement": ["Connectable", "Disposable"]
+    }
   ]
 }
 ```
 
 Options:
 - `extend`: base class name the class must extend
+- `implement`: array of interface names the class must implement. Each entry can be a string or `{ "type": "InterfaceName", "allowOmissions": true }`
 
 ## TypeScript Import Predicates
 

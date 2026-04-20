@@ -8,7 +8,8 @@
         "exportClasses": [
           {
             "name": "${adapterName.toPascalCase()}Adapter",
-            "extend": "BaseAdapter"
+            "extend": "BaseAdapter",
+            "implement": ["Connectable"]
           }
         ],
         "importTypes": [{ "name": "BaseAdapter", "from": "@app/core" }]
