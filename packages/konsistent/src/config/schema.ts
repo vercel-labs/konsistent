@@ -82,7 +82,10 @@ export const MustBlockV1Schema = z
       .optional(),
     description: z.string().optional(),
     if: z.object({ hasFile: z.string() }).strict().optional(),
-    for: z.object({ files: z.string() }).strict().optional(),
+    for: z
+      .object({ files: z.union([z.string(), z.array(z.string())]) })
+      .strict()
+      .optional(),
     excludeFiles: z.array(z.string()).optional(),
     must: MustPredicatesV1Schema,
   })

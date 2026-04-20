@@ -353,6 +353,75 @@ describe('run', () => {
     expect(diagnostics).toEqual([]);
   });
 
+  it('iterates over for.files array matches from multiple patterns', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'for-array',
+          paths: 'components/{name}',
+          must: [
+            {
+              for: { files: ['*.test.tsx', '*.spec.tsx'] },
+              must: { haveType: 'file' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ['components/*', ['components/Button']],
+        [
+          'components/Button/*.spec.tsx,components/Button/*.test.tsx',
+          [
+            'components/Button/Button.test.tsx',
+            'components/Button/Button.spec.tsx',
+          ],
+        ],
+      ]),
+      directories: new Set(['components/Button']),
+      files: new Set([
+        'components/Button/Button.test.tsx',
+        'components/Button/Button.spec.tsx',
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
+  });
+
+  it('reports diagnostics from for.files array when file type is wrong', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'for-array-fail',
+          paths: 'components/{name}',
+          must: [
+            {
+              for: { files: ['*.test.tsx', '*.spec.tsx'] },
+              must: { haveType: 'directory' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ['components/*', ['components/Button']],
+        [
+          'components/Button/*.spec.tsx,components/Button/*.test.tsx',
+          ['components/Button/Button.test.tsx'],
+        ],
+      ]),
+      directories: new Set(['components/Button']),
+      files: new Set(['components/Button/Button.test.tsx']),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].filePath).toBe('components/Button/Button.test.tsx');
+  });
+
   it('evaluates if condition before for iteration', async () => {
     const config: ConfigV1 = {
       version: 'v1',

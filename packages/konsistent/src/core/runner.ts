@@ -408,15 +408,19 @@ async function evaluateForBlock(opts: {
     });
   }
 
-  const resolvedPattern = parentContext.resolveTemplate(block.for.files);
+  const filesPatterns = Array.isArray(block.for.files)
+    ? block.for.files
+    : [block.for.files];
 
   const basePath = fileSystem.isDirectory(parentContext.path)
     ? parentContext.path
     : dirname(parentContext.path);
 
-  const fullPattern = posix.join(basePath, resolvedPattern);
+  const fullPatterns = filesPatterns.map((f) =>
+    posix.join(basePath, parentContext.resolveTemplate(f))
+  );
   const matched = await matchPaths({
-    patterns: [fullPattern],
+    patterns: fullPatterns,
     fileSystem,
     kebabToPascalMap,
     kebabToCamelMap,

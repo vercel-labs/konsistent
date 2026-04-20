@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "module-tests",
+      "paths": "modules/{moduleName}",
+      "must": [
+        {
+          "for": { "files": ["*.test.tsx", "*.spec.tsx"] },
+          "must": { "export": ["describe"] }
+        }
+      ]
+    }
+  ]
+}

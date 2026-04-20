@@ -348,6 +348,34 @@ describe('component-library-broken-conditionals fixture', () => {
   });
 });
 
+describe('for-files-array fixture', () => {
+  const cwd = resolve(fixturesDir, 'for-files-array');
+
+  it('konsistent check exits 0 when for.files array matches multiple patterns', async () => {
+    await expect(runCli({ args: ['check'], cwd })).resolves.not.toThrow();
+  });
+});
+
+describe('for-files-array-broken fixture', () => {
+  const cwd = resolve(fixturesDir, 'for-files-array-broken');
+
+  it('konsistent check exits 1 with missing exports across for.files array patterns', async () => {
+    try {
+      await runCli({ args: ['check'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain('Missing export "describe"');
+      expect(error.stdout).toContain('Found 2 errors.');
+    }
+  });
+});
+
 describe('must-block-names fixture', () => {
   const cwd = resolve(fixturesDir, 'must-block-names');
 

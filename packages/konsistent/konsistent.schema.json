@@ -341,7 +341,17 @@
                       "type": "object",
                       "properties": {
                         "files": {
-                          "type": "string"
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          ]
                         }
                       },
                       "required": ["files"],
