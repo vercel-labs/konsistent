@@ -20,9 +20,12 @@ Create or modify a `konsistent.json` file that enforces structural conventions f
 1. Check if `konsistent.json` already exists at the project root
 2. Read `node_modules/konsistent/konsistent.schema.json` to confirm available predicates
 3. Read [references/predicates.md](references/predicates.md) for predicate details and examples
-4. Explore the user's codebase to understand existing structure and naming patterns
-5. If `konsistent.json` exists: read it, then add/remove/update conventions as requested
-6. If `konsistent.json` does not exist: create it at the project root
+4. If `konsistent.json` exists: read it, then add/remove/update conventions as requested by the user
+5. If `konsistent.json` does not exist: create it at the project root
+
+Before creating a new config, or if the user has not provided any specific requests for editing an existing config, you must:
+- Explore the user's codebase to understand existing structure and naming patterns
+- Refer to (references/codebase-exploration.md)[references/codebase-exploration.md] for what to look out for
 
 When modifying an existing config:
 - Preserve all conventions not related to the user's request
@@ -220,3 +223,5 @@ When `must` is an array, each element is a block that can have `if` and `for`:
 - Check `package.json` for a `konsistent` script (e.g. `"konsistent": "konsistent"`) — if present, use `npm run konsistent` (or the project's package manager equivalent) instead of `npx konsistent`
 - Validate the generated config by running `konsistent validate`
 - Test the config against the actual codebase by running `konsistent` (with no arguments)
+
+**Important reminder:** The objective is NOT to write a `konsistent.json` file that leads to zero errors when running the CLI. That would defeat the purpose. The objective is to create a konsistent.json file that identifies violations to patterns used in the codebase, even if they are not being 100% adhered to.
