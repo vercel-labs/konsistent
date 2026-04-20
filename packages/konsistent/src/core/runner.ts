@@ -1,4 +1,4 @@
-import { dirname, join, posix } from 'node:path';
+import { basename, dirname, join, posix } from 'node:path';
 import type {
   ConfigV1,
   MustBlockV1,
@@ -124,7 +124,7 @@ function isFileExcluded(opts: {
   }
   for (const pattern of excludeFiles) {
     const resolved = context.resolveTemplate(pattern);
-    if (filePath === resolved) {
+    if (filePath === resolved || basename(filePath) === resolved) {
       return true;
     }
   }

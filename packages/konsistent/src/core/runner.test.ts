@@ -639,6 +639,83 @@ describe('excludeFiles', () => {
     expect(diagnostics[0].filePath).toBe('components/Button/Button.ts');
   });
 
+  it('block-level excludeFiles with for excludes by filename only', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'for-exclude-filename',
+          paths: 'components/{name}',
+          must: [
+            {
+              for: { files: '*.ts' },
+              excludeFiles: ['helpers.ts'],
+              must: { haveType: 'directory' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ['components/*', ['components/Button']],
+        [
+          'components/Button/*.ts',
+          ['components/Button/helpers.ts', 'components/Button/Button.ts'],
+        ],
+      ]),
+      directories: new Set(['components/Button']),
+      files: new Set([
+        'components/Button/helpers.ts',
+        'components/Button/Button.ts',
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].filePath).toBe('components/Button/Button.ts');
+  });
+
+  it('block-level excludeFiles with for and template resolving to filename', async () => {
+    const config: ConfigV1 = {
+      version: 'v1',
+      conventions: [
+        {
+          name: 'for-exclude-template',
+          paths: 'providers/{providerId}',
+          must: [
+            {
+              for: { files: '${providerId}-{modelKind}-model.ts' },
+              excludeFiles: ['${providerId}-video-model.ts'],
+              must: { haveType: 'directory' },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ['providers/*', ['providers/openai']],
+        [
+          'providers/openai/openai-*-model.ts',
+          [
+            'providers/openai/openai-chat-model.ts',
+            'providers/openai/openai-video-model.ts',
+          ],
+        ],
+      ]),
+      directories: new Set(['providers/openai']),
+      files: new Set([
+        'providers/openai/openai-chat-model.ts',
+        'providers/openai/openai-video-model.ts',
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].filePath).toBe(
+      'providers/openai/openai-chat-model.ts'
+    );
+  });
+
   it('block-level excludeFiles with if condition', async () => {
     const config: ConfigV1 = {
       version: 'v1',
