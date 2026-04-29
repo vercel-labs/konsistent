@@ -109,6 +109,18 @@ Placeholders become available as templates `${pkgName}` inside `must` predicates
 - `${name.toNthSegment(0)}` — `my-thing` → `my` (split by `-`, return nth segment)
 - `${name.toNthSegmentPascalCase(0)}` — `my-thing` → `My` (nth segment with PascalCase)
 - `${name.toNthSegmentCamelCase(0)}` — `my-thing` → `my` (nth segment with camelCase)
+- `${name.extract(regex)}` — `openai` with `^([a-z]+)ai$` → `open` (returns the first capture group, or the full match if the regex has no groups; empty string when there is no match)
+
+The argument inside `(...)` is taken verbatim — no quotes around the regex. The argument may not contain `}` (use repetition like `\d\d?` instead of `\d{1,2}` if you need quantifiers).
+
+### Path Placeholder Constraints
+
+Path placeholders accept inline constraints with the syntax `{name:constraint(arg)}`. Constraints filter which captured values are considered — paths whose extracted value fails a constraint are skipped, the rule does not apply to them.
+
+- `{name:segments(n)}` — value must split into exactly `n` word segments (split by `-`, `_`, or camelCase boundaries). Example: `{modelKind:segments(2)}` matches `chat-language` but not `chat` or `chat-language-model`.
+- `{name:matches(regex)}` — value must match the JavaScript regex (case-sensitive, unanchored unless you anchor it). Example: `{providerId:matches(^[a-z]+ai$)}` matches `openai` and `mistralai` but not `google`.
+
+Constraints only apply to placeholders inside the path pattern (`{...}`), not to template substitutions (`${...}`). The argument inside `(...)` is taken verbatim — no surrounding quotes; the argument may not contain `}`.
 
 ### Path Negation
 
