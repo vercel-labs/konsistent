@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-const { spawn } = require("node:child_process");
-const { readdir, readFile } = require("node:fs/promises");
-const path = require("node:path");
+import { spawn } from "node:child_process";
+import { readdir, readFile } from "node:fs/promises";
+import path from "node:path";
 
-const rootDir = path.resolve(import.meta.dirname, "../..");
+const rootDir = path.resolve(import.meta.dirname, "..", "..");
 const packagesRootDir = path.join(rootDir, "packages");
 
 async function runCommand({
@@ -53,21 +53,26 @@ async function runCommand({
           .join("\n")
           .trim();
 
-        let errorMessage = output;
-        if (errorMessage.length === 0) {
-          errorMessage =
-            signal === null
-              ? `Command failed: ${command} ${args.join(" ")}`
-              : `Command failed with signal ${signal}: ${command} ${args.join(" ")}`;
-        }
-
-        reject(new Error(errorMessage));
+        reject(
+          new Error(formatCommandFailure({ output, command, args, signal }))
+        );
         return;
       }
 
       resolve(result);
     });
   });
+}
+
+function formatCommandFailure({ output, command, args, signal }) {
+  if (output.length > 0) {
+    return output;
+  }
+  const invocation = `${command} ${args.join(" ")}`;
+  if (signal === null) {
+    return `Command failed: ${invocation}`;
+  }
+  return `Command failed with signal ${signal}: ${invocation}`;
 }
 
 async function readPackage({ folderName }) {
