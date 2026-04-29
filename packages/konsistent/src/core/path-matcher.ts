@@ -171,7 +171,7 @@ function mergeExtracted(opts: {
     if (!VALID_VALUE_REGEX.test(value)) {
       return false;
     }
-    if (name in opts.existing && opts.existing[name] !== value) {
+    if (Object.hasOwn(opts.existing, name) && opts.existing[name] !== value) {
       return false;
     }
     opts.existing[name] = value;

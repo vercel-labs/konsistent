@@ -83,7 +83,7 @@ export default defineCommand({
   args: checkArgs,
   async run({ args }) {
     const result = await loadConfig({ configPath: args["config-path"] });
-    if ("error" in result) {
+    if (!result.success) {
       console.error(pc.red(result.error));
       process.exit(1);
     }

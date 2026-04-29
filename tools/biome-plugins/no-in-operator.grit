@@ -1,0 +1,5 @@
+language js
+
+`$prop in $obj` as $expr where {
+  register_diagnostic(span=$expr, message="Use `Object.hasOwn($obj, $prop)` instead of the `in` operator. `in` also walks the prototype chain, which is rarely the intended runtime check.")
+}

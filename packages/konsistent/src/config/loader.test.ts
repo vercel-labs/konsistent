@@ -9,8 +9,8 @@ describe("loadConfig", () => {
     const result = await loadConfig({
       configPath: resolve(fixturesDir, "empty-config/konsistent.json"),
     });
-    expect("config" in result).toBe(true);
-    if ("config" in result) {
+    expect(result.success).toBe(true);
+    if (result.success) {
       expect(result.config.version).toBe("v1");
       expect(result.config.conventions).toEqual([]);
     }
@@ -20,15 +20,15 @@ describe("loadConfig", () => {
     const result = await loadConfig({
       configPath: resolve(fixturesDir, "invalid-config/konsistent.json"),
     });
-    expect("error" in result).toBe(true);
+    expect(result.success).toBe(false);
   });
 
   it("returns error when config file does not exist", async () => {
     const result = await loadConfig({
       configPath: "/nonexistent/path/konsistent.json",
     });
-    expect("error" in result).toBe(true);
-    if ("error" in result) {
+    expect(result.success).toBe(false);
+    if (!result.success) {
       expect(result.error).toContain("Could not read config file");
     }
   });
@@ -37,8 +37,8 @@ describe("loadConfig", () => {
     const result = await loadConfig({
       configPath: resolve(import.meta.dirname, "schema.ts"),
     });
-    expect("error" in result).toBe(true);
-    if ("error" in result) {
+    expect(result.success).toBe(false);
+    if (!result.success) {
       expect(result.error).toContain("Invalid JSON");
     }
   });

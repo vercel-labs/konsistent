@@ -1,0 +1,5 @@
+language js
+
+`$value as unknown as $type` as $expr where {
+  register_diagnostic(span=$expr, message="Avoid `as unknown as $type`. Double assertions through `unknown` bypass TypeScript's type checking entirely. Fix the underlying type mismatch instead.")
+}

@@ -61,18 +61,14 @@ describe("fetchLatestVersion", () => {
   });
 
   it("returns latest version from registry", async () => {
-    const mockResponse = {
-      ok: true,
-      json: async () => ({
+    vi.mocked(globalThis.fetch).mockResolvedValue(
+      Response.json({
         versions: {
           "0.0.1-alpha.1": {},
           "0.0.1-alpha.2": {},
           "0.0.1-alpha.4": {},
         },
-      }),
-    };
-    vi.mocked(globalThis.fetch).mockResolvedValue(
-      mockResponse as unknown as Response
+      })
     );
 
     const result = await fetchLatestVersion({
@@ -83,18 +79,16 @@ describe("fetchLatestVersion", () => {
   });
 
   it("filters by prerelease channel", async () => {
-    const mockResponse = {
-      ok: true,
-      json: async () => ({
-        versions: {
-          "0.0.1-alpha.5": {},
-          "0.0.1-beta.1": {},
-          "1.0.0": {},
-        },
-      }),
-    };
-    vi.mocked(globalThis.fetch).mockResolvedValue(
-      mockResponse as unknown as Response
+    vi.mocked(globalThis.fetch).mockImplementation(() =>
+      Promise.resolve(
+        Response.json({
+          versions: {
+            "0.0.1-alpha.5": {},
+            "0.0.1-beta.1": {},
+            "1.0.0": {},
+          },
+        })
+      )
     );
 
     expect(
@@ -130,9 +124,9 @@ describe("fetchLatestVersion", () => {
   });
 
   it("returns null on non-ok response", async () => {
-    vi.mocked(globalThis.fetch).mockResolvedValue({
-      ok: false,
-    } as unknown as Response);
+    vi.mocked(globalThis.fetch).mockResolvedValue(
+      new Response(null, { status: 500 })
+    );
 
     const result = await fetchLatestVersion({
       packageName: "konsistent",
@@ -142,10 +136,9 @@ describe("fetchLatestVersion", () => {
   });
 
   it("sends correct headers", async () => {
-    vi.mocked(globalThis.fetch).mockResolvedValue({
-      ok: true,
-      json: async () => ({ versions: {} }),
-    } as unknown as Response);
+    vi.mocked(globalThis.fetch).mockResolvedValue(
+      Response.json({ versions: {} })
+    );
 
     await fetchLatestVersion({
       packageName: "konsistent",

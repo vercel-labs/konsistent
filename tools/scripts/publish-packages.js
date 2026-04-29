@@ -4,7 +4,7 @@ const { spawn } = require("node:child_process");
 const { readdir, readFile } = require("node:fs/promises");
 const path = require("node:path");
 
-const rootDir = path.resolve(import.meta.dirname, "..");
+const rootDir = path.resolve(import.meta.dirname, "../..");
 const packagesRootDir = path.join(rootDir, "packages");
 
 async function runCommand({
