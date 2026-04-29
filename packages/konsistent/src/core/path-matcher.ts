@@ -14,26 +14,27 @@ import { PlaceholderValue } from './placeholder.js';
  *   {name:constraint(arg)}  — placeholder with a constraint and an argument
  *
  * Examples:
- *   {providerId}            — captures "providerId", no constraint
- *   {modelKind:segments(2)} — captures "modelKind", constraint raw = "segments(2)"
+ *   {providerId}                     — captures "providerId", no constraint
+ *   {modelKind:segments(2)}          — captures "modelKind", constraint raw = "segments(2)"
+ *   {providerId:matches(^[a-z]+ai$)} — captures "providerId", constraint raw = "matches(^[a-z]+ai$)"
  *
  * Capture groups:
  *   [1] — placeholder name       (e.g. "modelKind")
  *   [2] — raw constraint string  (e.g. "segments(2)"), undefined when no constraint
  *
  * Breakdown:
- *   \{                                        — literal opening brace
- *   ([a-zA-Z][a-zA-Z0-9]*)                    — group 1: placeholder name (letter, then alphanumeric)
- *   (?:                                       — optional non-capturing group for constraint:
- *     :                                       —   literal colon separator
- *     ([a-zA-Z][a-zA-Z0-9]*                   —   group 2 start: constraint name
- *       (?:\([a-zA-Z0-9]+\))?                 —     optional parenthesised argument
- *     )                                       —   group 2 end
- *   )?                                        — end optional constraint group
- *   }                                         — literal closing brace
+ *   \{                                — literal opening brace
+ *   ([a-zA-Z][a-zA-Z0-9]*)            — group 1: placeholder name (letter, then alphanumeric)
+ *   (?:                               — optional non-capturing group for constraint:
+ *     :                               —   literal colon separator
+ *     ([a-zA-Z][a-zA-Z0-9]*           —   group 2 start: constraint name
+ *       (?:\([^}]*\))?                —     optional parenthesised argument (anything except `}`)
+ *     )                               —   group 2 end
+ *   )?                                — end optional constraint group
+ *   }                                 — literal closing brace
  */
 const PLACEHOLDER_REGEX =
-  /\{([a-zA-Z][a-zA-Z0-9]*)(?::([a-zA-Z][a-zA-Z0-9]*(?:\([a-zA-Z0-9]+\))?))?}/g;
+  /\{([a-zA-Z][a-zA-Z0-9]*)(?::([a-zA-Z][a-zA-Z0-9]*(?:\([^}]*\))?))?}/g;
 const TEMPLATE_IN_PATH_REGEX = /\$\{([a-zA-Z][a-zA-Z0-9]*)\}/g;
 const VALID_VALUE_REGEX = /^[a-zA-Z0-9_-]+$/;
 const ESCAPE_REGEX = /[.*+?^${}()|[\]\\]/g;

@@ -173,4 +173,36 @@ describe('resolveTemplate', () => {
     });
     expect(result).toBe('createGraphQL');
   });
+
+  it('resolves ${name.extract(regex)} to first capture group', () => {
+    const result = resolveTemplate({
+      template: '${name.extract(^([a-z]+)ai$)}-stem.ts',
+      placeholders: makePlaceholders({ name: 'openai' }),
+    });
+    expect(result).toBe('open-stem.ts');
+  });
+
+  it('resolves ${name.extract(regex)} to full match when no subgroups', () => {
+    const result = resolveTemplate({
+      template: '${name.extract(^[a-z]+ai$)}.ts',
+      placeholders: makePlaceholders({ name: 'openai' }),
+    });
+    expect(result).toBe('openai.ts');
+  });
+
+  it('resolves ${name.extract(regex)} to empty string when no match', () => {
+    const result = resolveTemplate({
+      template: '${name.extract(^([a-z]+)ai$)}.ts',
+      placeholders: makePlaceholders({ name: 'google' }),
+    });
+    expect(result).toBe('.ts');
+  });
+
+  it('preserves existing numeric-arg parsing', () => {
+    const result = resolveTemplate({
+      template: '${name.toNthSegment(0)}-x.ts',
+      placeholders: makePlaceholders({ name: 'openai-chat' }),
+    });
+    expect(result).toBe('openai-x.ts');
+  });
 });

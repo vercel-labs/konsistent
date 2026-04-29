@@ -26,6 +26,27 @@ describe('parsePlaceholderConstraint', () => {
     });
   });
 
+  it('parses constraint with regex-shaped argument', () => {
+    expect(parsePlaceholderConstraint('matches(^[a-z]+ai$)')).toEqual({
+      name: 'matches',
+      arg: '^[a-z]+ai$',
+    });
+  });
+
+  it('parses constraint with argument containing parens', () => {
+    expect(parsePlaceholderConstraint('extract(^([a-z]+)ai$)')).toEqual({
+      name: 'extract',
+      arg: '^([a-z]+)ai$',
+    });
+  });
+
+  it('parses constraint with empty argument', () => {
+    expect(parsePlaceholderConstraint('matches()')).toEqual({
+      name: 'matches',
+      arg: '',
+    });
+  });
+
   it('returns null for empty string', () => {
     expect(parsePlaceholderConstraint('')).toBeNull();
   });
@@ -54,6 +75,24 @@ describe('validatePlaceholderConstraint', () => {
       validatePlaceholderConstraint({
         value: 'chat',
         constraint: { name: 'segments', arg: '2' },
+      })
+    ).toBe(false);
+  });
+
+  it('dispatches to matches constraint and returns true on match', () => {
+    expect(
+      validatePlaceholderConstraint({
+        value: 'openai',
+        constraint: { name: 'matches', arg: '^[a-z]+ai$' },
+      })
+    ).toBe(true);
+  });
+
+  it('dispatches to matches constraint and returns false on no match', () => {
+    expect(
+      validatePlaceholderConstraint({
+        value: 'google',
+        constraint: { name: 'matches', arg: '^[a-z]+ai$' },
       })
     ).toBe(false);
   });

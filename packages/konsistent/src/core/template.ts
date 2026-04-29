@@ -1,18 +1,6 @@
 import type { PlaceholderValue } from './placeholder.js';
 
-const TEMPLATE_REGEX = /\$\{(\w+)(?:\.(\w+)\((\d+)?\))?\}/g;
-
-const VALID_METHODS = new Set([
-  'toString',
-  'toPascalCase',
-  'toCamelCase',
-  'toKebabCase',
-  'toSnakeCase',
-  'toFlatCase',
-  'toNthSegment',
-  'toNthSegmentPascalCase',
-  'toNthSegmentCamelCase',
-]);
+const TEMPLATE_REGEX = /\$\{(\w+)(?:\.(\w+)\(([^}]*)\))?\}/g;
 
 export function resolveTemplate(opts: {
   template: string;
@@ -30,16 +18,29 @@ export function resolveTemplate(opts: {
       return placeholder.toString();
     }
 
-    if (!VALID_METHODS.has(method)) {
-      return original;
+    switch (method) {
+      case 'toString':
+        return placeholder.toString();
+      case 'toPascalCase':
+        return placeholder.toPascalCase();
+      case 'toCamelCase':
+        return placeholder.toCamelCase();
+      case 'toKebabCase':
+        return placeholder.toKebabCase();
+      case 'toSnakeCase':
+        return placeholder.toSnakeCase();
+      case 'toFlatCase':
+        return placeholder.toFlatCase();
+      case 'toNthSegment':
+        return placeholder.toNthSegment(Number(arg));
+      case 'toNthSegmentPascalCase':
+        return placeholder.toNthSegmentPascalCase(Number(arg));
+      case 'toNthSegmentCamelCase':
+        return placeholder.toNthSegmentCamelCase(Number(arg));
+      case 'extract':
+        return placeholder.extract(arg);
+      default:
+        return original;
     }
-
-    if (arg !== undefined) {
-      return (placeholder as unknown as Record<string, (n: number) => string>)[
-        method
-      ](Number(arg));
-    }
-
-    return (placeholder as unknown as Record<string, () => string>)[method]();
   });
 }

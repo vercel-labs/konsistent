@@ -465,4 +465,52 @@ describe('PlaceholderValue', () => {
       ).toBe('cache');
     });
   });
+
+  describe('extract', () => {
+    it('returns first capture group when regex has subgroups', () => {
+      expect(
+        new PlaceholderValue({ value: 'openai' }).extract('^([a-z]+)ai$')
+      ).toBe('open');
+    });
+
+    it('returns full match when regex has no subgroups', () => {
+      expect(
+        new PlaceholderValue({ value: 'openai' }).extract('^[a-z]+ai$')
+      ).toBe('openai');
+    });
+
+    it('returns empty string when no match', () => {
+      expect(
+        new PlaceholderValue({ value: 'google' }).extract('^([a-z]+)ai$')
+      ).toBe('');
+    });
+
+    it('returns first capture group when regex has multiple subgroups', () => {
+      expect(
+        new PlaceholderValue({ value: 'openai-chat' }).extract(
+          '^([a-z]+)-([a-z]+)$'
+        )
+      ).toBe('openai');
+    });
+
+    it('returns empty string when regex is invalid', () => {
+      expect(
+        new PlaceholderValue({ value: 'openai' }).extract('[invalid')
+      ).toBe('');
+    });
+
+    it('supports partial matches when regex is not anchored', () => {
+      expect(
+        new PlaceholderValue({ value: 'openai-v2' }).extract('([a-z]+)ai')
+      ).toBe('open');
+    });
+
+    it('returns empty string when match captures empty group', () => {
+      expect(
+        new PlaceholderValue({ value: 'openai' }).extract(
+          '^([a-z]*)open([a-z]+)$'
+        )
+      ).toBe('');
+    });
+  });
 });

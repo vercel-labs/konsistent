@@ -114,4 +114,18 @@ export class PlaceholderValue {
     // This is just one segment, so we can just lowercase it.
     return segment.toLowerCase();
   }
+
+  extract(pattern: string): string {
+    let regex: RegExp;
+    try {
+      regex = new RegExp(pattern);
+    } catch {
+      return '';
+    }
+    const match = this.raw.match(regex);
+    if (!match) {
+      return '';
+    }
+    return match.length > 1 ? (match[1] ?? '') : match[0];
+  }
 }
