@@ -135,12 +135,6 @@ function isFileExcluded(opts: {
   return false;
 }
 
-function isHasFileCondition(
-  ifBlock: NonNullable<MustBlockV1["if"]>
-): ifBlock is { hasFile: string } {
-  return Object.hasOwn(ifBlock, "hasFile");
-}
-
 function evaluatePlaceholderSatisfies(opts: {
   raw: string;
   context: PredicateContext;
@@ -174,7 +168,7 @@ function evaluateCondition(opts: {
   if (!block.if) {
     return true;
   }
-  if (isHasFileCondition(block.if)) {
+  if (Object.hasOwn(block.if, "hasFile")) {
     const resolvedPath = context.resolveTemplate(block.if.hasFile);
     return context.fileExists(resolvedPath);
   }
