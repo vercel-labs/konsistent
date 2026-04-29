@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "ai-provider-stems",
+      "paths": "packages/{providerId:matches(^[a-z]+ai$)}/src/${providerId}-stem.ts",
+      "must": {
+        "exportConstants": ["${providerId.extract(^([a-z]+)ai$)}"]
+      }
+    }
+  ]
+}

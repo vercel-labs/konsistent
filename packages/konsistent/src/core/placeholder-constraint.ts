@@ -1,3 +1,4 @@
+import { validateMatchesConstraint } from './constraints/matches.js';
 import { validateSegmentsConstraint } from './constraints/segments.js';
 
 export interface PlaceholderConstraint {
@@ -5,7 +6,7 @@ export interface PlaceholderConstraint {
   arg?: string;
 }
 
-const CONSTRAINT_REGEX = /^([a-zA-Z][a-zA-Z0-9]*)(?:\(([a-zA-Z0-9]+)\))?$/;
+const CONSTRAINT_REGEX = /^([a-zA-Z][a-zA-Z0-9]*)(?:\((.*)\))?$/;
 
 export function parsePlaceholderConstraint(
   raw: string
@@ -28,6 +29,8 @@ export function validatePlaceholderConstraint(opts: {
   switch (constraint.name) {
     case 'segments':
       return validateSegmentsConstraint({ value, arg: constraint.arg });
+    case 'matches':
+      return validateMatchesConstraint({ value, arg: constraint.arg });
     default:
       return true;
   }

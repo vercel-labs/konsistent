@@ -1038,3 +1038,34 @@ describe('placeholder-constraints-broken fixture', () => {
     }
   });
 });
+
+describe('regex-constraints fixture', () => {
+  const cwd = resolve(fixturesDir, 'regex-constraints');
+
+  it('konsistent check exits 0 when matches() filters and extract() resolves correctly', async () => {
+    const result = await runCli({ args: ['check'], cwd });
+    expect(result.stdout).toContain('Checked 2 files');
+    expect(result.stdout).toContain('No violations found.');
+  });
+});
+
+describe('regex-constraints-broken fixture', () => {
+  const cwd = resolve(fixturesDir, 'regex-constraints-broken');
+
+  it('konsistent check exits 1 with the constant name produced by extract()', async () => {
+    try {
+      await runCli({ args: ['check'], cwd });
+      expect.fail('Expected check to exit with code 1');
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain('Missing export constant "open"');
+      expect(error.stdout).toContain('Found 1 error');
+    }
+  });
+});

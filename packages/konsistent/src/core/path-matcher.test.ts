@@ -35,6 +35,12 @@ describe('hasPlaceholders', () => {
   it('returns true for patterns with constrained placeholders', () => {
     expect(hasPlaceholders('packages/{name:segments(2)}/src')).toBe(true);
   });
+
+  it('returns true for patterns with regex constraint args', () => {
+    expect(hasPlaceholders('packages/{name:matches(^[a-z]+ai$)}/src')).toBe(
+      true
+    );
+  });
 });
 
 describe('patternToGlob', () => {
@@ -52,6 +58,10 @@ describe('patternToGlob', () => {
 
   it('replaces constrained placeholders with *', () => {
     expect(patternToGlob('{name:segments(2)}/src')).toBe('*/src');
+  });
+
+  it('replaces placeholders with regex constraint args with *', () => {
+    expect(patternToGlob('{name:matches(^[a-z]+ai$)}/src')).toBe('*/src');
   });
 });
 
@@ -276,6 +286,35 @@ describe('matchPaths', () => {
     expect(results).toHaveLength(1);
     expect(results[0].placeholders.pluginName.toString()).toBe('auth');
     expect(results[0].placeholders.modelName.toString()).toBe('user-role');
+  });
+
+  it('matches(regex) constraint filters values matching the regex', async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        [
+          'packages/*',
+          ['packages/openai', 'packages/mistralai', 'packages/google'],
+        ],
+      ]),
+    });
+    const results = await matchPaths({
+      patterns: ['packages/{providerId:matches(^[a-z]+ai$)}'],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(2);
+    expect(results[0].placeholders.providerId.toString()).toBe('openai');
+    expect(results[1].placeholders.providerId.toString()).toBe('mistralai');
+  });
+
+  it('matches(regex) rejects values that do not match', async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([['packages/*', ['packages/google']]]),
+    });
+    const results = await matchPaths({
+      patterns: ['packages/{providerId:matches(^[a-z]+ai$)}'],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(0);
   });
 
   it('glob wildcard segment alongside constrained placeholder', async () => {
