@@ -31,10 +31,10 @@ describe("konsistent.schema.json", () => {
     expect(schema.required).toContain("conventions");
   });
 
-  it("allows additionalProperties in the must object", () => {
+  it("rejects additionalProperties in the must object", () => {
     const mustSchema = schema.properties.conventions.items.properties.must;
     const predicatesSchema = mustSchema.anyOf[0];
-    expect(predicatesSchema.additionalProperties).toBe(true);
+    expect(predicatesSchema.additionalProperties).toBe(false);
   });
 
   const passingFixtures = readdirSync(fixturesDir).filter(

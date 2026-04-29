@@ -81,7 +81,12 @@ export const MustBlockV1Schema = z
       .regex(/^[a-z0-9-]+$/, "Must block name must match [a-z0-9-]+")
       .optional(),
     description: z.string().optional(),
-    if: z.object({ hasFile: z.string() }).strict().optional(),
+    if: z
+      .union([
+        z.object({ hasFile: z.string() }).strict(),
+        z.object({ placeholderSatisfies: z.string() }).strict(),
+      ])
+      .optional(),
     for: z
       .object({ files: z.union([z.string(), z.array(z.string())]) })
       .strict()

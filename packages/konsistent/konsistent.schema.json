@@ -129,6 +129,9 @@
                           "properties": {
                             "name": {
                               "type": "string"
+                            },
+                            "from": {
+                              "type": "string"
                             }
                           },
                           "required": ["name"],
@@ -313,7 +316,7 @@
                     }
                   }
                 },
-                "additionalProperties": true
+                "additionalProperties": false
               },
               {
                 "type": "array",
@@ -328,14 +331,28 @@
                       "type": "string"
                     },
                     "if": {
-                      "type": "object",
-                      "properties": {
-                        "hasFile": {
-                          "type": "string"
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "hasFile": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["hasFile"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "placeholderSatisfies": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["placeholderSatisfies"],
+                          "additionalProperties": false
                         }
-                      },
-                      "required": ["hasFile"],
-                      "additionalProperties": false
+                      ]
                     },
                     "for": {
                       "type": "object",
@@ -433,6 +450,9 @@
                                 "type": "object",
                                 "properties": {
                                   "name": {
+                                    "type": "string"
+                                  },
+                                  "from": {
                                     "type": "string"
                                   }
                                 },
@@ -540,6 +560,29 @@
                                         "additionalProperties": false
                                       }
                                     ]
+                                  },
+                                  "implement": {
+                                    "type": "array",
+                                    "items": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "type": {
+                                              "type": "string"
+                                            },
+                                            "allowOmissions": {
+                                              "type": "boolean"
+                                            }
+                                          },
+                                          "required": ["type"],
+                                          "additionalProperties": false
+                                        }
+                                      ]
+                                    }
                                   }
                                 },
                                 "required": ["name"],
@@ -595,7 +638,7 @@
                           }
                         }
                       },
-                      "additionalProperties": true
+                      "additionalProperties": false
                     }
                   },
                   "required": ["must"],

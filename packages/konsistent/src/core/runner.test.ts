@@ -214,6 +214,106 @@ describe("run", () => {
     );
   });
 
+  it("evaluates must block when if.placeholderSatisfies is met", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          name: "satisfies-rule",
+          paths: "packages/{providerId}",
+          must: [
+            {
+              if: { placeholderSatisfies: "providerId:matches(^[a-z]+ai$)" },
+              must: { haveType: "file" },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["packages/*", ["packages/openai"]]]),
+      directories: new Set(["packages/openai"]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].message).toBe(
+      "Expected a file but found a directory"
+    );
+    expect(diagnostics[0].conventionName).toBe("satisfies-rule");
+  });
+
+  it("skips must block when if.placeholderSatisfies is not met", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          name: "satisfies-rule",
+          paths: "packages/{providerId}",
+          must: [
+            {
+              if: { placeholderSatisfies: "providerId:matches(^[a-z]+ai$)" },
+              must: { haveType: "file" },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["packages/*", ["packages/google"]]]),
+      directories: new Set(["packages/google"]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
+  });
+
+  it("skips must block when if.placeholderSatisfies references unknown placeholder", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          name: "satisfies-rule",
+          paths: "packages/{providerId}",
+          must: [
+            {
+              if: { placeholderSatisfies: "typo:matches(^[a-z]+ai$)" },
+              must: { haveType: "file" },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["packages/*", ["packages/openai"]]]),
+      directories: new Set(["packages/openai"]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
+  });
+
+  it("skips must block when if.placeholderSatisfies has malformed constraint", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          name: "satisfies-rule",
+          paths: "packages/{providerId}",
+          must: [
+            {
+              if: { placeholderSatisfies: "providerId:matches(" },
+              must: { haveType: "file" },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["packages/*", ["packages/openai"]]]),
+      directories: new Set(["packages/openai"]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
+  });
+
   it("supports template expansion in if.hasFile", async () => {
     const config: ConfigV1 = {
       version: "v1",

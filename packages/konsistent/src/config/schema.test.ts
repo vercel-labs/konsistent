@@ -188,6 +188,76 @@ describe("ConfigV1Schema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts a MustBlock with if.placeholderSatisfies", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "packages/{providerId}",
+          must: [
+            {
+              if: { placeholderSatisfies: "providerId:matches(^[a-z]+ai$)" },
+              must: { haveType: "directory" },
+            },
+          ],
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects a MustBlock with if containing both hasFile and placeholderSatisfies", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "packages/{name}",
+          must: [
+            {
+              if: {
+                hasFile: "index.ts",
+                placeholderSatisfies: "name:segments(1)",
+              },
+              must: { haveType: "file" },
+            },
+          ],
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a MustBlock with empty if object", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          must: [{ if: {}, must: { haveType: "file" } }],
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a MustBlock with unknown if field", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          must: [
+            {
+              if: { unknownCondition: "x" },
+              must: { haveType: "file" },
+            },
+          ],
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("rejects a MustBlock array with missing must property", () => {
     const result = ConfigV1Schema.safeParse({
       version: "v1",

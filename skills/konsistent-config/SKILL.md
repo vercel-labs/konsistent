@@ -145,13 +145,18 @@ When `must` is an array, each element is a block that can have `if` and `for`:
     "must": { "import": ["describe"] }
   },
   {
+    "if": { "placeholderSatisfies": "providerId:matches(^[a-z]+ai$)" },
+    "must": { "haveFiles": ["src/${providerId}-stem.ts"] }
+  },
+  {
     "for": { "files": "{storyFile}.stories.tsx" },
     "must": { "exportConstants": ["meta"] }
   }
 ]
 ```
 
-- `if.hasFile` — block only runs if file exists (templates resolved from parent placeholders)
+- `if.hasFile` — block only runs if the file exists (templates resolved from parent placeholders)
+- `if.placeholderSatisfies` — block only runs if the named placeholder value satisfies the given constraint, using the same `name:constraint(arg)` syntax as path placeholders (see "Path Placeholder Constraints" above for the constraint catalog — `segments(n)`, `matches(regex)`, …). Exactly one of `hasFile` or `placeholderSatisfies` per `if` block.
 - `for.files` — iterates over matched files, extracting new placeholders via `{name}` syntax
 
 ## Common Patterns

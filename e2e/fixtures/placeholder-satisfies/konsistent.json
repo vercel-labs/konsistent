@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "ai-provider-stems",
+      "paths": "packages/{providerId}",
+      "must": [
+        { "must": { "haveFiles": ["src/index.ts"] } },
+        {
+          "if": { "placeholderSatisfies": "providerId:matches(^[a-z]+ai$)" },
+          "must": { "haveFiles": ["src/${providerId}-stem.ts"] }
+        }
+      ]
+    }
+  ]
+}

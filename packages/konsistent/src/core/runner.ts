@@ -23,6 +23,10 @@ import type { Diagnostic, DiagnosticSeverity } from "./diagnostics.js";
 import type { FileSystem } from "./filesystem.js";
 import type { MatchedPath } from "./path-matcher.js";
 import { matchPaths } from "./path-matcher.js";
+import {
+  parsePlaceholderConstraint,
+  validatePlaceholderConstraint,
+} from "./placeholder-constraint.js";
 import { resolveTemplate } from "./template.js";
 
 export const TS_PREDICATES = new Set([
@@ -131,6 +135,37 @@ function isFileExcluded(opts: {
   return false;
 }
 
+function isHasFileCondition(
+  ifBlock: NonNullable<MustBlockV1["if"]>
+): ifBlock is { hasFile: string } {
+  return Object.hasOwn(ifBlock, "hasFile");
+}
+
+function evaluatePlaceholderSatisfies(opts: {
+  raw: string;
+  context: PredicateContext;
+}): boolean {
+  const { raw, context } = opts;
+  const colonIndex = raw.indexOf(":");
+  if (colonIndex < 1) {
+    return false;
+  }
+  const name = raw.slice(0, colonIndex);
+  const constraintRaw = raw.slice(colonIndex + 1);
+  const placeholder = context.placeholders[name];
+  if (!placeholder) {
+    return false;
+  }
+  const constraint = parsePlaceholderConstraint(constraintRaw);
+  if (!constraint) {
+    return false;
+  }
+  return validatePlaceholderConstraint({
+    value: placeholder.raw,
+    constraint,
+  });
+}
+
 function evaluateCondition(opts: {
   block: MustBlockV1;
   context: PredicateContext;
@@ -139,8 +174,14 @@ function evaluateCondition(opts: {
   if (!block.if) {
     return true;
   }
-  const resolvedPath = context.resolveTemplate(block.if.hasFile);
-  return context.fileExists(resolvedPath);
+  if (isHasFileCondition(block.if)) {
+    const resolvedPath = context.resolveTemplate(block.if.hasFile);
+    return context.fileExists(resolvedPath);
+  }
+  return evaluatePlaceholderSatisfies({
+    raw: block.if.placeholderSatisfies,
+    context,
+  });
 }
 
 const TS_PREDICATE_HANDLERS: Record<
