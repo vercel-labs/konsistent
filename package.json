@@ -12,10 +12,12 @@
     "check": "ultracite check",
     "fix": "ultracite fix",
     "publish:packages": "pnpm build && node scripts/publish-packages.js",
+    "prepare": "husky",
     "konsistent": "KONSISTENT_NO_UPDATE_CHECK=true konsistent"
   },
   "devDependencies": {
     "@biomejs/biome": "^2",
+    "husky": "^9.1.7",
     "konsistent": "workspace:*",
     "turbo": "^2",
     "typescript": "^5.7",
