@@ -3,7 +3,7 @@ import {
   toKebabCase,
   toPascalCase,
   toSnakeCase,
-} from './case-utils.js';
+} from "./case-utils.js";
 
 export class PlaceholderValue {
   readonly raw: string;
@@ -71,24 +71,24 @@ export class PlaceholderValue {
     const mapped =
       this.pascalToKebabMap?.[this.raw] ?? this.camelToKebabMap?.[this.raw];
     if (mapped) {
-      return mapped.replace(/-/g, '_');
+      return mapped.replace(/-/g, "_");
     }
     return toSnakeCase(this.raw);
   }
 
   toFlatCase(): string {
-    return this.raw.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    return this.raw.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
   }
 
   toNthSegment(n: number): string {
-    const segments = this.raw.split('-');
-    return n < segments.length ? segments[n] : '';
+    const segments = this.raw.split("-");
+    return n < segments.length ? segments[n] : "";
   }
 
   toNthSegmentPascalCase(n: number): string {
     const segment = this.toNthSegment(n);
-    if (segment === '') {
-      return '';
+    if (segment === "") {
+      return "";
     }
     const mapped = this.kebabToPascalMap?.[segment];
     if (mapped) {
@@ -100,8 +100,8 @@ export class PlaceholderValue {
 
   toNthSegmentCamelCase(n: number): string {
     const segment = this.toNthSegment(n);
-    if (segment === '') {
-      return '';
+    if (segment === "") {
+      return "";
     }
     const mapped = this.kebabToCamelMap?.[segment];
     if (mapped) {
@@ -120,12 +120,12 @@ export class PlaceholderValue {
     try {
       regex = new RegExp(pattern);
     } catch {
-      return '';
+      return "";
     }
     const match = this.raw.match(regex);
     if (!match) {
-      return '';
+      return "";
     }
-    return match.length > 1 ? (match[1] ?? '') : match[0];
+    return match.length > 1 ? (match[1] ?? "") : match[0];
   }
 }

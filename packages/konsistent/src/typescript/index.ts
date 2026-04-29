@@ -1,4 +1,4 @@
-export { parseFileStructure } from './parser.js';
+export { parseFileStructure } from "./parser.js";
 export type {
   ClassInfo,
   ConstantInfo,
@@ -10,4 +10,4 @@ export type {
   ParamInfo,
   SourcePosition,
   TypeAliasInfo,
-} from './types.js';
+} from "./types.js";

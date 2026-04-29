@@ -1,4 +1,4 @@
-import ts from 'typescript';
+import ts from "typescript";
 import type {
   ClassInfo,
   ConstantInfo,
@@ -11,7 +11,7 @@ import type {
   ParamInfo,
   SourcePosition,
   TypeAliasInfo,
-} from './types.js';
+} from "./types.js";
 
 function getPosition(opts: {
   sourceFile: ts.SourceFile;
@@ -46,7 +46,7 @@ function extractTypeAnnotation(
   node: ts.TypeNode | undefined
 ): string | undefined {
   if (!node) {
-    return undefined;
+    return;
   }
   return node.getText();
 }
@@ -99,16 +99,16 @@ function processExportDeclaration(opts: {
     for (const element of node.exportClause.elements) {
       exports.push({
         name: (element.propertyName ?? element.name).getText(sourceFile),
-        kind: 're-export',
+        kind: "re-export",
         isType: isType || element.isTypeOnly,
         pos,
-        ...(from !== undefined ? { from } : {}),
+        ...(from === undefined ? {} : { from }),
       });
     }
   } else if (!node.exportClause && from) {
     exports.push({
-      name: '*',
-      kind: 're-export',
+      name: "*",
+      kind: "re-export",
       isType,
       from,
       pos,
@@ -128,7 +128,7 @@ function processExportedDeclaration(opts: {
   if (ts.isFunctionDeclaration(node) && node.name) {
     return {
       name: node.name.getText(sourceFile),
-      kind: 'function',
+      kind: "function",
       isType: false,
       pos,
     };
@@ -136,7 +136,7 @@ function processExportedDeclaration(opts: {
   if (ts.isClassDeclaration(node) && node.name) {
     return {
       name: node.name.getText(sourceFile),
-      kind: 'class',
+      kind: "class",
       isType: false,
       pos,
     };
@@ -144,7 +144,7 @@ function processExportedDeclaration(opts: {
   if (ts.isInterfaceDeclaration(node)) {
     return {
       name: node.name.getText(sourceFile),
-      kind: 'interface',
+      kind: "interface",
       isType: true,
       pos,
     };
@@ -152,7 +152,7 @@ function processExportedDeclaration(opts: {
   if (ts.isEnumDeclaration(node)) {
     return {
       name: node.name.getText(sourceFile),
-      kind: 'enum',
+      kind: "enum",
       isType: false,
       pos,
     };
@@ -160,7 +160,7 @@ function processExportedDeclaration(opts: {
   if (ts.isTypeAliasDeclaration(node)) {
     return {
       name: node.name.getText(sourceFile),
-      kind: 'interface',
+      kind: "interface",
       isType: true,
       pos,
     };
@@ -170,23 +170,23 @@ function processExportedDeclaration(opts: {
     if (decl?.name && ts.isIdentifier(decl.name)) {
       return {
         name: decl.name.getText(sourceFile),
-        kind: 'const',
+        kind: "const",
         isType: false,
         pos,
       };
     }
   }
 
-  return undefined;
+  return;
 }
 
 interface ParseCollector {
+  classes: ClassInfo[];
+  constants: ConstantInfo[];
   exports: ExportInfo[];
+  functions: FunctionInfo[];
   imports: ImportInfo[];
   interfaces: InterfaceInfo[];
-  classes: ClassInfo[];
-  functions: FunctionInfo[];
-  constants: ConstantInfo[];
   typeAliases: TypeAliasInfo[];
 }
 
@@ -236,6 +236,7 @@ function processVariableStatement(opts: {
   collector: ParseCollector;
 }): void {
   const { node, sourceFile, collector } = opts;
+  // biome-ignore lint/suspicious/noBitwiseOperators: TypeScript NodeFlags is a bitfield enum
   const isConst = (node.declarationList.flags & ts.NodeFlags.Const) !== 0;
   if (!isConst) {
     return;
@@ -321,8 +322,8 @@ function processExportModifier(opts: {
   if (hasDefaultModifier(node)) {
     const pos = getPosition({ sourceFile, node });
     collector.exports.push({
-      name: 'default',
-      kind: 'const',
+      name: "default",
+      kind: "const",
       isType: false,
       pos,
     });
@@ -339,7 +340,7 @@ export function parseFileStructure(opts: {
   filePath?: string;
 }): FileStructure {
   const sourceFile = ts.createSourceFile(
-    opts.filePath ?? 'unknown.ts',
+    opts.filePath ?? "unknown.ts",
     opts.source,
     ts.ScriptTarget.Latest,
     true
@@ -364,8 +365,8 @@ export function parseFileStructure(opts: {
     if (ts.isExportAssignment(node)) {
       const pos = getPosition({ sourceFile, node });
       collector.exports.push({
-        name: 'default',
-        kind: 'const',
+        name: "default",
+        kind: "const",
         isType: false,
         pos,
       });

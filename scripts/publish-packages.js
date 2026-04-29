@@ -1,46 +1,46 @@
 #!/usr/bin/env node
 
-const { spawn } = require('node:child_process');
-const { readdir, readFile } = require('node:fs/promises');
-const path = require('node:path');
+const { spawn } = require("node:child_process");
+const { readdir, readFile } = require("node:fs/promises");
+const path = require("node:path");
 
-const rootDir = path.resolve(__dirname, '..');
-const packagesRootDir = path.join(rootDir, 'packages');
+const rootDir = path.resolve(import.meta.dirname, "..");
+const packagesRootDir = path.join(rootDir, "packages");
 
 async function runCommand({
   command,
   args,
   cwd,
   allowFailure = false,
-  stdio = 'pipe',
+  stdio = "pipe",
 }) {
   return await new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd,
       stdio,
     });
-    let stdout = '';
-    let stderr = '';
+    let stdout = "";
+    let stderr = "";
 
     if (child.stdout !== null) {
-      child.stdout.setEncoding('utf8');
-      child.stdout.on('data', (chunk) => {
+      child.stdout.setEncoding("utf8");
+      child.stdout.on("data", (chunk) => {
         stdout += chunk;
       });
     }
 
     if (child.stderr !== null) {
-      child.stderr.setEncoding('utf8');
-      child.stderr.on('data', (chunk) => {
+      child.stderr.setEncoding("utf8");
+      child.stderr.on("data", (chunk) => {
         stderr += chunk;
       });
     }
 
-    child.on('error', (error) => {
+    child.on("error", (error) => {
       reject(error);
     });
 
-    child.on('close', (status, signal) => {
+    child.on("close", (status, signal) => {
       const result = {
         status: status ?? 1,
         stdout: stdout.trim(),
@@ -50,15 +50,15 @@ async function runCommand({
       if (result.status !== 0 && !allowFailure) {
         const output = [result.stdout, result.stderr]
           .filter(Boolean)
-          .join('\n')
+          .join("\n")
           .trim();
 
         let errorMessage = output;
         if (errorMessage.length === 0) {
           errorMessage =
             signal === null
-              ? `Command failed: ${command} ${args.join(' ')}`
-              : `Command failed with signal ${signal}: ${command} ${args.join(' ')}`;
+              ? `Command failed: ${command} ${args.join(" ")}`
+              : `Command failed with signal ${signal}: ${command} ${args.join(" ")}`;
         }
 
         reject(new Error(errorMessage));
@@ -72,8 +72,8 @@ async function runCommand({
 
 async function readPackage({ folderName }) {
   const packageDir = path.join(packagesRootDir, folderName);
-  const packageJsonPath = path.join(packageDir, 'package.json');
-  const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
+  const packageJsonPath = path.join(packageDir, "package.json");
+  const packageJson = JSON.parse(await readFile(packageJsonPath, "utf8"));
 
   return {
     folderName,
@@ -103,7 +103,7 @@ async function readPackages() {
             }),
           ];
         } catch (error) {
-          if (error?.code === 'ENOENT') {
+          if (error?.code === "ENOENT") {
             return null;
           }
 
@@ -121,18 +121,18 @@ function isRegistryNotFoundError({ stderr, stdout }) {
   const output = `${stdout}\n${stderr}`.toLowerCase();
 
   return (
-    output.includes('404') ||
-    output.includes('not found') ||
-    output.includes('not in this registry') ||
-    output.includes('not in the npm registry') ||
-    output.includes('no match found')
+    output.includes("404") ||
+    output.includes("not found") ||
+    output.includes("not in this registry") ||
+    output.includes("not in the npm registry") ||
+    output.includes("no match found")
   );
 }
 
 async function getLatestPublishedVersion({ packageName }) {
   const result = await runCommand({
-    command: 'pnpm',
-    args: ['view', packageName, 'time', '--json'],
+    command: "pnpm",
+    args: ["view", packageName, "time", "--json"],
     cwd: rootDir,
     allowFailure: true,
   });
@@ -155,38 +155,39 @@ async function getLatestPublishedVersion({ packageName }) {
   const timeMetadata = JSON.parse(result.stdout);
   const publishedVersions = Object.entries(timeMetadata)
     .filter(([version, publishedAt]) => {
-      if (version === 'created' || version === 'modified') {
+      if (version === "created" || version === "modified") {
         return false;
       }
 
       return Number.isFinite(Date.parse(String(publishedAt)));
     })
-    .sort((left, right) => {
-      return Date.parse(String(left[1])) - Date.parse(String(right[1]));
-    });
+    .sort(
+      (left, right) =>
+        Date.parse(String(left[1])) - Date.parse(String(right[1]))
+    );
 
   return publishedVersions.at(-1)?.[0] ?? null;
 }
 
 function getPrereleaseTag({ version }) {
-  const prerelease = version.split('-')[1];
+  const prerelease = version.split("-")[1];
 
   if (!prerelease) {
     return null;
   }
 
-  return prerelease.split('.')[0] ?? null;
+  return prerelease.split(".")[0] ?? null;
 }
 
 function parseCliArgs({ argv }) {
   let dryRun = false;
 
   for (const arg of argv) {
-    if (arg === '--') {
+    if (arg === "--") {
       continue;
     }
 
-    if (arg === '--dry-run') {
+    if (arg === "--dry-run") {
       dryRun = true;
       continue;
     }
@@ -201,14 +202,14 @@ function parseCliArgs({ argv }) {
 
 async function ensureNpmLogin() {
   const result = await runCommand({
-    command: 'pnpm',
-    args: ['whoami'],
+    command: "pnpm",
+    args: ["whoami"],
     cwd: rootDir,
     allowFailure: true,
   });
 
   if (result.status !== 0 || result.stdout.length === 0) {
-    throw new Error('Not logged in to npm. Run `pnpm login` and retry.');
+    throw new Error("Not logged in to npm. Run `pnpm login` and retry.");
   }
 
   console.log(`npm user: ${result.stdout}`);
@@ -230,7 +231,7 @@ function getPublishTag({ packages }) {
   }
 
   throw new Error(
-    'Selected packages use different prerelease tags. Align their versions before publishing.'
+    "Selected packages use different prerelease tags. Align their versions before publishing."
   );
 }
 
@@ -238,33 +239,33 @@ async function publishPackages({ packages, dryRun }) {
   const publishTag = getPublishTag({
     packages,
   });
-  const commandArgs = ['-r'];
+  const commandArgs = ["-r"];
 
   for (const pkg of packages) {
-    commandArgs.push('--filter', pkg.name);
+    commandArgs.push("--filter", pkg.name);
   }
 
-  commandArgs.push('publish');
+  commandArgs.push("publish");
 
   if (publishTag !== null) {
-    commandArgs.push('--tag', publishTag);
+    commandArgs.push("--tag", publishTag);
   }
 
   if (dryRun) {
-    commandArgs.push('--dry-run');
+    commandArgs.push("--dry-run");
   }
 
   console.log(
-    `${dryRun ? 'Dry-running' : 'Publishing'} ${packages.length} package(s): ${packages
+    `${dryRun ? "Dry-running" : "Publishing"} ${packages.length} package(s): ${packages
       .map((pkg) => `${pkg.name}@${pkg.version}`)
-      .join(', ')}`
+      .join(", ")}`
   );
 
   await runCommand({
-    command: 'pnpm',
+    command: "pnpm",
     args: commandArgs,
     cwd: rootDir,
-    stdio: 'inherit',
+    stdio: "inherit",
   });
 }
 
@@ -276,26 +277,24 @@ async function main() {
   const packages = Object.values(packagesByFolder);
 
   if (packages.length === 0) {
-    throw new Error('No publishable packages found in packages/.');
+    throw new Error("No publishable packages found in packages/.");
   }
 
   if (dryRun) {
     console.log(
-      'Dry run enabled. The final publish call will use `pnpm publish --dry-run`.'
+      "Dry run enabled. The final publish call will use `pnpm publish --dry-run`."
     );
   }
 
   await ensureNpmLogin();
 
   const packagesWithLatestPublishedVersion = await Promise.all(
-    packages.map(async (pkg) => {
-      return {
-        pkg,
-        latestPublishedVersion: await getLatestPublishedVersion({
-          packageName: pkg.name,
-        }),
-      };
-    })
+    packages.map(async (pkg) => ({
+      pkg,
+      latestPublishedVersion: await getLatestPublishedVersion({
+        packageName: pkg.name,
+      }),
+    }))
   );
   const packagesToPublish = [];
 
@@ -322,7 +321,7 @@ async function main() {
   }
 
   if (packagesToPublish.length === 0) {
-    console.log('No packages needed publishing.');
+    console.log("No packages needed publishing.");
     return;
   }
 

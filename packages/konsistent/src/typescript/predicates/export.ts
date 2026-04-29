@@ -1,7 +1,7 @@
-import type { PredicateContext } from '../../core/context.js';
-import { createDiagnostic } from '../../core/diagnostics.js';
-import type { Diagnostic, DiagnosticSeverity } from '../../core/diagnostics.js';
-import type { FileStructure } from '../types.js';
+import type { PredicateContext } from "../../core/context.js";
+import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
+import { createDiagnostic } from "../../core/diagnostics.js";
+import type { FileStructure } from "../types.js";
 
 export function checkExport(opts: {
   expected: (string | { name: string; from?: string })[];
@@ -14,7 +14,7 @@ export function checkExport(opts: {
   const diagnostics: Diagnostic[] = [];
 
   for (const entry of expected) {
-    const definition = typeof entry === 'string' ? { name: entry } : entry;
+    const definition = typeof entry === "string" ? { name: entry } : entry;
     const resolvedName = context.resolveTemplate(definition.name);
     const resolvedFrom = definition.from
       ? context.resolveTemplate(definition.from)
@@ -31,7 +31,7 @@ export function checkExport(opts: {
       diagnostics.push(
         createDiagnostic({
           filePath: context.path,
-          predicateName: 'export',
+          predicateName: "export",
           message: resolvedFrom
             ? `Missing export "${resolvedName}" from "${resolvedFrom}"`
             : `Missing export "${resolvedName}"`,

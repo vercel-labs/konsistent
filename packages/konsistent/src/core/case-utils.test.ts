@@ -1,78 +1,78 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 import {
   splitWords,
   toCamelCase,
   toKebabCase,
   toPascalCase,
   toSnakeCase,
-} from './case-utils.js';
+} from "./case-utils.js";
 
-describe('splitWords', () => {
-  it('splits hyphenated words', () => {
-    expect(splitWords('test-utils')).toEqual(['test', 'utils']);
+describe("splitWords", () => {
+  it("splits hyphenated words", () => {
+    expect(splitWords("test-utils")).toEqual(["test", "utils"]);
   });
 
-  it('splits underscore-separated words', () => {
-    expect(splitWords('test_utils')).toEqual(['test', 'utils']);
+  it("splits underscore-separated words", () => {
+    expect(splitWords("test_utils")).toEqual(["test", "utils"]);
   });
 
-  it('splits camelCase boundaries', () => {
-    expect(splitWords('testUtils')).toEqual(['test', 'Utils']);
+  it("splits camelCase boundaries", () => {
+    expect(splitWords("testUtils")).toEqual(["test", "Utils"]);
   });
 
-  it('handles single word', () => {
-    expect(splitWords('openai')).toEqual(['openai']);
+  it("handles single word", () => {
+    expect(splitWords("openai")).toEqual(["openai"]);
   });
 
-  it('filters empty segments', () => {
-    expect(splitWords('--foo--')).toEqual(['foo']);
-  });
-});
-
-describe('toPascalCase', () => {
-  it('capitalizes single word', () => {
-    expect(toPascalCase('openai')).toBe('Openai');
-  });
-
-  it('handles hyphenated', () => {
-    expect(toPascalCase('test-utils')).toBe('TestUtils');
-  });
-
-  it('handles camelCase input', () => {
-    expect(toPascalCase('testUtils')).toBe('TestUtils');
+  it("filters empty segments", () => {
+    expect(splitWords("--foo--")).toEqual(["foo"]);
   });
 });
 
-describe('toCamelCase', () => {
-  it('lowercases single word', () => {
-    expect(toCamelCase('Openai')).toBe('openai');
+describe("toPascalCase", () => {
+  it("capitalizes single word", () => {
+    expect(toPascalCase("openai")).toBe("Openai");
   });
 
-  it('handles hyphenated', () => {
-    expect(toCamelCase('test-utils')).toBe('testUtils');
+  it("handles hyphenated", () => {
+    expect(toPascalCase("test-utils")).toBe("TestUtils");
   });
 
-  it('returns empty string for empty input', () => {
-    expect(toCamelCase('')).toBe('');
-  });
-});
-
-describe('toKebabCase', () => {
-  it('converts camelCase', () => {
-    expect(toKebabCase('testUtils')).toBe('test-utils');
-  });
-
-  it('preserves already kebab-case', () => {
-    expect(toKebabCase('test-utils')).toBe('test-utils');
+  it("handles camelCase input", () => {
+    expect(toPascalCase("testUtils")).toBe("TestUtils");
   });
 });
 
-describe('toSnakeCase', () => {
-  it('converts hyphenated', () => {
-    expect(toSnakeCase('test-utils')).toBe('test_utils');
+describe("toCamelCase", () => {
+  it("lowercases single word", () => {
+    expect(toCamelCase("Openai")).toBe("openai");
   });
 
-  it('converts camelCase', () => {
-    expect(toSnakeCase('testUtils')).toBe('test_utils');
+  it("handles hyphenated", () => {
+    expect(toCamelCase("test-utils")).toBe("testUtils");
+  });
+
+  it("returns empty string for empty input", () => {
+    expect(toCamelCase("")).toBe("");
+  });
+});
+
+describe("toKebabCase", () => {
+  it("converts camelCase", () => {
+    expect(toKebabCase("testUtils")).toBe("test-utils");
+  });
+
+  it("preserves already kebab-case", () => {
+    expect(toKebabCase("test-utils")).toBe("test-utils");
+  });
+});
+
+describe("toSnakeCase", () => {
+  it("converts hyphenated", () => {
+    expect(toSnakeCase("test-utils")).toBe("test_utils");
+  });
+
+  it("converts camelCase", () => {
+    expect(toSnakeCase("testUtils")).toBe("test_utils");
   });
 });

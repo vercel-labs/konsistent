@@ -1,4 +1,4 @@
-import { splitWords } from '../case-utils.js';
+import { splitWords } from "../case-utils.js";
 
 export function validateSegmentsConstraint(opts: {
   value: string;

@@ -1,20 +1,20 @@
-import { defineCommand } from 'citty';
-import pc from 'picocolors';
-import { PACKAGE_NAME } from '../update/package-name.js';
-import { fetchLatestVersion } from '../update/registry.js';
-import { runUpdate } from '../update/run-update.js';
-import { isNewerVersion } from '../update/semver.js';
-import { getVersion } from '../version.js';
+import { defineCommand } from "citty";
+import pc from "picocolors";
+import { PACKAGE_NAME } from "../update/package-name.js";
+import { fetchLatestVersion } from "../update/registry.js";
+import { runUpdate } from "../update/run-update.js";
+import { isNewerVersion } from "../update/semver.js";
+import { getVersion } from "../version.js";
 
 export default defineCommand({
   meta: {
-    name: 'update',
-    description: 'Update konsistent to the latest version',
+    name: "update",
+    description: "Update konsistent to the latest version",
   },
   async run() {
     const currentVersion = getVersion();
 
-    console.error('Checking for updates...');
+    console.error("Checking for updates...");
 
     const latestVersion = await fetchLatestVersion({
       packageName: PACKAGE_NAME,
@@ -23,7 +23,7 @@ export default defineCommand({
 
     if (!latestVersion) {
       console.error(
-        `${pc.red('✗')} Could not check for updates. Please check your network connection.`
+        `${pc.red("✗")} Could not check for updates. Please check your network connection.`
       );
       process.exit(1);
     }
@@ -32,7 +32,7 @@ export default defineCommand({
       !isNewerVersion({ current: currentVersion, candidate: latestVersion })
     ) {
       console.error(
-        `${pc.green('✓')} ${PACKAGE_NAME} is already up to date (v${currentVersion})`
+        `${pc.green("✓")} ${PACKAGE_NAME} is already up to date (v${currentVersion})`
       );
       return;
     }

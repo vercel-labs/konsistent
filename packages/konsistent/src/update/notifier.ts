@@ -1,18 +1,18 @@
-import pc from 'picocolors';
-import { isCacheStale, readCache, writeCache } from './cache.js';
-import { detectPackageManager, isMonorepo } from './package-manager.js';
-import { PACKAGE_NAME } from './package-name.js';
-import { promptYesNo } from './prompt.js';
-import { fetchLatestVersion } from './registry.js';
+import pc from "picocolors";
+import { isCacheStale, readCache, writeCache } from "./cache.js";
+import { detectPackageManager, isMonorepo } from "./package-manager.js";
+import { PACKAGE_NAME } from "./package-name.js";
+import { promptYesNo } from "./prompt.js";
+import { fetchLatestVersion } from "./registry.js";
 import {
   canAutoUpdate,
   getManualInstallHint,
   runUpdate,
-} from './run-update.js';
-import { isNewerVersion } from './semver.js';
+} from "./run-update.js";
+import { isNewerVersion } from "./semver.js";
 
 export function shouldCheckForUpdate(commandName: string): boolean {
-  if (commandName === 'update') {
+  if (commandName === "update") {
     return false;
   }
   if (process.env.CI) {
@@ -54,11 +54,13 @@ export async function checkAndPrompt(opts: {
   }
 
   if (
-    !latestVersion ||
-    !isNewerVersion({
-      current: opts.currentVersion,
-      candidate: latestVersion,
-    })
+    !(
+      latestVersion &&
+      isNewerVersion({
+        current: opts.currentVersion,
+        candidate: latestVersion,
+      })
+    )
   ) {
     return false;
   }
@@ -85,7 +87,7 @@ export async function checkAndPrompt(opts: {
   }
 
   const shouldUpdate = await promptYesNo({
-    question: 'Would you like to update now?',
+    question: "Would you like to update now?",
   });
 
   if (shouldUpdate) {

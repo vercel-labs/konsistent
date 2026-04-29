@@ -4,7 +4,10 @@
   "version": "0.0.1-alpha.13",
   "type": "module",
   "license": "MIT",
-  "files": ["dist", "konsistent.schema.json"],
+  "files": [
+    "dist",
+    "konsistent.schema.json"
+  ],
   "bin": {
     "konsistent": "./dist/index.js"
   },
@@ -18,7 +21,7 @@
     "citty": "^0.1",
     "picocolors": "^1",
     "tinyglobby": "^0.2",
-    "typescript": "^5",
+    "typescript": "^5.7",
     "zod": "^3"
   },
   "devDependencies": {

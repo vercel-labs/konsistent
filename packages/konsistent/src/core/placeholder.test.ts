@@ -1,516 +1,516 @@
-import { describe, expect, it } from 'vitest';
-import { PlaceholderValue } from './placeholder.js';
+import { describe, expect, it } from "vitest";
+import { PlaceholderValue } from "./placeholder.js";
 
-describe('PlaceholderValue', () => {
-  describe('toString', () => {
-    it('returns raw value', () => {
-      expect(new PlaceholderValue({ value: 'openai' }).toString()).toBe(
-        'openai'
+describe("PlaceholderValue", () => {
+  describe("toString", () => {
+    it("returns raw value", () => {
+      expect(new PlaceholderValue({ value: "openai" }).toString()).toBe(
+        "openai"
       );
     });
 
-    it('preserves hyphens', () => {
-      expect(new PlaceholderValue({ value: 'test-utils' }).toString()).toBe(
-        'test-utils'
+    it("preserves hyphens", () => {
+      expect(new PlaceholderValue({ value: "test-utils" }).toString()).toBe(
+        "test-utils"
       );
     });
 
-    it('preserves underscores', () => {
-      expect(new PlaceholderValue({ value: 'test_utils' }).toString()).toBe(
-        'test_utils'
+    it("preserves underscores", () => {
+      expect(new PlaceholderValue({ value: "test_utils" }).toString()).toBe(
+        "test_utils"
       );
     });
 
-    it('handles single character', () => {
-      expect(new PlaceholderValue({ value: 'a' }).toString()).toBe('a');
+    it("handles single character", () => {
+      expect(new PlaceholderValue({ value: "a" }).toString()).toBe("a");
     });
   });
 
-  describe('toPascalCase', () => {
-    it('capitalizes single word', () => {
-      expect(new PlaceholderValue({ value: 'openai' }).toPascalCase()).toBe(
-        'Openai'
+  describe("toPascalCase", () => {
+    it("capitalizes single word", () => {
+      expect(new PlaceholderValue({ value: "openai" }).toPascalCase()).toBe(
+        "Openai"
       );
     });
 
-    it('handles multi-word hyphenated', () => {
-      expect(new PlaceholderValue({ value: 'test-utils' }).toPascalCase()).toBe(
-        'TestUtils'
+    it("handles multi-word hyphenated", () => {
+      expect(new PlaceholderValue({ value: "test-utils" }).toPascalCase()).toBe(
+        "TestUtils"
       );
     });
 
-    it('handles underscore-separated', () => {
-      expect(new PlaceholderValue({ value: 'test_utils' }).toPascalCase()).toBe(
-        'TestUtils'
+    it("handles underscore-separated", () => {
+      expect(new PlaceholderValue({ value: "test_utils" }).toPascalCase()).toBe(
+        "TestUtils"
       );
     });
 
-    it('handles camelCase input', () => {
-      expect(new PlaceholderValue({ value: 'testUtils' }).toPascalCase()).toBe(
-        'TestUtils'
+    it("handles camelCase input", () => {
+      expect(new PlaceholderValue({ value: "testUtils" }).toPascalCase()).toBe(
+        "TestUtils"
       );
     });
 
-    it('handles single character', () => {
-      expect(new PlaceholderValue({ value: 'a' }).toPascalCase()).toBe('A');
+    it("handles single character", () => {
+      expect(new PlaceholderValue({ value: "a" }).toPascalCase()).toBe("A");
     });
 
-    it('handles multiple hyphens', () => {
+    it("handles multiple hyphens", () => {
       expect(
-        new PlaceholderValue({ value: 'my-test-utils' }).toPascalCase()
-      ).toBe('MyTestUtils');
+        new PlaceholderValue({ value: "my-test-utils" }).toPascalCase()
+      ).toBe("MyTestUtils");
     });
 
-    it('uses kebabToPascalMap when entry exists', () => {
-      expect(
-        new PlaceholderValue({
-          value: 'openai',
-          kebabToPascalMap: { openai: 'OpenAI' },
-        }).toPascalCase()
-      ).toBe('OpenAI');
-    });
-
-    it('falls back to default when kebabToPascalMap has no entry', () => {
+    it("uses kebabToPascalMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: 'cache',
-          kebabToPascalMap: { openai: 'OpenAI' },
+          value: "openai",
+          kebabToPascalMap: { openai: "OpenAI" },
         }).toPascalCase()
-      ).toBe('Cache');
+      ).toBe("OpenAI");
     });
 
-    it('uses camelToPascalMap when entry exists', () => {
+    it("falls back to default when kebabToPascalMap has no entry", () => {
       expect(
         new PlaceholderValue({
-          value: 'openAI',
-          camelToPascalMap: { openAI: 'OpenAI' },
+          value: "cache",
+          kebabToPascalMap: { openai: "OpenAI" },
         }).toPascalCase()
-      ).toBe('OpenAI');
+      ).toBe("Cache");
     });
 
-    it('prefers kebabToPascalMap over camelToPascalMap', () => {
+    it("uses camelToPascalMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: 'openai',
-          kebabToPascalMap: { openai: 'OpenAI' },
-          camelToPascalMap: { openai: 'Openai' },
+          value: "openAI",
+          camelToPascalMap: { openAI: "OpenAI" },
         }).toPascalCase()
-      ).toBe('OpenAI');
+      ).toBe("OpenAI");
     });
 
-    it('falls back to default when camelToPascalMap has no entry', () => {
+    it("prefers kebabToPascalMap over camelToPascalMap", () => {
       expect(
         new PlaceholderValue({
-          value: 'testUtils',
-          camelToPascalMap: { openAI: 'OpenAI' },
+          value: "openai",
+          kebabToPascalMap: { openai: "OpenAI" },
+          camelToPascalMap: { openai: "Openai" },
         }).toPascalCase()
-      ).toBe('TestUtils');
+      ).toBe("OpenAI");
+    });
+
+    it("falls back to default when camelToPascalMap has no entry", () => {
+      expect(
+        new PlaceholderValue({
+          value: "testUtils",
+          camelToPascalMap: { openAI: "OpenAI" },
+        }).toPascalCase()
+      ).toBe("TestUtils");
     });
   });
 
-  describe('toCamelCase', () => {
-    it('lowercases single word', () => {
-      expect(new PlaceholderValue({ value: 'Openai' }).toCamelCase()).toBe(
-        'openai'
+  describe("toCamelCase", () => {
+    it("lowercases single word", () => {
+      expect(new PlaceholderValue({ value: "Openai" }).toCamelCase()).toBe(
+        "openai"
       );
     });
 
-    it('handles multi-word hyphenated', () => {
-      expect(new PlaceholderValue({ value: 'test-utils' }).toCamelCase()).toBe(
-        'testUtils'
+    it("handles multi-word hyphenated", () => {
+      expect(new PlaceholderValue({ value: "test-utils" }).toCamelCase()).toBe(
+        "testUtils"
       );
     });
 
-    it('handles underscore-separated', () => {
-      expect(new PlaceholderValue({ value: 'test_utils' }).toCamelCase()).toBe(
-        'testUtils'
+    it("handles underscore-separated", () => {
+      expect(new PlaceholderValue({ value: "test_utils" }).toCamelCase()).toBe(
+        "testUtils"
       );
     });
 
-    it('handles single character', () => {
-      expect(new PlaceholderValue({ value: 'A' }).toCamelCase()).toBe('a');
+    it("handles single character", () => {
+      expect(new PlaceholderValue({ value: "A" }).toCamelCase()).toBe("a");
     });
 
-    it('uses kebabToCamelMap when entry exists', () => {
+    it("uses kebabToCamelMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: 'openai',
-          kebabToCamelMap: { openai: 'openAI' },
+          value: "openai",
+          kebabToCamelMap: { openai: "openAI" },
         }).toCamelCase()
-      ).toBe('openAI');
+      ).toBe("openAI");
     });
 
-    it('falls back to kebabToPascalMap with lowercased first char', () => {
+    it("falls back to kebabToPascalMap with lowercased first char", () => {
       expect(
         new PlaceholderValue({
-          value: 'graphql',
-          kebabToPascalMap: { graphql: 'GraphQL' },
+          value: "graphql",
+          kebabToPascalMap: { graphql: "GraphQL" },
         }).toCamelCase()
-      ).toBe('graphQL');
+      ).toBe("graphQL");
     });
 
-    it('prefers kebabToCamelMap over kebabToPascalMap', () => {
+    it("prefers kebabToCamelMap over kebabToPascalMap", () => {
       expect(
         new PlaceholderValue({
-          value: 'openai',
-          kebabToPascalMap: { openai: 'OpenAI' },
-          kebabToCamelMap: { openai: 'openAI' },
+          value: "openai",
+          kebabToPascalMap: { openai: "OpenAI" },
+          kebabToCamelMap: { openai: "openAI" },
         }).toCamelCase()
-      ).toBe('openAI');
+      ).toBe("openAI");
     });
 
-    it('falls back to default when no map entry exists', () => {
+    it("falls back to default when no map entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: 'cache',
-          kebabToPascalMap: { openai: 'OpenAI' },
+          value: "cache",
+          kebabToPascalMap: { openai: "OpenAI" },
         }).toCamelCase()
-      ).toBe('cache');
+      ).toBe("cache");
     });
 
-    it('uses pascalToCamelMap when entry exists', () => {
+    it("uses pascalToCamelMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: 'OpenAI',
-          pascalToCamelMap: { OpenAI: 'openAI' },
+          value: "OpenAI",
+          pascalToCamelMap: { OpenAI: "openAI" },
         }).toCamelCase()
-      ).toBe('openAI');
+      ).toBe("openAI");
     });
 
-    it('prefers kebabToCamelMap over pascalToCamelMap', () => {
+    it("prefers kebabToCamelMap over pascalToCamelMap", () => {
       expect(
         new PlaceholderValue({
-          value: 'openai',
-          kebabToCamelMap: { openai: 'openAI' },
-          pascalToCamelMap: { openai: 'openai' },
+          value: "openai",
+          kebabToCamelMap: { openai: "openAI" },
+          pascalToCamelMap: { openai: "openai" },
         }).toCamelCase()
-      ).toBe('openAI');
+      ).toBe("openAI");
     });
 
-    it('falls back to default when pascalToCamelMap has no entry', () => {
+    it("falls back to default when pascalToCamelMap has no entry", () => {
       expect(
         new PlaceholderValue({
-          value: 'TestUtils',
-          pascalToCamelMap: { OpenAI: 'openAI' },
+          value: "TestUtils",
+          pascalToCamelMap: { OpenAI: "openAI" },
         }).toCamelCase()
-      ).toBe('testUtils');
+      ).toBe("testUtils");
     });
   });
 
-  describe('toKebabCase', () => {
-    it('lowercases single word', () => {
-      expect(new PlaceholderValue({ value: 'Openai' }).toKebabCase()).toBe(
-        'openai'
+  describe("toKebabCase", () => {
+    it("lowercases single word", () => {
+      expect(new PlaceholderValue({ value: "Openai" }).toKebabCase()).toBe(
+        "openai"
       );
     });
 
-    it('preserves already kebab-case', () => {
-      expect(new PlaceholderValue({ value: 'test-utils' }).toKebabCase()).toBe(
-        'test-utils'
+    it("preserves already kebab-case", () => {
+      expect(new PlaceholderValue({ value: "test-utils" }).toKebabCase()).toBe(
+        "test-utils"
       );
     });
 
-    it('converts camelCase', () => {
-      expect(new PlaceholderValue({ value: 'testUtils' }).toKebabCase()).toBe(
-        'test-utils'
+    it("converts camelCase", () => {
+      expect(new PlaceholderValue({ value: "testUtils" }).toKebabCase()).toBe(
+        "test-utils"
       );
     });
 
-    it('converts underscores', () => {
-      expect(new PlaceholderValue({ value: 'test_utils' }).toKebabCase()).toBe(
-        'test-utils'
+    it("converts underscores", () => {
+      expect(new PlaceholderValue({ value: "test_utils" }).toKebabCase()).toBe(
+        "test-utils"
       );
     });
 
-    it('uses pascalToKebabMap when entry exists', () => {
+    it("uses pascalToKebabMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: 'OpenAI',
-          pascalToKebabMap: { OpenAI: 'openai' },
+          value: "OpenAI",
+          pascalToKebabMap: { OpenAI: "openai" },
         }).toKebabCase()
-      ).toBe('openai');
+      ).toBe("openai");
     });
 
-    it('uses camelToKebabMap when entry exists', () => {
+    it("uses camelToKebabMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: 'openAI',
-          camelToKebabMap: { openAI: 'openai' },
+          value: "openAI",
+          camelToKebabMap: { openAI: "openai" },
         }).toKebabCase()
-      ).toBe('openai');
+      ).toBe("openai");
     });
 
-    it('prefers pascalToKebabMap over camelToKebabMap', () => {
+    it("prefers pascalToKebabMap over camelToKebabMap", () => {
       expect(
         new PlaceholderValue({
-          value: 'OpenAI',
-          pascalToKebabMap: { OpenAI: 'openai' },
-          camelToKebabMap: { OpenAI: 'open-ai' },
+          value: "OpenAI",
+          pascalToKebabMap: { OpenAI: "openai" },
+          camelToKebabMap: { OpenAI: "open-ai" },
         }).toKebabCase()
-      ).toBe('openai');
+      ).toBe("openai");
     });
 
-    it('falls back to default when no map entry exists', () => {
+    it("falls back to default when no map entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: 'cache',
-          pascalToKebabMap: { OpenAI: 'openai' },
+          value: "cache",
+          pascalToKebabMap: { OpenAI: "openai" },
         }).toKebabCase()
-      ).toBe('cache');
+      ).toBe("cache");
     });
   });
 
-  describe('toFlatCase', () => {
-    it('lowercases single word', () => {
-      expect(new PlaceholderValue({ value: 'openai' }).toFlatCase()).toBe(
-        'openai'
+  describe("toFlatCase", () => {
+    it("lowercases single word", () => {
+      expect(new PlaceholderValue({ value: "openai" }).toFlatCase()).toBe(
+        "openai"
       );
     });
 
-    it('strips hyphens and lowercases', () => {
-      expect(new PlaceholderValue({ value: 'test-utils' }).toFlatCase()).toBe(
-        'testutils'
+    it("strips hyphens and lowercases", () => {
+      expect(new PlaceholderValue({ value: "test-utils" }).toFlatCase()).toBe(
+        "testutils"
       );
     });
 
-    it('strips underscores and lowercases', () => {
-      expect(new PlaceholderValue({ value: 'test_utils' }).toFlatCase()).toBe(
-        'testutils'
+    it("strips underscores and lowercases", () => {
+      expect(new PlaceholderValue({ value: "test_utils" }).toFlatCase()).toBe(
+        "testutils"
       );
     });
 
-    it('handles camelCase input', () => {
-      expect(new PlaceholderValue({ value: 'testUtils' }).toFlatCase()).toBe(
-        'testutils'
+    it("handles camelCase input", () => {
+      expect(new PlaceholderValue({ value: "testUtils" }).toFlatCase()).toBe(
+        "testutils"
       );
     });
 
-    it('handles PascalCase input', () => {
-      expect(new PlaceholderValue({ value: 'TestUtils' }).toFlatCase()).toBe(
-        'testutils'
+    it("handles PascalCase input", () => {
+      expect(new PlaceholderValue({ value: "TestUtils" }).toFlatCase()).toBe(
+        "testutils"
       );
     });
 
-    it('handles single character', () => {
-      expect(new PlaceholderValue({ value: 'A' }).toFlatCase()).toBe('a');
+    it("handles single character", () => {
+      expect(new PlaceholderValue({ value: "A" }).toFlatCase()).toBe("a");
     });
   });
 
-  describe('toNthSegment', () => {
-    it('returns first segment of hyphenated value', () => {
+  describe("toNthSegment", () => {
+    it("returns first segment of hyphenated value", () => {
       expect(
-        new PlaceholderValue({ value: 'foo-bar-baz' }).toNthSegment(0)
-      ).toBe('foo');
+        new PlaceholderValue({ value: "foo-bar-baz" }).toNthSegment(0)
+      ).toBe("foo");
     });
 
-    it('returns second segment', () => {
+    it("returns second segment", () => {
       expect(
-        new PlaceholderValue({ value: 'foo-bar-baz' }).toNthSegment(1)
-      ).toBe('bar');
+        new PlaceholderValue({ value: "foo-bar-baz" }).toNthSegment(1)
+      ).toBe("bar");
     });
 
-    it('returns last segment', () => {
+    it("returns last segment", () => {
       expect(
-        new PlaceholderValue({ value: 'foo-bar-baz' }).toNthSegment(2)
-      ).toBe('baz');
+        new PlaceholderValue({ value: "foo-bar-baz" }).toNthSegment(2)
+      ).toBe("baz");
     });
 
-    it('returns empty string when index out of bounds', () => {
-      expect(new PlaceholderValue({ value: 'foo-bar' }).toNthSegment(5)).toBe(
-        ''
+    it("returns empty string when index out of bounds", () => {
+      expect(new PlaceholderValue({ value: "foo-bar" }).toNthSegment(5)).toBe(
+        ""
       );
     });
 
-    it('returns whole value when no hyphens and index is 0', () => {
-      expect(new PlaceholderValue({ value: 'openai' }).toNthSegment(0)).toBe(
-        'openai'
+    it("returns whole value when no hyphens and index is 0", () => {
+      expect(new PlaceholderValue({ value: "openai" }).toNthSegment(0)).toBe(
+        "openai"
       );
     });
 
-    it('returns empty string when no hyphens and index is 1', () => {
-      expect(new PlaceholderValue({ value: 'openai' }).toNthSegment(1)).toBe(
-        ''
+    it("returns empty string when no hyphens and index is 1", () => {
+      expect(new PlaceholderValue({ value: "openai" }).toNthSegment(1)).toBe(
+        ""
       );
     });
   });
 
-  describe('toNthSegmentPascalCase', () => {
-    it('capitalizes segment', () => {
+  describe("toNthSegmentPascalCase", () => {
+    it("capitalizes segment", () => {
       expect(
-        new PlaceholderValue({ value: 'foo-bar' }).toNthSegmentPascalCase(0)
-      ).toBe('Foo');
+        new PlaceholderValue({ value: "foo-bar" }).toNthSegmentPascalCase(0)
+      ).toBe("Foo");
     });
 
-    it('capitalizes second segment', () => {
+    it("capitalizes second segment", () => {
       expect(
-        new PlaceholderValue({ value: 'foo-bar' }).toNthSegmentPascalCase(1)
-      ).toBe('Bar');
+        new PlaceholderValue({ value: "foo-bar" }).toNthSegmentPascalCase(1)
+      ).toBe("Bar");
     });
 
-    it('uses kebabToPascalMap when entry exists', () => {
+    it("uses kebabToPascalMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: 'openai-graphql',
-          kebabToPascalMap: { openai: 'OpenAI' },
+          value: "openai-graphql",
+          kebabToPascalMap: { openai: "OpenAI" },
         }).toNthSegmentPascalCase(0)
-      ).toBe('OpenAI');
+      ).toBe("OpenAI");
     });
 
-    it('falls back to default when no map entry', () => {
+    it("falls back to default when no map entry", () => {
       expect(
         new PlaceholderValue({
-          value: 'openai-graphql',
-          kebabToPascalMap: { graphql: 'GraphQL' },
+          value: "openai-graphql",
+          kebabToPascalMap: { graphql: "GraphQL" },
         }).toNthSegmentPascalCase(0)
-      ).toBe('Openai');
+      ).toBe("Openai");
     });
 
-    it('returns empty string when out of bounds', () => {
+    it("returns empty string when out of bounds", () => {
       expect(
-        new PlaceholderValue({ value: 'foo-bar' }).toNthSegmentPascalCase(5)
-      ).toBe('');
+        new PlaceholderValue({ value: "foo-bar" }).toNthSegmentPascalCase(5)
+      ).toBe("");
     });
   });
 
-  describe('toNthSegmentCamelCase', () => {
-    it('lowercases single-word segment', () => {
+  describe("toNthSegmentCamelCase", () => {
+    it("lowercases single-word segment", () => {
       expect(
-        new PlaceholderValue({ value: 'Foo-bar' }).toNthSegmentCamelCase(0)
-      ).toBe('foo');
+        new PlaceholderValue({ value: "Foo-bar" }).toNthSegmentCamelCase(0)
+      ).toBe("foo");
     });
 
-    it('uses kebabToCamelMap when entry exists', () => {
+    it("uses kebabToCamelMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: 'openai-graphql',
-          kebabToCamelMap: { openai: 'openAI' },
+          value: "openai-graphql",
+          kebabToCamelMap: { openai: "openAI" },
         }).toNthSegmentCamelCase(0)
-      ).toBe('openAI');
+      ).toBe("openAI");
     });
 
-    it('falls back to kebabToPascalMap with lowercased first char', () => {
+    it("falls back to kebabToPascalMap with lowercased first char", () => {
       expect(
         new PlaceholderValue({
-          value: 'openai-graphql',
-          kebabToPascalMap: { graphql: 'GraphQL' },
+          value: "openai-graphql",
+          kebabToPascalMap: { graphql: "GraphQL" },
         }).toNthSegmentCamelCase(1)
-      ).toBe('graphQL');
+      ).toBe("graphQL");
     });
 
-    it('returns empty string when out of bounds', () => {
+    it("returns empty string when out of bounds", () => {
       expect(
-        new PlaceholderValue({ value: 'foo-bar' }).toNthSegmentCamelCase(5)
-      ).toBe('');
+        new PlaceholderValue({ value: "foo-bar" }).toNthSegmentCamelCase(5)
+      ).toBe("");
     });
   });
 
-  describe('toSnakeCase', () => {
-    it('lowercases single word', () => {
-      expect(new PlaceholderValue({ value: 'Openai' }).toSnakeCase()).toBe(
-        'openai'
+  describe("toSnakeCase", () => {
+    it("lowercases single word", () => {
+      expect(new PlaceholderValue({ value: "Openai" }).toSnakeCase()).toBe(
+        "openai"
       );
     });
 
-    it('converts hyphens', () => {
-      expect(new PlaceholderValue({ value: 'test-utils' }).toSnakeCase()).toBe(
-        'test_utils'
+    it("converts hyphens", () => {
+      expect(new PlaceholderValue({ value: "test-utils" }).toSnakeCase()).toBe(
+        "test_utils"
       );
     });
 
-    it('preserves already snake_case', () => {
-      expect(new PlaceholderValue({ value: 'test_utils' }).toSnakeCase()).toBe(
-        'test_utils'
+    it("preserves already snake_case", () => {
+      expect(new PlaceholderValue({ value: "test_utils" }).toSnakeCase()).toBe(
+        "test_utils"
       );
     });
 
-    it('converts camelCase', () => {
-      expect(new PlaceholderValue({ value: 'testUtils' }).toSnakeCase()).toBe(
-        'test_utils'
+    it("converts camelCase", () => {
+      expect(new PlaceholderValue({ value: "testUtils" }).toSnakeCase()).toBe(
+        "test_utils"
       );
     });
 
-    it('uses pascalToKebabMap when entry exists', () => {
+    it("uses pascalToKebabMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: 'OpenAI',
-          pascalToKebabMap: { OpenAI: 'openai' },
+          value: "OpenAI",
+          pascalToKebabMap: { OpenAI: "openai" },
         }).toSnakeCase()
-      ).toBe('openai');
+      ).toBe("openai");
     });
 
-    it('uses camelToKebabMap when entry exists', () => {
+    it("uses camelToKebabMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: 'openAI',
-          camelToKebabMap: { openAI: 'openai' },
+          value: "openAI",
+          camelToKebabMap: { openAI: "openai" },
         }).toSnakeCase()
-      ).toBe('openai');
+      ).toBe("openai");
     });
 
-    it('converts hyphens in mapped value to underscores', () => {
+    it("converts hyphens in mapped value to underscores", () => {
       expect(
         new PlaceholderValue({
-          value: 'GraphQL',
-          pascalToKebabMap: { GraphQL: 'graph-ql' },
+          value: "GraphQL",
+          pascalToKebabMap: { GraphQL: "graph-ql" },
         }).toSnakeCase()
-      ).toBe('graph_ql');
+      ).toBe("graph_ql");
     });
 
-    it('falls back to default when no map entry exists', () => {
+    it("falls back to default when no map entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: 'cache',
-          pascalToKebabMap: { OpenAI: 'openai' },
+          value: "cache",
+          pascalToKebabMap: { OpenAI: "openai" },
         }).toSnakeCase()
-      ).toBe('cache');
+      ).toBe("cache");
     });
   });
 
-  describe('extract', () => {
-    it('returns first capture group when regex has subgroups', () => {
+  describe("extract", () => {
+    it("returns first capture group when regex has subgroups", () => {
       expect(
-        new PlaceholderValue({ value: 'openai' }).extract('^([a-z]+)ai$')
-      ).toBe('open');
+        new PlaceholderValue({ value: "openai" }).extract("^([a-z]+)ai$")
+      ).toBe("open");
     });
 
-    it('returns full match when regex has no subgroups', () => {
+    it("returns full match when regex has no subgroups", () => {
       expect(
-        new PlaceholderValue({ value: 'openai' }).extract('^[a-z]+ai$')
-      ).toBe('openai');
+        new PlaceholderValue({ value: "openai" }).extract("^[a-z]+ai$")
+      ).toBe("openai");
     });
 
-    it('returns empty string when no match', () => {
+    it("returns empty string when no match", () => {
       expect(
-        new PlaceholderValue({ value: 'google' }).extract('^([a-z]+)ai$')
-      ).toBe('');
+        new PlaceholderValue({ value: "google" }).extract("^([a-z]+)ai$")
+      ).toBe("");
     });
 
-    it('returns first capture group when regex has multiple subgroups', () => {
+    it("returns first capture group when regex has multiple subgroups", () => {
       expect(
-        new PlaceholderValue({ value: 'openai-chat' }).extract(
-          '^([a-z]+)-([a-z]+)$'
+        new PlaceholderValue({ value: "openai-chat" }).extract(
+          "^([a-z]+)-([a-z]+)$"
         )
-      ).toBe('openai');
+      ).toBe("openai");
     });
 
-    it('returns empty string when regex is invalid', () => {
+    it("returns empty string when regex is invalid", () => {
       expect(
-        new PlaceholderValue({ value: 'openai' }).extract('[invalid')
-      ).toBe('');
+        new PlaceholderValue({ value: "openai" }).extract("[invalid")
+      ).toBe("");
     });
 
-    it('supports partial matches when regex is not anchored', () => {
+    it("supports partial matches when regex is not anchored", () => {
       expect(
-        new PlaceholderValue({ value: 'openai-v2' }).extract('([a-z]+)ai')
-      ).toBe('open');
+        new PlaceholderValue({ value: "openai-v2" }).extract("([a-z]+)ai")
+      ).toBe("open");
     });
 
-    it('returns empty string when match captures empty group', () => {
+    it("returns empty string when match captures empty group", () => {
       expect(
-        new PlaceholderValue({ value: 'openai' }).extract(
-          '^([a-z]*)open([a-z]+)$'
+        new PlaceholderValue({ value: "openai" }).extract(
+          "^([a-z]*)open([a-z]+)$"
         )
-      ).toBe('');
+      ).toBe("");
     });
   });
 });

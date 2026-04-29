@@ -1,46 +1,46 @@
-import { basename, dirname, join, posix } from 'node:path';
+import { basename, dirname, join, posix } from "node:path";
 import type {
   ConfigV1,
   MustBlockV1,
   MustPredicatesV1,
-} from '../config/schema.js';
-import { checkHaveFiles } from '../predicates/have-files.js';
-import { checkHaveType } from '../predicates/have-type.js';
-import { parseFileStructure } from '../typescript/parser.js';
-import { checkExportClasses } from '../typescript/predicates/export-classes.js';
-import { checkExportConstants } from '../typescript/predicates/export-constants.js';
-import { checkExportFunctions } from '../typescript/predicates/export-functions.js';
-import { checkExportInterfaces } from '../typescript/predicates/export-interfaces.js';
-import { checkExportTypes } from '../typescript/predicates/export-types.js';
-import { checkExport } from '../typescript/predicates/export.js';
-import { checkImportTypes } from '../typescript/predicates/import-types.js';
-import { checkImport } from '../typescript/predicates/import.js';
-import type { FileStructure } from '../typescript/types.js';
-import { toCamelCase, toPascalCase } from './case-utils.js';
-import type { PredicateContext } from './context.js';
-import { generateConventionName } from './convention-name.js';
-import type { Diagnostic, DiagnosticSeverity } from './diagnostics.js';
-import type { FileSystem } from './filesystem.js';
-import type { MatchedPath } from './path-matcher.js';
-import { matchPaths } from './path-matcher.js';
-import { resolveTemplate } from './template.js';
+} from "../config/schema.js";
+import { checkHaveFiles } from "../predicates/have-files.js";
+import { checkHaveType } from "../predicates/have-type.js";
+import { parseFileStructure } from "../typescript/parser.js";
+import { checkExport } from "../typescript/predicates/export.js";
+import { checkExportClasses } from "../typescript/predicates/export-classes.js";
+import { checkExportConstants } from "../typescript/predicates/export-constants.js";
+import { checkExportFunctions } from "../typescript/predicates/export-functions.js";
+import { checkExportInterfaces } from "../typescript/predicates/export-interfaces.js";
+import { checkExportTypes } from "../typescript/predicates/export-types.js";
+import { checkImport } from "../typescript/predicates/import.js";
+import { checkImportTypes } from "../typescript/predicates/import-types.js";
+import type { FileStructure } from "../typescript/types.js";
+import { toCamelCase, toPascalCase } from "./case-utils.js";
+import type { PredicateContext } from "./context.js";
+import { generateConventionName } from "./convention-name.js";
+import type { Diagnostic, DiagnosticSeverity } from "./diagnostics.js";
+import type { FileSystem } from "./filesystem.js";
+import type { MatchedPath } from "./path-matcher.js";
+import { matchPaths } from "./path-matcher.js";
+import { resolveTemplate } from "./template.js";
 
 export const TS_PREDICATES = new Set([
-  'export',
-  'exportTypes',
-  'exportConstants',
-  'exportFunctions',
-  'exportClasses',
-  'exportInterfaces',
-  'import',
-  'importTypes',
+  "export",
+  "exportTypes",
+  "exportConstants",
+  "exportFunctions",
+  "exportClasses",
+  "exportInterfaces",
+  "import",
+  "importTypes",
 ]);
 
 function invertMap(
   map: Record<string, string> | undefined
 ): Record<string, string> | undefined {
   if (!map) {
-    return undefined;
+    return;
   }
   const inverted: Record<string, string> = {};
   for (const [key, value] of Object.entries(map)) {
@@ -54,8 +54,8 @@ function deriveCamelToPascalMap(opts: {
   kebabToCamelMap?: Record<string, string>;
 }): Record<string, string> | undefined {
   const { kebabToPascalMap, kebabToCamelMap } = opts;
-  if (!kebabToPascalMap && !kebabToCamelMap) {
-    return undefined;
+  if (!(kebabToPascalMap || kebabToCamelMap)) {
+    return;
   }
 
   const allKebabKeys = new Set([
@@ -321,7 +321,7 @@ function checkPredicates(opts: {
   }
 
   for (const key of keys) {
-    if (key === 'haveType' && must.haveType) {
+    if (key === "haveType" && must.haveType) {
       diagnostics.push(
         ...checkHaveType({
           expected: must.haveType,
@@ -332,7 +332,7 @@ function checkPredicates(opts: {
         })
       );
     }
-    if (key === 'haveFiles' && must.haveFiles) {
+    if (key === "haveFiles" && must.haveFiles) {
       diagnostics.push(
         ...checkHaveFiles({
           expected: must.haveFiles,
@@ -476,8 +476,8 @@ async function evaluateForBlock(opts: {
 
 export interface RunResult {
   diagnostics: Diagnostic[];
-  filesChecked: number;
   elapsed: number;
+  filesChecked: number;
 }
 
 export async function run(opts: {
@@ -524,7 +524,7 @@ export async function run(opts: {
     const blocks = normalizeMustBlocks(convention.must);
     const conventionName =
       convention.name ?? generateConventionName({ must: convention.must });
-    const severity: DiagnosticSeverity = convention.severity ?? 'error';
+    const severity: DiagnosticSeverity = convention.severity ?? "error";
 
     for (const entry of matched) {
       checkedPaths.add(entry.path);

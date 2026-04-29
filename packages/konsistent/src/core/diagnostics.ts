@@ -1,13 +1,13 @@
-export type DiagnosticSeverity = 'error' | 'warning';
+export type DiagnosticSeverity = "error" | "warning";
 
 export interface Diagnostic {
-  severity: DiagnosticSeverity;
-  filePath: string;
-  predicateName: string;
-  message: string;
-  conventionName?: string;
-  line?: number;
   column?: number;
+  conventionName?: string;
+  filePath: string;
+  line?: number;
+  message: string;
+  predicateName: string;
+  severity: DiagnosticSeverity;
 }
 
 export function createDiagnostic(opts: {
@@ -20,7 +20,7 @@ export function createDiagnostic(opts: {
   severity?: DiagnosticSeverity;
 }): Diagnostic {
   return {
-    severity: opts.severity ?? 'error',
+    severity: opts.severity ?? "error",
     filePath: opts.filePath,
     predicateName: opts.predicateName,
     message: opts.message,

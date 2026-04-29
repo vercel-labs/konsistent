@@ -1,7 +1,7 @@
-import type { PredicateContext } from '../../core/context.js';
-import { createDiagnostic } from '../../core/diagnostics.js';
-import type { Diagnostic, DiagnosticSeverity } from '../../core/diagnostics.js';
-import type { ExtendsClauseInfo, FileStructure } from '../types.js';
+import type { PredicateContext } from "../../core/context.js";
+import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
+import { createDiagnostic } from "../../core/diagnostics.js";
+import type { ExtendsClauseInfo, FileStructure } from "../types.js";
 
 type ExtendConfig =
   | string
@@ -14,9 +14,9 @@ function resolveExtendConfig(opts: {
 }): { type: string; allowOmissions: boolean } | undefined {
   const { extend, context } = opts;
   if (!extend) {
-    return undefined;
+    return;
   }
-  if (typeof extend === 'string') {
+  if (typeof extend === "string") {
     return { type: context.resolveTemplate(extend), allowOmissions: false };
   }
   return {
@@ -53,24 +53,24 @@ export function checkExportInterfaces(opts: {
   const diagnostics: Diagnostic[] = [];
 
   for (const entry of expected) {
-    const definition = typeof entry === 'string' ? { name: entry } : entry;
+    const definition = typeof entry === "string" ? { name: entry } : entry;
     const resolvedName = context.resolveTemplate(definition.name);
 
     const isExported = fileStructure.exports.some(
       (e) =>
         e.name === resolvedName &&
-        (e.kind === 'interface' || e.isType || e.kind === 're-export')
+        (e.kind === "interface" || e.isType || e.kind === "re-export")
     );
 
     const interfaceInfo = fileStructure.interfaces.find(
       (i) => i.name === resolvedName
     );
 
-    if (!isExported && !interfaceInfo) {
+    if (!(isExported || interfaceInfo)) {
       diagnostics.push(
         createDiagnostic({
           filePath: context.path,
-          predicateName: 'exportInterfaces',
+          predicateName: "exportInterfaces",
           message: `Missing export interface "${resolvedName}"`,
           conventionName,
           severity,
@@ -83,7 +83,7 @@ export function checkExportInterfaces(opts: {
       diagnostics.push(
         createDiagnostic({
           filePath: context.path,
-          predicateName: 'exportInterfaces',
+          predicateName: "exportInterfaces",
           message: `Missing export interface "${resolvedName}"`,
           conventionName,
           severity,
@@ -107,7 +107,7 @@ export function checkExportInterfaces(opts: {
       diagnostics.push(
         createDiagnostic({
           filePath: context.path,
-          predicateName: 'exportInterfaces',
+          predicateName: "exportInterfaces",
           message: `Interface "${resolvedName}" must extend "${extendConfig.type}"`,
           conventionName,
           line: interfaceInfo.pos.line,

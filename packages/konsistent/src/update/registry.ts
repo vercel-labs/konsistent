@@ -2,9 +2,9 @@ import {
   compareVersions,
   getPrereleaseChannel,
   parseVersion,
-} from './semver.js';
+} from "./semver.js";
 
-const NPM_REGISTRY_URL = 'https://registry.npmjs.org';
+const NPM_REGISTRY_URL = "https://registry.npmjs.org";
 const DEFAULT_TIMEOUT_MS = 5000;
 
 interface AbbreviatedPackageMetadata {
@@ -21,7 +21,7 @@ export async function fetchLatestVersion(opts: {
 
   try {
     const response = await fetch(`${NPM_REGISTRY_URL}/${opts.packageName}`, {
-      headers: { Accept: 'application/vnd.npm.install-v1+json' },
+      headers: { Accept: "application/vnd.npm.install-v1+json" },
       signal: AbortSignal.timeout(timeout),
     });
 
@@ -30,7 +30,7 @@ export async function fetchLatestVersion(opts: {
     }
 
     const data = (await response.json()) as AbbreviatedPackageMetadata;
-    if (!data.versions || typeof data.versions !== 'object') {
+    if (!data.versions || typeof data.versions !== "object") {
       return null;
     }
 

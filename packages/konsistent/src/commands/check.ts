@@ -1,7 +1,7 @@
-import { defineCommand } from 'citty';
-import pc from 'picocolors';
-import { loadConfig } from '../config/index.js';
-import type { Reporter } from '../core/index.js';
+import { defineCommand } from "citty";
+import pc from "picocolors";
+import { loadConfig } from "../config/index.js";
+import type { Reporter } from "../core/index.js";
 import {
   createDefaultReporter,
   createGithubReporter,
@@ -9,67 +9,67 @@ import {
   createMarkdownReporter,
   createRealFileSystem,
   run,
-} from '../core/index.js';
+} from "../core/index.js";
 import {
   formatTruncationMessage,
   truncateDiagnostics,
-} from '../core/truncate-diagnostics.js';
+} from "../core/truncate-diagnostics.js";
 
 const checkArgs = {
-  'config-path': {
-    type: 'string' as const,
-    description: 'Path to konsistent.json config file',
+  "config-path": {
+    type: "string" as const,
+    description: "Path to konsistent.json config file",
   },
   format: {
-    type: 'string' as const,
-    description: 'Output format (default, json, github, markdown)',
-    default: 'default',
+    type: "string" as const,
+    description: "Output format (default, json, github, markdown)",
+    default: "default",
   },
   verbose: {
-    type: 'boolean' as const,
-    description: 'Show execution time and expanded details',
+    type: "boolean" as const,
+    description: "Show execution time and expanded details",
     default: false,
   },
-  'max-diagnostics': {
-    type: 'string' as const,
-    description: 'Maximum number of diagnostics to report',
-    default: '100',
+  "max-diagnostics": {
+    type: "string" as const,
+    description: "Maximum number of diagnostics to report",
+    default: "100",
   },
   colors: {
-    type: 'boolean' as const,
-    description: 'Enable or disable colored output',
+    type: "boolean" as const,
+    description: "Enable or disable colored output",
   },
-  'error-on-warnings': {
-    type: 'boolean' as const,
-    description: 'Treat warnings as errors for exit code purposes',
+  "error-on-warnings": {
+    type: "boolean" as const,
+    description: "Treat warnings as errors for exit code purposes",
     default: false,
   },
-  'diagnostic-level': {
-    type: 'string' as const,
+  "diagnostic-level": {
+    type: "string" as const,
     description:
       'Minimum diagnostic severity to evaluate (warning or error). When set to "error", warning-severity conventions are skipped entirely.',
-    default: 'warning',
+    default: "warning",
   },
 };
 
 export function resolveFormat(opts: { format: string }): string {
-  if (opts.format !== 'default') {
+  if (opts.format !== "default") {
     return opts.format;
   }
-  if (process.env.GITHUB_ACTIONS === 'true') {
-    return 'github';
+  if (process.env.GITHUB_ACTIONS === "true") {
+    return "github";
   }
-  return 'default';
+  return "default";
 }
 
 function createReporter(opts: { format: string; colors?: boolean }): Reporter {
-  if (opts.format === 'json') {
+  if (opts.format === "json") {
     return createJsonReporter();
   }
-  if (opts.format === 'github') {
+  if (opts.format === "github") {
     return createGithubReporter();
   }
-  if (opts.format === 'markdown') {
+  if (opts.format === "markdown") {
     return createMarkdownReporter();
   }
   return createDefaultReporter({ colors: opts.colors });
@@ -77,25 +77,25 @@ function createReporter(opts: { format: string; colors?: boolean }): Reporter {
 
 export default defineCommand({
   meta: {
-    name: 'check',
-    description: 'Check structural conventions',
+    name: "check",
+    description: "Check structural conventions",
   },
   args: checkArgs,
   async run({ args }) {
-    const result = await loadConfig({ configPath: args['config-path'] });
-    if ('error' in result) {
+    const result = await loadConfig({ configPath: args["config-path"] });
+    if ("error" in result) {
       console.error(pc.red(result.error));
       process.exit(1);
     }
 
     const diagnosticLevel =
-      args['diagnostic-level'] === 'error' ? 'error' : 'warning';
+      args["diagnostic-level"] === "error" ? "error" : "warning";
     const config =
-      diagnosticLevel === 'error'
+      diagnosticLevel === "error"
         ? {
             ...result.config,
             conventions: result.config.conventions.filter(
-              (c) => (c.severity ?? 'error') !== 'warning'
+              (c) => (c.severity ?? "error") !== "warning"
             ),
           }
         : result.config;
@@ -106,7 +106,7 @@ export default defineCommand({
       fileSystem,
     });
 
-    const maxDiags = Number.parseInt(args['max-diagnostics'], 10) || 100;
+    const maxDiags = Number.parseInt(args["max-diagnostics"], 10) || 100;
     const { diagnostics: reported, omitted } = truncateDiagnostics({
       diagnostics: runResult.diagnostics,
       max: maxDiags,
@@ -124,14 +124,14 @@ export default defineCommand({
       output.push(formatTruncationMessage(omitted));
     }
     if (output.length > 0) {
-      process.stdout.write(`${output.join('\n')}\n`);
+      process.stdout.write(`${output.join("\n")}\n`);
     }
 
-    const hasErrors = runResult.diagnostics.some((d) => d.severity === 'error');
+    const hasErrors = runResult.diagnostics.some((d) => d.severity === "error");
     const hasWarnings = runResult.diagnostics.some(
-      (d) => d.severity === 'warning'
+      (d) => d.severity === "warning"
     );
-    if (hasErrors || (args['error-on-warnings'] && hasWarnings)) {
+    if (hasErrors || (args["error-on-warnings"] && hasWarnings)) {
       process.exit(1);
     }
   },

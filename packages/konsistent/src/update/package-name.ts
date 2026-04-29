@@ -1,1 +1,1 @@
-export const PACKAGE_NAME = 'konsistent';
+export const PACKAGE_NAME = "konsistent";

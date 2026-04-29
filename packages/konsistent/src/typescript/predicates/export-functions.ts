@@ -1,13 +1,13 @@
-import type { PredicateContext } from '../../core/context.js';
-import { createDiagnostic } from '../../core/diagnostics.js';
-import type { Diagnostic, DiagnosticSeverity } from '../../core/diagnostics.js';
-import type { FileStructure, FunctionInfo } from '../types.js';
+import type { PredicateContext } from "../../core/context.js";
+import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
+import { createDiagnostic } from "../../core/diagnostics.js";
+import type { FileStructure, FunctionInfo } from "../types.js";
 
-type FunctionDef = {
+interface FunctionDef {
   name: string;
   receiveParamOfType?: string;
   returnValueOfType?: string;
-};
+}
 
 function checkSignature(opts: {
   funcInfo: FunctionInfo;
@@ -37,7 +37,7 @@ function checkSignature(opts: {
       diagnostics.push(
         createDiagnostic({
           filePath: context.path,
-          predicateName: 'exportFunctions',
+          predicateName: "exportFunctions",
           message: `Function "${resolvedName}" must receive a parameter of type "${resolvedParamType}"`,
           conventionName,
           line: funcInfo.pos.line,
@@ -52,7 +52,7 @@ function checkSignature(opts: {
     diagnostics.push(
       createDiagnostic({
         filePath: context.path,
-        predicateName: 'exportFunctions',
+        predicateName: "exportFunctions",
         message: `Function "${resolvedName}" must return value of type "${resolvedReturnType}"`,
         conventionName,
         line: funcInfo.pos.line,
@@ -77,7 +77,7 @@ export function checkExportFunctions(opts: {
 
   for (const entry of expected) {
     const definition: FunctionDef =
-      typeof entry === 'string' ? { name: entry } : entry;
+      typeof entry === "string" ? { name: entry } : entry;
 
     const resolvedName = context.resolveTemplate(definition.name);
     const resolvedParamType = definition.receiveParamOfType
@@ -94,11 +94,11 @@ export function checkExportFunctions(opts: {
       (f) => f.name === resolvedName
     );
 
-    if (!isExported || !funcInfo) {
+    if (!(isExported && funcInfo)) {
       diagnostics.push(
         createDiagnostic({
           filePath: context.path,
-          predicateName: 'exportFunctions',
+          predicateName: "exportFunctions",
           message: `Missing export function "${resolvedName}"`,
           conventionName,
           severity,

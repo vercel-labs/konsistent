@@ -1,4 +1,4 @@
-import type { Diagnostic } from './diagnostics.js';
+import type { Diagnostic } from "./diagnostics.js";
 
 export interface TruncateResult {
   diagnostics: Diagnostic[];

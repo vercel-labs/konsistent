@@ -1,30 +1,30 @@
+export { getCachePath, isCacheStale, readCache, writeCache } from "./cache.js";
 export {
   checkAndPrompt,
-  shouldCheckForUpdate,
   formatNotification,
-} from './notifier.js';
-export {
-  runUpdate,
-  canAutoUpdate,
-  getManualInstallHint,
-} from './run-update.js';
-export { fetchLatestVersion, findLatestInChannel } from './registry.js';
-export {
-  parseVersion,
-  compareVersions,
-  getPrereleaseChannel,
-  isNewerVersion,
-  versionSatisfiesRange,
-} from './semver.js';
-export { readCache, writeCache, getCachePath, isCacheStale } from './cache.js';
+  shouldCheckForUpdate,
+} from "./notifier.js";
 export {
   detectPackageManager,
-  getInstallCommand,
   getGlobalInstallCommand,
+  getInstallCommand,
   isGlobalInstall,
   isMonorepo,
   isPackageInDeps,
   updatePackageJsonVersion,
-} from './package-manager.js';
-export { promptYesNo } from './prompt.js';
-export { PACKAGE_NAME } from './package-name.js';
+} from "./package-manager.js";
+export { PACKAGE_NAME } from "./package-name.js";
+export { promptYesNo } from "./prompt.js";
+export { fetchLatestVersion, findLatestInChannel } from "./registry.js";
+export {
+  canAutoUpdate,
+  getManualInstallHint,
+  runUpdate,
+} from "./run-update.js";
+export {
+  compareVersions,
+  getPrereleaseChannel,
+  isNewerVersion,
+  parseVersion,
+  versionSatisfiesRange,
+} from "./semver.js";

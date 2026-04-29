@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const ExportDefinitionV1Schema = z
   .object({
@@ -49,7 +49,7 @@ export const ClassDefinitionV1Schema = z
 
 export const MustPredicatesV1Schema = z
   .object({
-    haveType: z.enum(['file', 'directory']).optional(),
+    haveType: z.enum(["file", "directory"]).optional(),
     haveFiles: z.array(z.string()).optional(),
     export: z.array(z.union([z.string(), ExportDefinitionV1Schema])).optional(),
     exportTypes: z
@@ -78,7 +78,7 @@ export const MustBlockV1Schema = z
   .object({
     name: z
       .string()
-      .regex(/^[a-z0-9-]+$/, 'Must block name must match [a-z0-9-]+')
+      .regex(/^[a-z0-9-]+$/, "Must block name must match [a-z0-9-]+")
       .optional(),
     description: z.string().optional(),
     if: z.object({ hasFile: z.string() }).strict().optional(),
@@ -95,10 +95,10 @@ export const ConventionV1Schema = z
   .object({
     name: z
       .string()
-      .regex(/^[a-z0-9-]+$/, 'Convention name must match [a-z0-9-]+')
+      .regex(/^[a-z0-9-]+$/, "Convention name must match [a-z0-9-]+")
       .optional(),
     description: z.string().optional(),
-    severity: z.enum(['error', 'warning']).default('error').optional(),
+    severity: z.enum(["error", "warning"]).default("error").optional(),
     excludeFiles: z.array(z.string()).optional(),
     paths: z.union([z.string(), z.array(z.string())]),
     must: z.union([MustPredicatesV1Schema, z.array(MustBlockV1Schema)]),
@@ -108,7 +108,7 @@ export const ConventionV1Schema = z
 export const ConfigV1Schema = z
   .object({
     $schema: z.string().optional(),
-    version: z.literal('v1'),
+    version: z.literal("v1"),
     kebabToPascalMap: z.record(z.string(), z.string()).optional(),
     kebabToCamelMap: z.record(z.string(), z.string()).optional(),
     conventions: z.array(ConventionV1Schema),

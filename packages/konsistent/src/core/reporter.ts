@@ -1,7 +1,7 @@
-import pc from 'picocolors';
-import type { Diagnostic } from './diagnostics.js';
-import { formatTime } from './format-time.js';
-import type { RunResult } from './runner.js';
+import pc from "picocolors";
+import type { Diagnostic } from "./diagnostics.js";
+import { formatTime } from "./format-time.js";
+import type { RunResult } from "./runner.js";
 
 export interface Reporter {
   format(result: RunResult): string;
@@ -30,7 +30,7 @@ function groupByFile(diagnostics: Diagnostic[]): Map<string, Diagnostic[]> {
 
 function maxLineWidth(diagnostics: Diagnostic[]): number {
   return diagnostics.reduce((max, d) => {
-    const w = d.line != null ? String(d.line).length : 1;
+    const w = d.line == null ? 1 : String(d.line).length;
     return Math.max(max, w);
   }, 1);
 }
@@ -47,12 +47,12 @@ function formatDiagnosticLine(opts: {
   dim: ColorFn;
 }): string {
   const { diagnostic: d, lineWidth, red, yellow, dim } = opts;
-  const lineStr = d.line != null ? String(d.line) : '-';
+  const lineStr = d.line == null ? "-" : String(d.line);
   const paddedLine = lineStr.padStart(lineWidth);
-  const colorFn = d.severity === 'warning' ? yellow : red;
+  const colorFn = d.severity === "warning" ? yellow : red;
   const severity = colorFn(d.severity);
   const convention =
-    d.conventionName != null ? `  ${dim(`[${d.conventionName}]`)}` : '';
+    d.conventionName == null ? "" : `  ${dim(`[${d.conventionName}]`)}`;
   return `  ${paddedLine}  ${severity}  ${d.message}${convention}`;
 }
 
@@ -73,7 +73,7 @@ function formatFileGroup(opts: {
       formatDiagnosticLine({ diagnostic: d, lineWidth, red, yellow, dim })
     );
   }
-  lines.push('');
+  lines.push("");
   return lines;
 }
 
@@ -84,7 +84,7 @@ function formatSummary(opts: {
   elapsed: number;
 }): string {
   const { filesChecked, errorCount, warningCount, elapsed } = opts;
-  const fileWord = filesChecked === 1 ? 'file' : 'files';
+  const fileWord = filesChecked === 1 ? "file" : "files";
   const checked = `Checked ${filesChecked} ${fileWord} in ${formatTime(elapsed)}.`;
 
   if (errorCount === 0 && warningCount === 0) {
@@ -93,12 +93,12 @@ function formatSummary(opts: {
 
   const parts: string[] = [];
   if (errorCount > 0) {
-    parts.push(`${errorCount} error${errorCount === 1 ? '' : 's'}`);
+    parts.push(`${errorCount} error${errorCount === 1 ? "" : "s"}`);
   }
   if (warningCount > 0) {
-    parts.push(`${warningCount} warning${warningCount === 1 ? '' : 's'}`);
+    parts.push(`${warningCount} warning${warningCount === 1 ? "" : "s"}`);
   }
-  return `${checked} Found ${parts.join(' and ')}.`;
+  return `${checked} Found ${parts.join(" and ")}.`;
 }
 
 export function createJsonReporter(): Reporter {
@@ -137,7 +137,7 @@ export function createGithubReporter(): Reporter {
           annotation += `::${d.message}`;
           return annotation;
         })
-        .join('\n');
+        .join("\n");
     },
   };
 }
@@ -149,10 +149,10 @@ export function createMarkdownReporter(): Reporter {
       const sections: string[] = [];
 
       const errorCount = diagnostics.filter(
-        (d) => d.severity === 'error'
+        (d) => d.severity === "error"
       ).length;
       const warningCount = diagnostics.filter(
-        (d) => d.severity === 'warning'
+        (d) => d.severity === "warning"
       ).length;
 
       if (diagnostics.length > 0) {
@@ -161,18 +161,18 @@ export function createMarkdownReporter(): Reporter {
           const sorted = sortDiagnostics(fileDiags);
           const lines: string[] = [
             `**\`${filePath}\`**`,
-            '',
-            '| Line | Severity | Message | Convention |',
-            '|------|----------|---------|------------|',
+            "",
+            "| Line | Severity | Message | Convention |",
+            "|------|----------|---------|------------|",
           ];
           for (const d of sorted) {
-            const lineStr = d.line != null ? String(d.line) : '-';
-            const convention = d.conventionName ?? '';
+            const lineStr = d.line == null ? "-" : String(d.line);
+            const convention = d.conventionName ?? "";
             lines.push(
               `| ${lineStr} | ${d.severity} | ${d.message} | ${convention} |`
             );
           }
-          sections.push(lines.join('\n'));
+          sections.push(lines.join("\n"));
         }
       }
 
@@ -180,7 +180,7 @@ export function createMarkdownReporter(): Reporter {
         `**${formatSummary({ filesChecked, errorCount, warningCount, elapsed })}**`
       );
 
-      return sections.join('\n\n');
+      return sections.join("\n\n");
     },
   };
 }
@@ -198,10 +198,10 @@ export function createDefaultReporter(opts?: { colors?: boolean }): Reporter {
       const lines: string[] = [];
 
       const errorCount = diagnostics.filter(
-        (d) => d.severity === 'error'
+        (d) => d.severity === "error"
       ).length;
       const warningCount = diagnostics.filter(
-        (d) => d.severity === 'warning'
+        (d) => d.severity === "warning"
       ).length;
 
       if (diagnostics.length > 0) {
@@ -229,7 +229,7 @@ export function createDefaultReporter(opts?: { colors?: boolean }): Reporter {
         })
       );
 
-      return lines.join('\n');
+      return lines.join("\n");
     },
   };
 }

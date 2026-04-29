@@ -1,252 +1,252 @@
-import { describe, expect, it } from 'vitest';
-import { generateConventionName } from './convention-name.js';
+import { describe, expect, it } from "vitest";
+import { generateConventionName } from "./convention-name.js";
 
-describe('generateConventionName', () => {
-  describe('haveType', () => {
-    it('generates must-be-{value}', () => {
-      expect(generateConventionName({ must: { haveType: 'directory' } })).toBe(
-        'must-be-directory'
+describe("generateConventionName", () => {
+  describe("haveType", () => {
+    it("generates must-be-{value}", () => {
+      expect(generateConventionName({ must: { haveType: "directory" } })).toBe(
+        "must-be-directory"
       );
     });
 
-    it('generates must-be-file', () => {
-      expect(generateConventionName({ must: { haveType: 'file' } })).toBe(
-        'must-be-file'
+    it("generates must-be-file", () => {
+      expect(generateConventionName({ must: { haveType: "file" } })).toBe(
+        "must-be-file"
       );
     });
   });
 
-  describe('haveFiles', () => {
-    it('generates must-have-{first-file-kebab}', () => {
+  describe("haveFiles", () => {
+    it("generates must-have-{first-file-kebab}", () => {
       expect(
-        generateConventionName({ must: { haveFiles: ['index.ts'] } })
-      ).toBe('must-have-index-ts');
+        generateConventionName({ must: { haveFiles: ["index.ts"] } })
+      ).toBe("must-have-index-ts");
     });
 
-    it('appends -and-more for multiple files', () => {
+    it("appends -and-more for multiple files", () => {
       expect(
         generateConventionName({
-          must: { haveFiles: ['index.ts', 'types.ts'] },
+          must: { haveFiles: ["index.ts", "types.ts"] },
         })
-      ).toBe('must-have-index-ts-and-more');
+      ).toBe("must-have-index-ts-and-more");
     });
 
-    it('converts path separators to hyphens', () => {
+    it("converts path separators to hyphens", () => {
       expect(
-        generateConventionName({ must: { haveFiles: ['src/index.ts'] } })
-      ).toBe('must-have-src-index-ts');
+        generateConventionName({ must: { haveFiles: ["src/index.ts"] } })
+      ).toBe("must-have-src-index-ts");
     });
   });
 
-  describe('export', () => {
-    it('generates must-export-{name-kebab}', () => {
-      expect(generateConventionName({ must: { export: ['activate'] } })).toBe(
-        'must-export-activate'
+  describe("export", () => {
+    it("generates must-export-{name-kebab}", () => {
+      expect(generateConventionName({ must: { export: ["activate"] } })).toBe(
+        "must-export-activate"
       );
     });
 
-    it('appends -and-more for multiple exports', () => {
+    it("appends -and-more for multiple exports", () => {
       expect(
         generateConventionName({
-          must: { export: ['activate', 'deactivate'] },
+          must: { export: ["activate", "deactivate"] },
         })
-      ).toBe('must-export-activate-and-more');
+      ).toBe("must-export-activate-and-more");
     });
 
-    it('strips template expressions and converts to kebab', () => {
+    it("strips template expressions and converts to kebab", () => {
       expect(
         generateConventionName({
-          must: { export: ['create${name.toPascalCase()}Adapter'] },
+          must: { export: ["create${name.toPascalCase()}Adapter"] },
         })
-      ).toBe('must-export-create-adapter');
+      ).toBe("must-export-create-adapter");
     });
 
-    it('falls back when template stripping leaves empty string', () => {
+    it("falls back when template stripping leaves empty string", () => {
       expect(
-        generateConventionName({ must: { export: ['${providerId}'] } })
-      ).toBe('must-export');
+        generateConventionName({ must: { export: ["${providerId}"] } })
+      ).toBe("must-export");
     });
   });
 
-  describe('exportTypes', () => {
-    it('generates must-export-{name-kebab}-type', () => {
+  describe("exportTypes", () => {
+    it("generates must-export-{name-kebab}-type", () => {
       expect(
         generateConventionName({
-          must: { exportTypes: ['MyType'] },
+          must: { exportTypes: ["MyType"] },
         })
-      ).toBe('must-export-my-type-type');
+      ).toBe("must-export-my-type-type");
     });
 
-    it('strips templates and falls back', () => {
+    it("strips templates and falls back", () => {
       expect(
         generateConventionName({
           must: {
-            exportTypes: ['${id.toPascalCase()}Provider'],
+            exportTypes: ["${id.toPascalCase()}Provider"],
           },
         })
-      ).toBe('must-export-provider-type');
+      ).toBe("must-export-provider-type");
     });
 
-    it('handles object form', () => {
+    it("handles object form", () => {
       expect(
         generateConventionName({
           must: {
-            exportTypes: [{ name: '${id.toPascalCase()}Provider' }],
+            exportTypes: [{ name: "${id.toPascalCase()}Provider" }],
           },
         })
-      ).toBe('must-export-provider-type');
+      ).toBe("must-export-provider-type");
     });
   });
 
-  describe('exportConstants', () => {
-    it('generates must-export-{name-kebab}-constant', () => {
+  describe("exportConstants", () => {
+    it("generates must-export-{name-kebab}-constant", () => {
       expect(
         generateConventionName({
-          must: { exportConstants: ['pluginId'] },
+          must: { exportConstants: ["pluginId"] },
         })
-      ).toBe('must-export-plugin-id-constant');
+      ).toBe("must-export-plugin-id-constant");
     });
   });
 
-  describe('exportFunctions', () => {
-    it('generates must-export-{name-kebab}-function', () => {
+  describe("exportFunctions", () => {
+    it("generates must-export-{name-kebab}-function", () => {
       expect(
         generateConventionName({
           must: {
-            exportFunctions: [{ name: 'create${name.toPascalCase()}Adapter' }],
+            exportFunctions: [{ name: "create${name.toPascalCase()}Adapter" }],
           },
         })
-      ).toBe('must-export-create-adapter-function');
+      ).toBe("must-export-create-adapter-function");
     });
 
-    it('strips templates from string form', () => {
+    it("strips templates from string form", () => {
       expect(
         generateConventionName({
           must: {
             exportFunctions: [
-              { name: 'create${serviceName.toPascalCase()}Service' },
+              { name: "create${serviceName.toPascalCase()}Service" },
             ],
           },
         })
-      ).toBe('must-export-create-service-function');
+      ).toBe("must-export-create-service-function");
     });
   });
 
-  describe('exportClasses', () => {
-    it('generates must-export-{name-kebab}-class', () => {
+  describe("exportClasses", () => {
+    it("generates must-export-{name-kebab}-class", () => {
       expect(
         generateConventionName({
           must: {
-            exportClasses: [{ name: '${name.toPascalCase()}Adapter' }],
+            exportClasses: [{ name: "${name.toPascalCase()}Adapter" }],
           },
         })
-      ).toBe('must-export-adapter-class');
+      ).toBe("must-export-adapter-class");
     });
   });
 
-  describe('exportInterfaces', () => {
-    it('generates must-export-{name-kebab}-interface', () => {
+  describe("exportInterfaces", () => {
+    it("generates must-export-{name-kebab}-interface", () => {
       expect(
         generateConventionName({
           must: {
-            exportInterfaces: [{ name: '${id.toPascalCase()}Provider' }],
+            exportInterfaces: [{ name: "${id.toPascalCase()}Provider" }],
           },
         })
-      ).toBe('must-export-provider-interface');
+      ).toBe("must-export-provider-interface");
     });
   });
 
-  describe('import', () => {
-    it('generates must-import-{name-kebab}', () => {
+  describe("import", () => {
+    it("generates must-import-{name-kebab}", () => {
       expect(
         generateConventionName({
           must: {
-            import: [{ name: 'BaseAdapter', from: '@app/core' }],
+            import: [{ name: "BaseAdapter", from: "@app/core" }],
           },
         })
-      ).toBe('must-import-base-adapter');
+      ).toBe("must-import-base-adapter");
     });
   });
 
-  describe('importTypes', () => {
-    it('generates must-import-{name-kebab}-type', () => {
+  describe("importTypes", () => {
+    it("generates must-import-{name-kebab}-type", () => {
       expect(
         generateConventionName({
           must: {
-            importTypes: [{ name: 'ProviderV1', from: '@ai-toolkit/core' }],
+            importTypes: [{ name: "ProviderV1", from: "@ai-toolkit/core" }],
           },
         })
-      ).toBe('must-import-provider-v1-type');
+      ).toBe("must-import-provider-v1-type");
     });
   });
 
-  describe('-and-more suffix', () => {
-    it('appends when must object has multiple predicate keys', () => {
+  describe("-and-more suffix", () => {
+    it("appends when must object has multiple predicate keys", () => {
       expect(
         generateConventionName({
           must: {
-            export: ['activate'],
-            exportConstants: ['pluginId'],
+            export: ["activate"],
+            exportConstants: ["pluginId"],
           },
         })
-      ).toBe('must-export-activate-and-more');
+      ).toBe("must-export-activate-and-more");
     });
 
-    it('appends when predicate array has multiple items', () => {
+    it("appends when predicate array has multiple items", () => {
       expect(
         generateConventionName({
-          must: { export: ['activate', 'deactivate'] },
+          must: { export: ["activate", "deactivate"] },
         })
-      ).toBe('must-export-activate-and-more');
+      ).toBe("must-export-activate-and-more");
     });
 
-    it('appends when both conditions are true', () => {
+    it("appends when both conditions are true", () => {
       expect(
         generateConventionName({
           must: {
-            export: ['activate', 'deactivate'],
-            exportConstants: ['pluginId'],
+            export: ["activate", "deactivate"],
+            exportConstants: ["pluginId"],
           },
         })
-      ).toBe('must-export-activate-and-more');
+      ).toBe("must-export-activate-and-more");
     });
   });
 
-  describe('MustBlock array', () => {
-    it('uses first block first predicate', () => {
+  describe("MustBlock array", () => {
+    it("uses first block first predicate", () => {
       expect(
         generateConventionName({
           must: [
-            { must: { haveFiles: ['${componentName}.tsx'] } },
-            { must: { export: ['describe'] } },
+            { must: { haveFiles: ["${componentName}.tsx"] } },
+            { must: { export: ["describe"] } },
           ],
         })
-      ).toBe('must-have-tsx');
+      ).toBe("must-have-tsx");
     });
 
-    it('handles template-only file name in haveFiles', () => {
+    it("handles template-only file name in haveFiles", () => {
       expect(
         generateConventionName({
-          must: [{ must: { haveFiles: ['${name}.tsx'] } }],
+          must: [{ must: { haveFiles: ["${name}.tsx"] } }],
         })
-      ).toBe('must-have-tsx');
+      ).toBe("must-have-tsx");
     });
   });
 
-  describe('edge cases', () => {
-    it('returns convention for empty must object', () => {
-      expect(generateConventionName({ must: {} })).toBe('convention');
+  describe("edge cases", () => {
+    it("returns convention for empty must object", () => {
+      expect(generateConventionName({ must: {} })).toBe("convention");
     });
 
-    it('handles export with empty name after template strip and multiple keys', () => {
+    it("handles export with empty name after template strip and multiple keys", () => {
       expect(
         generateConventionName({
           must: {
-            export: ['${providerId}'],
-            exportTypes: ['${providerId.toPascalCase()}Provider'],
+            export: ["${providerId}"],
+            exportTypes: ["${providerId.toPascalCase()}Provider"],
           },
         })
-      ).toBe('must-export-and-more');
+      ).toBe("must-export-and-more");
     });
   });
 });

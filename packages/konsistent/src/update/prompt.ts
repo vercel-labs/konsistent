@@ -1,4 +1,4 @@
-import readline from 'node:readline';
+import readline from "node:readline";
 
 export function promptYesNo(opts: { question: string }): Promise<boolean> {
   return new Promise((resolve) => {
@@ -10,7 +10,7 @@ export function promptYesNo(opts: { question: string }): Promise<boolean> {
     rl.question(`${opts.question} (y/N) `, (answer) => {
       rl.close();
       const normalized = answer.trim().toLowerCase();
-      resolve(normalized === 'y' || normalized === 'yes');
+      resolve(normalized === "y" || normalized === "yes");
     });
   });
 }

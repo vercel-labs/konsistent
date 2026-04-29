@@ -1,18 +1,30 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-  "extends": ["ultracite"],
+  "$schema": "https://biomejs.dev/schemas/2.4.13/schema.json",
+  "extends": ["ultracite/biome/core"],
   "files": {
-    "ignore": ["e2e/fixtures/**", "agent-artifacts/**", ".pnpm-store/**"]
+    "includes": ["!**/e2e/fixtures", "!**/agent-artifacts", "!**/.pnpm-store"]
   },
   "linter": {
     "rules": {
       "suspicious": {
         "noConsole": "off",
-        "noConsoleLog": "off"
-      },
-      "nursery": {
         "noTemplateCurlyInString": "off"
+      },
+      "performance": {
+        "noBarrelFile": "off"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.test.ts"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noNamespaceImport": "off"
+          }
+        }
+      }
+    }
+  ]
 }

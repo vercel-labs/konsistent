@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import type { PredicateContext } from '../../core/context.js';
-import type { FileStructure } from '../types.js';
-import { checkExportFunctions } from './export-functions.js';
+import { describe, expect, it } from "vitest";
+import type { PredicateContext } from "../../core/context.js";
+import type { FileStructure } from "../types.js";
+import { checkExportFunctions } from "./export-functions.js";
 
 function createMockContext(opts: {
   path: string;
@@ -10,7 +10,7 @@ function createMockContext(opts: {
   const placeholders = opts.placeholders ?? {};
   return {
     path: opts.path,
-    placeholders: placeholders as PredicateContext['placeholders'],
+    placeholders: placeholders as PredicateContext["placeholders"],
     resolveTemplate(t: string): string {
       return t.replace(/\$\{(\w+)\}/g, (_match, name) => {
         const ph = placeholders[name];
@@ -23,8 +23,8 @@ function createMockContext(opts: {
 }
 
 function createMockFileStructure(opts: {
-  exports?: FileStructure['exports'];
-  functions?: FileStructure['functions'];
+  exports?: FileStructure["exports"];
+  functions?: FileStructure["functions"];
 }): FileStructure {
   return {
     exports: opts.exports ?? [],
@@ -37,23 +37,23 @@ function createMockFileStructure(opts: {
   };
 }
 
-describe('checkExportFunctions', () => {
-  it('returns no diagnostics when exported function is found', () => {
+describe("checkExportFunctions", () => {
+  it("returns no diagnostics when exported function is found", () => {
     const result = checkExportFunctions({
-      expected: ['myFunc'],
-      context: createMockContext({ path: 'src/index.ts' }),
+      expected: ["myFunc"],
+      context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: 'myFunc',
-            kind: 'function',
+            name: "myFunc",
+            kind: "function",
             isType: false,
             pos: { line: 1, column: 1 },
           },
         ],
         functions: [
           {
-            name: 'myFunc',
+            name: "myFunc",
             params: [],
             pos: { line: 1, column: 1 },
           },
@@ -63,28 +63,28 @@ describe('checkExportFunctions', () => {
     expect(result).toEqual([]);
   });
 
-  it('returns diagnostic when function is missing', () => {
+  it("returns diagnostic when function is missing", () => {
     const result = checkExportFunctions({
-      expected: ['myFunc'],
-      context: createMockContext({ path: 'src/index.ts' }),
+      expected: ["myFunc"],
+      context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({ exports: [], functions: [] }),
     });
     expect(result).toHaveLength(1);
     expect(result[0].message).toBe('Missing export function "myFunc"');
-    expect(result[0].predicateName).toBe('exportFunctions');
-    expect(result[0].filePath).toBe('src/index.ts');
+    expect(result[0].predicateName).toBe("exportFunctions");
+    expect(result[0].filePath).toBe("src/index.ts");
     expect(result[0].line).toBeUndefined();
   });
 
-  it('returns diagnostic when function exists but is not exported', () => {
+  it("returns diagnostic when function exists but is not exported", () => {
     const result = checkExportFunctions({
-      expected: ['myFunc'],
-      context: createMockContext({ path: 'src/index.ts' }),
+      expected: ["myFunc"],
+      context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({
         exports: [],
         functions: [
           {
-            name: 'myFunc',
+            name: "myFunc",
             params: [],
             pos: { line: 5, column: 1 },
           },
@@ -95,23 +95,23 @@ describe('checkExportFunctions', () => {
     expect(result[0].message).toBe('Missing export function "myFunc"');
   });
 
-  it('returns diagnostic when param type does not match', () => {
+  it("returns diagnostic when param type does not match", () => {
     const result = checkExportFunctions({
-      expected: [{ name: 'myFunc', receiveParamOfType: 'Request' }],
-      context: createMockContext({ path: 'src/index.ts' }),
+      expected: [{ name: "myFunc", receiveParamOfType: "Request" }],
+      context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: 'myFunc',
-            kind: 'function',
+            name: "myFunc",
+            kind: "function",
             isType: false,
             pos: { line: 3, column: 1 },
           },
         ],
         functions: [
           {
-            name: 'myFunc',
-            params: [{ name: 'input', typeName: 'string' }],
+            name: "myFunc",
+            params: [{ name: "input", typeName: "string" }],
             pos: { line: 3, column: 1 },
           },
         ],
@@ -124,23 +124,23 @@ describe('checkExportFunctions', () => {
     expect(result[0].line).toBe(3);
   });
 
-  it('returns no diagnostic when param type matches', () => {
+  it("returns no diagnostic when param type matches", () => {
     const result = checkExportFunctions({
-      expected: [{ name: 'myFunc', receiveParamOfType: 'Request' }],
-      context: createMockContext({ path: 'src/index.ts' }),
+      expected: [{ name: "myFunc", receiveParamOfType: "Request" }],
+      context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: 'myFunc',
-            kind: 'function',
+            name: "myFunc",
+            kind: "function",
             isType: false,
             pos: { line: 3, column: 1 },
           },
         ],
         functions: [
           {
-            name: 'myFunc',
-            params: [{ name: 'req', typeName: 'Request' }],
+            name: "myFunc",
+            params: [{ name: "req", typeName: "Request" }],
             pos: { line: 3, column: 1 },
           },
         ],
@@ -149,24 +149,24 @@ describe('checkExportFunctions', () => {
     expect(result).toEqual([]);
   });
 
-  it('returns diagnostic when return type does not match', () => {
+  it("returns diagnostic when return type does not match", () => {
     const result = checkExportFunctions({
-      expected: [{ name: 'myFunc', returnValueOfType: 'Promise<Response>' }],
-      context: createMockContext({ path: 'src/index.ts' }),
+      expected: [{ name: "myFunc", returnValueOfType: "Promise<Response>" }],
+      context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: 'myFunc',
-            kind: 'function',
+            name: "myFunc",
+            kind: "function",
             isType: false,
             pos: { line: 7, column: 1 },
           },
         ],
         functions: [
           {
-            name: 'myFunc',
+            name: "myFunc",
             params: [],
-            returnType: 'void',
+            returnType: "void",
             pos: { line: 7, column: 1 },
           },
         ],
@@ -179,24 +179,24 @@ describe('checkExportFunctions', () => {
     expect(result[0].line).toBe(7);
   });
 
-  it('returns no diagnostic when return type matches', () => {
+  it("returns no diagnostic when return type matches", () => {
     const result = checkExportFunctions({
-      expected: [{ name: 'myFunc', returnValueOfType: 'void' }],
-      context: createMockContext({ path: 'src/index.ts' }),
+      expected: [{ name: "myFunc", returnValueOfType: "void" }],
+      context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: 'myFunc',
-            kind: 'function',
+            name: "myFunc",
+            kind: "function",
             isType: false,
             pos: { line: 7, column: 1 },
           },
         ],
         functions: [
           {
-            name: 'myFunc',
+            name: "myFunc",
             params: [],
-            returnType: 'void',
+            returnType: "void",
             pos: { line: 7, column: 1 },
           },
         ],
@@ -205,33 +205,33 @@ describe('checkExportFunctions', () => {
     expect(result).toEqual([]);
   });
 
-  it('resolves template placeholders in name, param type, and return type', () => {
+  it("resolves template placeholders in name, param type, and return type", () => {
     const result = checkExportFunctions({
       expected: [
         {
-          name: '${action}Handler',
-          receiveParamOfType: '${action}Request',
-          returnValueOfType: '${action}Response',
+          name: "${action}Handler",
+          receiveParamOfType: "${action}Request",
+          returnValueOfType: "${action}Response",
         },
       ],
       context: createMockContext({
-        path: 'src/index.ts',
-        placeholders: { action: { toString: () => 'Create' } },
+        path: "src/index.ts",
+        placeholders: { action: { toString: () => "Create" } },
       }),
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: 'CreateHandler',
-            kind: 'function',
+            name: "CreateHandler",
+            kind: "function",
             isType: false,
             pos: { line: 1, column: 1 },
           },
         ],
         functions: [
           {
-            name: 'CreateHandler',
-            params: [{ name: 'req', typeName: 'CreateRequest' }],
-            returnType: 'CreateResponse',
+            name: "CreateHandler",
+            params: [{ name: "req", typeName: "CreateRequest" }],
+            returnType: "CreateResponse",
             pos: { line: 1, column: 1 },
           },
         ],
@@ -240,22 +240,22 @@ describe('checkExportFunctions', () => {
     expect(result).toEqual([]);
   });
 
-  it('accepts string shorthand expanding to { name }', () => {
+  it("accepts string shorthand expanding to { name }", () => {
     const result = checkExportFunctions({
-      expected: ['handler'],
-      context: createMockContext({ path: 'src/index.ts' }),
+      expected: ["handler"],
+      context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: 'handler',
-            kind: 'function',
+            name: "handler",
+            kind: "function",
             isType: false,
             pos: { line: 1, column: 1 },
           },
         ],
         functions: [
           {
-            name: 'handler',
+            name: "handler",
             params: [],
             pos: { line: 1, column: 1 },
           },
@@ -265,13 +265,13 @@ describe('checkExportFunctions', () => {
     expect(result).toEqual([]);
   });
 
-  it('includes conventionName when provided', () => {
+  it("includes conventionName when provided", () => {
     const result = checkExportFunctions({
-      expected: ['missing'],
-      context: createMockContext({ path: 'src/index.ts' }),
+      expected: ["missing"],
+      context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({ exports: [], functions: [] }),
-      conventionName: 'func-exports',
+      conventionName: "func-exports",
     });
-    expect(result[0].conventionName).toBe('func-exports');
+    expect(result[0].conventionName).toBe("func-exports");
   });
 });

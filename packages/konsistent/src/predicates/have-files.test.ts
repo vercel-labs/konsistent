@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
-import type { PredicateContext } from '../core/context.js';
-import { PlaceholderValue } from '../core/placeholder.js';
-import { resolveTemplate } from '../core/template.js';
-import { checkHaveFiles } from './have-files.js';
+import { describe, expect, it } from "vitest";
+import type { PredicateContext } from "../core/context.js";
+import { PlaceholderValue } from "../core/placeholder.js";
+import { resolveTemplate } from "../core/template.js";
+import { checkHaveFiles } from "./have-files.js";
 
 function createMockContext(opts: {
   path: string;
@@ -21,76 +21,76 @@ function createMockContext(opts: {
   };
 }
 
-describe('checkHaveFiles', () => {
-  it('returns no diagnostics when all files exist', () => {
+describe("checkHaveFiles", () => {
+  it("returns no diagnostics when all files exist", () => {
     const result = checkHaveFiles({
-      expected: ['index.ts', 'manifest.json'],
+      expected: ["index.ts", "manifest.json"],
       context: createMockContext({
-        path: 'plugins/auth',
-        existingFiles: new Set(['index.ts', 'manifest.json']),
+        path: "plugins/auth",
+        existingFiles: new Set(["index.ts", "manifest.json"]),
       }),
     });
     expect(result).toEqual([]);
   });
 
-  it('returns diagnostic for each missing file', () => {
+  it("returns diagnostic for each missing file", () => {
     const result = checkHaveFiles({
-      expected: ['index.ts', 'manifest.json', 'README.md'],
+      expected: ["index.ts", "manifest.json", "README.md"],
       context: createMockContext({
-        path: 'plugins/auth',
-        existingFiles: new Set(['index.ts']),
+        path: "plugins/auth",
+        existingFiles: new Set(["index.ts"]),
       }),
     });
     expect(result).toHaveLength(2);
-    expect(result[0].message).toBe('Missing required file: manifest.json');
-    expect(result[1].message).toBe('Missing required file: README.md');
+    expect(result[0].message).toBe("Missing required file: manifest.json");
+    expect(result[1].message).toBe("Missing required file: README.md");
   });
 
-  it('resolves templates in file names', () => {
+  it("resolves templates in file names", () => {
     const placeholders = {
-      name: new PlaceholderValue({ value: 'openai' }),
+      name: new PlaceholderValue({ value: "openai" }),
     };
     const result = checkHaveFiles({
-      expected: ['${name.toPascalCase()}Provider.ts'],
+      expected: ["${name.toPascalCase()}Provider.ts"],
       context: createMockContext({
-        path: 'packages/openai',
-        existingFiles: new Set(['OpenaiProvider.ts']),
+        path: "packages/openai",
+        existingFiles: new Set(["OpenaiProvider.ts"]),
         placeholders,
       }),
     });
     expect(result).toEqual([]);
   });
 
-  it('reports missing template-resolved file', () => {
+  it("reports missing template-resolved file", () => {
     const placeholders = {
-      name: new PlaceholderValue({ value: 'openai' }),
+      name: new PlaceholderValue({ value: "openai" }),
     };
     const result = checkHaveFiles({
-      expected: ['${name.toPascalCase()}Provider.ts'],
+      expected: ["${name.toPascalCase()}Provider.ts"],
       context: createMockContext({
-        path: 'packages/openai',
+        path: "packages/openai",
         existingFiles: new Set(),
         placeholders,
       }),
     });
     expect(result).toHaveLength(1);
-    expect(result[0].message).toBe('Missing required file: OpenaiProvider.ts');
+    expect(result[0].message).toBe("Missing required file: OpenaiProvider.ts");
   });
 
-  it('includes conventionName when provided', () => {
+  it("includes conventionName when provided", () => {
     const result = checkHaveFiles({
-      expected: ['missing.ts'],
-      context: createMockContext({ path: 'src' }),
-      conventionName: 'test-rule',
+      expected: ["missing.ts"],
+      context: createMockContext({ path: "src" }),
+      conventionName: "test-rule",
     });
-    expect(result[0].conventionName).toBe('test-rule');
+    expect(result[0].conventionName).toBe("test-rule");
   });
 
-  it('sets predicateName to haveFiles', () => {
+  it("sets predicateName to haveFiles", () => {
     const result = checkHaveFiles({
-      expected: ['missing.ts'],
-      context: createMockContext({ path: 'src' }),
+      expected: ["missing.ts"],
+      context: createMockContext({ path: "src" }),
     });
-    expect(result[0].predicateName).toBe('haveFiles');
+    expect(result[0].predicateName).toBe("haveFiles");
   });
 });

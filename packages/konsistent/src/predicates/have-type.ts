@@ -1,10 +1,10 @@
-import type { PredicateContext } from '../core/context.js';
-import { createDiagnostic } from '../core/diagnostics.js';
-import type { Diagnostic, DiagnosticSeverity } from '../core/diagnostics.js';
-import type { FileSystem } from '../core/filesystem.js';
+import type { PredicateContext } from "../core/context.js";
+import type { Diagnostic, DiagnosticSeverity } from "../core/diagnostics.js";
+import { createDiagnostic } from "../core/diagnostics.js";
+import type { FileSystem } from "../core/filesystem.js";
 
 export function checkHaveType(opts: {
-  expected: 'file' | 'directory';
+  expected: "file" | "directory";
   context: PredicateContext;
   fileSystem: FileSystem;
   conventionName?: string;
@@ -14,28 +14,28 @@ export function checkHaveType(opts: {
   const isDir = fileSystem.isDirectory(context.path);
   const isFile = fileSystem.isFile(context.path);
 
-  if (expected === 'file' && !isFile) {
+  if (expected === "file" && !isFile) {
     return [
       createDiagnostic({
         filePath: context.path,
-        predicateName: 'haveType',
+        predicateName: "haveType",
         message: isDir
-          ? 'Expected a file but found a directory'
-          : 'Expected a file but path does not exist',
+          ? "Expected a file but found a directory"
+          : "Expected a file but path does not exist",
         conventionName,
         severity,
       }),
     ];
   }
 
-  if (expected === 'directory' && !isDir) {
+  if (expected === "directory" && !isDir) {
     return [
       createDiagnostic({
         filePath: context.path,
-        predicateName: 'haveType',
+        predicateName: "haveType",
         message: isFile
-          ? 'Expected a directory but found a file'
-          : 'Expected a directory but path does not exist',
+          ? "Expected a directory but found a file"
+          : "Expected a directory but path does not exist",
         conventionName,
         severity,
       }),

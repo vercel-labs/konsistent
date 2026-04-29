@@ -1,9 +1,9 @@
-import type { FileSystem } from './filesystem.js';
+import type { FileSystem } from "./filesystem.js";
+import { PlaceholderValue } from "./placeholder.js";
 import {
   parsePlaceholderConstraint,
   validatePlaceholderConstraint,
-} from './placeholder-constraint.js';
-import { PlaceholderValue } from './placeholder.js';
+} from "./placeholder-constraint.js";
 
 /*
  * Matches placeholder expressions in path patterns, with optional inline constraints.
@@ -46,7 +46,7 @@ export interface MatchedPath {
 
 function normalizeTemplatesInPath(pattern: string): string {
   TEMPLATE_IN_PATH_REGEX.lastIndex = 0;
-  return pattern.replace(TEMPLATE_IN_PATH_REGEX, '{$1}');
+  return pattern.replace(TEMPLATE_IN_PATH_REGEX, "{$1}");
 }
 
 export function hasPlaceholders(pattern: string): boolean {
@@ -56,12 +56,12 @@ export function hasPlaceholders(pattern: string): boolean {
 
 export function patternToGlob(pattern: string): string {
   PLACEHOLDER_REGEX.lastIndex = 0;
-  return pattern.replace(PLACEHOLDER_REGEX, '*');
+  return pattern.replace(PLACEHOLDER_REGEX, "*");
 }
 
 interface CollectedPlaceholder {
-  name: string;
   constraintRaw?: string;
+  name: string;
 }
 
 function collectPlaceholders(segment: string): CollectedPlaceholder[] {
@@ -79,8 +79,8 @@ function collectPlaceholders(segment: string): CollectedPlaceholder[] {
 }
 
 interface ExtractedValues {
-  values: Record<string, string>;
   constraints: Record<string, string>;
+  values: Record<string, string>;
 }
 
 const GLOB_WILDCARD_REGEX = /[*?[\]]/;
@@ -91,11 +91,11 @@ function matchSegmentAsGlob(opts: {
 }): boolean {
   const { patternSegment, pathSegment } = opts;
   const regexStr = patternSegment.replace(ESCAPE_REGEX, (ch) => {
-    if (ch === '*') {
-      return '[^/]*';
+    if (ch === "*") {
+      return "[^/]*";
     }
-    if (ch === '?') {
-      return '[^/]';
+    if (ch === "?") {
+      return "[^/]";
     }
     return `\\${ch}`;
   });
@@ -121,11 +121,11 @@ function extractValueFromSegment(opts: {
     return null;
   }
 
-  const CAPTURE_MARKER = '\x00CAPTURE\x00';
+  const CAPTURE_MARKER = "\x00CAPTURE\x00";
   PLACEHOLDER_REGEX.lastIndex = 0;
   const withMarkers = patternSegment.replace(PLACEHOLDER_REGEX, CAPTURE_MARKER);
   const escaped = withMarkers.replace(ESCAPE_REGEX, (ch) => `\\${ch}`);
-  const regexStr = escaped.replaceAll(CAPTURE_MARKER, '([a-zA-Z0-9_-]+)');
+  const regexStr = escaped.replaceAll(CAPTURE_MARKER, "([a-zA-Z0-9_-]+)");
   const regex = new RegExp(`^${regexStr}$`);
   const segmentMatch = regex.exec(pathSegment);
   if (!segmentMatch) {
@@ -184,7 +184,7 @@ function tryExtractPlaceholders(opts: {
   pathSegments: string[];
 }): Record<string, string> | null {
   const { pattern, pathSegments } = opts;
-  const patternSegments = pattern.split('/');
+  const patternSegments = pattern.split("/");
   if (patternSegments.length !== pathSegments.length) {
     return null;
   }
@@ -278,7 +278,7 @@ async function resolvePositivePatterns(opts: {
   if (!anyPlaceholders) {
     const paths = await fileSystem.glob(patterns);
     return paths.map((p) => ({
-      path: p.endsWith('/') ? p.slice(0, -1) : p,
+      path: p.endsWith("/") ? p.slice(0, -1) : p,
       placeholders: {},
     }));
   }
@@ -288,8 +288,8 @@ async function resolvePositivePatterns(opts: {
   const results: MatchedPath[] = [];
 
   for (const rawPath of matchedPaths) {
-    const matchedPath = rawPath.endsWith('/') ? rawPath.slice(0, -1) : rawPath;
-    const pathSegments = matchedPath.split('/');
+    const matchedPath = rawPath.endsWith("/") ? rawPath.slice(0, -1) : rawPath;
+    const pathSegments = matchedPath.split("/");
 
     for (const pattern of patterns) {
       if (!hasPlaceholders(pattern)) {
@@ -343,7 +343,7 @@ export async function matchPaths(opts: {
 
   for (const p of rawPatterns) {
     const normalized = normalizeTemplatesInPath(p);
-    if (normalized.startsWith('!')) {
+    if (normalized.startsWith("!")) {
       negativePatterns.push(normalized.slice(1));
     } else {
       positivePatterns.push(normalized);
@@ -368,7 +368,7 @@ export async function matchPaths(opts: {
   const negativeGlobs = negativePatterns.map(patternToGlob);
   const negatedPaths = await fileSystem.glob(negativeGlobs);
   const excludePaths = negatedPaths.map((p) =>
-    p.endsWith('/') ? p.slice(0, -1) : p
+    p.endsWith("/") ? p.slice(0, -1) : p
   );
 
   return positiveResults.filter(

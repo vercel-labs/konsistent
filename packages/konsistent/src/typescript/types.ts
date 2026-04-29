@@ -1,20 +1,20 @@
 export interface SourcePosition {
-  line: number;
   column: number;
+  line: number;
 }
 
 export interface ExportInfo {
-  name: string;
-  kind: 'function' | 'class' | 'interface' | 'const' | 'enum' | 're-export';
   from?: string;
   isType: boolean;
+  kind: "function" | "class" | "interface" | "const" | "enum" | "re-export";
+  name: string;
   pos: SourcePosition;
 }
 
 export interface ImportInfo {
-  name: string;
   from: string;
   isType: boolean;
+  name: string;
   pos: SourcePosition;
 }
 
@@ -24,15 +24,15 @@ export interface ExtendsClauseInfo {
 }
 
 export interface InterfaceInfo {
-  name: string;
   extends: ExtendsClauseInfo[];
+  name: string;
   pos: SourcePosition;
 }
 
 export interface ClassInfo {
-  name: string;
   extends?: string;
   implements: string[];
+  name: string;
   pos: SourcePosition;
 }
 
@@ -44,14 +44,14 @@ export interface ParamInfo {
 export interface FunctionInfo {
   name: string;
   params: ParamInfo[];
-  returnType?: string;
   pos: SourcePosition;
+  returnType?: string;
 }
 
 export interface ConstantInfo {
   name: string;
-  typeName?: string;
   pos: SourcePosition;
+  typeName?: string;
 }
 
 export interface TypeAliasInfo {
@@ -60,11 +60,11 @@ export interface TypeAliasInfo {
 }
 
 export interface FileStructure {
+  classes: ClassInfo[];
+  constants: ConstantInfo[];
   exports: ExportInfo[];
+  functions: FunctionInfo[];
   imports: ImportInfo[];
   interfaces: InterfaceInfo[];
-  classes: ClassInfo[];
-  functions: FunctionInfo[];
-  constants: ConstantInfo[];
   typeAliases: TypeAliasInfo[];
 }

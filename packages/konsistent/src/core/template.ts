@@ -1,4 +1,4 @@
-import type { PlaceholderValue } from './placeholder.js';
+import type { PlaceholderValue } from "./placeholder.js";
 
 const TEMPLATE_REGEX = /\$\{(\w+)(?:\.(\w+)\(([^}]*)\))?\}/g;
 
@@ -19,25 +19,25 @@ export function resolveTemplate(opts: {
     }
 
     switch (method) {
-      case 'toString':
+      case "toString":
         return placeholder.toString();
-      case 'toPascalCase':
+      case "toPascalCase":
         return placeholder.toPascalCase();
-      case 'toCamelCase':
+      case "toCamelCase":
         return placeholder.toCamelCase();
-      case 'toKebabCase':
+      case "toKebabCase":
         return placeholder.toKebabCase();
-      case 'toSnakeCase':
+      case "toSnakeCase":
         return placeholder.toSnakeCase();
-      case 'toFlatCase':
+      case "toFlatCase":
         return placeholder.toFlatCase();
-      case 'toNthSegment':
+      case "toNthSegment":
         return placeholder.toNthSegment(Number(arg));
-      case 'toNthSegmentPascalCase':
+      case "toNthSegmentPascalCase":
         return placeholder.toNthSegmentPascalCase(Number(arg));
-      case 'toNthSegmentCamelCase':
+      case "toNthSegmentCamelCase":
         return placeholder.toNthSegmentCamelCase(Number(arg));
-      case 'extract':
+      case "extract":
         return placeholder.extract(arg);
       default:
         return original;

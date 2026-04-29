@@ -9,19 +9,22 @@
     "test": "turbo test",
     "test:e2e": "turbo test:e2e:run",
     "test:e2e:run": "vitest run -c e2e/vitest.config.ts",
-    "check": "ultracite lint",
-    "fix": "ultracite format",
+    "check": "ultracite check",
+    "fix": "ultracite fix",
     "publish:packages": "pnpm build && node scripts/publish-packages.js",
     "konsistent": "KONSISTENT_NO_UPDATE_CHECK=true konsistent"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.9.4",
+    "@biomejs/biome": "^2",
     "konsistent": "workspace:*",
     "turbo": "^2",
-    "ultracite": "^4",
+    "typescript": "^5.7",
+    "ultracite": "^7",
     "vitest": "^3"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

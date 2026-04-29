@@ -2,8 +2,8 @@ export interface ParsedVersion {
   major: number;
   minor: number;
   patch: number;
-  prereleaseTag: string | null;
   prereleaseNum: number | null;
+  prereleaseTag: string | null;
 }
 
 const VERSION_RE = /^(\d+)\.(\d+)\.(\d+)(?:-([a-z]+)\.(\d+))?$/;
@@ -19,7 +19,7 @@ export function parseVersion(version: string): ParsedVersion | null {
     minor: Number(match[2]),
     patch: Number(match[3]),
     prereleaseTag: match[4] ?? null,
-    prereleaseNum: match[5] != null ? Number(match[5]) : null,
+    prereleaseNum: match[5] == null ? null : Number(match[5]),
   };
 }
 
@@ -27,7 +27,7 @@ export function compareVersions(
   a: ParsedVersion,
   b: ParsedVersion
 ): -1 | 0 | 1 {
-  for (const field of ['major', 'minor', 'patch'] as const) {
+  for (const field of ["major", "minor", "patch"] as const) {
     if (a[field] < b[field]) {
       return -1;
     }
@@ -76,7 +76,7 @@ export function isNewerVersion(opts: {
 }): boolean {
   const a = parseVersion(opts.current);
   const b = parseVersion(opts.candidate);
-  if (!a || !b) {
+  if (!(a && b)) {
     return false;
   }
   return compareVersions(b, a) === 1;
@@ -98,14 +98,14 @@ export function versionSatisfiesRange(opts: {
   version: string;
 }): boolean {
   const trimmed = opts.range.trim();
-  if (!trimmed.startsWith('^')) {
+  if (!trimmed.startsWith("^")) {
     return false;
   }
 
   const rangeVersion = trimmed.slice(1);
   const base = parseVersion(rangeVersion);
   const target = parseVersion(opts.version);
-  if (!base || !target) {
+  if (!(base && target)) {
     return false;
   }
 

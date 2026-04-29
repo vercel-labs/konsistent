@@ -1,12 +1,12 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { glob } from 'tinyglobby';
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { resolve } from "node:path";
+import { glob } from "tinyglobby";
 
 export interface FileSystem {
+  fileExists(path: string): boolean;
   glob(patterns: string[]): Promise<string[]>;
   isDirectory(path: string): boolean;
   isFile(path: string): boolean;
-  fileExists(path: string): boolean;
   readDir(path: string): string[];
   readFile(path: string): string;
 }
@@ -16,7 +16,7 @@ export function createRealFileSystem(opts: { cwd: string }): FileSystem {
 
   return {
     glob(patterns: string[]): Promise<string[]> {
-      const key = patterns.join('\x00');
+      const key = patterns.join("\x00");
       const cached = globCache.get(key);
       if (cached) {
         return cached;
@@ -55,7 +55,7 @@ export function createRealFileSystem(opts: { cwd: string }): FileSystem {
       }
     },
     readFile(path: string): string {
-      return readFileSync(resolve(opts.cwd, path), 'utf-8');
+      return readFileSync(resolve(opts.cwd, path), "utf-8");
     },
   };
 }

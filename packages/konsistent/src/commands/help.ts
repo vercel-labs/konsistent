@@ -1,5 +1,5 @@
-import { defineCommand } from 'citty';
-import { getVersion } from '../version.js';
+import { defineCommand } from "citty";
+import { getVersion } from "../version.js";
 
 const HELP_TEXT = `konsistent v${getVersion()} — Enforce structural conventions in TypeScript codebases
 
@@ -31,8 +31,8 @@ Global options:
 
 export default defineCommand({
   meta: {
-    name: 'help',
-    description: 'Show help message',
+    name: "help",
+    description: "Show help message",
   },
   run() {
     console.log(HELP_TEXT);

@@ -1,24 +1,24 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { versionSatisfiesRange } from './semver.js';
+import fs from "node:fs";
+import path from "node:path";
+import { versionSatisfiesRange } from "./semver.js";
 
-export type PackageManager = 'bun' | 'pnpm' | 'yarn' | 'npm';
+export type PackageManager = "bun" | "pnpm" | "yarn" | "npm";
 
 export function detectPackageManager(cwd: string): PackageManager {
   if (
-    fs.existsSync(path.join(cwd, 'bun.lockb')) ||
-    fs.existsSync(path.join(cwd, 'bun.lock'))
+    fs.existsSync(path.join(cwd, "bun.lockb")) ||
+    fs.existsSync(path.join(cwd, "bun.lock"))
   ) {
-    return 'bun';
+    return "bun";
   }
-  if (fs.existsSync(path.join(cwd, 'pnpm-lock.yaml'))) {
-    return 'pnpm';
+  if (fs.existsSync(path.join(cwd, "pnpm-lock.yaml"))) {
+    return "pnpm";
   }
-  if (fs.existsSync(path.join(cwd, 'yarn.lock'))) {
-    return 'yarn';
+  if (fs.existsSync(path.join(cwd, "yarn.lock"))) {
+    return "yarn";
   }
-  if (fs.existsSync(path.join(cwd, 'package-lock.json'))) {
-    return 'npm';
+  if (fs.existsSync(path.join(cwd, "package-lock.json"))) {
+    return "npm";
   }
 
   const pmField = readPackageManagerField(cwd);
@@ -26,23 +26,23 @@ export function detectPackageManager(cwd: string): PackageManager {
     return pmField;
   }
 
-  return 'npm'; // Fallback.
+  return "npm"; // Fallback.
 }
 
 function readPackageManagerField(cwd: string): PackageManager | null {
   try {
-    const raw = fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8');
+    const raw = fs.readFileSync(path.join(cwd, "package.json"), "utf-8");
     const pkg = JSON.parse(raw) as Record<string, unknown>;
-    if (typeof pkg.packageManager !== 'string') {
+    if (typeof pkg.packageManager !== "string") {
       return null;
     }
 
-    const name = pkg.packageManager.split('@')[0];
+    const name = pkg.packageManager.split("@")[0];
     if (
-      name === 'pnpm' ||
-      name === 'yarn' ||
-      name === 'bun' ||
-      name === 'npm'
+      name === "pnpm" ||
+      name === "yarn" ||
+      name === "bun" ||
+      name === "npm"
     ) {
       return name;
     }
@@ -53,12 +53,12 @@ function readPackageManagerField(cwd: string): PackageManager | null {
 }
 
 export function isMonorepo(cwd: string): boolean {
-  if (fs.existsSync(path.join(cwd, 'pnpm-workspace.yaml'))) {
+  if (fs.existsSync(path.join(cwd, "pnpm-workspace.yaml"))) {
     return true;
   }
 
   try {
-    const raw = fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8');
+    const raw = fs.readFileSync(path.join(cwd, "package.json"), "utf-8");
     const pkg = JSON.parse(raw) as Record<string, unknown>;
     return Array.isArray(pkg.workspaces);
   } catch {
@@ -76,20 +76,20 @@ export function getInstallCommand(opts: {
 
   // biome-ignore lint/style/useDefaultSwitchClause: PackageManager is exhaustive
   switch (opts.packageManager) {
-    case 'bun':
-      return { command: 'bun', args: ['add', spec] };
-    case 'pnpm':
+    case "bun":
+      return { command: "bun", args: ["add", spec] };
+    case "pnpm":
       return {
-        command: 'pnpm',
-        args: opts.workspaceRoot ? ['add', '-w', spec] : ['add', spec],
+        command: "pnpm",
+        args: opts.workspaceRoot ? ["add", "-w", spec] : ["add", spec],
       };
-    case 'yarn':
+    case "yarn":
       return {
-        command: 'yarn',
-        args: opts.workspaceRoot ? ['add', '-W', spec] : ['add', spec],
+        command: "yarn",
+        args: opts.workspaceRoot ? ["add", "-W", spec] : ["add", spec],
       };
-    case 'npm':
-      return { command: 'npm', args: ['install', spec] };
+    case "npm":
+      return { command: "npm", args: ["install", spec] };
   }
 }
 
@@ -102,14 +102,14 @@ export function getGlobalInstallCommand(opts: {
 
   // biome-ignore lint/style/useDefaultSwitchClause: PackageManager is exhaustive
   switch (opts.packageManager) {
-    case 'bun':
-      return { command: 'bun', args: ['add', '--global', spec] };
-    case 'pnpm':
-      return { command: 'pnpm', args: ['add', '-g', spec] };
-    case 'yarn':
-      return { command: 'yarn', args: ['global', 'add', spec] };
-    case 'npm':
-      return { command: 'npm', args: ['install', '-g', spec] };
+    case "bun":
+      return { command: "bun", args: ["add", "--global", spec] };
+    case "pnpm":
+      return { command: "pnpm", args: ["add", "-g", spec] };
+    case "yarn":
+      return { command: "yarn", args: ["global", "add", spec] };
+    case "npm":
+      return { command: "npm", args: ["install", "-g", spec] };
   }
 }
 
@@ -120,7 +120,7 @@ export function isGlobalInstall(): boolean {
   }
 
   const cwd = process.cwd();
-  const localNodeModules = path.join(cwd, 'node_modules');
+  const localNodeModules = path.join(cwd, "node_modules");
   return !execPath.startsWith(localNodeModules);
 }
 
@@ -129,7 +129,7 @@ export function isPackageInDeps(opts: {
   packageName: string;
 }): boolean {
   try {
-    const raw = fs.readFileSync(path.join(opts.cwd, 'package.json'), 'utf-8');
+    const raw = fs.readFileSync(path.join(opts.cwd, "package.json"), "utf-8");
     const pkg = JSON.parse(raw) as Record<string, unknown>;
     const deps = pkg.dependencies as Record<string, string> | undefined;
     const devDeps = pkg.devDependencies as Record<string, string> | undefined;
@@ -144,26 +144,26 @@ export function updatePackageJsonVersion(opts: {
   packageName: string;
   newVersion: string;
 }): boolean {
-  const pkgPath = path.join(opts.cwd, 'package.json');
+  const pkgPath = path.join(opts.cwd, "package.json");
 
   try {
-    const raw = fs.readFileSync(pkgPath, 'utf-8');
+    const raw = fs.readFileSync(pkgPath, "utf-8");
     const pkg = JSON.parse(raw) as Record<string, unknown>;
     const deps = pkg.dependencies as Record<string, string> | undefined;
     const devDeps = pkg.devDependencies as Record<string, string> | undefined;
 
     let currentRange: string | undefined;
-    let section: 'dependencies' | 'devDependencies' | undefined;
+    let section: "dependencies" | "devDependencies" | undefined;
 
     if (deps?.[opts.packageName]) {
       currentRange = deps[opts.packageName];
-      section = 'dependencies';
+      section = "dependencies";
     } else if (devDeps?.[opts.packageName]) {
       currentRange = devDeps[opts.packageName];
-      section = 'devDependencies';
+      section = "devDependencies";
     }
 
-    if (!currentRange || !section) {
+    if (!(currentRange && section)) {
       return false;
     }
 
@@ -185,7 +185,7 @@ export function updatePackageJsonVersion(opts: {
       return false;
     }
 
-    fs.writeFileSync(pkgPath, updated, 'utf-8');
+    fs.writeFileSync(pkgPath, updated, "utf-8");
     return true;
   } catch {
     return false;
@@ -193,5 +193,5 @@ export function updatePackageJsonVersion(opts: {
 }
 
 function escapeRegex(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

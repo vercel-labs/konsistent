@@ -1,7 +1,7 @@
-import type { PredicateContext } from '../../core/context.js';
-import { createDiagnostic } from '../../core/diagnostics.js';
-import type { Diagnostic, DiagnosticSeverity } from '../../core/diagnostics.js';
-import type { ClassInfo, FileStructure } from '../types.js';
+import type { PredicateContext } from "../../core/context.js";
+import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
+import { createDiagnostic } from "../../core/diagnostics.js";
+import type { ClassInfo, FileStructure } from "../types.js";
 
 type ExtendConfig =
   | string
@@ -14,9 +14,9 @@ function resolveExtendType(opts: {
 }): string | undefined {
   const { extend, context } = opts;
   if (!extend) {
-    return undefined;
+    return;
   }
-  if (typeof extend === 'string') {
+  if (typeof extend === "string") {
     return context.resolveTemplate(extend);
   }
   return context.resolveTemplate(extend.type);
@@ -35,7 +35,7 @@ function resolveImplementTypes(opts: {
   return implement
     .filter((entry) => entry != null)
     .map((entry) => {
-      if (typeof entry === 'string') {
+      if (typeof entry === "string") {
         return context.resolveTemplate(entry);
       }
       return context.resolveTemplate(entry.type);
@@ -66,7 +66,7 @@ function checkClassHeritage(opts: {
     diagnostics.push(
       createDiagnostic({
         filePath: context.path,
-        predicateName: 'exportClasses',
+        predicateName: "exportClasses",
         message: `Class "${resolvedName}" must extend "${resolvedExtend}"`,
         conventionName,
         line: classInfo.pos.line,
@@ -85,7 +85,7 @@ function checkClassHeritage(opts: {
       diagnostics.push(
         createDiagnostic({
           filePath: context.path,
-          predicateName: 'exportClasses',
+          predicateName: "exportClasses",
           message: `Class "${resolvedName}" must implement "${resolvedImpl}"`,
           conventionName,
           line: classInfo.pos.line,
@@ -118,24 +118,24 @@ export function checkExportClasses(opts: {
   const checkContext: ClassCheckContext = { context, conventionName, severity };
 
   for (const entry of expected) {
-    const definition = typeof entry === 'string' ? { name: entry } : entry;
+    const definition = typeof entry === "string" ? { name: entry } : entry;
     const resolvedName = context.resolveTemplate(definition.name);
 
     const isExported = fileStructure.exports.some(
       (e) =>
         e.name === resolvedName &&
-        (e.kind === 'class' || e.kind === 're-export')
+        (e.kind === "class" || e.kind === "re-export")
     );
 
     const classInfo = fileStructure.classes.find(
       (c) => c.name === resolvedName
     );
 
-    if (!isExported && !classInfo) {
+    if (!(isExported || classInfo)) {
       diagnostics.push(
         createDiagnostic({
           filePath: context.path,
-          predicateName: 'exportClasses',
+          predicateName: "exportClasses",
           message: `Missing export class "${resolvedName}"`,
           conventionName,
           severity,
@@ -148,7 +148,7 @@ export function checkExportClasses(opts: {
       diagnostics.push(
         createDiagnostic({
           filePath: context.path,
-          predicateName: 'exportClasses',
+          predicateName: "exportClasses",
           message: `Missing export class "${resolvedName}"`,
           conventionName,
           severity,

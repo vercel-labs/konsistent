@@ -3,7 +3,7 @@ const SEPARATORS = /[-_]/;
 
 export function splitWords(value: string): string[] {
   return value
-    .replace(CAMEL_BOUNDARY, '$1-$2')
+    .replace(CAMEL_BOUNDARY, "$1-$2")
     .split(SEPARATORS)
     .filter((w) => w.length > 0);
 }
@@ -11,30 +11,30 @@ export function splitWords(value: string): string[] {
 export function toPascalCase(value: string): string {
   return splitWords(value)
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-    .join('');
+    .join("");
 }
 
 export function toCamelCase(value: string): string {
   const words = splitWords(value);
   if (words.length === 0) {
-    return '';
+    return "";
   }
   return [
     words[0].toLowerCase(),
     ...words
       .slice(1)
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()),
-  ].join('');
+  ].join("");
 }
 
 export function toKebabCase(value: string): string {
   return splitWords(value)
     .map((w) => w.toLowerCase())
-    .join('-');
+    .join("-");
 }
 
 export function toSnakeCase(value: string): string {
   return splitWords(value)
     .map((w) => w.toLowerCase())
-    .join('_');
+    .join("_");
 }

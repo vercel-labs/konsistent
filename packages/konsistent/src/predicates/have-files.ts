@@ -1,6 +1,6 @@
-import type { PredicateContext } from '../core/context.js';
-import { createDiagnostic } from '../core/diagnostics.js';
-import type { Diagnostic, DiagnosticSeverity } from '../core/diagnostics.js';
+import type { PredicateContext } from "../core/context.js";
+import type { Diagnostic, DiagnosticSeverity } from "../core/diagnostics.js";
+import { createDiagnostic } from "../core/diagnostics.js";
 
 export function checkHaveFiles(opts: {
   expected: string[];
@@ -17,7 +17,7 @@ export function checkHaveFiles(opts: {
       diagnostics.push(
         createDiagnostic({
           filePath: context.path,
-          predicateName: 'haveFiles',
+          predicateName: "haveFiles",
           message: `Missing required file: ${resolved}`,
           conventionName,
           severity,

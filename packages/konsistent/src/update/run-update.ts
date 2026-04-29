@@ -1,5 +1,6 @@
-import { execSync } from 'node:child_process';
-import pc from 'picocolors';
+import { execSync } from "node:child_process";
+import pc from "picocolors";
+import type { PackageManager } from "./package-manager.js";
 import {
   detectPackageManager,
   getGlobalInstallCommand,
@@ -8,24 +9,23 @@ import {
   isMonorepo,
   isPackageInDeps,
   updatePackageJsonVersion,
-} from './package-manager.js';
-import type { PackageManager } from './package-manager.js';
-import { PACKAGE_NAME } from './package-name.js';
+} from "./package-manager.js";
+import { PACKAGE_NAME } from "./package-name.js";
 
 export function canAutoUpdate(cwd: string): {
-  mode: 'global' | 'local';
+  mode: "global" | "local";
   packageManager: PackageManager;
 } | null {
   if (isGlobalInstall()) {
     return {
-      mode: 'global',
+      mode: "global",
       packageManager: detectPackageManager(cwd),
     };
   }
 
   if (isPackageInDeps({ cwd, packageName: PACKAGE_NAME })) {
     return {
-      mode: 'local',
+      mode: "local",
       packageManager: detectPackageManager(cwd),
     };
   }
@@ -44,7 +44,7 @@ export function getManualInstallHint(opts: {
     version: opts.version,
     workspaceRoot: opts.workspaceRoot,
   });
-  return `${command} ${args.join(' ')}`;
+  return `${command} ${args.join(" ")}`;
 }
 
 export function runUpdate(opts: {
@@ -69,7 +69,7 @@ export function runUpdate(opts: {
     return;
   }
 
-  if (updateInfo.mode === 'local') {
+  if (updateInfo.mode === "local") {
     const changed = updatePackageJsonVersion({
       cwd,
       packageName: PACKAGE_NAME,
@@ -83,7 +83,7 @@ export function runUpdate(opts: {
   }
 
   const { command, args } =
-    updateInfo.mode === 'global'
+    updateInfo.mode === "global"
       ? getGlobalInstallCommand({
           packageManager: updateInfo.packageManager,
           packageName: PACKAGE_NAME,
@@ -97,12 +97,12 @@ export function runUpdate(opts: {
         });
 
   try {
-    execSync(`${command} ${args.join(' ')}`, {
-      stdio: 'inherit',
+    execSync(`${command} ${args.join(" ")}`, {
+      stdio: "inherit",
       cwd,
     });
     console.error(
-      `\n${pc.green('✓')} Successfully updated ${PACKAGE_NAME} to v${opts.latestVersion}`
+      `\n${pc.green("✓")} Successfully updated ${PACKAGE_NAME} to v${opts.latestVersion}`
     );
   } catch {
     const hint = getManualInstallHint({
@@ -111,7 +111,7 @@ export function runUpdate(opts: {
       workspaceRoot,
     });
     console.error(
-      `\n${pc.red('✗')} Failed to update. Run the following command manually:\n  ${pc.bold(hint)}`
+      `\n${pc.red("✗")} Failed to update. Run the following command manually:\n  ${pc.bold(hint)}`
     );
   }
 }
