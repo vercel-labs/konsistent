@@ -11,6 +11,7 @@ import type {
   ParamInfo,
   SourcePosition,
   TypeAliasInfo,
+  TypeAnnotationInfo,
 } from "./types.js";
 
 function getPosition(opts: {
@@ -44,11 +45,15 @@ function hasDefaultModifier(node: ts.Node): boolean {
 
 function extractTypeAnnotation(
   node: ts.TypeNode | undefined
-): string | undefined {
+): TypeAnnotationInfo | undefined {
   if (!node) {
     return;
   }
-  return node.getText();
+  const text = node.getText();
+  if (ts.isTypeReferenceNode(node)) {
+    return { text, baseName: node.typeName.getText() };
+  }
+  return { text, baseName: text };
 }
 
 function extractParams(

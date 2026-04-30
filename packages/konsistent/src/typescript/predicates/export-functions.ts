@@ -31,7 +31,9 @@ function checkSignature(opts: {
 
   if (resolvedParamType) {
     const hasParam = funcInfo.params.some(
-      (p) => p.typeName === resolvedParamType
+      (p) =>
+        p.typeName?.text === resolvedParamType ||
+        p.typeName?.baseName === resolvedParamType
     );
     if (!hasParam) {
       diagnostics.push(
@@ -48,7 +50,11 @@ function checkSignature(opts: {
     }
   }
 
-  if (resolvedReturnType && funcInfo.returnType !== resolvedReturnType) {
+  if (
+    resolvedReturnType &&
+    funcInfo.returnType?.text !== resolvedReturnType &&
+    funcInfo.returnType?.baseName !== resolvedReturnType
+  ) {
     diagnostics.push(
       createDiagnostic({
         filePath: context.path,

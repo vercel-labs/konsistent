@@ -111,7 +111,12 @@ describe("checkExportFunctions", () => {
         functions: [
           {
             name: "myFunc",
-            params: [{ name: "input", typeName: "string" }],
+            params: [
+              {
+                name: "input",
+                typeName: { text: "string", baseName: "string" },
+              },
+            ],
             pos: { line: 3, column: 1 },
           },
         ],
@@ -140,7 +145,12 @@ describe("checkExportFunctions", () => {
         functions: [
           {
             name: "myFunc",
-            params: [{ name: "req", typeName: "Request" }],
+            params: [
+              {
+                name: "req",
+                typeName: { text: "Request", baseName: "Request" },
+              },
+            ],
             pos: { line: 3, column: 1 },
           },
         ],
@@ -166,7 +176,7 @@ describe("checkExportFunctions", () => {
           {
             name: "myFunc",
             params: [],
-            returnType: "void",
+            returnType: { text: "void", baseName: "void" },
             pos: { line: 7, column: 1 },
           },
         ],
@@ -196,13 +206,98 @@ describe("checkExportFunctions", () => {
           {
             name: "myFunc",
             params: [],
-            returnType: "void",
+            returnType: { text: "void", baseName: "void" },
             pos: { line: 7, column: 1 },
           },
         ],
       }),
     });
     expect(result).toEqual([]);
+  });
+
+  it("returns no diagnostic when bare config matches generic return type", () => {
+    const result = checkExportFunctions({
+      expected: [{ name: "myFunc", returnValueOfType: "MyClass" }],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: "myFunc",
+            kind: "function",
+            isType: false,
+            pos: { line: 7, column: 1 },
+          },
+        ],
+        functions: [
+          {
+            name: "myFunc",
+            params: [],
+            returnType: { text: "MyClass<Foo>", baseName: "MyClass" },
+            pos: { line: 7, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("returns no diagnostic when bare config matches generic param type", () => {
+    const result = checkExportFunctions({
+      expected: [{ name: "myFunc", receiveParamOfType: "MyClass" }],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: "myFunc",
+            kind: "function",
+            isType: false,
+            pos: { line: 3, column: 1 },
+          },
+        ],
+        functions: [
+          {
+            name: "myFunc",
+            params: [
+              {
+                name: "value",
+                typeName: { text: "MyClass<Foo>", baseName: "MyClass" },
+              },
+            ],
+            pos: { line: 3, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("preserves exact match when configured return type has generics", () => {
+    const result = checkExportFunctions({
+      expected: [{ name: "myFunc", returnValueOfType: "Promise<void>" }],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: "myFunc",
+            kind: "function",
+            isType: false,
+            pos: { line: 7, column: 1 },
+          },
+        ],
+        functions: [
+          {
+            name: "myFunc",
+            params: [],
+            returnType: { text: "Promise<string>", baseName: "Promise" },
+            pos: { line: 7, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe(
+      'Function "myFunc" must return value of type "Promise<void>"'
+    );
   });
 
   it("resolves template placeholders in name, param type, and return type", () => {
@@ -230,8 +325,16 @@ describe("checkExportFunctions", () => {
         functions: [
           {
             name: "CreateHandler",
-            params: [{ name: "req", typeName: "CreateRequest" }],
-            returnType: "CreateResponse",
+            params: [
+              {
+                name: "req",
+                typeName: { text: "CreateRequest", baseName: "CreateRequest" },
+              },
+            ],
+            returnType: {
+              text: "CreateResponse",
+              baseName: "CreateResponse",
+            },
             pos: { line: 1, column: 1 },
           },
         ],

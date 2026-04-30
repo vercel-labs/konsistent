@@ -375,10 +375,10 @@ describe("parseFileStructure", () => {
       expect(result.functions).toHaveLength(1);
       expect(result.functions[0]).toMatchObject({
         name: "greet",
-        returnType: "void",
+        returnType: { text: "void", baseName: "void" },
       });
       expect(result.functions[0].params).toEqual([
-        { name: "name", typeName: "string" },
+        { name: "name", typeName: { text: "string", baseName: "string" } },
       ]);
     });
 
@@ -387,8 +387,8 @@ describe("parseFileStructure", () => {
         source: "function add(a: number, b: number): number { return a + b; }",
       });
       expect(result.functions[0].params).toEqual([
-        { name: "a", typeName: "number" },
-        { name: "b", typeName: "number" },
+        { name: "a", typeName: { text: "number", baseName: "number" } },
+        { name: "b", typeName: { text: "number", baseName: "number" } },
       ]);
     });
 
@@ -417,7 +417,7 @@ describe("parseFileStructure", () => {
       expect(result.constants).toHaveLength(1);
       expect(result.constants[0]).toMatchObject({
         name: "value",
-        typeName: "number",
+        typeName: { text: "number", baseName: "number" },
       });
     });
 
@@ -549,12 +549,18 @@ describe("parseFileStructure", () => {
 
       expect(result.functions).toHaveLength(1);
       expect(result.functions[0].params).toEqual([
-        { name: "opts", typeName: "Config" },
+        { name: "opts", typeName: { text: "Config", baseName: "Config" } },
       ]);
-      expect(result.functions[0].returnType).toBe("Service");
+      expect(result.functions[0].returnType).toEqual({
+        text: "Service",
+        baseName: "Service",
+      });
 
       expect(result.constants).toHaveLength(1);
-      expect(result.constants[0].typeName).toBe("string");
+      expect(result.constants[0].typeName).toEqual({
+        text: "string",
+        baseName: "string",
+      });
 
       expect(result.typeAliases).toHaveLength(1);
       expect(result.typeAliases[0].name).toBe("Handler");

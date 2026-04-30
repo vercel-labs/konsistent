@@ -1,9 +1,13 @@
-export interface PaymentsConfig {
+export interface PaymentsConfig<T> {
   apiKey: string;
+  client: T;
 }
-export interface PaymentsService {
+export interface PaymentsService<T> {
+  client: T;
   charge(): Promise<void>;
 }
-export function createPaymentsService(config: PaymentsConfig): PaymentsService {
-  return { charge: async () => {} };
+export function createPaymentsService(
+  config: PaymentsConfig<string>
+): PaymentsService<string> {
+  return { client: config.client, charge: async () => {} };
 }

@@ -23,6 +23,11 @@ export interface ExtendsClauseInfo {
   typeArguments: string[];
 }
 
+export interface TypeAnnotationInfo {
+  baseName: string;
+  text: string;
+}
+
 export interface InterfaceInfo {
   extends: ExtendsClauseInfo[];
   name: string;
@@ -38,20 +43,20 @@ export interface ClassInfo {
 
 export interface ParamInfo {
   name: string;
-  typeName?: string;
+  typeName?: TypeAnnotationInfo;
 }
 
 export interface FunctionInfo {
   name: string;
   params: ParamInfo[];
   pos: SourcePosition;
-  returnType?: string;
+  returnType?: TypeAnnotationInfo;
 }
 
 export interface ConstantInfo {
   name: string;
   pos: SourcePosition;
-  typeName?: string;
+  typeName?: TypeAnnotationInfo;
 }
 
 export interface TypeAliasInfo {
