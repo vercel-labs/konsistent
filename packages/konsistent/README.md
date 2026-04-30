@@ -59,7 +59,7 @@ Could not read config file: /path/to/project/konsistent.json
 
 ### Creating your `konsistent.json`
 
-The `konsistent.json` file lives in your project root. Here is an example of what it could look like:
+The `konsistent.json` file lives in your project root by default. Here is an example of what it could look like:
 
 ```json
 {
@@ -99,6 +99,8 @@ The `konsistent.json` file lives in your project root. Here is an example of wha
 > ```
 > npx skills add https://github.com/vercel-labs/konsistent --skill konsistent-config
 > ```
+
+If you want to place your `konsistent.json` file somewhere other than the project root, you can do so. You must then use the `--config-path` flag to provide the path when running the CLI.
 
 ## Commands
 
