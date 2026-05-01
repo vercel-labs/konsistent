@@ -102,6 +102,22 @@ The `konsistent.json` file lives in your project root by default. Here is an exa
 
 If you want to place your `konsistent.json` file somewhere other than the project root, you can do so. You must then use the `--config-path` flag to provide the path when running the CLI.
 
+### Reviewing and fixing violations
+
+Once your `konsistent.json` is in place, running the CLI will surface violations. They generally fall into two camps:
+
+- **Code is the outlier** — a handful of files violate a rule. Fix the code.
+- **Rule is the outlier** — many files violate the same rule, which usually means the codebase is undecided between two (or more) conventions. Pick the one to enforce going forward, update or relax the rule accordingly, then fix the code that doesn't match.
+
+Sorting violations into trivial fixes (renames, moves, re-exports) and non-trivial ones (new types, new logic, refactors) — and deciding the back-compat strategy for any renamed package-boundary exports — is best done deliberately, not in one pass.
+
+> [!TIP]
+> **There's a skill for that!** Let an agent run `konsistent`, walk the violations through with you, and apply the fixes once you've signed off:
+>
+> ```
+> npx skills add https://github.com/vercel-labs/konsistent --skill konsistent-fix-violations
+> ```
+
 ## Commands
 
 | Command | Description |
