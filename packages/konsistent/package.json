@@ -6,8 +6,12 @@
   "license": "MIT",
   "files": [
     "dist",
+    "docs",
     "konsistent.schema.json"
   ],
+  "directories": {
+    "doc": "./docs"
+  },
   "bin": {
     "konsistent": "./dist/index.js"
   },
@@ -15,7 +19,9 @@
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "generate-schema": "tsx scripts/generate-schema.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepack": "cp -r ../../docs ./docs",
+    "postpack": "del-cli docs"
   },
   "dependencies": {
     "citty": "^0.1",
@@ -27,6 +33,7 @@
   "devDependencies": {
     "@types/node": "^24",
     "ajv": "^8.18.0",
+    "del-cli": "^6",
     "tsup": "^8",
     "tsx": "^4.21.0",
     "vitest": "^3",
