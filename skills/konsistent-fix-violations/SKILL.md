@@ -15,16 +15,18 @@ description: >
 
 Run `konsistent`, surface what is broken, and resolve violations. The hard part is not the mechanical fix — it is deciding **whether the rule or the code is wrong** when a single rule has many violations, and **which non-trivial violations are worth attempting** versus deferring.
 
+The canonical workflow and per-predicate triage rubric are documented in `node_modules/konsistent/docs/guides/fixing-violations.md`. **Read it before classifying violations.** This skill layers strict gating, user confirmation, and `AskUserQuestion` interactions on top of that workflow.
+
 ## Workflow (strict order)
 
-1. [Run the CLI](#1-run-the-cli) and collect all violations as JSON
-2. [Group violations by rule](#2-group-violations-by-rule) and identify rules with high violation counts
-3. [For each high-count rule, ask the user](#3-ask-the-user-rule-vs-code) whether to keep, change, or remove the rule
-4. [Update `konsistent.json`](#4-update-konsistentjson-via-konsistent-config) via the `konsistent-config` skill if any rules need changes
-5. [Re-run the CLI](#5-re-run-and-confirm-before-fixing) to refresh the violation list, then **stop and ask for explicit confirmation** before modifying any code
-6. [Triage remaining violations](#6-triage-trivial-vs-non-trivial) into trivial vs. non-trivial
-7. [Surface non-trivial violations](#7-surface-non-trivial-violations) to the user and let them decide how to handle each
-8. [Fix the approved violations](#8-fix-approved-violations) and re-run the CLI to verify
+1. [Run the CLI](#1-run-the-cli) and collect all violations as JSON.
+2. [Group violations by rule](#2-group-violations-by-rule) and identify rules with high violation counts.
+3. [For each high-count rule, ask the user](#3-ask-the-user-rule-vs-code) whether to keep, change, or remove the rule.
+4. [Update `konsistent.json`](#4-update-konsistentjson-via-konsistent-config) via the `konsistent-config` skill if any rules need changes.
+5. [Re-run the CLI](#5-re-run-and-confirm-before-fixing) to refresh the violation list, then **stop and ask for explicit confirmation** before modifying any code.
+6. [Triage remaining violations](#6-triage-trivial-vs-non-trivial) into trivial vs. non-trivial.
+7. [Surface non-trivial violations](#7-surface-non-trivial-violations) to the user and let them decide how to handle each.
+8. [Fix the approved violations](#8-fix-approved-violations) and re-run the CLI to verify.
 
 Do not skip steps. Do not collapse them. The asks for user input at steps 3, 5, and 7 are non-negotiable.
 
@@ -34,9 +36,9 @@ Do not skip steps. Do not collapse them. The asks for user input at steps 3, 5, 
 
 Determine the invocation in this order:
 
-1. If `package.json` has a `konsistent` script → use the project's package manager: `pnpm konsistent`, `npm run konsistent`, or `yarn konsistent` (match the lockfile / `packageManager` field)
+1. If `package.json` has a `konsistent` script → use the project's package manager: `pnpm konsistent`, `npm run konsistent`, or `yarn konsistent` (match the lockfile / `packageManager` field).
 2. Else, if `konsistent` is in `devDependencies` → run via the package runner: `pnpm exec konsistent`, `npx konsistent`, etc.
-3. Else, fall back to `npx konsistent`
+3. Else, fall back to `npx konsistent`.
 
 Run the `check` command with JSON output and a high diagnostic cap so nothing is truncated:
 
@@ -52,7 +54,7 @@ pnpm konsistent check --format=json --max-diagnostics=1000
 pnpm konsistent -- check --format=json --max-diagnostics=1000
 ```
 
-The JSON output is an array of `{ severity, conventionName, filePath, predicateName, message }`. Exit code is non-zero when errors are present; that is expected — read the JSON regardless.
+The JSON output is an array of `{ severity, conventionName, filePath, predicateName, message }`. Exit code is non-zero when errors are present; that is expected — read the JSON regardless. See `node_modules/konsistent/docs/reference/cli.md` for the full output schema.
 
 If the command fails for reasons other than violations (config not found, invalid config, missing dependency), stop and resolve the underlying issue first. Do not proceed.
 
@@ -71,21 +73,21 @@ Why this matters: a rule with 1–2 violations almost always means the *code* is
 For **each high-count rule**, explicitly ask the user to choose. Use the AskUserQuestion tool with concrete options. Do not infer — the user owns this decision.
 
 Frame the question with:
-- The rule's name / description / what it enforces
+- The rule's name / description / what it enforces.
 - **The codebase distribution** — count how many of the *matched* files conform vs. violate, and report the split (e.g. "12 of 25 matched packages use pattern A; 13 use pattern B — codebase is roughly 50/50"). This framing dramatically improves the user's ability to decide.
-- A short summary of what convention the violating files actually follow (read 2–3 of them — what naming/structure pattern do they share?)
-- A few representative examples (file paths or symbol names from each pattern)
+- A short summary of what convention the violating files actually follow (read 2–3 of them — what naming/structure pattern do they share?).
+- A few representative examples (file paths or symbol names from each pattern).
 
 Offer at minimum these options:
-- **Keep the rule, fix the code** — code is the outlier; proceed to fix violations
-- **Change the rule to match what the code does** — the violating pattern is the real convention; update `konsistent.json`
-- **Remove the rule** — the convention isn't worth enforcing
-- **Other** (free-text — e.g. relax to `severity: warning`, narrow the path pattern, add an exception via path negation)
+- **Keep the rule, fix the code** — code is the outlier; proceed to fix violations.
+- **Change the rule to match what the code does** — the violating pattern is the real convention; update `konsistent.json`.
+- **Remove the rule** — the convention isn't worth enforcing.
+- **Other** (free-text — e.g. relax to `severity: warning`, narrow the path pattern, add an exception via path negation).
 
 **Surface meaningful sub-options** when "change the rule" admits more than one specific shape. Don't collapse them. Examples of sub-options worth presenting:
-- File-naming variants: `${name}-options.ts` vs `${name}-model-options.ts`
-- A **hybrid** rule that splits by a sub-pattern (e.g. "single-word providers ending in `ai` use flat-case; everything else uses camelCase") — this is encodable via `kebabToCamelMap` / `kebabToPascalMap` overrides or `placeholderSatisfies` constraints
-- Mixed-severity (`error` for the must-have, `warning` for the nice-to-have)
+- File-naming variants: `${name}-options.ts` vs `${name}-model-options.ts`.
+- A **hybrid** rule that splits by a sub-pattern (e.g. "single-word providers ending in `ai` use flat-case; everything else uses camelCase") — this is encodable via `kebabToCamelMap` / `kebabToPascalMap` overrides or `placeholderSatisfies` constraints.
+- Mixed-severity (`error` for the must-have, `warning` for the nice-to-have).
 
 If the user picks "change", "remove", or "other", capture the specifics needed to execute the change in step 4.
 
@@ -123,44 +125,29 @@ If the user says no or wants to adjust further, return to step 3 or 4.
 
 ## 6. Triage: trivial vs. non-trivial
 
-Once confirmed, classify each remaining violation. See [references/violation-types.md](references/violation-types.md) for the predicate-by-predicate triage rubric and the search heuristics — **read it before classifying**.
+Once confirmed, classify each remaining violation. **Read `node_modules/konsistent/docs/guides/fixing-violations.md` for the per-predicate triage rubric and the search heuristics** before classifying.
 
-**Search the codebase first.** A "missing" file or export reported by `konsistent` very often already exists under a different name, in a different file, or in a different casing. These are still **trivial** fixes — rename, move, or re-export. Before marking anything non-trivial, search:
+The headline rules:
 
-- Exact name, case variants (`kebab-case` ↔ `camelCase` ↔ `PascalCase`)
-- Stripped prefixes/suffixes (`createX` ↔ `makeX` ↔ `X`, `XConfig` ↔ `XOptions`)
-- The distinctive word stem (e.g. for `OpenaiProviderSettings`, search `openai`)
-- Sibling files in the same directory and files matched by the same rule that already pass
+- **Search the codebase first.** A "missing" file or export reported by `konsistent` very often already exists under a different name, in a different file, or in a different casing. These are still **trivial** fixes — rename, move, or re-export. Before marking anything non-trivial, search by exact name, case variants, stripped prefixes/suffixes, distinctive word stems, sibling locations, and mirror existing successful matches.
+- **When in doubt, classify as non-trivial.** False positives in the trivial bucket are worse than in the non-trivial bucket — the former lead to bad code without user input. But do not classify as non-trivial without first searching: a quick grep often turns the violation trivial.
 
-Quick classification guide:
-
-- **Trivial**:
-  - Symbol/type/file exists under a different name → **rename** (and update all references repo-wide).
-  - Symbol/type/file exists in a different location → **move** or add a re-export.
-  - Symbol exists but not exported → add `export`.
-  - Type exists in another form (`type` ↔ `interface` with compatible shape) → adjust form.
-  - `extends`/`implements` clause missing but the base already exists and members don't conflict → add the clause.
-- **Non-trivial**:
-  - No candidate found anywhere after a thorough search.
-  - Defining a new type with an unknown shape, implementing new logic, refactoring class hierarchies that conflict with existing members, or restructuring a directory.
-  - Any case requiring a design decision or touching many files in non-mechanical ways.
-
-When in doubt, classify as non-trivial. False positives in the trivial bucket are worse than in the non-trivial bucket — the former lead to bad code without user input. But do not classify as non-trivial without first searching: a quick grep often turns the violation trivial.
+The full per-predicate rubric (haveType, haveFiles, export/exportConstants, exportTypes, exportFunctions, exportInterfaces, exportClasses, import/importTypes) lives in `node_modules/konsistent/docs/guides/fixing-violations.md`.
 
 ## 7. Surface non-trivial violations
 
 Compile the non-trivial violations into a clear list. For each, include:
-- File path and rule
-- The violation message
-- A one-line note on why it is non-trivial (e.g. "type `FooConfig` does not exist anywhere in the repo", "would require splitting the existing class")
+- File path and rule.
+- The violation message.
+- A one-line note on why it is non-trivial (e.g. "type `FooConfig` does not exist anywhere in the repo", "would require splitting the existing class").
 
 Present the list to the user and ask, **per violation or per group**, which they want to:
 
 - **Defer** — leave for later. Offer two follow-ups:
   - Draft a GitHub issue title/body capturing the work (the user opens it).
   - **Add path negation in `konsistent.json`** for the deferred files via the `konsistent-config` skill, so CI stays green and the rule still applies to all other matched files. Remove the negation when the deferred work lands.
-- **Attempt** — let the agent try; **prompt the user for additional context** that would help (intended types, examples to mirror, references to similar code)
-- **Skip** — explicitly mark as won't-do (e.g. the rule will be relaxed instead — note this and return to step 4 if needed)
+- **Attempt** — let the agent try; **prompt the user for additional context** that would help (intended types, examples to mirror, references to similar code).
+- **Skip** — explicitly mark as won't-do (e.g. the rule will be relaxed instead — note this and return to step 4 if needed).
 
 Use AskUserQuestion for the decision. For "Attempt", actively prompt for context — do not silently start a non-trivial change without input.
 
@@ -194,10 +181,12 @@ export { newName as oldName } from "./impl";
 
 Update intra-package callers to use the new name. Document the renames in the changelog if the project tracks one.
 
+See `node_modules/konsistent/docs/guides/fixing-violations.md` for the rationale behind the package-boundary distinction.
+
 Fix in this order:
 
-1. All trivial violations from step 6
-2. The "Attempt" non-trivial violations from step 7, with the user's context
+1. All trivial violations from step 6.
+2. The "Attempt" non-trivial violations from step 7, with the user's context.
 
 Group fixes by file when possible to minimize churn. Do not re-run konsistent between individual fixes — batch the edits.
 
@@ -208,9 +197,9 @@ When done, re-run the CLI:
 ```
 
 Report:
-- Violations resolved
-- Violations remaining (deferred + any new ones introduced)
-- If new violations appeared, investigate before declaring complete
+- Violations resolved.
+- Violations remaining (deferred + any new ones introduced).
+- If new violations appeared, investigate before declaring complete.
 
 Run the project's checks to ensure code edits did not break anything else (read `package.json` for the actual scripts):
 

@@ -102,6 +102,10 @@ The `konsistent.json` file lives in your project root by default. Here is an exa
 
 If you want to place your `konsistent.json` file somewhere other than the project root, you can do so. You must then use the `--config-path` flag to provide the path when running the CLI.
 
+### Documentation
+
+See the [full documentation](./docs/README.md).
+
 ### Reviewing and fixing violations
 
 Once your `konsistent.json` is in place, running the CLI will surface violations. They generally fall into two camps:
