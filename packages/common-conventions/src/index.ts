@@ -5,7 +5,7 @@ export const conventions = defineConventions([
     name: "package-dir-must-have-readme-file",
     description:
       "Every package directory under packages/ must contain a README.md file.",
-    paths: ["packages/{packageName}"],
+    paths: ["packages/*"],
     must: {
       haveFiles: ["README.md"],
     },

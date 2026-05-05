@@ -16,11 +16,11 @@ A reusable-conventions package ships a single JSON artifact at a fixed exports c
 }
 ```
 
-You can write the conventions directly in JSON, but the recommended path is to author them in TypeScript with `defineConventions()` from `@konsistent/convention` and emit the JSON from a small build script. You get full editor autocomplete, schema validation at build time, and a single source of truth for the published artifact.
+You can write the conventions directly in JSON, but the recommended path is to author them in TypeScript with `defineConventions()` from `@konsistent/convention` and let the package's `konsistent-convention emit` CLI build the JSON for you. You get full editor autocomplete, schema validation at build time, and a single source of truth for the published artifact — without writing a build script of your own.
 
 ## 1. Install `@konsistent/convention`
 
-`@konsistent/convention` owns the schemas and the `defineConventions()` helper. It has Zod as a peer dependency.
+`@konsistent/convention` owns the schemas, the `defineConventions()` helper, and the `konsistent-convention` build CLI. It has Zod as a peer dependency.
 
 | NPM | PNPM | Bun |
 | --- | --- | --- |
@@ -37,10 +37,8 @@ my-conventions/
   package.json
   src/
     index.ts         # author the conventions in TypeScript
-  scripts/
-    emit-json.ts     # validate + write dist/conventions.json
   dist/
-    conventions.json # produced by the build script (gitignored)
+    conventions.json # produced by `konsistent-convention emit` (gitignored)
 ```
 
 ### `package.json`
@@ -55,16 +53,13 @@ my-conventions/
     "./konsistent": "./dist/conventions.json"
   },
   "scripts": {
-    "build": "tsx scripts/emit-json.ts"
+    "build": "konsistent-convention emit"
   },
   "dependencies": {
     "@konsistent/convention": "^0.0.1"
   },
   "peerDependencies": {
     "zod": "^4"
-  },
-  "devDependencies": {
-    "tsx": "^4"
   }
 }
 ```
@@ -73,7 +68,7 @@ The required pieces:
 
 - `"exports": { "./konsistent": "./dist/conventions.json" }` — what `konsistent` resolves on the consumer side.
 - `"files"` includes `dist` so the JSON ships with the published package.
-- `"build"` script that produces `dist/conventions.json` before publishing.
+- `"build"` script that produces `dist/conventions.json` before publishing. The `konsistent-convention` CLI is exposed as a `bin` of `@konsistent/convention`, so you can call it directly from any package script.
 
 ### `src/index.ts`
 
@@ -85,7 +80,7 @@ export const conventions = defineConventions([
     name: "package-dir-must-have-readme-file",
     description:
       "Every package directory under packages/ must contain a README.md file.",
-    paths: ["packages/{packageName}"],
+    paths: ["packages/*"],
     must: {
       haveFiles: ["README.md"],
     },
@@ -101,32 +96,21 @@ A reusable convention has the same fields as a hand-written one with two adjustm
 - `must` must use the **flat object form** (`MustPredicates`). The `MustBlock[]` form is not allowed in reusable conventions — see [Restrictions](../reference/reusable-conventions.md#restrictions).
 - `paths` is **optional**. Omit it to force consumers to supply `paths` at the use-site (which is useful when the right pattern depends on the consuming project's layout). When `paths` is omitted, consumers can only reference the convention via the `use` form.
 
-### `scripts/emit-json.ts`
-
-```ts
-import { mkdir, writeFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
-import { ReusableConventionsPackageV1Schema } from "@konsistent/convention";
-import { conventions } from "../src/index.ts";
-
-const pkg = ReusableConventionsPackageV1Schema.parse({
-  conventionSpecVersion: "v1",
-  conventions,
-});
-
-const outputPath = resolve(import.meta.dirname, "../dist/conventions.json");
-await mkdir(dirname(outputPath), { recursive: true });
-await writeFile(outputPath, `${JSON.stringify(pkg, null, 2)}\n`);
-console.log(`Generated: ${outputPath}`);
-```
-
-This script does two things: validates the conventions against `ReusableConventionsPackageV1Schema` (so your build fails fast on a malformed convention), and writes the JSON artifact at the path the `exports` map points to. `conventionSpecVersion: "v1"` is required and pins the spec your conventions target — future versions can change format and consumers will be told to upgrade `konsistent`.
-
 ## 3. Build and verify
 
 ```bash
 pnpm build
 ```
+
+Behind `pnpm build`, `konsistent-convention emit` does three things: imports `src/index.ts` (TypeScript loaded at runtime), validates the conventions against `ReusableConventionsPackageV1Schema` (so your build fails fast on a malformed convention), and writes `dist/conventions.json` with `conventionSpecVersion: "v1"` prepended. `conventionSpecVersion: "v1"` pins the spec your conventions target — future versions can change format and consumers will be told to upgrade `konsistent`.
+
+The CLI's defaults are `--input src/index.ts` and `--output dist/conventions.json`. Override either if your layout differs:
+
+```bash
+konsistent-convention emit --input src/conventions.ts --output dist/my-rules.json
+```
+
+The input module must export a `conventions` array (named or default export) whose elements pass `ReusableConventionV1Schema`.
 
 Inspect `dist/conventions.json` — it should have `conventionSpecVersion: "v1"` at the top level and one entry per convention.
 
@@ -168,7 +152,7 @@ For a convention without `paths`, the consumer must use the `use` form and suppl
 
 A reusable convention is most useful when it captures a structural rule that's specific to a library or organization but agnostic to the consuming project's layout. Two patterns work well:
 
-- **Self-contained** — the convention declares its own `paths` (e.g. `packages/{packageName}` for any project that uses a `packages/` monorepo layout). Consumers reference it as a string.
+- **Self-contained** — the convention declares its own `paths` (e.g. `packages/*` for any project that uses a `packages/` monorepo layout). Consumers reference it as a string.
 - **Use-site paths** — the convention omits `paths` and parameterizes via placeholders that the consumer's `paths` declares (e.g. `must.exportFunctions: [{ name: "${componentName}" }]` with no `paths` at all). Consumers must use the `use` form and supply `paths` like `["src/components/{componentName}.tsx"]`.
 
 Mix-and-match: a single package can ship both kinds. `@konsistent/common-conventions` ships three conventions — one of each shape, plus one with `paths` and `excludeFiles` to demonstrate array-replace overrides.
