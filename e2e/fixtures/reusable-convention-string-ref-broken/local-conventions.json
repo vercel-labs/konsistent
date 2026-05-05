@@ -1,0 +1,13 @@
+{
+  "conventionSpecVersion": "v1",
+  "conventions": [
+    {
+      "name": "package-must-have-readme",
+      "description": "Every package directory must contain a README.md file.",
+      "paths": ["packages/{packageName}"],
+      "must": {
+        "haveFiles": ["README.md"]
+      }
+    }
+  ]
+}

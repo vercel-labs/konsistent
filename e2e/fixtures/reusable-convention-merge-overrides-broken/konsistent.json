@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "conventionSources": {
+    "common": "./local-conventions.json"
+  },
+  "conventions": [
+    {
+      "use": "common/component-folder-must-have-index",
+      "severity": "error",
+      "excludeFiles": ["src/components/Skip"]
+    }
+  ]
+}

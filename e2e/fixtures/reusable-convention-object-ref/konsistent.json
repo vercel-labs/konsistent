@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "conventionSources": {
+    "common": "./local-conventions.json"
+  },
+  "conventions": [
+    {
+      "use": "common/component-folder-must-have-index",
+      "paths": ["src/components/{componentName}"]
+    }
+  ]
+}

@@ -1,2 +1,9 @@
 packages:
   - "packages/*"
+  - "e2e/fixtures/reusable-convention-string-ref-pkg"
+  - "e2e/fixtures/reusable-convention-string-ref-pkg-broken"
+  - "e2e/fixtures/reusable-convention-object-ref-pkg"
+  - "e2e/fixtures/reusable-convention-object-ref-pkg-broken"
+  - "e2e/fixtures/reusable-convention-merge-overrides-pkg"
+  - "e2e/fixtures/reusable-convention-merge-overrides-pkg-broken"
+  - "e2e/fixtures/reusable-convention-unknown-source"

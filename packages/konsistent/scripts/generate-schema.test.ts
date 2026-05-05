@@ -32,7 +32,14 @@ describe("konsistent.schema.json", () => {
   });
 
   it("rejects additionalProperties in the must object", () => {
-    const mustSchema = schema.properties.conventions.items.properties.must;
+    const objectBranch = schema.properties.conventions.items.anyOf.find(
+      (branch: { type?: string; properties?: Record<string, unknown> }) =>
+        branch.type === "object" &&
+        branch.properties !== undefined &&
+        Object.hasOwn(branch.properties, "paths") &&
+        !Object.hasOwn(branch.properties, "use")
+    );
+    const mustSchema = objectBranch.properties.must;
     const predicatesSchema = mustSchema.anyOf[0];
     expect(predicatesSchema.additionalProperties).toBe(false);
   });

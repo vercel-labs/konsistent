@@ -1,0 +1,9 @@
+{
+  "name": "konsistent-fixture-reusable-convention-merge-overrides-pkg-broken",
+  "private": true,
+  "version": "0.0.0",
+  "dependencies": {
+    "@konsistent/common-conventions": "workspace:*",
+    "konsistent": "workspace:*"
+  }
+}

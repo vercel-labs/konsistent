@@ -1,0 +1,37 @@
+{
+  "name": "@konsistent/convention",
+  "description": "Convention spec for konsistent — Zod schemas and authoring helpers for reusable conventions.",
+  "version": "0.0.1-alpha.1",
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "reusable-convention-package.schema.json"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "generate-schema": "tsx scripts/generate-schema.ts",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "zod": "^4"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "ajv": "^8.18.0",
+    "del-cli": "^6",
+    "tsup": "^8",
+    "tsx": "^4.21.0",
+    "vitest": "^3",
+    "zod": "^4"
+  }
+}
