@@ -10,6 +10,9 @@
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "konsistent-convention": "./dist/cli.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -21,6 +24,10 @@
     "typecheck": "tsc --noEmit",
     "generate-schema": "tsx scripts/generate-schema.ts",
     "test": "vitest run"
+  },
+  "dependencies": {
+    "citty": "^0.2",
+    "jiti": "^2"
   },
   "peerDependencies": {
     "zod": "^4"

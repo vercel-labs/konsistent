@@ -12,7 +12,7 @@
     "./konsistent": "./dist/conventions.json"
   },
   "scripts": {
-    "build": "tsx scripts/emit-json.ts",
+    "build": "konsistent-convention emit",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
@@ -24,7 +24,6 @@
   },
   "devDependencies": {
     "@types/node": "^24",
-    "tsx": "^4.21.0",
     "vitest": "^3",
     "zod": "^4"
   }
