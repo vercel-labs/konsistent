@@ -30,3 +30,12 @@ Consistency has always been a crucial part of good API design, but there has nev
 Every change needs test coverage. Include Vitest unit tests, but more holistically every feature must also be covered by e2e CLI tests using fixtures, which in this case are actual TypeScript demo projects with their own `konsistent.json` configuration files each.
 
 Additionally, you can use the locally built `konsistent` tool via `pnpm konsistent`.
+
+## Documentation Requirements
+
+The top-level `docs/` folder contains documentation, across two subfolders:
+
+- `docs/guides/`
+- `docs/reference/`
+
+Run `ls docs/guides/ docs/reference/` to learn which documentation files exist. Whenever you modify something in the codebase, check whether any of those files cover the area you touched; if so, update them in the same change so the docs stay in sync with the code.

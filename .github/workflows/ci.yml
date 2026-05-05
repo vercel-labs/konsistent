@@ -52,5 +52,13 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
+      # Double install: @konsistent/common-conventions's build script invokes the
+      # `konsistent-convention` CLI shipped by @konsistent/convention. The bin
+      # symlink can only be created once @konsistent/convention/dist/cli.js
+      # exists, so we install, build the producer, then install again to link
+      # the bin. Outside this monorepo, npm/pnpm consumers install the
+      # already-built tarball and never hit this.
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -F @konsistent/convention build
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:e2e

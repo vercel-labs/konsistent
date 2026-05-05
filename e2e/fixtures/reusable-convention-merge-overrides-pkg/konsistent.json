@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "conventionSources": {
+    "common": "@konsistent/common-conventions"
+  },
+  "conventions": [
+    {
+      "use": "common/every-ts-file-must-have-tests",
+      "excludeFiles": ["beta.ts"]
+    }
+  ]
+}

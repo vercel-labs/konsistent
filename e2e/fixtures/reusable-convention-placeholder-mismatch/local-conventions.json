@@ -1,0 +1,13 @@
+{
+  "conventionSpecVersion": "v1",
+  "conventions": [
+    {
+      "name": "component-folder-must-have-named-file",
+      "description": "Each component folder must contain a file named after the component.",
+      "paths": ["src/components/{componentName}"],
+      "must": {
+        "haveFiles": ["${componentName}.tsx"]
+      }
+    }
+  ]
+}

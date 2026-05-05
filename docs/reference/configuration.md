@@ -27,7 +27,8 @@ The `konsistent.json` file declares the structural conventions the CLI enforces.
 | --- | --- | --- | --- |
 | `version` | `"v1"` | yes | Configuration version. Currently always `"v1"`. |
 | `$schema` | string | no | Path to `konsistent.schema.json` for editor autocomplete. |
-| `conventions` | `Convention[]` | yes | Array of convention rules (see below). |
+| `conventions` | `Convention[]` | yes | Array of convention rules (see below). Each entry can be a hand-written convention, a string reference, or a `use` reference — see [reusable-conventions.md](./reusable-conventions.md). |
+| `conventionSources` | `Record<string, string>` | no | Vendor-prefix bindings for reusable convention packages or local JSON files. See [reusable-conventions.md](./reusable-conventions.md). |
 | `kebabToPascalMap` | `Record<string, string>` | no | Override default kebab → PascalCase conversion. See [case-maps.md](./case-maps.md). |
 | `kebabToCamelMap` | `Record<string, string>` | no | Override default kebab → camelCase conversion. See [case-maps.md](./case-maps.md). |
 

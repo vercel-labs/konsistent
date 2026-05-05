@@ -1,0 +1,7 @@
+{
+  "version": "v1",
+  "conventionSources": {
+    "common": "@konsistent/common-conventions"
+  },
+  "conventions": ["common/package-dir-must-have-readme-file"]
+}

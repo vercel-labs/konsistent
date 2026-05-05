@@ -1,0 +1,7 @@
+{
+  "version": "v1",
+  "conventionSources": {
+    "common": "./local-conventions.json"
+  },
+  "conventions": ["common/package-must-have-readme"]
+}

@@ -1,7 +1,7 @@
 {
   "name": "konsistent",
   "description": "konsistent is a CLI tool that enforces structural conventions in TypeScript codebases.",
-  "version": "0.0.1-alpha.15",
+  "version": "0.0.1-alpha.16",
   "type": "module",
   "license": "MIT",
   "files": [
@@ -24,11 +24,13 @@
     "postpack": "del-cli docs"
   },
   "dependencies": {
+    "@konsistent/convention": "workspace:*",
     "citty": "^0.1",
     "picocolors": "^1",
+    "resolve.exports": "^2",
     "tinyglobby": "^0.2",
     "typescript": "^5.7",
-    "zod": "^3"
+    "zod": "^4"
   },
   "devDependencies": {
     "@types/node": "^24",
@@ -36,7 +38,6 @@
     "del-cli": "^6",
     "tsup": "^8",
     "tsx": "^4.21.0",
-    "vitest": "^3",
-    "zod-to-json-schema": "^3.25.2"
+    "vitest": "^3"
   }
 }

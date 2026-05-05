@@ -1,0 +1,9 @@
+{
+  "name": "konsistent-fixture-reusable-convention-unknown-source",
+  "private": true,
+  "version": "0.0.0",
+  "dependencies": {
+    "@konsistent/common-conventions": "workspace:*",
+    "konsistent": "workspace:*"
+  }
+}

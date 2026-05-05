@@ -4,9 +4,9 @@
   "license": "MIT",
   "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "build": "turbo build",
-    "typecheck": "turbo typecheck",
-    "test": "turbo test",
+    "build": "turbo build --filter='./packages/*'",
+    "typecheck": "turbo typecheck --filter='./packages/*'",
+    "test": "turbo test --filter='./packages/*'",
     "test:e2e": "turbo test:e2e:run",
     "test:e2e:run": "vitest run -c e2e/vitest.config.ts",
     "check": "ultracite check",

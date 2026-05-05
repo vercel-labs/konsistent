@@ -325,4 +325,182 @@ describe("ConfigV1Schema", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("accepts a config with conventionSources", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventionSources: {
+        common: "./local-conventions.json",
+        org: "@org/conventions",
+      },
+      conventions: [],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects conventionSources keys that don't match the prefix pattern", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventionSources: {
+        "Bad Prefix": "./x.json",
+      },
+      conventions: [],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects conventionSources values that are not strings", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventionSources: {
+        common: 123,
+      },
+      conventions: [],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts a bare-string entry in conventions[]", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventionSources: { common: "./x.json" },
+      conventions: ["common/some-convention"],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects bare-string entries that do not match vendor/name", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: ["not-a-reference"],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects bare-string entries with uppercase characters", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: ["Common/Foo"],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts a mix of bare strings and hand-written conventions", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventionSources: { common: "./x.json" },
+      conventions: [
+        "common/foo",
+        {
+          paths: "src/*.ts",
+          must: { haveType: "file" },
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a use-form reference with paths override", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventionSources: { common: "./x.json" },
+      conventions: [
+        {
+          use: "common/some-convention",
+          paths: ["src/components/{componentName}.ts"],
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a use-form reference with no overrides", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventionSources: { common: "./x.json" },
+      conventions: [{ use: "common/some-convention" }],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a use-form reference with severity, excludeFiles, and must overrides", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventionSources: { common: "./x.json" },
+      conventions: [
+        {
+          use: "common/some-convention",
+          severity: "warning",
+          excludeFiles: ["src/skip.ts"],
+          must: { haveType: "file" },
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects a use-form reference with a name field (strict)", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventionSources: { common: "./x.json" },
+      conventions: [
+        {
+          use: "common/some-convention",
+          name: "renamed",
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a use-form reference with a description field (strict)", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventionSources: { common: "./x.json" },
+      conventions: [
+        {
+          use: "common/some-convention",
+          description: "rewritten",
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a use-form reference with a single-segment use string", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [{ use: "common" }],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a use-form reference with uppercase characters in use", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [{ use: "Common/Foo" }],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a use-form reference with uppercase only in name segment", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [{ use: "common/Foo" }],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a use-form reference with an unknown override field", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          use: "common/some-convention",
+          unknownField: "x",
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
 });

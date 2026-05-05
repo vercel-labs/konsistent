@@ -15,6 +15,7 @@
 - [Exploring codebases](./guides/exploring-codebases.md) — what to look for before writing rules.
 - [Fixing violations](./guides/fixing-violations.md) — triage workflow.
 - [CI integration](./guides/ci-integration.md) — GitHub Actions, output formats, PR comments.
+- [Authoring reusable conventions](./guides/authoring-reusable-conventions.md) — publish a convention package others can consume.
 
 ## Reference
 
@@ -25,6 +26,7 @@
 - [Constraints](./reference/constraints.md) — `matches`, `segments` for filtering placeholders.
 - [Conditional rules](./reference/conditional-rules.md) — `if`, `for`, `excludeFiles` blocks inside `must` arrays.
 - [Case maps](./reference/case-maps.md) — `kebabToPascalMap`, `kebabToCamelMap` for acronyms and special casing.
+- [Reusable conventions](./reference/reusable-conventions.md) — `conventionSources`, string and `use` references, merge semantics, error reference.
 
 ## Schema
 

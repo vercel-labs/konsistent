@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "conventionSources": {
+    "common": "@konsistent/common-conventions"
+  },
+  "conventions": [
+    {
+      "use": "common/file-must-export-equivalent-component-function",
+      "paths": ["src/components/{componentName}.ts"]
+    }
+  ]
+}

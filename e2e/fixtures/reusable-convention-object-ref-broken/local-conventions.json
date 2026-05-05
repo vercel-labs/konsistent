@@ -1,0 +1,12 @@
+{
+  "conventionSpecVersion": "v1",
+  "conventions": [
+    {
+      "name": "component-folder-must-have-index",
+      "description": "Each component folder must contain an index.ts file.",
+      "must": {
+        "haveFiles": ["index.ts"]
+      }
+    }
+  ]
+}

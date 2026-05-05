@@ -1,4 +1,5 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "$schema": {
@@ -10,12 +11,28 @@
     },
     "kebabToPascalMap": {
       "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
       "additionalProperties": {
         "type": "string"
       }
     },
     "kebabToCamelMap": {
       "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "conventionSources": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$"
+      },
       "additionalProperties": {
         "type": "string"
       }
@@ -23,42 +40,86 @@
     "conventions": {
       "type": "array",
       "items": {
-        "type": "object",
-        "properties": {
-          "name": {
+        "anyOf": [
+          {
             "type": "string",
-            "pattern": "^[a-z0-9-]+$"
+            "pattern": "^[a-z0-9-]+\\/[a-z0-9-]+$"
           },
-          "description": {
-            "type": "string"
-          },
-          "severity": {
-            "type": "string",
-            "enum": ["error", "warning"],
-            "default": "error"
-          },
-          "excludeFiles": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "paths": {
-            "anyOf": [
-              {
-                "type": "string"
+          {
+            "type": "object",
+            "properties": {
+              "use": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+\\/[a-z0-9-]+$"
               },
-              {
+              "severity": {
+                "type": "string",
+                "enum": ["error", "warning"]
+              },
+              "paths": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "excludeFiles": {
                 "type": "array",
                 "items": {
                   "type": "string"
                 }
-              }
-            ]
-          },
-          "must": {
-            "anyOf": [
-              {
+              },
+              "if": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "hasFile": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["hasFile"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "placeholderSatisfies": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["placeholderSatisfies"],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "for": {
+                "type": "object",
+                "properties": {
+                  "files": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "required": ["files"],
+                "additionalProperties": false
+              },
+              "must": {
                 "type": "object",
                 "properties": {
                   "haveType": {
@@ -317,344 +378,645 @@
                   }
                 },
                 "additionalProperties": false
+              }
+            },
+            "required": ["use"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
               },
-              {
+              "description": {
+                "type": "string"
+              },
+              "severity": {
+                "default": "error",
+                "type": "string",
+                "enum": ["error", "warning"]
+              },
+              "excludeFiles": {
                 "type": "array",
                 "items": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string",
-                      "pattern": "^[a-z0-9-]+$"
-                    },
-                    "description": {
+                  "type": "string"
+                }
+              },
+              "paths": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
                       "type": "string"
-                    },
-                    "if": {
-                      "anyOf": [
-                        {
-                          "type": "object",
-                          "properties": {
-                            "hasFile": {
-                              "type": "string"
-                            }
-                          },
-                          "required": ["hasFile"],
-                          "additionalProperties": false
-                        },
-                        {
-                          "type": "object",
-                          "properties": {
-                            "placeholderSatisfies": {
-                              "type": "string"
-                            }
-                          },
-                          "required": ["placeholderSatisfies"],
-                          "additionalProperties": false
+                    }
+                  }
+                ]
+              },
+              "must": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "haveType": {
+                        "type": "string",
+                        "enum": ["file", "directory"]
+                      },
+                      "haveFiles": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
                         }
-                      ]
-                    },
-                    "for": {
-                      "type": "object",
-                      "properties": {
-                        "files": {
+                      },
+                      "export": {
+                        "type": "array",
+                        "items": {
                           "anyOf": [
                             {
                               "type": "string"
                             },
                             {
-                              "type": "array",
-                              "items": {
-                                "type": "string"
-                              }
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "from": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": ["name"],
+                              "additionalProperties": false
                             }
                           ]
                         }
                       },
-                      "required": ["files"],
-                      "additionalProperties": false
-                    },
-                    "excludeFiles": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
+                      "exportTypes": {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "from": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": ["name"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "exportConstants": {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "from": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": ["name"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "exportFunctions": {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "receiveParamOfType": {
+                                  "type": "string"
+                                },
+                                "returnValueOfType": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": ["name"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "exportInterfaces": {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "extend": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "type": {
+                                          "type": "string"
+                                        },
+                                        "allowOmissions": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "required": ["type"],
+                                      "additionalProperties": false
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": ["name"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "exportClasses": {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "extend": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "type": {
+                                          "type": "string"
+                                        },
+                                        "allowOmissions": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "required": ["type"],
+                                      "additionalProperties": false
+                                    }
+                                  ]
+                                },
+                                "implement": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "type": {
+                                            "type": "string"
+                                          },
+                                          "allowOmissions": {
+                                            "type": "boolean"
+                                          }
+                                        },
+                                        "required": ["type"],
+                                        "additionalProperties": false
+                                      }
+                                    ]
+                                  }
+                                }
+                              },
+                              "required": ["name"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "import": {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "from": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": ["name"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "importTypes": {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "from": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": ["name"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
                       }
                     },
-                    "must": {
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "array",
+                    "items": {
                       "type": "object",
                       "properties": {
-                        "haveType": {
+                        "name": {
                           "type": "string",
-                          "enum": ["file", "directory"]
+                          "pattern": "^[a-z0-9-]+$"
                         },
-                        "haveFiles": {
+                        "description": {
+                          "type": "string"
+                        },
+                        "if": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "hasFile": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": ["hasFile"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "placeholderSatisfies": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": ["placeholderSatisfies"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        "for": {
+                          "type": "object",
+                          "properties": {
+                            "files": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          "required": ["files"],
+                          "additionalProperties": false
+                        },
+                        "excludeFiles": {
                           "type": "array",
                           "items": {
                             "type": "string"
                           }
                         },
-                        "export": {
-                          "type": "array",
-                          "items": {
-                            "anyOf": [
-                              {
+                        "must": {
+                          "type": "object",
+                          "properties": {
+                            "haveType": {
+                              "type": "string",
+                              "enum": ["file", "directory"]
+                            },
+                            "haveFiles": {
+                              "type": "array",
+                              "items": {
                                 "type": "string"
-                              },
-                              {
-                                "type": "object",
-                                "properties": {
-                                  "name": {
-                                    "type": "string"
-                                  },
-                                  "from": {
-                                    "type": "string"
-                                  }
-                                },
-                                "required": ["name"],
-                                "additionalProperties": false
                               }
-                            ]
-                          }
-                        },
-                        "exportTypes": {
-                          "type": "array",
-                          "items": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "object",
-                                "properties": {
-                                  "name": {
+                            },
+                            "export": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
                                     "type": "string"
                                   },
-                                  "from": {
-                                    "type": "string"
-                                  }
-                                },
-                                "required": ["name"],
-                                "additionalProperties": false
-                              }
-                            ]
-                          }
-                        },
-                        "exportConstants": {
-                          "type": "array",
-                          "items": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "object",
-                                "properties": {
-                                  "name": {
-                                    "type": "string"
-                                  },
-                                  "from": {
-                                    "type": "string"
-                                  }
-                                },
-                                "required": ["name"],
-                                "additionalProperties": false
-                              }
-                            ]
-                          }
-                        },
-                        "exportFunctions": {
-                          "type": "array",
-                          "items": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "object",
-                                "properties": {
-                                  "name": {
-                                    "type": "string"
-                                  },
-                                  "receiveParamOfType": {
-                                    "type": "string"
-                                  },
-                                  "returnValueOfType": {
-                                    "type": "string"
-                                  }
-                                },
-                                "required": ["name"],
-                                "additionalProperties": false
-                              }
-                            ]
-                          }
-                        },
-                        "exportInterfaces": {
-                          "type": "array",
-                          "items": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "object",
-                                "properties": {
-                                  "name": {
-                                    "type": "string"
-                                  },
-                                  "extend": {
-                                    "anyOf": [
-                                      {
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "name": {
                                         "type": "string"
                                       },
-                                      {
-                                        "type": "object",
-                                        "properties": {
-                                          "type": {
-                                            "type": "string"
-                                          },
-                                          "allowOmissions": {
-                                            "type": "boolean"
-                                          }
-                                        },
-                                        "required": ["type"],
-                                        "additionalProperties": false
+                                      "from": {
+                                        "type": "string"
                                       }
-                                    ]
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
                                   }
-                                },
-                                "required": ["name"],
-                                "additionalProperties": false
+                                ]
                               }
-                            ]
-                          }
-                        },
-                        "exportClasses": {
-                          "type": "array",
-                          "items": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "object",
-                                "properties": {
-                                  "name": {
+                            },
+                            "exportTypes": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
                                     "type": "string"
                                   },
-                                  "extend": {
-                                    "anyOf": [
-                                      {
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "name": {
                                         "type": "string"
                                       },
-                                      {
-                                        "type": "object",
-                                        "properties": {
-                                          "type": {
+                                      "from": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
+                                  }
+                                ]
+                              }
+                            },
+                            "exportConstants": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "name": {
+                                        "type": "string"
+                                      },
+                                      "from": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
+                                  }
+                                ]
+                              }
+                            },
+                            "exportFunctions": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "name": {
+                                        "type": "string"
+                                      },
+                                      "receiveParamOfType": {
+                                        "type": "string"
+                                      },
+                                      "returnValueOfType": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
+                                  }
+                                ]
+                              }
+                            },
+                            "exportInterfaces": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "name": {
+                                        "type": "string"
+                                      },
+                                      "extend": {
+                                        "anyOf": [
+                                          {
                                             "type": "string"
                                           },
-                                          "allowOmissions": {
-                                            "type": "boolean"
+                                          {
+                                            "type": "object",
+                                            "properties": {
+                                              "type": {
+                                                "type": "string"
+                                              },
+                                              "allowOmissions": {
+                                                "type": "boolean"
+                                              }
+                                            },
+                                            "required": ["type"],
+                                            "additionalProperties": false
                                           }
-                                        },
-                                        "required": ["type"],
-                                        "additionalProperties": false
+                                        ]
                                       }
-                                    ]
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
+                                  }
+                                ]
+                              }
+                            },
+                            "exportClasses": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
                                   },
-                                  "implement": {
-                                    "type": "array",
-                                    "items": {
-                                      "anyOf": [
-                                        {
-                                          "type": "string"
-                                        },
-                                        {
-                                          "type": "object",
-                                          "properties": {
-                                            "type": {
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "name": {
+                                        "type": "string"
+                                      },
+                                      "extend": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "object",
+                                            "properties": {
+                                              "type": {
+                                                "type": "string"
+                                              },
+                                              "allowOmissions": {
+                                                "type": "boolean"
+                                              }
+                                            },
+                                            "required": ["type"],
+                                            "additionalProperties": false
+                                          }
+                                        ]
+                                      },
+                                      "implement": {
+                                        "type": "array",
+                                        "items": {
+                                          "anyOf": [
+                                            {
                                               "type": "string"
                                             },
-                                            "allowOmissions": {
-                                              "type": "boolean"
+                                            {
+                                              "type": "object",
+                                              "properties": {
+                                                "type": {
+                                                  "type": "string"
+                                                },
+                                                "allowOmissions": {
+                                                  "type": "boolean"
+                                                }
+                                              },
+                                              "required": ["type"],
+                                              "additionalProperties": false
                                             }
-                                          },
-                                          "required": ["type"],
-                                          "additionalProperties": false
+                                          ]
                                         }
-                                      ]
-                                    }
+                                      }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
                                   }
-                                },
-                                "required": ["name"],
-                                "additionalProperties": false
+                                ]
                               }
-                            ]
-                          }
-                        },
-                        "import": {
-                          "type": "array",
-                          "items": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "object",
-                                "properties": {
-                                  "name": {
+                            },
+                            "import": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
                                     "type": "string"
                                   },
-                                  "from": {
-                                    "type": "string"
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "name": {
+                                        "type": "string"
+                                      },
+                                      "from": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
                                   }
-                                },
-                                "required": ["name"],
-                                "additionalProperties": false
+                                ]
                               }
-                            ]
-                          }
-                        },
-                        "importTypes": {
-                          "type": "array",
-                          "items": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "object",
-                                "properties": {
-                                  "name": {
+                            },
+                            "importTypes": {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
                                     "type": "string"
                                   },
-                                  "from": {
-                                    "type": "string"
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "name": {
+                                        "type": "string"
+                                      },
+                                      "from": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
                                   }
-                                },
-                                "required": ["name"],
-                                "additionalProperties": false
+                                ]
                               }
-                            ]
-                          }
+                            }
+                          },
+                          "additionalProperties": false
                         }
                       },
+                      "required": ["must"],
                       "additionalProperties": false
                     }
-                  },
-                  "required": ["must"],
-                  "additionalProperties": false
-                }
+                  }
+                ]
               }
-            ]
+            },
+            "required": ["paths", "must"],
+            "additionalProperties": false
           }
-        },
-        "required": ["paths", "must"],
-        "additionalProperties": false
+        ]
       }
     }
   },
   "required": ["version", "conventions"],
   "additionalProperties": false,
-  "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://unpkg.com/konsistent/konsistent.schema.json"
 }

@@ -8,9 +8,11 @@
     "typecheck": {
       "dependsOn": ["^build"]
     },
-    "test": {},
-    "//#test:e2e:run": {
+    "test": {
       "dependsOn": ["^build"]
+    },
+    "//#test:e2e:run": {
+      "dependsOn": ["@konsistent/common-conventions#build", "konsistent#build"]
     },
     "//#check": {},
     "//#fix": {}

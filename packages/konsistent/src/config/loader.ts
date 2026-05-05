@@ -1,7 +1,10 @@
 import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
+import { validatePlaceholders } from "./placeholder-validator.js";
+import { expandReferences } from "./reference-expander.js";
 import type { ConfigV1 } from "./schema.js";
 import { ConfigV1Schema } from "./schema.js";
+import { resolveSources } from "./source-resolver.js";
 
 const CONFIG_FILENAME = "konsistent.json";
 
@@ -39,5 +42,38 @@ export async function loadConfig(opts: {
     return { success: false, error: `Invalid config:\n${issues}` };
   }
 
-  return { success: true, config: result.data };
+  const parsed = result.data;
+  const configDir = dirname(filePath);
+
+  const sourcesResult = await resolveSources({
+    conventionSources: parsed.conventionSources ?? {},
+    configDir,
+  });
+  if (!sourcesResult.success) {
+    return { success: false, error: sourcesResult.error };
+  }
+
+  const expansionResult = expandReferences({
+    conventions: parsed.conventions,
+    sourceMap: sourcesResult.sourceMap,
+  });
+  if (!expansionResult.success) {
+    return { success: false, error: expansionResult.error };
+  }
+
+  const placeholderResult = validatePlaceholders({
+    conventions: expansionResult.conventions,
+    identifiers: expansionResult.identifiers,
+  });
+  if (!placeholderResult.ok) {
+    return { success: false, error: placeholderResult.error };
+  }
+
+  return {
+    success: true,
+    config: {
+      ...parsed,
+      conventions: expansionResult.conventions,
+    },
+  };
 }
