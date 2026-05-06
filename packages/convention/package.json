@@ -40,5 +40,8 @@
     "tsx": "^4.21.0",
     "vitest": "^3",
     "zod": "^4"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
