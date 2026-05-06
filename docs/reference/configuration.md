@@ -1,6 +1,6 @@
 # konsistent.json
 
-The `konsistent.json` file declares the structural conventions the CLI enforces. By default it lives at the project root; use `--config-path` to put it elsewhere.
+The `konsistent.json` file declares the structural conventions the CLI enforces. By default it lives at the project root; use `--config-path` to put it elsewhere, or `--config-package <pkg>` to load it from an installed npm package (see [cli.md](./cli.md#flags)).
 
 ## Top-level shape
 

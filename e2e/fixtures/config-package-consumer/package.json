@@ -1,0 +1,10 @@
+{
+  "name": "konsistent-fixture-config-package-consumer",
+  "private": true,
+  "version": "0.0.0",
+  "dependencies": {
+    "@konsistent-test/config-package-source": "workspace:*",
+    "@konsistent/common-conventions": "workspace:*",
+    "konsistent": "workspace:*"
+  }
+}

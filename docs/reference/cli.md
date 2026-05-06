@@ -21,6 +21,7 @@ Loads `konsistent.json`, runs every convention against the codebase, and reports
 
 ```bash
 konsistent check
+konsistent check --config-package @acme/shared-conventions
 konsistent check --format=json --max-diagnostics=1000
 konsistent check --error-on-warnings --diagnostic-level error
 ```
@@ -30,6 +31,7 @@ konsistent check --error-on-warnings --diagnostic-level error
 | Flag | Type | Default | Description |
 | --- | --- | --- | --- |
 | `--config-path <path>` | string | `konsistent.json` (project root) | Path to the config file |
+| `--config-package <pkg>` | string | — | NPM package name to load `konsistent.json` from. Resolved from the consuming project's `node_modules`. Mutually exclusive with `--config-path` |
 | `--format <format>` | `default` \| `json` \| `github` \| `markdown` | `default` (auto-detects `github` in CI) | Output format |
 | `--verbose` | boolean | `false` | Show execution time and expanded details |
 | `--max-diagnostics <n>` | string (parsed as integer) | `100` | Maximum diagnostics to print before truncating |
@@ -49,9 +51,12 @@ Parses and validates `konsistent.json` against the schema without running any ch
 ```bash
 konsistent validate
 konsistent validate --config-path=path/to/konsistent.json
+konsistent validate --config-package @acme/shared-conventions
 ```
 
 Exits `0` and prints `Configuration is valid.` on success. Exits `1` with a Zod validation error on failure.
+
+`validate` accepts the same `--config-path` and `--config-package` flags as `check` (see the table above).
 
 ## Output formats
 

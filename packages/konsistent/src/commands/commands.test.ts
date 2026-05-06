@@ -134,6 +134,51 @@ describe("validate command", () => {
   });
 });
 
+describe("--config-package CLI guards", () => {
+  it("check exits 1 when both --config-path and --config-package are passed", async () => {
+    vi.spyOn(process, "cwd").mockReturnValue(emptyConfigPath);
+    const exitSpy = vi
+      .spyOn(process, "exit")
+      .mockImplementation(() => undefined as never);
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
+    await runCommand(checkCommand, {
+      rawArgs: ["--config-path", "/tmp/x.json", "--config-package", "@scope/p"],
+    });
+    expect(exitSpy).toHaveBeenCalledWith(1);
+    const message = errorSpy.mock.calls.map((c) => String(c[0])).join("\n");
+    expect(message).toContain("--config-path");
+    expect(message).toContain("--config-package");
+  });
+
+  it("check exits 1 when --config-package is path-form", async () => {
+    vi.spyOn(process, "cwd").mockReturnValue(emptyConfigPath);
+    const exitSpy = vi
+      .spyOn(process, "exit")
+      .mockImplementation(() => undefined as never);
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
+    await runCommand(checkCommand, {
+      rawArgs: ["--config-package", "./some/local/path"],
+    });
+    expect(exitSpy).toHaveBeenCalledWith(1);
+    const message = errorSpy.mock.calls.map((c) => String(c[0])).join("\n");
+    expect(message).toContain("looks like a filesystem path");
+  });
+
+  it("validate exits 1 when --config-package is path-form", async () => {
+    vi.spyOn(process, "cwd").mockReturnValue(emptyConfigPath);
+    const exitSpy = vi
+      .spyOn(process, "exit")
+      .mockImplementation(() => undefined as never);
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
+    await runCommand(validateCommand, {
+      rawArgs: ["--config-package", "/abs/path"],
+    });
+    expect(exitSpy).toHaveBeenCalledWith(1);
+    const message = errorSpy.mock.calls.map((c) => String(c[0])).join("\n");
+    expect(message).toContain("looks like a filesystem path");
+  });
+});
+
 describe("resolveFormat", () => {
   it("returns explicit format when not default", () => {
     expect(resolveFormat({ format: "json" })).toBe("json");
