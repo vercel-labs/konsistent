@@ -1,5 +1,11 @@
 import { stat } from "node:fs/promises";
-import { dirname, isAbsolute, join, resolve as resolvePath } from "node:path";
+import {
+  dirname,
+  isAbsolute,
+  join,
+  relative,
+  resolve as resolvePath,
+} from "node:path";
 
 export type SourceKind = "path" | "npm" | "empty";
 
@@ -11,6 +17,15 @@ export function classifySource(value: string): SourceKind {
     return "path";
   }
   return "npm";
+}
+
+export function isPathInside(opts: { child: string; parent: string }): boolean {
+  const { child, parent } = opts;
+  const rel = relative(resolvePath(parent), resolvePath(child));
+  if (rel === "") {
+    return true;
+  }
+  return !(rel.startsWith("..") || isAbsolute(rel));
 }
 
 export async function pathExists(path: string): Promise<boolean> {
