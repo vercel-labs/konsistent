@@ -9,3 +9,14 @@ packages:
   - "e2e/fixtures/reusable-convention-unknown-source"
   - "e2e/fixtures/config-package-source"
   - "e2e/fixtures/config-package-consumer"
+
+catalog:
+  "@types/node": "^24"
+  ajv: "^8.18.0"
+  citty: "^0.2"
+  del-cli: "^6"
+  tsup: "^8"
+  tsx: "^4.21.0"
+  typescript: "^5.7"
+  vitest: "^3"
+  zod: "^4"

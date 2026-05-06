@@ -638,9 +638,9 @@ describe("--config-package flag", () => {
 describe("--colors flag", () => {
   const cwd = resolve(fixturesDir, "plugin-system-broken-files");
 
-  it("--colors=false strips ANSI escape codes from default output", async () => {
+  it("--no-colors strips ANSI escape codes from default output", async () => {
     try {
-      await runCli({ args: ["check", "--colors", "false"], cwd });
+      await runCli({ args: ["check", "--no-colors"], cwd });
       expect.fail("Expected check to exit with code 1");
     } catch (err: unknown) {
       const error = err as {
@@ -661,7 +661,7 @@ describe("warnings-only fixture", () => {
 
   it("konsistent check exits 0 when only warnings exist", async () => {
     const { stdout } = await runCli({
-      args: ["check", "--colors", "false"],
+      args: ["check", "--no-colors"],
       cwd,
     });
     expect(stdout).toContain("warning");
@@ -681,7 +681,7 @@ describe("mixed-severity fixture", () => {
 
   it("konsistent check exits 1 when errors exist alongside warnings", async () => {
     try {
-      await runCli({ args: ["check", "--colors", "false"], cwd });
+      await runCli({ args: ["check", "--no-colors"], cwd });
       expect.fail("Expected check to exit with code 1");
     } catch (err: unknown) {
       const error = err as {
@@ -891,7 +891,7 @@ describe("--diagnostic-level flag", () => {
   it("skips warning conventions when set to error on warnings-only fixture", async () => {
     const cwd = resolve(fixturesDir, "warnings-only");
     const { stdout } = await runCli({
-      args: ["check", "--diagnostic-level", "error", "--colors", "false"],
+      args: ["check", "--diagnostic-level", "error", "--no-colors"],
       cwd,
     });
     expect(stdout).not.toContain("warning");
@@ -909,7 +909,7 @@ describe("--diagnostic-level flag", () => {
     const cwd = resolve(fixturesDir, "mixed-severity");
     try {
       await runCli({
-        args: ["check", "--diagnostic-level", "error", "--colors", "false"],
+        args: ["check", "--diagnostic-level", "error", "--no-colors"],
         cwd,
       });
       expect.fail("Expected check to exit with code 1");
@@ -932,7 +932,7 @@ describe("--diagnostic-level flag", () => {
     const cwd = resolve(fixturesDir, "mixed-severity");
     try {
       await runCli({
-        args: ["check", "--diagnostic-level", "warning", "--colors", "false"],
+        args: ["check", "--diagnostic-level", "warning", "--no-colors"],
         cwd,
       });
       expect.fail("Expected check to exit with code 1");
@@ -952,7 +952,7 @@ describe("--diagnostic-level flag", () => {
   it("defaults to warning when flag is not provided", async () => {
     const cwd = resolve(fixturesDir, "warnings-only");
     const { stdout } = await runCli({
-      args: ["check", "--colors", "false"],
+      args: ["check", "--no-colors"],
       cwd,
     });
     expect(stdout).toContain("warning");

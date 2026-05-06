@@ -1,7 +1,7 @@
 {
   "name": "@konsistent/common-conventions",
   "description": "Common reusable conventions for konsistent. Authored in TypeScript via @konsistent/convention, shipped as a JSON artifact via the \"./konsistent\" exports condition.",
-  "version": "0.0.1-alpha.1",
+  "version": "0.0.1-alpha.2",
   "type": "module",
   "license": "MIT",
   "files": [
@@ -20,12 +20,12 @@
     "@konsistent/convention": "workspace:*"
   },
   "peerDependencies": {
-    "zod": "^4"
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^24",
-    "vitest": "^3",
-    "zod": "^4"
+    "@types/node": "catalog:",
+    "vitest": "catalog:",
+    "zod": "catalog:"
   },
   "publishConfig": {
     "access": "public"

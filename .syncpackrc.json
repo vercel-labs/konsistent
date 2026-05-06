@@ -1,0 +1,36 @@
+{
+  "$schema": "https://unpkg.com/syncpack@15/dist/schema.json",
+  "source": ["package.json", "packages/*/package.json"],
+  "semverGroups": [
+    {
+      "label": "Use caret ranges for all dependencies",
+      "range": "^",
+      "dependencies": ["**"],
+      "packages": ["**"]
+    }
+  ],
+  "versionGroups": [
+    {
+      "label": "Workspace packages must use the workspace: protocol",
+      "dependencies": ["@konsistent/**", "konsistent"],
+      "dependencyTypes": ["dev", "prod", "peer"],
+      "pinVersion": "workspace:*"
+    },
+    {
+      "label": "Shared third-party deps must use the catalog: protocol",
+      "policy": "catalog",
+      "dependencies": [
+        "@types/node",
+        "ajv",
+        "citty",
+        "del-cli",
+        "tsup",
+        "tsx",
+        "typescript",
+        "vitest",
+        "zod"
+      ],
+      "dependencyTypes": ["dev", "prod", "peer"]
+    }
+  ]
+}

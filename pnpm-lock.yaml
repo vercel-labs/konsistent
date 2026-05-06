@@ -4,6 +4,36 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@types/node':
+      specifier: ^24
+      version: 24.12.2
+    ajv:
+      specifier: ^8.18.0
+      version: 8.18.0
+    citty:
+      specifier: ^0.2
+      version: 0.2.2
+    del-cli:
+      specifier: ^6
+      version: 6.0.0
+    tsup:
+      specifier: ^8
+      version: 8.5.1
+    tsx:
+      specifier: ^4.21.0
+      version: 4.21.0
+    typescript:
+      specifier: ^5.7
+      version: 5.9.3
+    vitest:
+      specifier: ^3
+      version: 3.2.4
+    zod:
+      specifier: ^4
+      version: 4.3.6
+
 importers:
 
   .:
@@ -17,17 +47,20 @@ importers:
       konsistent:
         specifier: workspace:*
         version: link:packages/konsistent
+      syncpack:
+        specifier: ^15
+        version: 15.0.0
       turbo:
         specifier: ^2
         version: 2.9.3
       typescript:
-        specifier: ^5.7
+        specifier: 'catalog:'
         version: 5.9.3
       ultracite:
         specifier: ^7
         version: 7.6.2
       vitest:
-        specifier: ^3
+        specifier: 'catalog:'
         version: 3.2.4(@types/node@24.12.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)
 
   e2e/fixtures/config-package-consumer:
@@ -114,44 +147,44 @@ importers:
         version: link:../convention
     devDependencies:
       '@types/node':
-        specifier: ^24
+        specifier: 'catalog:'
         version: 24.12.2
       vitest:
-        specifier: ^3
+        specifier: 'catalog:'
         version: 3.2.4(@types/node@24.12.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)
       zod:
-        specifier: ^4
+        specifier: 'catalog:'
         version: 4.3.6
 
   packages/convention:
     dependencies:
       citty:
-        specifier: ^0.2
+        specifier: 'catalog:'
         version: 0.2.2
       jiti:
         specifier: ^2
         version: 2.6.1
     devDependencies:
       '@types/node':
-        specifier: ^24
+        specifier: 'catalog:'
         version: 24.12.2
       ajv:
-        specifier: ^8.18.0
+        specifier: 'catalog:'
         version: 8.18.0
       del-cli:
-        specifier: ^6
+        specifier: 'catalog:'
         version: 6.0.0
       tsup:
-        specifier: ^8
+        specifier: 'catalog:'
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.8)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.3)
       tsx:
-        specifier: ^4.21.0
+        specifier: 'catalog:'
         version: 4.21.0
       vitest:
-        specifier: ^3
+        specifier: 'catalog:'
         version: 3.2.4(@types/node@24.12.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)
       zod:
-        specifier: ^4
+        specifier: 'catalog:'
         version: 4.3.6
 
   packages/konsistent:
@@ -160,8 +193,8 @@ importers:
         specifier: workspace:*
         version: link:../convention
       citty:
-        specifier: ^0.1
-        version: 0.1.6
+        specifier: 'catalog:'
+        version: 0.2.2
       picocolors:
         specifier: ^1
         version: 1.1.1
@@ -172,29 +205,29 @@ importers:
         specifier: ^0.2
         version: 0.2.15
       typescript:
-        specifier: ^5.7
+        specifier: 'catalog:'
         version: 5.9.3
       zod:
-        specifier: ^4
+        specifier: 'catalog:'
         version: 4.3.6
     devDependencies:
       '@types/node':
-        specifier: ^24
+        specifier: 'catalog:'
         version: 24.12.2
       ajv:
-        specifier: ^8.18.0
+        specifier: 'catalog:'
         version: 8.18.0
       del-cli:
-        specifier: ^6
+        specifier: 'catalog:'
         version: 6.0.0
       tsup:
-        specifier: ^8
+        specifier: 'catalog:'
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.8)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.3)
       tsx:
-        specifier: ^4.21.0
+        specifier: 'catalog:'
         version: 4.21.0
       vitest:
-        specifier: ^3
+        specifier: 'catalog:'
         version: 3.2.4(@types/node@24.12.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)
 
 packages:
@@ -705,9 +738,6 @@ packages:
     resolution: {integrity: sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==}
     engines: {node: '>= 14.16.0'}
 
-  citty@0.1.6:
-    resolution: {integrity: sha512-tskPPKEs8D2KPafUypv2gxwJP8h/OaJmC82QQGGDQcHvXX43xF2VDACcJVmZ0EuSxkpO9Kc4MlrA3q0+FG58AQ==}
-
   citty@0.2.2:
     resolution: {integrity: sha512-+6vJA3L98yv+IdfKGZHBNiGW5KHn22e/JwID0Strsz8h4S/csAu/OuICwxrg44k5MRiZHWIo8XXuJgQTriRP4w==}
 
@@ -1081,6 +1111,51 @@ packages:
   sucrase@3.35.1:
     resolution: {integrity: sha512-DhuTmvZWux4H1UOnWMB3sk0sbaCVOoQZjv8u1rDoTV0HTdGem9hkAZtl4JZy8P2z4Bg0nT+YMeOFyVr4zcG5Tw==}
     engines: {node: '>=16 || 14 >=14.17'}
+    hasBin: true
+
+  syncpack-darwin-arm64@15.0.0:
+    resolution: {integrity: sha512-xUIOGuWKHAUWOXRKPAlQ2I2XmyuJpEe25G0Vx2/eQoKakEFj3XpQePqOMJLj6ik71xEHxicdMljIKCxEPurahA==}
+    cpu: [arm64]
+    os: [darwin]
+
+  syncpack-darwin-x64@15.0.0:
+    resolution: {integrity: sha512-tcAZ3rbWgoWaT3jcDVZXqob2wgjmHh0GvxPx5oJ/pJ0b8ul2eSX0fhBoczEjV0v5WnBhueDVAfW/aQK7I8co3A==}
+    cpu: [x64]
+    os: [darwin]
+
+  syncpack-linux-arm64-musl@15.0.0:
+    resolution: {integrity: sha512-hVcSOv0D6eRACrCJHPjPMn1H8ovQpZadYoDUL2cW1oTwN/eWNPo2sDZaO+UONQsrWX0LU1Gq59pbIs3TyltDpQ==}
+    cpu: [arm64]
+    os: [linux]
+
+  syncpack-linux-arm64@15.0.0:
+    resolution: {integrity: sha512-xd3+1bqFI5ym2r1AtJH9MUPxAGB2SPYi6FeP1QmCOdAFsykp2yTYsMg9Qs9g8DwOfMM+nSoJGrE1H/eeldU8+A==}
+    cpu: [arm64]
+    os: [linux]
+
+  syncpack-linux-x64-musl@15.0.0:
+    resolution: {integrity: sha512-MCs1MC9iwqNADthJ8dfbINKHPoWZT49TmmkPvbrbV0/QKHcK4TqckrNrHEo7NFrL6BvLEWdWe/Vbdy7PbDluhw==}
+    cpu: [x64]
+    os: [linux]
+
+  syncpack-linux-x64@15.0.0:
+    resolution: {integrity: sha512-gaThoG8k+2UA5A6FFosoT9mSXf69RTZt68iHxqejxDVVPGuPdtAkf6rXIZWiElhJJ3kQwGW+Zo+e0ZdKviqJMg==}
+    cpu: [x64]
+    os: [linux]
+
+  syncpack-windows-arm64@15.0.0:
+    resolution: {integrity: sha512-hMm9zTYihwP9t86z5FIQ/7Hk1LcXw4SuqxjWy+Nylxwj82DIHr+fLzbSmDFQNiFqwz1gY56FuTGH+UavsWkgXQ==}
+    cpu: [arm64]
+    os: [win32]
+
+  syncpack-windows-x64@15.0.0:
+    resolution: {integrity: sha512-8dvfrgSBwVol2PCJeVyESnTdlxdA0ho1w3/EQCW6ixag6Ov0lw7mfEN9SHDim1TVihpr47wr7KKt9t3Qi6d9qQ==}
+    cpu: [x64]
+    os: [win32]
+
+  syncpack@15.0.0:
+    resolution: {integrity: sha512-8aCVifg97m3hig1dnDwvGSPk6g/SDMzYRDjyL58c7l74gq8BCpUFmJrZZUL/9w6kGrnHxl6HsqUeOVja4ZpqTA==}
+    engines: {node: '>=14.17.0'}
     hasBin: true
 
   thenify-all@1.6.0:
@@ -1620,10 +1695,6 @@ snapshots:
     dependencies:
       readdirp: 4.1.2
 
-  citty@0.1.6:
-    dependencies:
-      consola: 3.4.2
-
   citty@0.2.2: {}
 
   commander@14.0.3: {}
@@ -1976,6 +2047,41 @@ snapshots:
       pirates: 4.0.7
       tinyglobby: 0.2.15
       ts-interface-checker: 0.1.13
+
+  syncpack-darwin-arm64@15.0.0:
+    optional: true
+
+  syncpack-darwin-x64@15.0.0:
+    optional: true
+
+  syncpack-linux-arm64-musl@15.0.0:
+    optional: true
+
+  syncpack-linux-arm64@15.0.0:
+    optional: true
+
+  syncpack-linux-x64-musl@15.0.0:
+    optional: true
+
+  syncpack-linux-x64@15.0.0:
+    optional: true
+
+  syncpack-windows-arm64@15.0.0:
+    optional: true
+
+  syncpack-windows-x64@15.0.0:
+    optional: true
+
+  syncpack@15.0.0:
+    optionalDependencies:
+      syncpack-darwin-arm64: 15.0.0
+      syncpack-darwin-x64: 15.0.0
+      syncpack-linux-arm64: 15.0.0
+      syncpack-linux-arm64-musl: 15.0.0
+      syncpack-linux-x64: 15.0.0
+      syncpack-linux-x64-musl: 15.0.0
+      syncpack-windows-arm64: 15.0.0
+      syncpack-windows-x64: 15.0.0
 
   thenify-all@1.6.0:
     dependencies:
