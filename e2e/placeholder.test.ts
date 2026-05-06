@@ -536,6 +536,105 @@ describe("--config-path flag", () => {
   });
 });
 
+describe("--config-package flag", () => {
+  const cwd = resolve(fixturesDir, "config-package-consumer");
+
+  it("loads config from a package via check", async () => {
+    await expect(
+      runCli({
+        args: [
+          "check",
+          "--config-package",
+          "@konsistent-test/config-package-source",
+        ],
+        cwd,
+      })
+    ).resolves.not.toThrow();
+  });
+
+  it("loads config from a package via validate", async () => {
+    const { stdout } = await runCli({
+      args: [
+        "validate",
+        "--config-package",
+        "@konsistent-test/config-package-source",
+      ],
+      cwd,
+    });
+    expect(stdout).toContain("Configuration is valid");
+  });
+
+  it("exits 1 when the package is not installed", async () => {
+    try {
+      await runCli({
+        args: [
+          "check",
+          "--config-package",
+          "@konsistent-test/definitely-not-installed",
+        ],
+        cwd,
+      });
+      expect.fail("Expected check to exit with code 1");
+    } catch (err: unknown) {
+      const error = err as { stderr: string; code: number; status: number };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stderr).toContain("not installed");
+      expect(error.stderr).toContain(
+        "@konsistent-test/definitely-not-installed"
+      );
+    }
+  });
+
+  it("exits 1 when the package contains no konsistent.json", async () => {
+    try {
+      await runCli({
+        args: ["check", "--config-package", "@konsistent/common-conventions"],
+        cwd,
+      });
+      expect.fail("Expected check to exit with code 1");
+    } catch (err: unknown) {
+      const error = err as { stderr: string; code: number; status: number };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stderr).toContain("no konsistent.json found");
+    }
+  });
+
+  it("exits 1 when both --config-path and --config-package are passed", async () => {
+    try {
+      await runCli({
+        args: [
+          "check",
+          "--config-path",
+          "/some/path/konsistent.json",
+          "--config-package",
+          "@konsistent-test/config-package-source",
+        ],
+        cwd,
+      });
+      expect.fail("Expected check to exit with code 1");
+    } catch (err: unknown) {
+      const error = err as { stderr: string; code: number; status: number };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stderr).toContain("--config-path");
+      expect(error.stderr).toContain("--config-package");
+    }
+  });
+
+  it("exits 1 when --config-package is path-form", async () => {
+    try {
+      await runCli({
+        args: ["check", "--config-package", "./local-pkg"],
+        cwd,
+      });
+      expect.fail("Expected check to exit with code 1");
+    } catch (err: unknown) {
+      const error = err as { stderr: string; code: number; status: number };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stderr).toContain("looks like a filesystem path");
+    }
+  });
+});
+
 describe("--colors flag", () => {
   const cwd = resolve(fixturesDir, "plugin-system-broken-files");
 

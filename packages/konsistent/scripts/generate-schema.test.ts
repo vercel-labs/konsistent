@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import Ajv from "ajv";
 import { describe, expect, it } from "vitest";
@@ -44,9 +44,16 @@ describe("konsistent.schema.json", () => {
     expect(predicatesSchema.additionalProperties).toBe(false);
   });
 
-  const passingFixtures = readdirSync(fixturesDir).filter(
-    (name) => name !== "invalid-config"
-  );
+  const passingFixtures = readdirSync(fixturesDir).filter((name) => {
+    if (name === "invalid-config") {
+      return false;
+    }
+    const fixturePath = resolve(fixturesDir, name);
+    if (!statSync(fixturePath).isDirectory()) {
+      return false;
+    }
+    return existsSync(resolve(fixturePath, "konsistent.json"));
+  });
 
   for (const fixture of passingFixtures) {
     it(`validates passing fixture: ${fixture}`, () => {

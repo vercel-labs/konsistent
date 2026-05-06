@@ -1,29 +1,21 @@
-import { readFile, stat } from "node:fs/promises";
-import { dirname, isAbsolute, join, resolve as resolvePath } from "node:path";
+import { readFile } from "node:fs/promises";
+import { join, resolve as resolvePath } from "node:path";
 import {
   ReusableConventionsPackageV1Schema,
   type ReusableConventionV1,
 } from "@konsistent/convention";
 import { exports as resolveExportsField } from "resolve.exports";
+import {
+  classifySource,
+  extractPackageName,
+  findPackageDir,
+} from "./npm-resolver.js";
 
 export type SourceMap = Map<string, Map<string, ReusableConventionV1>>;
 
 export type ResolveSourcesResult =
   | { success: true; sourceMap: SourceMap }
   | { success: false; error: string };
-
-type SourceKind = "path" | "npm" | "empty";
-
-function classifySource(value: string): SourceKind {
-  if (value.trim() === "") {
-    return "empty";
-  }
-  // values starting with "." or "/" → path-form; else → npm specifier
-  if (value.startsWith(".") || isAbsolute(value)) {
-    return "path";
-  }
-  return "npm";
-}
 
 export async function resolveSources(opts: {
   conventionSources: Record<string, string>;
@@ -103,14 +95,16 @@ async function loadFromNpm(opts: {
 }): Promise<LoadResult> {
   const { prefix, specifier, configDir } = opts;
 
-  const pkgJsonPath = await findPackageJson({ specifier, fromDir: configDir });
-  if (pkgJsonPath === null) {
+  const packageName = extractPackageName(specifier);
+  const pkgDir = await findPackageDir({ packageName, fromDir: configDir });
+  if (pkgDir === null) {
     return {
       success: false,
       error: `Convention source "${prefix}" → "${specifier}": could not resolve npm package "${specifier}". The package may not be installed under the consumer's project.`,
     };
   }
 
+  const pkgJsonPath = join(pkgDir, "package.json");
   let pkgJsonRaw: string;
   try {
     pkgJsonRaw = await readFile(pkgJsonPath, "utf-8");
@@ -150,7 +144,6 @@ async function loadFromNpm(opts: {
     };
   }
 
-  const pkgDir = dirname(pkgJsonPath);
   const conventionsPath = resolvePath(pkgDir, resolved[0]);
 
   let raw: string;
@@ -169,45 +162,6 @@ async function loadFromNpm(opts: {
     locationLabel: conventionsPath,
     raw,
   });
-}
-
-async function pathExists(path: string): Promise<boolean> {
-  try {
-    await stat(path);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function findPackageJson(opts: {
-  specifier: string;
-  fromDir: string;
-}): Promise<string | null> {
-  const { specifier, fromDir } = opts;
-  const packageName = extractPackageName(specifier);
-
-  let dir = resolvePath(fromDir);
-  for (;;) {
-    const candidate = join(dir, "node_modules", packageName, "package.json");
-    if (await pathExists(candidate)) {
-      return candidate;
-    }
-    const parent = dirname(dir);
-    if (parent === dir) {
-      return null;
-    }
-    dir = parent;
-  }
-}
-
-function extractPackageName(specifier: string): string {
-  if (specifier.startsWith("@")) {
-    const parts = specifier.split("/");
-    return parts.slice(0, 2).join("/");
-  }
-  const slash = specifier.indexOf("/");
-  return slash === -1 ? specifier : specifier.slice(0, slash);
 }
 
 function parseAndValidate(opts: {

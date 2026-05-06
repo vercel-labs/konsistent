@@ -30,6 +30,20 @@ importers:
         specifier: ^3
         version: 3.2.4(@types/node@24.12.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)
 
+  e2e/fixtures/config-package-consumer:
+    dependencies:
+      '@konsistent-test/config-package-source':
+        specifier: workspace:*
+        version: link:../config-package-source
+      '@konsistent/common-conventions':
+        specifier: workspace:*
+        version: link:../../../packages/common-conventions
+      konsistent:
+        specifier: workspace:*
+        version: link:../../../packages/konsistent
+
+  e2e/fixtures/config-package-source: {}
+
   e2e/fixtures/reusable-convention-merge-overrides-pkg:
     dependencies:
       '@konsistent/common-conventions':

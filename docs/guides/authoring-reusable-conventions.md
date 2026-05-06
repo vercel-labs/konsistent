@@ -4,6 +4,8 @@ This guide walks you through publishing a package of reusable conventions that o
 
 For the consumer-facing reference (how a `konsistent.json` declares `conventionSources` and references your package), see [reusable-conventions.md](../reference/reusable-conventions.md).
 
+> **Reusable conventions vs. shared full configs.** This guide covers packages that ship *individual* conventions consumed via `conventionSources` — the artifact has the `ReusableConventionsPackageV1` shape and is exposed at `exports["./konsistent"]`. A different pattern is shipping a *full* `konsistent.json` (the `ConfigV1` shape) that consumers load via `konsistent --config-package <pkg>`. For that, drop a `konsistent.json` at the package's `dist/` (or the package root, or a path declared via the `package.json` `"konsistent"` field). See [cli.md](../reference/cli.md#flags) for `--config-package`.
+
 ## What you ship
 
 A reusable-conventions package ships a single JSON artifact at a fixed exports condition. The JSON has a `conventionSpecVersion: "v1"` literal and a `conventions: ReusableConvention[]` array. Consumers find it via:

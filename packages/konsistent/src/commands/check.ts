@@ -20,6 +20,11 @@ const checkArgs = {
     type: "string" as const,
     description: "Path to konsistent.json config file",
   },
+  "config-package": {
+    type: "string" as const,
+    description:
+      "NPM package name to load konsistent.json from (alternative to --config-path)",
+  },
   format: {
     type: "string" as const,
     description: "Output format (default, json, github, markdown)",
@@ -82,10 +87,14 @@ export default defineCommand({
   },
   args: checkArgs,
   async run({ args }) {
-    const result = await loadConfig({ configPath: args["config-path"] });
+    const result = await loadConfig({
+      configPath: args["config-path"],
+      configPackage: args["config-package"],
+    });
     if (!result.success) {
       console.error(pc.red(result.error));
       process.exit(1);
+      return;
     }
 
     const diagnosticLevel =
