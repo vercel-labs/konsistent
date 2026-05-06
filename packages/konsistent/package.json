@@ -25,20 +25,20 @@
   },
   "dependencies": {
     "@konsistent/convention": "workspace:*",
-    "citty": "^0.1",
+    "citty": "catalog:",
     "picocolors": "^1",
     "resolve.exports": "^2",
     "tinyglobby": "^0.2",
-    "typescript": "^5.7",
-    "zod": "^4"
+    "typescript": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^24",
-    "ajv": "^8.18.0",
-    "del-cli": "^6",
-    "tsup": "^8",
-    "tsx": "^4.21.0",
-    "vitest": "^3"
+    "@types/node": "catalog:",
+    "ajv": "catalog:",
+    "del-cli": "catalog:",
+    "tsup": "catalog:",
+    "tsx": "catalog:",
+    "vitest": "catalog:"
   },
   "publishConfig": {
     "access": "public"

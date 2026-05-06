@@ -10,7 +10,9 @@
     "test:e2e": "turbo test:e2e:run",
     "test:e2e:run": "vitest run -c e2e/vitest.config.ts",
     "check": "ultracite check",
+    "check:deps": "syncpack lint",
     "fix": "ultracite fix",
+    "fix:deps": "syncpack fix-mismatches && syncpack format",
     "publish:packages": "pnpm build && node tools/scripts/publish-packages.mjs",
     "prepare": "husky",
     "konsistent": "KONSISTENT_NO_UPDATE_CHECK=true konsistent"
@@ -19,10 +21,11 @@
     "@biomejs/biome": "^2",
     "husky": "^9.1.7",
     "konsistent": "workspace:*",
+    "syncpack": "^15",
     "turbo": "^2",
-    "typescript": "^5.7",
+    "typescript": "catalog:",
     "ultracite": "^7",
-    "vitest": "^3"
+    "vitest": "catalog:"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

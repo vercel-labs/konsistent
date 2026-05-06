@@ -26,20 +26,20 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "citty": "^0.2",
+    "citty": "catalog:",
     "jiti": "^2"
   },
   "peerDependencies": {
-    "zod": "^4"
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^24",
-    "ajv": "^8.18.0",
-    "del-cli": "^6",
-    "tsup": "^8",
-    "tsx": "^4.21.0",
-    "vitest": "^3",
-    "zod": "^4"
+    "@types/node": "catalog:",
+    "ajv": "catalog:",
+    "del-cli": "catalog:",
+    "tsup": "catalog:",
+    "tsx": "catalog:",
+    "vitest": "catalog:",
+    "zod": "catalog:"
   },
   "publishConfig": {
     "access": "public"
