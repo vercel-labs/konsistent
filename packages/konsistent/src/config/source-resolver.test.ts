@@ -376,6 +376,30 @@ describe("resolveSources", () => {
     }
   });
 
+  it('rejects exports["./konsistent"] entries that escape the package via ..', async () => {
+    const { configDir } = setupNpmFixture({
+      packageName: "@scope/escape-exports-relative",
+      packageJson: {
+        name: "@scope/escape-exports-relative",
+        version: "0.0.0",
+        type: "module",
+        exports: {
+          "./konsistent": "../../../../../../etc/conventions.json",
+        },
+      },
+    });
+
+    const result = await resolveSources({
+      conventionSources: { common: "@scope/escape-exports-relative" },
+      configDir,
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toContain("outside the package directory");
+    }
+  });
+
   it("includes the npm specifier when the resolved JSON is malformed", async () => {
     const { configDir } = setupNpmFixture({
       packageName: "@scope/malformed-json",

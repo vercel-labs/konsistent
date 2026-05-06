@@ -4,6 +4,7 @@ import {
   classifySource,
   extractPackageName,
   findPackageDir,
+  isPathInside,
   pathExists,
 } from "./npm-resolver.js";
 import { validatePlaceholders } from "./placeholder-validator.js";
@@ -173,6 +174,12 @@ async function resolveConfigPackagePath(opts: {
   const explicit = readKonsistentField(pkgJson);
   if (explicit !== null) {
     const candidate = resolve(pkgDir, explicit);
+    if (!isPathInside({ child: candidate, parent: pkgDir })) {
+      return {
+        success: false,
+        error: `--config-package "${configPackage}": package.json "konsistent" field "${explicit}" resolves outside the package directory (${pkgDir}). The field must point to a path inside the package.`,
+      };
+    }
     attempted.push(`${candidate} (from package.json "konsistent" field)`);
     if (await pathExists(candidate)) {
       return { success: true, filePath: candidate };

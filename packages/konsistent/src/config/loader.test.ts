@@ -256,4 +256,44 @@ describe("loadConfig --config-package", () => {
       expect(result.error).toContain('"@scope/pkg"');
     }
   });
+
+  it('rejects a package.json "konsistent" field that escapes the package via ..', async () => {
+    setupPackage({
+      packageName: "@scope/escape-relative",
+      packageJson: {
+        name: "@scope/escape-relative",
+        version: "0.0.0",
+        type: "module",
+        konsistent: "../../../../../../../etc/konsistent.json",
+      },
+    });
+
+    const result = await loadConfig({
+      configPackage: "@scope/escape-relative",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toContain("outside the package directory");
+    }
+  });
+
+  it('rejects a package.json "konsistent" field that is an absolute path', async () => {
+    setupPackage({
+      packageName: "@scope/escape-absolute",
+      packageJson: {
+        name: "@scope/escape-absolute",
+        version: "0.0.0",
+        type: "module",
+        konsistent: "/etc/konsistent.json",
+      },
+    });
+
+    const result = await loadConfig({
+      configPackage: "@scope/escape-absolute",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toContain("outside the package directory");
+    }
+  });
 });

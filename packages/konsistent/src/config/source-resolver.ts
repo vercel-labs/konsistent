@@ -9,6 +9,7 @@ import {
   classifySource,
   extractPackageName,
   findPackageDir,
+  isPathInside,
 } from "./npm-resolver.js";
 
 export type SourceMap = Map<string, Map<string, ReusableConventionV1>>;
@@ -145,6 +146,13 @@ async function loadFromNpm(opts: {
   }
 
   const conventionsPath = resolvePath(pkgDir, resolved[0]);
+
+  if (!isPathInside({ child: conventionsPath, parent: pkgDir })) {
+    return {
+      success: false,
+      error: `Convention source "${prefix}" → "${specifier}": exports["./konsistent"] entry "${resolved[0]}" resolves outside the package directory (${pkgDir}). The entry must point to a path inside the package.`,
+    };
+  }
 
   let raw: string;
   try {
