@@ -539,7 +539,7 @@ describe("--config-path flag", () => {
 describe("--config-package flag", () => {
   const cwd = resolve(fixturesDir, "config-package-consumer");
 
-  it("loads config from a package's dist folder via check", async () => {
+  it("loads config from a package via check", async () => {
     await expect(
       runCli({
         args: [
@@ -552,7 +552,7 @@ describe("--config-package flag", () => {
     ).resolves.not.toThrow();
   });
 
-  it("loads config from a package's dist folder via validate", async () => {
+  it("loads config from a package via validate", async () => {
     const { stdout } = await runCli({
       args: [
         "validate",
