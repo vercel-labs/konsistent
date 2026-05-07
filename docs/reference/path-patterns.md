@@ -51,6 +51,26 @@ The same placeholder can appear in both the path and the `must` predicates:
 }
 ```
 
+## Static placeholder values
+
+Sometimes a placeholder name is used inside `must`, but the consumer's tree has only one concrete value and there's no wildcard segment to capture it from. Use the optional `placeholders` field on the convention to supply the value directly:
+
+```json
+{
+  "paths": "packages/openai/src/index.ts",
+  "placeholders": { "providerId": "openai" },
+  "must": {
+    "exportFunctions": ["create${providerId.toPascalCase()}Provider"]
+  }
+}
+```
+
+This is equivalent to `paths: "packages/{providerId}/src/index.ts"` when the tree contains exactly one provider folder, but doesn't require a wildcard. It's especially useful when consuming a [reusable convention](./reusable-conventions.md) whose `must` references a placeholder that the local tree doesn't have a wildcard for.
+
+A name may not appear in both a `{name}` placeholder in `paths` and in `placeholders` — pick one source of truth.
+
+Values must match the same `[a-zA-Z0-9_-]+` charset as values extracted from paths. All template helpers (`toPascalCase()`, `toCamelCase()`, etc.) work the same way as for captured placeholders.
+
 ## Case transformations
 
 Inside `${...}` template substitutions, methods transform the captured value:

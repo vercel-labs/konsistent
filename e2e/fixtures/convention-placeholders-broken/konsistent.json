@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "double-declared",
+      "paths": "packages/{providerId}/src/index.ts",
+      "placeholders": { "providerId": "openai" },
+      "must": {
+        "haveFiles": ["${providerId}-provider.ts"]
+      }
+    }
+  ]
+}

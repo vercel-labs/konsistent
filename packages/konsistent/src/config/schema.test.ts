@@ -615,4 +615,79 @@ describe("ConfigV1Schema", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("accepts a convention with a placeholders map", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "packages/openai/src/index.ts",
+          placeholders: { providerId: "openai" },
+          must: {},
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts placeholders on a use ref override", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventionSources: { common: "./x.json" },
+      conventions: [
+        {
+          use: "common/foo",
+          paths: "packages/openai/src/index.ts",
+          placeholders: { providerId: "openai" },
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects placeholders with an invalid name key", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/index.ts",
+          placeholders: { "1bad": "value" },
+          must: {},
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects placeholders with an invalid value", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/index.ts",
+          placeholders: { name: "bad value" },
+          must: {},
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects placeholders inside an inner must[] block", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/{name}",
+          must: [
+            {
+              placeholders: { name: "foo" },
+              must: {},
+            },
+          ],
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
 });

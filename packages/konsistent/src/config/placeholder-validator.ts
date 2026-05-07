@@ -23,9 +23,22 @@ export function validatePlaceholders(opts: {
     const identifier = identifiers[i] ?? `conventions[${i}]`;
     const declaredFromPaths = collectDeclarations(convention.paths);
 
+    const declared = new Set(declaredFromPaths);
+    if (convention.placeholders) {
+      for (const name of Object.keys(convention.placeholders)) {
+        if (declaredFromPaths.has(name)) {
+          errors.push(
+            `Convention "${identifier}" declares placeholder "${name}" both in paths (as "{${name}}") and in placeholders. Pick one.`
+          );
+          continue;
+        }
+        declared.add(name);
+      }
+    }
+
     const usages = collectUsagesInMust({
       must: convention.must,
-      declaredOuter: declaredFromPaths,
+      declaredOuter: declared,
     });
 
     const reported = new Set<string>();

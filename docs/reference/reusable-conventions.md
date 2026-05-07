@@ -59,7 +59,7 @@ A bare string `"<vendor>/<name>"` inlines the named reusable convention as-is. T
 
 ### Object reference (`use` form)
 
-`{ "use": "<vendor>/<name>", ...overrides }` references a reusable convention and overlays your overrides on top of it. The override fields available are `paths`, `excludeFiles`, `severity`, `if`, `for`, and `must` — the same optional fields a hand-written convention has, minus `name` and `description` (which come from the source).
+`{ "use": "<vendor>/<name>", ...overrides }` references a reusable convention and overlays your overrides on top of it. The override fields available are `paths`, `placeholders`, `excludeFiles`, `severity`, `if`, `for`, and `must` — the same optional fields a hand-written convention has, minus `name` and `description` (which come from the source).
 
 Use this form when the reusable convention has no `paths` (so you must supply them) or when you want to adjust a field for your project.
 
@@ -81,6 +81,18 @@ Use this form when the reusable convention has no `paths` (so you must supply th
   ]
 }
 ```
+
+When a reusable convention's `must` references a placeholder (e.g. `${providerId}`) and your project has only a single concrete value rather than a wildcard segment, supply it via `placeholders`:
+
+```json
+{
+  "use": "common/provider-barrel",
+  "paths": "packages/openai/src/index.ts",
+  "placeholders": { "providerId": "openai" }
+}
+```
+
+See [Static placeholder values](./path-patterns.md#static-placeholder-values) for the full rules.
 
 ### Hand-written convention
 

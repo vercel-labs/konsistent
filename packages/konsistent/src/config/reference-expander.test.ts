@@ -222,6 +222,36 @@ describe("expandReferences", () => {
     }
   });
 
+  it("flows placeholders supplied at the use-site through to the expanded convention", () => {
+    const sourceMap = buildSourceMap({
+      common: [
+        {
+          name: "provider-barrel",
+          description: "x",
+          must: { export: ["${providerId}"] },
+        },
+      ],
+    });
+
+    const result = expandReferences({
+      conventions: [
+        {
+          use: "common/provider-barrel",
+          paths: "packages/openai/src/index.ts",
+          placeholders: { providerId: "openai" },
+        },
+      ],
+      sourceMap,
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.conventions[0]?.placeholders).toEqual({
+        providerId: "openai",
+      });
+    }
+  });
+
   it("replaces inherited arrays with override arrays (does not concatenate)", () => {
     const sourceMap = buildSourceMap({
       common: [

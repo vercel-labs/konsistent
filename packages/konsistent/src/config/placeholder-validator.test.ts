@@ -325,6 +325,47 @@ describe("validatePlaceholders", () => {
     expect(result.ok).toBe(true);
   });
 
+  it("accepts a usage backed by a static placeholders entry", () => {
+    const conventions: ConventionV1[] = [
+      {
+        name: "static-providers",
+        paths: "packages/openai/src/index.ts",
+        placeholders: { providerId: "openai" },
+        must: { export: ["${providerId}"] },
+      },
+    ];
+
+    const result = validatePlaceholders({
+      conventions,
+      identifiers: ["static-providers"],
+    });
+
+    expect(result.ok).toBe(true);
+  });
+
+  it("rejects a name declared in both paths and placeholders", () => {
+    const conventions: ConventionV1[] = [
+      {
+        name: "double-declared",
+        paths: "packages/{providerId}/src/index.ts",
+        placeholders: { providerId: "openai" },
+        must: { export: ["${providerId}"] },
+      },
+    ];
+
+    const result = validatePlaceholders({
+      conventions,
+      identifiers: ["double-declared"],
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain(
+        'Convention "double-declared" declares placeholder "providerId" both in paths (as "{providerId}") and in placeholders. Pick one.'
+      );
+    }
+  });
+
   it("returns ok when no must placeholders are used", () => {
     const conventions: ConventionV1[] = [
       {

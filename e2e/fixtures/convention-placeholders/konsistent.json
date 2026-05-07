@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "openai-provider-barrel",
+      "paths": "packages/openai/src/index.ts",
+      "placeholders": { "providerId": "openai" },
+      "must": {
+        "haveFiles": ["${providerId}-provider.ts"]
+      }
+    }
+  ]
+}

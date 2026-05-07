@@ -27,6 +27,18 @@ export {
   ReusableConventionV1Schema,
 } from "@konsistent/convention";
 
+const PlaceholdersMapSchema = z.record(
+  z
+    .string()
+    .regex(
+      /^[a-zA-Z][a-zA-Z0-9]*$/,
+      "Placeholder name must match [a-zA-Z][a-zA-Z0-9]*"
+    ),
+  z
+    .string()
+    .regex(/^[a-zA-Z0-9_-]+$/, "Placeholder value must match [a-zA-Z0-9_-]+")
+);
+
 export const ConventionV1Schema = z.strictObject({
   name: z
     .string()
@@ -36,6 +48,7 @@ export const ConventionV1Schema = z.strictObject({
   severity: z.enum(["error", "warning"]).default("error").optional(),
   excludeFiles: z.array(z.string()).optional(),
   paths: z.union([z.string(), z.array(z.string())]),
+  placeholders: PlaceholdersMapSchema.optional(),
   must: z.union([MustPredicatesV1Schema, z.array(MustBlockV1Schema)]),
 });
 
@@ -57,6 +70,7 @@ const RawHandWrittenConventionV1Schema = z.strictObject({
   severity: z.enum(["error", "warning"]).default("error").optional(),
   excludeFiles: z.array(z.string()).optional(),
   paths: z.union([z.string(), z.array(z.string())]),
+  placeholders: PlaceholdersMapSchema.optional(),
   must: z.union([
     MustPredicatesV1Schema,
     z.array(z.union([MustBlockV1Schema, MustBlockUseRefSchema])),
@@ -79,6 +93,7 @@ export const ConventionUseRefSchema = z.strictObject({
     ),
   severity: z.enum(["error", "warning"]).optional(),
   paths: z.union([z.string(), z.array(z.string())]).optional(),
+  placeholders: PlaceholdersMapSchema.optional(),
   excludeFiles: z.array(z.string()).optional(),
   if: z
     .union([

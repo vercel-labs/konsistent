@@ -56,6 +56,7 @@ A convention is a rule that says "files matching `paths` must satisfy `must`."
 | `description` | string | no | Human-readable explanation. |
 | `severity` | `"error"` \| `"warning"` | no, default `"error"` | See [Severity](#severity). |
 | `excludeFiles` | `string[]` | no | Glob patterns to exclude from the matched paths. |
+| `placeholders` | `Record<string, string>` | no | Static placeholder values for names that are not captured from `paths`. See [Static placeholder values](./path-patterns.md#static-placeholder-values). |
 
 The configuration is `strict` — unknown fields cause a validation error. Run `konsistent validate` to catch typos.
 

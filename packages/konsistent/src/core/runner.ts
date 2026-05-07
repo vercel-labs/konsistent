@@ -23,11 +23,36 @@ import type { Diagnostic, DiagnosticSeverity } from "./diagnostics.js";
 import type { FileSystem } from "./filesystem.js";
 import type { MatchedPath } from "./path-matcher.js";
 import { matchPaths } from "./path-matcher.js";
+import { PlaceholderValue } from "./placeholder.js";
 import {
   parsePlaceholderConstraint,
   validatePlaceholderConstraint,
 } from "./placeholder-constraint.js";
 import { resolveTemplate } from "./template.js";
+
+interface CaseMaps {
+  camelToKebabMap?: Record<string, string>;
+  camelToPascalMap?: Record<string, string>;
+  kebabToCamelMap?: Record<string, string>;
+  kebabToPascalMap?: Record<string, string>;
+  pascalToCamelMap?: Record<string, string>;
+  pascalToKebabMap?: Record<string, string>;
+}
+
+function buildStaticPlaceholders(opts: {
+  raw: Record<string, string> | undefined;
+  caseMaps: CaseMaps;
+}): Record<string, PlaceholderValue> {
+  const { raw, caseMaps } = opts;
+  if (!raw) {
+    return {};
+  }
+  const result: Record<string, PlaceholderValue> = {};
+  for (const [name, value] of Object.entries(raw)) {
+    result[name] = new PlaceholderValue({ value, ...caseMaps });
+  }
+  return result;
+}
 
 export const TS_PREDICATES = new Set([
   "export",
@@ -553,6 +578,15 @@ export async function run(opts: {
   const checkedPaths = new Set<string>();
   const diagnostics: Diagnostic[] = [];
 
+  const caseMaps: CaseMaps = {
+    kebabToPascalMap,
+    kebabToCamelMap,
+    pascalToKebabMap,
+    camelToKebabMap,
+    camelToPascalMap,
+    pascalToCamelMap,
+  };
+
   for (let i = 0; i < config.conventions.length; i++) {
     const convention = config.conventions[i];
     const matched = matchResults[i];
@@ -560,10 +594,18 @@ export async function run(opts: {
     const conventionName =
       convention.name ?? generateConventionName({ must: convention.must });
     const severity: DiagnosticSeverity = convention.severity ?? "error";
+    const staticPlaceholders = buildStaticPlaceholders({
+      raw: convention.placeholders,
+      caseMaps,
+    });
 
     for (const entry of matched) {
       checkedPaths.add(entry.path);
-      const context = buildContext({ matched: entry, fileSystem });
+      const mergedEntry: MatchedPath = {
+        path: entry.path,
+        placeholders: { ...staticPlaceholders, ...entry.placeholders },
+      };
+      const context = buildContext({ matched: mergedEntry, fileSystem });
 
       if (
         isFileExcluded({

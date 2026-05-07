@@ -339,6 +339,37 @@ describe("run", () => {
     expect(diagnostics[0].conventionName).toBe("template-rule");
   });
 
+  it("injects static placeholders into the predicate context", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          name: "static-placeholders",
+          paths: "packages/openai/src/index.ts",
+          placeholders: { providerId: "openai" },
+          must: [
+            {
+              if: { hasFile: "${providerId}.test.ts" },
+              must: { haveType: "directory" },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ["packages/openai/src/index.ts", ["packages/openai/src/index.ts"]],
+      ]),
+      files: new Set([
+        "packages/openai/src/index.ts",
+        "packages/openai/src/openai.test.ts",
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].conventionName).toBe("static-placeholders");
+  });
+
   it("iterates over for.files matches and evaluates predicates", async () => {
     const config: ConfigV1 = {
       version: "v1",
