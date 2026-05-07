@@ -1,4 +1,9 @@
-import type { ReusableConventionV1 } from "@konsistent/convention";
+import type {
+  MustBlockV1,
+  MustPredicatesV1,
+  ReusableConventionV1,
+} from "@konsistent/convention";
+import { MustBlockV1Schema } from "@konsistent/convention";
 import type { ConventionV1, RawConfigV1 } from "./schema.js";
 import { ConventionV1Schema } from "./schema.js";
 import type { SourceMap } from "./source-resolver.js";
@@ -51,12 +56,143 @@ export function expandReferences(opts: {
       continue;
     }
 
-    const handWritten = entry as ConventionV1;
-    expanded.push(handWritten);
-    identifiers.push(handWritten.name ?? `conventions[${i}]`);
+    const handWrittenResult = expandHandWritten({
+      entry: entry as ConventionV1 & {
+        must:
+          | MustPredicatesV1
+          | Array<MustBlockV1 | ({ use: string } & Record<string, unknown>)>;
+      },
+      index: i,
+      sourceMap,
+    });
+    if (!handWrittenResult.success) {
+      return handWrittenResult;
+    }
+    expanded.push(handWrittenResult.convention);
+    identifiers.push(handWrittenResult.convention.name ?? `conventions[${i}]`);
   }
 
   return { success: true, conventions: expanded, identifiers };
+}
+
+function expandHandWritten(opts: {
+  entry: ConventionV1 & {
+    must:
+      | MustPredicatesV1
+      | Array<MustBlockV1 | ({ use: string } & Record<string, unknown>)>;
+  };
+  index: number;
+  sourceMap: SourceMap;
+}):
+  | { success: true; convention: ConventionV1 }
+  | { success: false; error: string } {
+  const { entry, index, sourceMap } = opts;
+
+  if (!Array.isArray(entry.must)) {
+    return { success: true, convention: entry as ConventionV1 };
+  }
+
+  const resolvedBlocks: MustBlockV1[] = [];
+  for (let j = 0; j < entry.must.length; j++) {
+    const block = entry.must[j];
+    if (block && typeof block === "object" && Object.hasOwn(block, "use")) {
+      const useRef = block as { use: string } & Record<string, unknown>;
+      const expandedBlock = expandMustBlockUseReference({
+        entry: useRef,
+        conventionIndex: index,
+        blockIndex: j,
+        sourceMap,
+      });
+      if (!expandedBlock.success) {
+        return expandedBlock;
+      }
+      resolvedBlocks.push(expandedBlock.block);
+      continue;
+    }
+    resolvedBlocks.push(block as MustBlockV1);
+  }
+
+  return {
+    success: true,
+    convention: { ...entry, must: resolvedBlocks } as ConventionV1,
+  };
+}
+
+function expandMustBlockUseReference(opts: {
+  entry: { use: string } & Record<string, unknown>;
+  conventionIndex: number;
+  blockIndex: number;
+  sourceMap: SourceMap;
+}): { success: true; block: MustBlockV1 } | { success: false; error: string } {
+  const { entry, conventionIndex, blockIndex, sourceMap } = opts;
+  const ref = entry.use;
+  const location = `conventions[${conventionIndex}].must[${blockIndex}]`;
+
+  const lookup = lookupReusable({ ref, index: conventionIndex, sourceMap });
+  if (!lookup.success) {
+    return {
+      success: false,
+      error: lookup.error.replace(`conventions[${conventionIndex}]`, location),
+    };
+  }
+  const { reusable, prefix, name } = lookup;
+
+  const topLevelOnly: string[] = [];
+  if (reusable.paths !== undefined) {
+    topLevelOnly.push("paths");
+  }
+  if (reusable.severity !== undefined) {
+    topLevelOnly.push("severity");
+  }
+  if (topLevelOnly.length > 0) {
+    return {
+      success: false,
+      error: `Convention "${prefix}/${name}" referenced in ${location} declares top-level-only field(s) ${topLevelOnly
+        .map((f) => `"${f}"`)
+        .join(
+          ", "
+        )}. Such conventions can only be referenced at the top level of conventions[]. Either remove the field(s) from the source convention, or move the reference out of must[].`,
+    };
+  }
+
+  const { use: _use, ...overrides } = entry;
+
+  const base: Record<string, unknown> = {
+    must: reusable.must,
+  };
+  if (reusable.name !== undefined) {
+    base.name = reusable.name;
+  }
+  if (reusable.description !== undefined) {
+    base.description = reusable.description;
+  }
+  if (reusable.if !== undefined) {
+    base.if = reusable.if;
+  }
+  if (reusable.for !== undefined) {
+    base.for = reusable.for;
+  }
+  if (reusable.excludeFiles !== undefined) {
+    base.excludeFiles = reusable.excludeFiles;
+  }
+
+  const merged = deepMerge({ base, override: overrides });
+
+  const validated = MustBlockV1Schema.safeParse(merged);
+  if (!validated.success) {
+    const issues = validated.error.issues
+      .map(
+        (issue) =>
+          `  - ${location}${issue.path.length > 0 ? `.${issue.path.join(".")}` : ""}: ${issue.message}`
+      )
+      .join("\n");
+    return {
+      success: false,
+      error: `Expanded must-block reference "${prefix}/${name}" failed validation at ${location}:\n${issues}`,
+    };
+  }
+
+  return { success: true, block: validated.data };
 }
 
 function lookupReusable(opts: {

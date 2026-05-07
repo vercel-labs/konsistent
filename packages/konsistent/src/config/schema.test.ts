@@ -503,4 +503,116 @@ describe("ConfigV1Schema", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("accepts a hand-written convention whose must[] contains a use ref", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventionSources: { common: "./x.json" },
+      conventions: [
+        {
+          paths: "src/{name}",
+          must: [
+            { must: { haveType: "directory" } },
+            { use: "common/some-must-block" },
+          ],
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a use ref inside must[] with override fields (if/for/excludeFiles/must)", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventionSources: { common: "./x.json" },
+      conventions: [
+        {
+          paths: "src/{name}",
+          must: [
+            {
+              use: "common/some-must-block",
+              if: { hasFile: "${name}.ts" },
+              for: { files: "${name}.ts" },
+              excludeFiles: ["${name}.skip.ts"],
+              must: { haveType: "file" },
+            },
+          ],
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a use ref inside must[] overriding name and description", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventionSources: { common: "./x.json" },
+      conventions: [
+        {
+          paths: "src/{name}",
+          must: [
+            {
+              use: "common/foo",
+              name: "renamed",
+              description: "Overridden description.",
+            },
+          ],
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects a use ref inside must[] with an unknown override field (strict)", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventionSources: { common: "./x.json" },
+      conventions: [
+        {
+          paths: "src/{name}",
+          must: [{ use: "common/foo", unknownField: "x" }],
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a use ref inside must[] with paths or severity (top-level only)", () => {
+    const withPaths = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventionSources: { common: "./x.json" },
+      conventions: [
+        {
+          paths: "src/{name}",
+          must: [{ use: "common/foo", paths: "src/*.ts" }],
+        },
+      ],
+    });
+    expect(withPaths.success).toBe(false);
+
+    const withSeverity = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventionSources: { common: "./x.json" },
+      conventions: [
+        {
+          paths: "src/{name}",
+          must: [{ use: "common/foo", severity: "warning" }],
+        },
+      ],
+    });
+    expect(withSeverity.success).toBe(false);
+  });
+
+  it("rejects a use ref inside must[] with a malformed use string", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/{name}",
+          must: [{ use: "not-a-reference" }],
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
 });

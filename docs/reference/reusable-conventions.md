@@ -86,6 +86,33 @@ Use this form when the reusable convention has no `paths` (so you must supply th
 
 Any entry that is neither a string nor has a `use` key is treated as a hand-written `Convention` and validated against the existing schema. See [configuration.md](./configuration.md). You can mix all three forms in the same `conventions[]` array.
 
+### `use` inside a parent's `must[]`
+
+A hand-written convention whose `must` is a `MustBlock[]` may also reference a reusable convention from inside the array — the entry takes the same `{ "use": "<vendor>/<name>", ...overrides }` shape, but expands into a single `MustBlock` rather than a full `Convention`.
+
+```json
+{
+  "version": "v1",
+  "conventionSources": {
+    "common": "./local-conventions.json"
+  },
+  "conventions": [
+    {
+      "name": "component-folder-shape",
+      "paths": ["src/components/{componentName}"],
+      "must": [
+        { "must": { "haveType": "directory" } },
+        { "use": "common/must-have-index" }
+      ]
+    }
+  ]
+}
+```
+
+Allowed override keys at this nesting level are every field a hand-written `MustBlock` exposes — `name`, `description`, `if`, `for`, `excludeFiles`, and `must`. Top-level-only fields (`paths`, `severity`) are not accepted at the use-site, and the referenced reusable convention must not declare them either: a reusable that ships `paths` or `severity` can only be referenced from the top level of `conventions[]`. Authors who want their reusable to be usable in both contexts should publish it without those fields.
+
+Override merge follows the same rules as the top-level `use` form: arrays replace, primitives replace, and `must` deep-merges with the inherited predicates.
+
 ## Merge semantics
 
 When you write `{ use: "<vendor>/<name>", ...overrides }`, `konsistent` deep-merges your overrides on top of the reusable convention with these rules:
@@ -171,6 +198,7 @@ All errors below are returned from `loadConfig()` as `{ success: false, error }`
 | Reusable-convention package fails schema validation | `Convention source "<prefix>" → "<specifier>": invalid reusable-convention package at <path>: <issues>` | The author shipped an invalid package; report upstream. |
 | Empty source value | `Convention source "<prefix>" has empty value.` | Supply a path or npm specifier. |
 | Placeholder used in `must` but not declared in `paths` | `Convention "<identifier>" references "${<placeholder>}" in <key>, but no entry of paths declares "{<placeholder>}".` | Either declare the placeholder in `paths`, or remove the unresolved template from `must`. |
+| `use` inside `must[]` points at a reusable that declares `paths`/`severity` | `Convention "<prefix>/<name>" referenced in conventions[<i>].must[<j>] declares top-level-only field(s) "<field>". Such conventions can only be referenced at the top level of conventions[]. Either remove the field(s) from the source convention, or move the reference out of must[].` | Drop `paths`/`severity` from the reusable, or reference it directly from `conventions[]`. |
 
 `<identifier>` in the placeholder error is the convention's `name`, the `<vendor>/<name>` reference, or `conventions[<i>]` — whichever was available.
 

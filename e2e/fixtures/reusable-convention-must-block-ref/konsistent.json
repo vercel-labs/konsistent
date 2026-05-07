@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "conventionSources": {
+    "common": "./local-conventions.json"
+  },
+  "conventions": [
+    {
+      "name": "component-folder-shape",
+      "paths": ["src/components/{componentName}"],
+      "must": [
+        { "must": { "haveType": "directory" } },
+        { "use": "common/must-have-index" }
+      ]
+    }
+  ]
+}
