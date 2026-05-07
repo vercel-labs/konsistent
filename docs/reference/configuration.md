@@ -88,7 +88,7 @@ All listed predicates apply unconditionally to every matched path. See [predicat
 ]
 ```
 
-Each entry is a `MustBlock` that can have `if`, `for`, `excludeFiles`, `name`, and `description`. See [conditional-rules.md](./conditional-rules.md).
+Each entry is a `MustBlock` that can have `if`, `for`, `excludeFiles`, `name`, and `description`. See [conditional-rules.md](./conditional-rules.md). An entry may alternatively be a reusable-convention reference of the form `{ "use": "<vendor>/<name>", ...overrides }`, which expands into a `MustBlock` — see [reusable-conventions.md](./reusable-conventions.md#use-inside-a-parents-must).
 
 ## Severity
 

@@ -473,6 +473,162 @@ describe("expandReferences", () => {
     }
   });
 
+  it("expands a use ref nested inside a hand-written must[]", () => {
+    const sourceMap = buildSourceMap({
+      common: [
+        {
+          name: "needs-readme",
+          description: "Block requiring a README.md.",
+          must: { haveFiles: ["README.md"] },
+        },
+      ],
+    });
+
+    const handWritten = {
+      paths: "packages/{packageName}",
+      must: [
+        { must: { haveType: "directory" } },
+        { use: "common/needs-readme" },
+      ],
+    } as Parameters<typeof expandReferences>[0]["conventions"][number];
+
+    const result = expandReferences({
+      conventions: [handWritten],
+      sourceMap,
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      const must = result.conventions[0]?.must;
+      expect(Array.isArray(must)).toBe(true);
+      if (Array.isArray(must)) {
+        expect(must).toHaveLength(2);
+        expect(must[1]).toEqual({
+          name: "needs-readme",
+          description: "Block requiring a README.md.",
+          must: { haveFiles: ["README.md"] },
+        });
+      }
+    }
+  });
+
+  it("deep-merges override.must onto the inherited predicates inside must[]", () => {
+    const sourceMap = buildSourceMap({
+      common: [
+        {
+          name: "base-block",
+          description: "x",
+          must: { haveFiles: ["README.md"] },
+        },
+      ],
+    });
+
+    const handWritten = {
+      paths: "packages/{packageName}",
+      must: [
+        {
+          use: "common/base-block",
+          for: { files: "{packageName}/index.ts" },
+          must: { exportTypes: ["Public"] },
+        },
+      ],
+    } as Parameters<typeof expandReferences>[0]["conventions"][number];
+
+    const result = expandReferences({
+      conventions: [handWritten],
+      sourceMap,
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      const must = result.conventions[0]?.must;
+      if (Array.isArray(must)) {
+        expect(must[0]).toEqual({
+          name: "base-block",
+          description: "x",
+          for: { files: "{packageName}/index.ts" },
+          must: { haveFiles: ["README.md"], exportTypes: ["Public"] },
+        });
+      }
+    }
+  });
+
+  it("errors when a must[] use ref points to a reusable that declares paths", () => {
+    const sourceMap = buildSourceMap({
+      common: [
+        {
+          name: "with-paths",
+          description: "x",
+          paths: "src/*.ts",
+          must: { haveType: "file" },
+        },
+      ],
+    });
+
+    const handWritten = {
+      paths: "packages/{packageName}",
+      must: [{ use: "common/with-paths" }],
+    } as Parameters<typeof expandReferences>[0]["conventions"][number];
+
+    const result = expandReferences({
+      conventions: [handWritten],
+      sourceMap,
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toContain("conventions[0].must[0]");
+      expect(result.error).toContain('"paths"');
+      expect(result.error).toContain("top-level-only");
+    }
+  });
+
+  it("errors when a must[] use ref points to a reusable that declares severity", () => {
+    const sourceMap = buildSourceMap({
+      common: [
+        {
+          name: "with-severity",
+          description: "x",
+          severity: "warning",
+          must: { haveType: "file" },
+        },
+      ],
+    });
+
+    const handWritten = {
+      paths: "packages/{packageName}",
+      must: [{ use: "common/with-severity" }],
+    } as Parameters<typeof expandReferences>[0]["conventions"][number];
+
+    const result = expandReferences({
+      conventions: [handWritten],
+      sourceMap,
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toContain('"severity"');
+    }
+  });
+
+  it("emits an unknown-source error scoped to conventions[i].must[j]", () => {
+    const handWritten = {
+      paths: "packages/{packageName}",
+      must: [{ use: "missing/foo" }],
+    } as Parameters<typeof expandReferences>[0]["conventions"][number];
+
+    const result = expandReferences({
+      conventions: [handWritten],
+      sourceMap: new Map(),
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toContain("conventions[0].must[0]");
+      expect(result.error).toContain('Unknown convention source "missing"');
+    }
+  });
+
   it("includes conventions.<i> in the path of Zod errors when the merged result is invalid", () => {
     const sourceMap = buildSourceMap({
       common: [

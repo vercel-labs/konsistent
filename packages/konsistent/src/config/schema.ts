@@ -39,6 +39,30 @@ export const ConventionV1Schema = z.strictObject({
   must: z.union([MustPredicatesV1Schema, z.array(MustBlockV1Schema)]),
 });
 
+export const MustBlockUseRefSchema = MustBlockV1Schema.partial().extend({
+  use: z
+    .string()
+    .regex(
+      /^[a-z0-9-]+\/[a-z0-9-]+$/,
+      'Must block "use" must match "<vendor>/<name>"'
+    ),
+});
+
+const RawHandWrittenConventionV1Schema = z.strictObject({
+  name: z
+    .string()
+    .regex(/^[a-z0-9-]+$/, "Convention name must match [a-z0-9-]+")
+    .optional(),
+  description: z.string().optional(),
+  severity: z.enum(["error", "warning"]).default("error").optional(),
+  excludeFiles: z.array(z.string()).optional(),
+  paths: z.union([z.string(), z.array(z.string())]),
+  must: z.union([
+    MustPredicatesV1Schema,
+    z.array(z.union([MustBlockV1Schema, MustBlockUseRefSchema])),
+  ]),
+});
+
 const ConventionStringRefSchema = z
   .string()
   .regex(
@@ -83,11 +107,12 @@ export const ConfigV1Schema = z.strictObject({
     z.union([
       ConventionStringRefSchema,
       ConventionUseRefSchema,
-      ConventionV1Schema,
+      RawHandWrittenConventionV1Schema,
     ])
   ),
 });
 
+export type MustBlockUseRefV1 = z.infer<typeof MustBlockUseRefSchema>;
 export type RawConfigV1 = z.infer<typeof ConfigV1Schema>;
 export type ConventionV1 = z.infer<typeof ConventionV1Schema>;
 export type ConfigV1 = Omit<
