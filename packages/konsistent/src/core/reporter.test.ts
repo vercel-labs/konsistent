@@ -220,6 +220,20 @@ describe("createDefaultReporter", () => {
     expect(lines[aIdx + 1]).toBe("");
   });
 
+  it("renders root path as (project root)", () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: "error",
+        filePath: ".",
+        predicateName: "haveFiles",
+        message: "Missing required file: README.md",
+      },
+    ];
+    const output = reporter.format(makeResult({ diagnostics }));
+    expect(output).toContain(pc.bold("(project root)"));
+    expect(output).not.toContain(`${pc.bold(".")}\n`);
+  });
+
   it("makes file paths bold", () => {
     const diagnostics: Diagnostic[] = [
       {
@@ -686,6 +700,19 @@ describe("createMarkdownReporter", () => {
     ];
     const output = reporter.format(makeResult({ diagnostics }));
     expect(output).toContain("|  |\n\n**`src/b.ts`**");
+  });
+
+  it("renders root path as (project root)", () => {
+    const diagnostics: Diagnostic[] = [
+      {
+        severity: "error",
+        filePath: ".",
+        predicateName: "haveFiles",
+        message: "Missing required file: README.md",
+      },
+    ];
+    const output = reporter.format(makeResult({ diagnostics }));
+    expect(output).toContain("**`(project root)`**");
   });
 
   it("wraps file paths in bold backticks", () => {

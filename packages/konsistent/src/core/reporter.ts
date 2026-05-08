@@ -56,6 +56,10 @@ function formatDiagnosticLine(opts: {
   return `  ${paddedLine}  ${severity}  ${d.message}${convention}`;
 }
 
+function displayFilePath(filePath: string): string {
+  return filePath === "." ? "(project root)" : filePath;
+}
+
 function formatFileGroup(opts: {
   filePath: string;
   diagnostics: Diagnostic[];
@@ -67,7 +71,7 @@ function formatFileGroup(opts: {
   const { bold, red, yellow, dim } = opts;
   const sorted = sortDiagnostics(opts.diagnostics);
   const lineWidth = maxLineWidth(sorted);
-  const lines: string[] = [bold(opts.filePath)];
+  const lines: string[] = [bold(displayFilePath(opts.filePath))];
   for (const d of sorted) {
     lines.push(
       formatDiagnosticLine({ diagnostic: d, lineWidth, red, yellow, dim })
@@ -160,7 +164,7 @@ export function createMarkdownReporter(): Reporter {
         for (const [filePath, fileDiags] of grouped) {
           const sorted = sortDiagnostics(fileDiags);
           const lines: string[] = [
-            `**\`${filePath}\`**`,
+            `**\`${displayFilePath(filePath)}\`**`,
             "",
             "| Line | Severity | Message | Convention |",
             "|------|----------|---------|------------|",
