@@ -503,6 +503,70 @@ describe("expandReferences", () => {
     }
   });
 
+  it("expands a string reference nested inside a hand-written must[]", () => {
+    const sourceMap = buildSourceMap({
+      common: [
+        {
+          name: "needs-readme",
+          description: "Block requiring a README.md.",
+          must: { haveFiles: ["README.md"] },
+        },
+      ],
+    });
+
+    const handWritten = {
+      paths: "packages/{packageName}",
+      must: [{ must: { haveType: "directory" } }, "common/needs-readme"],
+    } as Parameters<typeof expandReferences>[0]["conventions"][number];
+
+    const result = expandReferences({
+      conventions: [handWritten],
+      sourceMap,
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      const must = result.conventions[0]?.must;
+      if (Array.isArray(must)) {
+        expect(must).toHaveLength(2);
+        expect(must[1]).toEqual({
+          name: "needs-readme",
+          description: "Block requiring a README.md.",
+          must: { haveFiles: ["README.md"] },
+        });
+      }
+    }
+  });
+
+  it("errors when a string reference inside must[] points at a reusable with paths", () => {
+    const sourceMap = buildSourceMap({
+      common: [
+        {
+          name: "with-paths",
+          description: "x",
+          paths: "src/*.ts",
+          must: { haveType: "file" },
+        },
+      ],
+    });
+
+    const handWritten = {
+      paths: "packages/{packageName}",
+      must: ["common/with-paths"],
+    } as Parameters<typeof expandReferences>[0]["conventions"][number];
+
+    const result = expandReferences({
+      conventions: [handWritten],
+      sourceMap,
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toContain("conventions[0].must[0]");
+      expect(result.error).toContain('"paths"');
+    }
+  });
+
   it("expands a use ref nested inside a hand-written must[]", () => {
     const sourceMap = buildSourceMap({
       common: [

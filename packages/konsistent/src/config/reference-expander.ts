@@ -60,7 +60,9 @@ export function expandReferences(opts: {
       entry: entry as ConventionV1 & {
         must:
           | MustPredicatesV1
-          | Array<MustBlockV1 | ({ use: string } & Record<string, unknown>)>;
+          | Array<
+              string | MustBlockV1 | ({ use: string } & Record<string, unknown>)
+            >;
       },
       index: i,
       sourceMap,
@@ -79,7 +81,9 @@ function expandHandWritten(opts: {
   entry: ConventionV1 & {
     must:
       | MustPredicatesV1
-      | Array<MustBlockV1 | ({ use: string } & Record<string, unknown>)>;
+      | Array<
+          string | MustBlockV1 | ({ use: string } & Record<string, unknown>)
+        >;
   };
   index: number;
   sourceMap: SourceMap;
@@ -95,10 +99,28 @@ function expandHandWritten(opts: {
   const resolvedBlocks: MustBlockV1[] = [];
   for (let j = 0; j < entry.must.length; j++) {
     const block = entry.must[j];
+    if (typeof block === "string") {
+      const expandedBlock = expandMustBlockReference({
+        ref: block,
+        overrides: {},
+        conventionIndex: index,
+        blockIndex: j,
+        sourceMap,
+      });
+      if (!expandedBlock.success) {
+        return expandedBlock;
+      }
+      resolvedBlocks.push(expandedBlock.block);
+      continue;
+    }
     if (block && typeof block === "object" && Object.hasOwn(block, "use")) {
-      const useRef = block as { use: string } & Record<string, unknown>;
-      const expandedBlock = expandMustBlockUseReference({
-        entry: useRef,
+      const { use, ...overrides } = block as { use: string } & Record<
+        string,
+        unknown
+      >;
+      const expandedBlock = expandMustBlockReference({
+        ref: use,
+        overrides,
         conventionIndex: index,
         blockIndex: j,
         sourceMap,
@@ -118,14 +140,14 @@ function expandHandWritten(opts: {
   };
 }
 
-function expandMustBlockUseReference(opts: {
-  entry: { use: string } & Record<string, unknown>;
+function expandMustBlockReference(opts: {
+  ref: string;
+  overrides: Record<string, unknown>;
   conventionIndex: number;
   blockIndex: number;
   sourceMap: SourceMap;
 }): { success: true; block: MustBlockV1 } | { success: false; error: string } {
-  const { entry, conventionIndex, blockIndex, sourceMap } = opts;
-  const ref = entry.use;
+  const { ref, overrides, conventionIndex, blockIndex, sourceMap } = opts;
   const location = `conventions[${conventionIndex}].must[${blockIndex}]`;
 
   const lookup = lookupReusable({ ref, index: conventionIndex, sourceMap });
@@ -154,8 +176,6 @@ function expandMustBlockUseReference(opts: {
         )}. Such conventions can only be referenced at the top level of conventions[]. Either remove the field(s) from the source convention, or move the reference out of must[].`,
     };
   }
-
-  const { use: _use, ...overrides } = entry;
 
   const base: Record<string, unknown> = {
     must: reusable.must,

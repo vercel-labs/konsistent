@@ -504,6 +504,33 @@ describe("ConfigV1Schema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("accepts a hand-written convention whose must[] contains a string reference", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventionSources: { common: "./x.json" },
+      conventions: [
+        {
+          paths: "src/{name}",
+          must: [{ must: { haveType: "directory" } }, "common/some-must-block"],
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects a string reference inside must[] that does not match vendor/name", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/{name}",
+          must: ["not-a-reference"],
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("accepts a hand-written convention whose must[] contains a use ref", () => {
     const result = ConfigV1Schema.safeParse({
       version: "v1",

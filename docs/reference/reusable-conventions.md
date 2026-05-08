@@ -100,7 +100,7 @@ Any entry that is neither a string nor has a `use` key is treated as a hand-writ
 
 ### `use` inside a parent's `must[]`
 
-A hand-written convention whose `must` is a `MustBlock[]` may also reference a reusable convention from inside the array — the entry takes the same `{ "use": "<vendor>/<name>", ...overrides }` shape, but expands into a single `MustBlock` rather than a full `Convention`.
+A hand-written convention whose `must` is a `MustBlock[]` may also reference a reusable convention from inside the array, in either the bare-string or the object (`use`) form. Both expand into a single `MustBlock` rather than a full `Convention`. The bare-string form does not require the source convention to declare `paths` (a top-level requirement only) — `paths` belongs to the parent convention.
 
 ```json
 {

@@ -61,6 +61,13 @@ export const MustBlockUseRefSchema = MustBlockV1Schema.partial().extend({
     ),
 });
 
+const ConventionStringRefSchema = z
+  .string()
+  .regex(
+    /^[a-z0-9-]+\/[a-z0-9-]+$/,
+    'Convention reference must match "<vendor>/<name>"'
+  );
+
 const RawHandWrittenConventionV1Schema = z.strictObject({
   name: z
     .string()
@@ -73,16 +80,15 @@ const RawHandWrittenConventionV1Schema = z.strictObject({
   placeholders: PlaceholdersMapSchema.optional(),
   must: z.union([
     MustPredicatesV1Schema,
-    z.array(z.union([MustBlockV1Schema, MustBlockUseRefSchema])),
+    z.array(
+      z.union([
+        ConventionStringRefSchema,
+        MustBlockV1Schema,
+        MustBlockUseRefSchema,
+      ])
+    ),
   ]),
 });
-
-const ConventionStringRefSchema = z
-  .string()
-  .regex(
-    /^[a-z0-9-]+\/[a-z0-9-]+$/,
-    'Convention reference must match "<vendor>/<name>"'
-  );
 
 export const ConventionUseRefSchema = z.strictObject({
   use: z
