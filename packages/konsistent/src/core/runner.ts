@@ -426,6 +426,7 @@ async function evaluateForBlock(opts: {
   conventionName?: string;
   fileStructureCache: Map<string, FileStructure>;
   severity?: DiagnosticSeverity;
+  checkedPaths: Set<string>;
   kebabToPascalMap?: Record<string, string>;
   kebabToCamelMap?: Record<string, string>;
   pascalToKebabMap?: Record<string, string>;
@@ -440,6 +441,7 @@ async function evaluateForBlock(opts: {
     conventionName,
     fileStructureCache,
     severity,
+    checkedPaths,
     kebabToPascalMap,
     kebabToCamelMap,
     pascalToKebabMap,
@@ -496,6 +498,7 @@ async function evaluateForBlock(opts: {
 
   const diagnostics: Diagnostic[] = [];
   for (const entry of matched) {
+    checkedPaths.add(entry.path);
     const mergedPlaceholders = { ...entry.placeholders };
     for (const [key, value] of Object.entries(parentContext.placeholders)) {
       mergedPlaceholders[key] = value;
@@ -632,6 +635,7 @@ export async function run(opts: {
             }),
             fileStructureCache,
             severity,
+            checkedPaths,
             kebabToPascalMap,
             kebabToCamelMap,
             pascalToKebabMap,
