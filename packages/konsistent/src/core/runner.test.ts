@@ -394,8 +394,12 @@ describe("run", () => {
       directories: new Set(["components/Button"]),
       files: new Set(["components/Button/Button.test.tsx"]),
     });
-    const { diagnostics } = await run({ config, fileSystem: fs });
+    const { diagnostics, filesChecked } = await run({
+      config,
+      fileSystem: fs,
+    });
     expect(diagnostics).toEqual([]);
+    expect(filesChecked).toBe(2);
   });
 
   it("silently skips when for.files matches zero files", async () => {
