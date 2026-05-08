@@ -48,7 +48,7 @@ export function validatePlaceholders(opts: {
       }
       reported.add(usage.name);
       errors.push(
-        `Convention "${identifier}" references "\${${usage.name}}" in ${usage.key}, but no entry of paths declares "{${usage.name}}".`
+        `Convention "${identifier}" references "\${${usage.name}}" in ${usage.key}, but neither paths nor placeholders declare "{${usage.name}}".`
       );
     }
   }

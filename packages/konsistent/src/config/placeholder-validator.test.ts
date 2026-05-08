@@ -37,7 +37,7 @@ describe("validatePlaceholders", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error).toBe(
-        'Convention "broken" references "${componentName}" in must.haveFiles, but no entry of paths declares "{componentName}".'
+        'Convention "broken" references "${componentName}" in must.haveFiles, but neither paths nor placeholders declare "{componentName}".'
       );
     }
   });

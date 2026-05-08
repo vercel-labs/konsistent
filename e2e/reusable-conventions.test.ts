@@ -319,7 +319,7 @@ describe("reusable-convention-placeholder-mismatch fixture", () => {
       };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stderr).toContain(
-        'Convention "common/component-folder-must-have-named-file" references "${componentName}" in must.haveFiles, but no entry of paths declares "{componentName}".'
+        'Convention "common/component-folder-must-have-named-file" references "${componentName}" in must.haveFiles, but neither paths nor placeholders declare "{componentName}".'
       );
       expect(error.stdout).not.toContain("Checked");
       expect(error.stdout).not.toContain("Found");
@@ -339,7 +339,7 @@ describe("reusable-convention-placeholder-mismatch fixture", () => {
       };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stderr).toContain(
-        'Convention "common/component-folder-must-have-named-file" references "${componentName}" in must.haveFiles, but no entry of paths declares "{componentName}".'
+        'Convention "common/component-folder-must-have-named-file" references "${componentName}" in must.haveFiles, but neither paths nor placeholders declare "{componentName}".'
       );
     }
   });
