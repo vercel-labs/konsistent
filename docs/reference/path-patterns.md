@@ -69,6 +69,8 @@ This is equivalent to `paths: "packages/{providerId}/src/index.ts"` when the tre
 
 A name may not appear in both a `{name}` placeholder in `paths` and in `placeholders` — pick one source of truth.
 
+You can also inject placeholder values from the command line via the `--placeholder name:value` flag (repeatable). CLI-supplied placeholders are merged into every convention's `placeholders` map and override any existing entries there, which lets you reuse a `konsistent.json` written by someone else without forking it. CLI placeholders may not collide with names captured from `paths` — that's an error.
+
 Values must match the same `[a-zA-Z0-9_-]+` charset as values extracted from paths. All template helpers (`toPascalCase()`, `toCamelCase()`, etc.) work the same way as for captured placeholders.
 
 ## Case transformations

@@ -44,6 +44,34 @@ describe("loadConfig", () => {
       expect(result.error).toContain("Invalid JSON");
     }
   });
+
+  it("merges cliPlaceholders into every convention's placeholders map", async () => {
+    const result = await loadConfig({
+      configPath: resolve(
+        fixturesDir,
+        "convention-placeholders/konsistent.json"
+      ),
+      cliPlaceholders: { providerId: "anthropic" },
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      for (const convention of result.config.conventions) {
+        expect(convention.placeholders?.providerId).toBe("anthropic");
+      }
+    }
+  });
+
+  it("rejects a CLI placeholder that collides with a path-captured name", async () => {
+    const result = await loadConfig({
+      configPath: resolve(fixturesDir, "placeholder-satisfies/konsistent.json"),
+      cliPlaceholders: { providerId: "openai" },
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toContain('--placeholder "providerId:openai"');
+      expect(result.error).toContain('captures "{providerId}" from paths');
+    }
+  });
 });
 
 describe("loadConfig --config-package", () => {

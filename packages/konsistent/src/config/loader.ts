@@ -20,8 +20,64 @@ export type LoadConfigResult =
   | { success: false; error: string };
 
 export interface LoadConfigOptions {
+  cliPlaceholders?: Record<string, string>;
   configPackage?: string;
   configPath?: string;
+}
+
+const DECLARATION_REGEX =
+  /\{([a-zA-Z][a-zA-Z0-9]*)(?::[a-zA-Z][a-zA-Z0-9]*(?:\([^}]*\))?)?\}/g;
+
+function pathDeclaredNames(paths: string | string[]): Set<string> {
+  const declared = new Set<string>();
+  const entries = typeof paths === "string" ? [paths] : paths;
+  for (const entry of entries) {
+    for (const match of entry.matchAll(DECLARATION_REGEX)) {
+      const name = match[1];
+      if (name !== undefined) {
+        declared.add(name);
+      }
+    }
+  }
+  return declared;
+}
+
+function applyCliPlaceholders(opts: {
+  conventions: ConfigV1["conventions"];
+  identifiers: string[];
+  cliPlaceholders: Record<string, string>;
+}):
+  | { success: true; conventions: ConfigV1["conventions"] }
+  | { success: false; error: string } {
+  const { conventions, identifiers, cliPlaceholders } = opts;
+  const cliNames = Object.keys(cliPlaceholders);
+  if (cliNames.length === 0) {
+    return { success: true, conventions };
+  }
+
+  const errors: string[] = [];
+  const next: ConfigV1["conventions"] = [];
+  for (let i = 0; i < conventions.length; i++) {
+    const convention = conventions[i];
+    const identifier = identifiers[i] ?? `conventions[${i}]`;
+    const declared = pathDeclaredNames(convention.paths);
+    for (const name of cliNames) {
+      if (declared.has(name)) {
+        errors.push(
+          `--placeholder "${name}:${cliPlaceholders[name]}" conflicts with convention "${identifier}" which captures "{${name}}" from paths. CLI placeholders may only override values in placeholders, not path-determined ones.`
+        );
+      }
+    }
+    next.push({
+      ...convention,
+      placeholders: { ...convention.placeholders, ...cliPlaceholders },
+    });
+  }
+
+  if (errors.length > 0) {
+    return { success: false, error: errors.join("\n") };
+  }
+  return { success: true, conventions: next };
 }
 
 export async function loadConfig(
@@ -92,8 +148,17 @@ export async function loadConfig(
     return { success: false, error: expansionResult.error };
   }
 
-  const placeholderResult = validatePlaceholders({
+  const cliMerge = applyCliPlaceholders({
     conventions: expansionResult.conventions,
+    identifiers: expansionResult.identifiers,
+    cliPlaceholders: opts.cliPlaceholders ?? {},
+  });
+  if (!cliMerge.success) {
+    return { success: false, error: cliMerge.error };
+  }
+
+  const placeholderResult = validatePlaceholders({
+    conventions: cliMerge.conventions,
     identifiers: expansionResult.identifiers,
   });
   if (!placeholderResult.ok) {
@@ -104,7 +169,7 @@ export async function loadConfig(
     success: true,
     config: {
       ...parsed,
-      conventions: expansionResult.conventions,
+      conventions: cliMerge.conventions,
     },
   };
 }

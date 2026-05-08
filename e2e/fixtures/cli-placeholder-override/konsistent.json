@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "provider-barrel",
+      "paths": "packages/anthropic/src/index.ts",
+      "placeholders": { "providerId": "openai" },
+      "must": {
+        "haveFiles": ["${providerId}-provider.ts"]
+      }
+    }
+  ]
+}

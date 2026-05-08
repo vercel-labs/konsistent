@@ -1,3 +1,7 @@
+export {
+  normalizePlaceholderArg,
+  parseCliPlaceholders,
+} from "./cli-placeholders.js";
 export { loadConfig } from "./loader.js";
 export type {
   ConfigV1,

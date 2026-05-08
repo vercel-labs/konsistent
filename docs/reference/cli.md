@@ -38,6 +38,7 @@ konsistent check --error-on-warnings --diagnostic-level error
 | `--colors` / `--no-colors` | boolean | auto | Force-enable or disable terminal colors (default format only) |
 | `--error-on-warnings` | boolean | `false` | Treat warnings as errors for the exit code |
 | `--diagnostic-level <level>` | `warning` \| `error` | `warning` | Minimum severity to evaluate. `error` skips warning-severity conventions entirely |
+| `--placeholder <name:value>` | string (repeatable) | — | Inject a placeholder into every convention's `placeholders` map, overriding any entry already there. May be passed multiple times. See [Static placeholder values](./path-patterns.md#static-placeholder-values) |
 
 ### Exit codes
 
@@ -56,7 +57,7 @@ konsistent validate --config-package @acme/shared-conventions
 
 Exits `0` and prints `Configuration is valid.` on success. Exits `1` with a Zod validation error on failure.
 
-`validate` accepts the same `--config-path` and `--config-package` flags as `check` (see the table above).
+`validate` accepts the same `--config-path`, `--config-package`, and `--placeholder` flags as `check` (see the table above).
 
 ## Output formats
 
