@@ -11,6 +11,9 @@
   "exports": {
     "./konsistent": "./dist/conventions.json"
   },
+  "engines": {
+    "node": ">=22.11.0"
+  },
   "scripts": {
     "build": "konsistent-convention emit",
     "typecheck": "tsc --noEmit",
