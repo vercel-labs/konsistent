@@ -15,6 +15,9 @@
   "bin": {
     "konsistent": "./dist/index.js"
   },
+  "engines": {
+    "node": ">=22.11.0"
+  },
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
