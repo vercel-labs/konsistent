@@ -1,0 +1,10 @@
+{
+  "mode": "pre",
+  "tag": "alpha",
+  "initialVersions": {
+    "konsistent": "0.0.0",
+    "@konsistent/convention": "0.0.0",
+    "@konsistent/common-conventions": "0.0.0"
+  },
+  "changesets": []
+}
