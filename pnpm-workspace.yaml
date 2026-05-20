@@ -20,3 +20,6 @@ catalog:
   typescript: "^5.7"
   vitest: "^3"
   zod: "^4"
+
+allowBuilds:
+  esbuild: true
