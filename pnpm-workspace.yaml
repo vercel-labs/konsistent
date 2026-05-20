@@ -23,3 +23,13 @@ catalog:
 
 allowBuilds:
   esbuild: true
+
+minimumReleaseAge: 2880 # 2 days
+
+minimumReleaseAgeExclude:
+  - '@turbo/*'
+  - 'turbo'
+  - '@vercel/*'
+  - '@workflow/*'
+  - 'konsistent'
+  - '@konsistent/*'
