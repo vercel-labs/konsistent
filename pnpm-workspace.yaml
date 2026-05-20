@@ -23,3 +23,10 @@ catalog:
 
 allowBuilds:
   esbuild: true
+
+minimumReleaseAge: 2880 # 2 days
+
+minimumReleaseAgeExclude:
+  - 'turbo'
+  - 'konsistent'
+  - '@konsistent/*'
