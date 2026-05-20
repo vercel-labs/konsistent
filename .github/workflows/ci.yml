@@ -71,11 +71,13 @@ jobs:
       # Double install: @konsistent/common-conventions's build script invokes the
       # `konsistent-convention` CLI shipped by @konsistent/convention. The bin
       # symlink can only be created once @konsistent/convention/dist/cli.js
-      # exists, so we install, build the producer, then re-install with
-      # --force to relink bins (pnpm 11's warm-reinstall optimization skips
-      # bin linking otherwise). Outside this monorepo, npm/pnpm consumers
-      # install the already-built tarball and never hit this.
+      # exists, so we install, build the producer, wipe node_modules, then
+      # reinstall to link the bin. pnpm 11's warm-reinstall skips re-linking
+      # if node_modules looks current (--force isn't enough), so the wipe is
+      # required. Outside this monorepo, npm/pnpm consumers install the
+      # already-built tarball and never hit this.
       - run: pnpm install --frozen-lockfile
       - run: pnpm -F @konsistent/convention build
-      - run: pnpm install --frozen-lockfile --force
+      - run: rm -rf node_modules packages/*/node_modules e2e/fixtures/*/node_modules
+      - run: pnpm install --frozen-lockfile
       - run: pnpm test:e2e
