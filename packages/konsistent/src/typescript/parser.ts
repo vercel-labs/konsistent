@@ -8,6 +8,7 @@ import type {
   FunctionInfo,
   ImportInfo,
   InterfaceInfo,
+  NonBarrelStatementInfo,
   ParamInfo,
   SourcePosition,
   TypeAliasInfo,
@@ -192,6 +193,7 @@ interface ParseCollector {
   functions: FunctionInfo[];
   imports: ImportInfo[];
   interfaces: InterfaceInfo[];
+  nonBarrelStatements: NonBarrelStatementInfo[];
   typeAliases: TypeAliasInfo[];
 }
 
@@ -358,6 +360,7 @@ export function parseFileStructure(opts: {
     classes: [],
     functions: [],
     constants: [],
+    nonBarrelStatements: [],
     typeAliases: [],
   };
 
@@ -390,5 +393,102 @@ export function parseFileStructure(opts: {
     }
   });
 
+  classifyNonBarrelStatements({ sourceFile, collector });
+
   return collector;
+}
+
+function classifyNonBarrelStatements(opts: {
+  sourceFile: ts.SourceFile;
+  collector: ParseCollector;
+}): void {
+  const { sourceFile, collector } = opts;
+  const importedNames = new Set(collector.imports.map((i) => i.name));
+
+  ts.forEachChild(sourceFile, (node) => {
+    const kind = classifyTopLevelNode({ node, sourceFile, importedNames });
+    if (kind) {
+      collector.nonBarrelStatements.push({
+        kind,
+        pos: getPosition({ sourceFile, node }),
+      });
+    }
+  });
+}
+
+function classifyExportDeclaration(opts: {
+  node: ts.ExportDeclaration;
+  sourceFile: ts.SourceFile;
+  importedNames: Set<string>;
+}): NonBarrelStatementInfo["kind"] | undefined {
+  const { node, sourceFile, importedNames } = opts;
+  if (node.moduleSpecifier) {
+    return;
+  }
+  if (!(node.exportClause && ts.isNamedExports(node.exportClause))) {
+    return;
+  }
+  for (const element of node.exportClause.elements) {
+    const sourceName = (element.propertyName ?? element.name).getText(
+      sourceFile
+    );
+    if (!importedNames.has(sourceName)) {
+      return "named-export-local";
+    }
+  }
+  return;
+}
+
+function classifyExportAssignment(opts: {
+  node: ts.ExportAssignment;
+  sourceFile: ts.SourceFile;
+  importedNames: Set<string>;
+}): NonBarrelStatementInfo["kind"] | undefined {
+  const { node, sourceFile, importedNames } = opts;
+  if (node.isExportEquals) {
+    return "export-equals";
+  }
+  if (
+    ts.isIdentifier(node.expression) &&
+    importedNames.has(node.expression.getText(sourceFile))
+  ) {
+    return;
+  }
+  return "default-expression";
+}
+
+function isDeclarationNode(node: ts.Node): boolean {
+  return (
+    ts.isFunctionDeclaration(node) ||
+    ts.isClassDeclaration(node) ||
+    ts.isInterfaceDeclaration(node) ||
+    ts.isTypeAliasDeclaration(node) ||
+    ts.isEnumDeclaration(node) ||
+    ts.isVariableStatement(node) ||
+    ts.isModuleDeclaration(node)
+  );
+}
+
+function classifyTopLevelNode(opts: {
+  node: ts.Node;
+  sourceFile: ts.SourceFile;
+  importedNames: Set<string>;
+}): NonBarrelStatementInfo["kind"] | undefined {
+  const { node, sourceFile, importedNames } = opts;
+  if (ts.isImportDeclaration(node)) {
+    return;
+  }
+  if (ts.isExportDeclaration(node)) {
+    return classifyExportDeclaration({ node, sourceFile, importedNames });
+  }
+  if (ts.isExportAssignment(node)) {
+    return classifyExportAssignment({ node, sourceFile, importedNames });
+  }
+  if (ts.isExpressionStatement(node)) {
+    return "expression";
+  }
+  if (isDeclarationNode(node)) {
+    return "declaration";
+  }
+  return;
 }

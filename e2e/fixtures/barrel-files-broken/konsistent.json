@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "barrels-must-be-pure",
+      "description": "Index files must be pure barrels.",
+      "paths": "src/{moduleName}",
+      "must": [
+        {
+          "for": { "files": "index.ts" },
+          "must": { "areBarrelFiles": true }
+        }
+      ]
+    }
+  ]
+}

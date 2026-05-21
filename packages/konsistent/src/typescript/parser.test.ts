@@ -568,4 +568,100 @@ describe("parseFileStructure", () => {
       expect(result.exports.length).toBeGreaterThanOrEqual(6);
     });
   });
+
+  describe("nonBarrelStatements", () => {
+    it("is empty for a barrel using export-from in all forms", () => {
+      const result = parseFileStructure({
+        source: [
+          "export * from './a';",
+          "export * as ns from './b';",
+          "export { a, b as c } from './c';",
+          "export { default } from './d';",
+          "export { default as Foo } from './e';",
+          "import './polyfill';",
+        ].join("\n"),
+      });
+      expect(result.nonBarrelStatements).toEqual([]);
+    });
+
+    it("is empty when named export references an imported identifier", () => {
+      const result = parseFileStructure({
+        source: "import { x } from './x';\nexport { x };",
+      });
+      expect(result.nonBarrelStatements).toEqual([]);
+    });
+
+    it("is empty when named export aliases an imported identifier", () => {
+      const result = parseFileStructure({
+        source: "import { x } from './x';\nexport { x as y };",
+      });
+      expect(result.nonBarrelStatements).toEqual([]);
+    });
+
+    it("is empty when default export forwards an imported identifier", () => {
+      const result = parseFileStructure({
+        source: "import x from './x';\nexport default x;",
+      });
+      expect(result.nonBarrelStatements).toEqual([]);
+    });
+
+    it("flags default export of a non-identifier expression", () => {
+      const result = parseFileStructure({
+        source: "export default { a: 1 };",
+      });
+      expect(result.nonBarrelStatements).toHaveLength(1);
+      expect(result.nonBarrelStatements[0].kind).toBe("default-expression");
+    });
+
+    it("flags default export of a literal", () => {
+      const result = parseFileStructure({ source: "export default 42;" });
+      expect(result.nonBarrelStatements).toHaveLength(1);
+      expect(result.nonBarrelStatements[0].kind).toBe("default-expression");
+    });
+
+    it("flags named export of a locally declared identifier", () => {
+      const result = parseFileStructure({
+        source: "const x = 1;\nexport { x };",
+      });
+      const kinds = result.nonBarrelStatements.map((n) => n.kind);
+      expect(kinds).toContain("declaration");
+      expect(kinds).toContain("named-export-local");
+    });
+
+    it("flags local const declarations", () => {
+      const result = parseFileStructure({ source: "const x = 1;" });
+      expect(result.nonBarrelStatements).toHaveLength(1);
+      expect(result.nonBarrelStatements[0].kind).toBe("declaration");
+    });
+
+    it("flags exported const declarations", () => {
+      const result = parseFileStructure({ source: "export const x = 1;" });
+      expect(result.nonBarrelStatements).toHaveLength(1);
+      expect(result.nonBarrelStatements[0].kind).toBe("declaration");
+    });
+
+    it("flags enum declarations", () => {
+      const result = parseFileStructure({ source: "enum E { A }" });
+      expect(result.nonBarrelStatements).toHaveLength(1);
+      expect(result.nonBarrelStatements[0].kind).toBe("declaration");
+    });
+
+    it("flags exported enum declarations", () => {
+      const result = parseFileStructure({ source: "export enum E { A }" });
+      expect(result.nonBarrelStatements).toHaveLength(1);
+      expect(result.nonBarrelStatements[0].kind).toBe("declaration");
+    });
+
+    it("flags top-level expression statements", () => {
+      const result = parseFileStructure({ source: "doSomething();" });
+      expect(result.nonBarrelStatements).toHaveLength(1);
+      expect(result.nonBarrelStatements[0].kind).toBe("expression");
+    });
+
+    it("flags export equals", () => {
+      const result = parseFileStructure({ source: "export = x;" });
+      expect(result.nonBarrelStatements).toHaveLength(1);
+      expect(result.nonBarrelStatements[0].kind).toBe("export-equals");
+    });
+  });
 });
