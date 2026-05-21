@@ -386,6 +386,9 @@
                         }
                       ]
                     }
+                  },
+                  "areBarrelFiles": {
+                    "type": "boolean"
                   }
                 },
                 "additionalProperties": false
@@ -697,6 +700,9 @@
                             }
                           ]
                         }
+                      },
+                      "areBarrelFiles": {
+                        "type": "boolean"
                       }
                     },
                     "additionalProperties": false
@@ -1025,6 +1031,9 @@
                                       }
                                     ]
                                   }
+                                },
+                                "areBarrelFiles": {
+                                  "type": "boolean"
                                 }
                               },
                               "additionalProperties": false
@@ -1349,6 +1358,9 @@
                                       }
                                     ]
                                   }
+                                },
+                                "areBarrelFiles": {
+                                  "type": "boolean"
                                 }
                               },
                               "additionalProperties": false

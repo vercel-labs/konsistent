@@ -19,6 +19,8 @@ The full machine-readable schema lives at `node_modules/konsistent/konsistent.sc
 - [Import predicates](#import-predicates)
   - [`import`](#import)
   - [`importTypes`](#importtypes)
+- [Structural predicates](#structural-predicates)
+  - [`areBarrelFiles`](#arebarrelfiles)
 
 All predicates support template substitutions in their string values — see [path-patterns.md](./path-patterns.md#case-transformations) for the full case-transformation catalog.
 
@@ -244,6 +246,45 @@ Assert type-only imports (`import type { ... } from`).
 ```
 
 Same shape as `import`. Useful for enforcing dependency direction — every adapter's implementation file must `import type` its base from a specific module.
+
+---
+
+## Structural predicates
+
+### `areBarrelFiles`
+
+Assert that the matched files are pure barrel files: every top-level statement must be a re-export of another module, not a local declaration.
+
+```json
+{
+  "paths": "src/{moduleName}",
+  "must": [
+    {
+      "for": { "files": "index.ts" },
+      "must": { "areBarrelFiles": true }
+    }
+  ]
+}
+```
+
+A file passes when every top-level statement is one of:
+
+- An `import` declaration of any form, including bare side-effect imports (`import "./polyfill"`).
+- A re-export with a module specifier: `export * from "./x"`, `export * as ns from "./x"`, `export { a, b as c } from "./x"`, `export { default } from "./x"`, `export { default as Foo } from "./x"`.
+- `export { a, b as c }` where every specifier references an identifier brought in by an `import` statement in the same file. Aliasing (`as`) is allowed because it is a pure re-export.
+- `export default <Identifier>` where the identifier was brought in by an `import` statement in the same file.
+
+Every other top-level construct produces a diagnostic:
+
+| Violation kind | Example | Message |
+| --- | --- | --- |
+| `declaration` | `const x = 1;`, `function f() {}`, `class C {}`, `enum E {}`, `type T = ...`, `interface I {}` | `Barrel file must not contain declarations` |
+| `expression` | `doSomething();` | `Barrel file must not contain top-level expression statements` |
+| `default-expression` | `export default { a: 1 };`, `export default 42;` | `Barrel file default export must re-export an imported identifier` |
+| `named-export-local` | `const x = 1; export { x };` | `Barrel file must only re-export imported identifiers` |
+| `export-equals` | `export = x;` | <code>Barrel file must not use &#96;export =&#96;</code> |
+
+The predicate takes a bare boolean (`true` enables, `false`/omitted disables). It does not enforce a filename — pair it with a `for` block or a `paths` pattern that targets the files you consider barrels.
 
 ---
 

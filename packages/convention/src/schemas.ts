@@ -58,6 +58,7 @@ export const MustPredicatesV1Schema = z.strictObject({
   importTypes: z
     .array(z.union([z.string(), ImportDefinitionV1Schema]))
     .optional(),
+  areBarrelFiles: z.boolean().optional(),
 });
 
 export const MustBlockV1Schema = z.strictObject({

@@ -32,6 +32,7 @@ function createMockFileStructure(opts: {
     classes: [],
     functions: [],
     constants: [],
+    nonBarrelStatements: [],
     typeAliases: [],
   };
 }

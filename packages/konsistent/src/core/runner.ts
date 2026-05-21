@@ -7,6 +7,7 @@ import type {
 import { checkHaveFiles } from "../predicates/have-files.js";
 import { checkHaveType } from "../predicates/have-type.js";
 import { parseFileStructure } from "../typescript/parser.js";
+import { checkAreBarrelFiles } from "../typescript/predicates/are-barrel-files.js";
 import { checkExport } from "../typescript/predicates/export.js";
 import { checkExportClasses } from "../typescript/predicates/export-classes.js";
 import { checkExportConstants } from "../typescript/predicates/export-constants.js";
@@ -63,6 +64,7 @@ export const TS_PREDICATES = new Set([
   "exportInterfaces",
   "import",
   "importTypes",
+  "areBarrelFiles",
 ]);
 
 function invertMap(
@@ -311,6 +313,22 @@ const TS_PREDICATE_HANDLERS: Record<
     must.importTypes
       ? checkImportTypes({
           expected: must.importTypes,
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        })
+      : [],
+  areBarrelFiles: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.areBarrelFiles
+      ? checkAreBarrelFiles({
+          expected: must.areBarrelFiles,
           context,
           fileStructure,
           conventionName,
