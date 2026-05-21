@@ -88,7 +88,33 @@ async function readPackage({ folderName }) {
     version: packageJson.version,
     dependencies: packageJson.dependencies ?? {},
     optionalDependencies: packageJson.optionalDependencies ?? {},
+    scripts: packageJson.scripts ?? {},
   };
+}
+
+const POST_PUBLISH_CLEAN_SCRIPT = "post-publish-clean";
+
+async function runPostPublishClean({ packages }) {
+  for (const pkg of packages) {
+    if (!pkg.scripts[POST_PUBLISH_CLEAN_SCRIPT]) {
+      continue;
+    }
+
+    console.log(`Running ${POST_PUBLISH_CLEAN_SCRIPT} for ${pkg.name}`);
+
+    const result = await runCommand({
+      command: "pnpm",
+      args: ["run", POST_PUBLISH_CLEAN_SCRIPT],
+      cwd: pkg.packageDir,
+      allowFailure: true,
+    });
+
+    if (result.status !== 0) {
+      console.error(
+        `${POST_PUBLISH_CLEAN_SCRIPT} for ${pkg.name} failed:\n${result.stderr || result.stdout}`
+      );
+    }
+  }
 }
 
 async function readPackages() {
@@ -330,10 +356,16 @@ async function main() {
     return;
   }
 
-  await publishPackages({
-    packages: packagesToPublish,
-    dryRun,
-  });
+  try {
+    await publishPackages({
+      packages: packagesToPublish,
+      dryRun,
+    });
+  } finally {
+    await runPostPublishClean({
+      packages: packagesToPublish,
+    });
+  }
 }
 
 main().catch((error) => {

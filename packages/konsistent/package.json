@@ -24,7 +24,7 @@
     "generate-schema": "tsx scripts/generate-schema.ts",
     "test": "vitest run",
     "prepack": "cp -r ../../docs ./docs",
-    "postpack": "del-cli docs"
+    "post-publish-clean": "del-cli docs"
   },
   "dependencies": {
     "@konsistent/convention": "workspace:*",
