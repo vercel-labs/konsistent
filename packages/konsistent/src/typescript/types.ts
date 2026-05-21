@@ -64,6 +64,18 @@ export interface TypeAliasInfo {
   pos: SourcePosition;
 }
 
+export type NonBarrelStatementKind =
+  | "declaration"
+  | "expression"
+  | "default-expression"
+  | "named-export-local"
+  | "export-equals";
+
+export interface NonBarrelStatementInfo {
+  kind: NonBarrelStatementKind;
+  pos: SourcePosition;
+}
+
 export interface FileStructure {
   classes: ClassInfo[];
   constants: ConstantInfo[];
@@ -71,5 +83,6 @@ export interface FileStructure {
   functions: FunctionInfo[];
   imports: ImportInfo[];
   interfaces: InterfaceInfo[];
+  nonBarrelStatements: NonBarrelStatementInfo[];
   typeAliases: TypeAliasInfo[];
 }
