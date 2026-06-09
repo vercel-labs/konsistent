@@ -67,45 +67,49 @@ describe("parseVersion", () => {
 
 describe("compareVersions", () => {
   it("compares major versions", () => {
-    expect(compareVersions(parse("1.0.0"), parse("2.0.0"))).toBe(-1);
-    expect(compareVersions(parse("2.0.0"), parse("1.0.0"))).toBe(1);
+    expect(compareVersions({ a: parse("1.0.0"), b: parse("2.0.0") })).toBe(-1);
+    expect(compareVersions({ a: parse("2.0.0"), b: parse("1.0.0") })).toBe(1);
   });
 
   it("compares minor versions", () => {
-    expect(compareVersions(parse("1.1.0"), parse("1.2.0"))).toBe(-1);
+    expect(compareVersions({ a: parse("1.1.0"), b: parse("1.2.0") })).toBe(-1);
   });
 
   it("compares patch versions", () => {
-    expect(compareVersions(parse("1.0.1"), parse("1.0.2"))).toBe(-1);
+    expect(compareVersions({ a: parse("1.0.1"), b: parse("1.0.2") })).toBe(-1);
   });
 
   it("returns 0 for equal versions", () => {
-    expect(compareVersions(parse("1.2.3"), parse("1.2.3"))).toBe(0);
+    expect(compareVersions({ a: parse("1.2.3"), b: parse("1.2.3") })).toBe(0);
   });
 
   it("stable is greater than prerelease at same version", () => {
-    expect(compareVersions(parse("1.0.0"), parse("1.0.0-alpha.1"))).toBe(1);
-    expect(compareVersions(parse("1.0.0-alpha.1"), parse("1.0.0"))).toBe(-1);
+    expect(
+      compareVersions({ a: parse("1.0.0"), b: parse("1.0.0-alpha.1") })
+    ).toBe(1);
+    expect(
+      compareVersions({ a: parse("1.0.0-alpha.1"), b: parse("1.0.0") })
+    ).toBe(-1);
   });
 
   it("compares prerelease tags alphabetically", () => {
-    expect(compareVersions(parse("1.0.0-alpha.1"), parse("1.0.0-beta.1"))).toBe(
-      -1
-    );
-    expect(compareVersions(parse("1.0.0-beta.1"), parse("1.0.0-rc.1"))).toBe(
-      -1
-    );
+    expect(
+      compareVersions({ a: parse("1.0.0-alpha.1"), b: parse("1.0.0-beta.1") })
+    ).toBe(-1);
+    expect(
+      compareVersions({ a: parse("1.0.0-beta.1"), b: parse("1.0.0-rc.1") })
+    ).toBe(-1);
   });
 
   it("compares prerelease numbers", () => {
     expect(
-      compareVersions(parse("1.0.0-alpha.3"), parse("1.0.0-alpha.10"))
+      compareVersions({ a: parse("1.0.0-alpha.3"), b: parse("1.0.0-alpha.10") })
     ).toBe(-1);
   });
 
   it("compares equal prerelease versions", () => {
     expect(
-      compareVersions(parse("0.0.1-alpha.4"), parse("0.0.1-alpha.4"))
+      compareVersions({ a: parse("0.0.1-alpha.4"), b: parse("0.0.1-alpha.4") })
     ).toBe(0);
   });
 });

@@ -66,10 +66,11 @@ function extractParams(
   }));
 }
 
-function extractExtendsFromHeritage(
-  clauses: ts.NodeArray<ts.HeritageClause> | undefined,
-  kind: ts.SyntaxKind
-): ExtendsClauseInfo[] {
+function extractExtendsFromHeritage(opts: {
+  clauses: ts.NodeArray<ts.HeritageClause> | undefined;
+  kind: ts.SyntaxKind;
+}): ExtendsClauseInfo[] {
+  const { clauses, kind } = opts;
   if (!clauses) {
     return [];
   }
@@ -271,24 +272,24 @@ function processDeclaration(opts: {
     const pos = getPosition({ sourceFile, node });
     collector.interfaces.push({
       name: node.name.getText(sourceFile),
-      extends: extractExtendsFromHeritage(
-        node.heritageClauses,
-        ts.SyntaxKind.ExtendsKeyword
-      ),
+      extends: extractExtendsFromHeritage({
+        clauses: node.heritageClauses,
+        kind: ts.SyntaxKind.ExtendsKeyword,
+      }),
       pos,
     });
   }
 
   if (ts.isClassDeclaration(node) && node.name) {
     const pos = getPosition({ sourceFile, node });
-    const extendsClauses = extractExtendsFromHeritage(
-      node.heritageClauses,
-      ts.SyntaxKind.ExtendsKeyword
-    );
-    const implementsClauses = extractExtendsFromHeritage(
-      node.heritageClauses,
-      ts.SyntaxKind.ImplementsKeyword
-    );
+    const extendsClauses = extractExtendsFromHeritage({
+      clauses: node.heritageClauses,
+      kind: ts.SyntaxKind.ExtendsKeyword,
+    });
+    const implementsClauses = extractExtendsFromHeritage({
+      clauses: node.heritageClauses,
+      kind: ts.SyntaxKind.ImplementsKeyword,
+    });
     collector.classes.push({
       name: node.name.getText(sourceFile),
       extends: extendsClauses[0]?.name,
