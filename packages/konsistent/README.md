@@ -166,4 +166,4 @@ Output formats are also available via `--format`:
 
 ## License
 
-MIT
+Apache-2.0
