@@ -1,10 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.4.13/schema.json",
   "extends": ["ultracite/biome/core"],
-  "plugins": [
-    "./tools/biome-plugins/no-in-operator.grit",
-    "./tools/biome-plugins/no-as-unknown-as.grit"
-  ],
+  "plugins": ["./node_modules/@felixarntz/biome/rules/all.grit"],
   "files": {
     "includes": ["!**/e2e/fixtures", "!**/agent-artifacts", "!**/.pnpm-store"]
   },

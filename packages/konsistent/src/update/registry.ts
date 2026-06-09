@@ -62,7 +62,10 @@ export function findLatestInChannel(opts: {
       continue;
     }
 
-    if (!latestParsed || compareVersions(parsed, latestParsed) === 1) {
+    if (
+      !latestParsed ||
+      compareVersions({ a: parsed, b: latestParsed }) === 1
+    ) {
       latestVersion = version;
       latestParsed = parsed;
     }
