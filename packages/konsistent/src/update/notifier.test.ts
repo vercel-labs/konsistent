@@ -109,6 +109,7 @@ describe("formatNotification", () => {
 
 describe("checkAndPrompt", () => {
   afterEach(() => {
+    vi.clearAllMocks();
     vi.restoreAllMocks();
   });
 
