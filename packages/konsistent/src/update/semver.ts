@@ -23,10 +23,13 @@ export function parseVersion(version: string): ParsedVersion | null {
   };
 }
 
-export function compareVersions(
-  a: ParsedVersion,
-  b: ParsedVersion
-): -1 | 0 | 1 {
+export function compareVersions({
+  a,
+  b,
+}: {
+  a: ParsedVersion;
+  b: ParsedVersion;
+}): -1 | 0 | 1 {
   for (const field of ["major", "minor", "patch"] as const) {
     if (a[field] < b[field]) {
       return -1;
@@ -79,7 +82,7 @@ export function isNewerVersion(opts: {
   if (!(a && b)) {
     return false;
   }
-  return compareVersions(b, a) === 1;
+  return compareVersions({ a: b, b: a }) === 1;
 }
 
 /*
@@ -109,7 +112,7 @@ export function versionSatisfiesRange(opts: {
     return false;
   }
 
-  if (compareVersions(target, base) === -1) {
+  if (compareVersions({ a: target, b: base }) === -1) {
     return false;
   }
 
