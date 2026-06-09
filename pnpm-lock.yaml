@@ -41,6 +41,9 @@ importers:
       '@biomejs/biome':
         specifier: ^2
         version: 2.4.13
+      '@felixarntz/biome':
+        specifier: ^0.1.1
+        version: 0.1.1
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -606,6 +609,9 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@felixarntz/biome@0.1.1':
+    resolution: {integrity: sha512-+ksRF5ei1RyiaYuwm3qMy2uClrXJ13TC4+9XqzJpJUGNxJ9rfgBBkvmzVNFGlcLbjGm5DooRb+QeTc4GzN6wAg==}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -1851,6 +1857,8 @@ snapshots:
 
   '@esbuild/win32-x64@0.27.7':
     optional: true
+
+  '@felixarntz/biome@0.1.1': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
