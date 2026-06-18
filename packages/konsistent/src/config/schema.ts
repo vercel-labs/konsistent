@@ -6,6 +6,7 @@ import { z } from "zod";
 
 export type {
   ClassDefinitionV1,
+  DeclarationDefinitionV1,
   ExportDefinitionV1,
   FunctionDefinitionV1,
   ImportDefinitionV1,
@@ -17,6 +18,7 @@ export type {
 } from "@konsistent/convention";
 export {
   ClassDefinitionV1Schema,
+  DeclarationDefinitionV1Schema,
   ExportDefinitionV1Schema,
   FunctionDefinitionV1Schema,
   ImportDefinitionV1Schema,

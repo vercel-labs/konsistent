@@ -9,6 +9,12 @@ The full machine-readable schema lives at `node_modules/konsistent/konsistent.sc
 - [Filesystem predicates](#filesystem-predicates)
   - [`haveType`](#havetype)
   - [`haveFiles`](#havefiles)
+- [Declaration predicates](#declaration-predicates)
+  - [`declareTypes`](#declaretypes)
+  - [`declareConstants`](#declareconstants)
+  - [`declareFunctions`](#declarefunctions)
+  - [`declareInterfaces`](#declareinterfaces)
+  - [`declareClasses`](#declareclasses)
 - [Export predicates](#export-predicates)
   - [`export`](#export)
   - [`exportTypes`](#exporttypes)
@@ -19,7 +25,11 @@ The full machine-readable schema lives at `node_modules/konsistent/konsistent.sc
 - [Import predicates](#import-predicates)
   - [`import`](#import)
   - [`importTypes`](#importtypes)
+  - [`importFromCurrentDir`](#importfromcurrentdir)
+  - [`importFromParents`](#importfromparents)
+  - [`importFromExternals`](#importfromexternals)
 - [Structural predicates](#structural-predicates)
+  - [`useDeclarationOrder`](#usedeclarationorder)
   - [`areBarrelFiles`](#arebarrelfiles)
 
 All predicates support template substitutions in their string values — see [path-patterns.md](./path-patterns.md#case-transformations) for the full case-transformation catalog.
@@ -61,6 +71,74 @@ Assert that specific files exist within the matched path. Used with directory pa
 For `packages/openai`, this requires both `packages/openai/src/index.ts` and `packages/openai/src/openai-provider.ts` to exist. Templates resolve from the parent path placeholders.
 
 `haveFiles` paths are relative to the matched directory and may contain forward slashes for nested paths.
+
+---
+
+## Declaration predicates
+
+Declaration predicates assert local declarations that must not be exported. They mirror the kind-specific export predicates, but expect declarations such as `const value = ...` or `function createValue() {}` instead of `export const value = ...`.
+
+All declaration predicates accept an array of bare strings or objects with a `name` field. The string form is shorthand for `{ "name": "<value>" }`.
+
+### `declareTypes`
+
+Assert local type declarations. Interfaces and type aliases qualify.
+
+```json
+"must": { "declareTypes": ["InternalConfig"] }
+```
+
+### `declareConstants`
+
+Assert local `const` declarations.
+
+```json
+"must": { "declareConstants": ["DEFAULT_OPTIONS"] }
+```
+
+### `declareFunctions`
+
+Assert local function declarations. Optionally validate parameter and return type, using the same fields as `exportFunctions`.
+
+```json
+"must": {
+  "declareFunctions": [
+    {
+      "name": "createInternalClient",
+      "receiveParamOfType": "ClientConfig",
+      "returnValueOfType": "Client"
+    }
+  ]
+}
+```
+
+### `declareInterfaces`
+
+Assert local interface declarations. Optionally validate `extends`, using the same fields as `exportInterfaces`.
+
+```json
+"must": {
+  "declareInterfaces": [
+    { "name": "InternalClient", "extend": "BaseClient" }
+  ]
+}
+```
+
+### `declareClasses`
+
+Assert local class declarations. Optionally validate `extends` and `implements`, using the same fields as `exportClasses`.
+
+```json
+"must": {
+  "declareClasses": [
+    {
+      "name": "InternalClient",
+      "extend": "BaseClient",
+      "implement": ["Disposable"]
+    }
+  ]
+}
+```
 
 ---
 
@@ -247,9 +325,51 @@ Assert type-only imports (`import type { ... } from`).
 
 Same shape as `import`. Useful for enforcing dependency direction — every adapter's implementation file must `import type` its base from a specific module.
 
+### `importFromCurrentDir`
+
+Assert whether the file imports from the current directory via `./...`.
+
+```json
+"must": { "importFromCurrentDir": true }
+```
+
+`true` requires at least one import whose module specifier is `"."` or starts with `"./"`. `false` forbids those imports. Both value and type imports count, as do side-effect imports such as `import "./setup"`.
+
+### `importFromParents`
+
+Assert whether the file imports from parent directories via `../...`.
+
+```json
+"must": { "importFromParents": false }
+```
+
+`true` requires at least one import whose module specifier is `".."` or starts with `"../"`. `false` forbids those imports.
+
+### `importFromExternals`
+
+Assert whether the file imports from external module specifiers.
+
+```json
+"must": { "importFromExternals": true }
+```
+
+`true` requires at least one import that is not `./...` or `../...`. `false` forbids those imports. Scoped packages, `node:` modules, and unresolved path aliases such as `@/utils` count as external because `konsistent` does not resolve module aliases.
+
 ---
 
 ## Structural predicates
+
+### `useDeclarationOrder`
+
+Assert relative order for selected symbols.
+
+```json
+"must": {
+  "useDeclarationOrder": ["schema", "parseInput", "formatOutput"]
+}
+```
+
+The configured array is the expected order. Only symbols that are present in the file are checked; missing symbols do not produce diagnostics. Local declarations and named exports/re-exports are considered. Default exports and `export * from ...` are ignored.
 
 ### `areBarrelFiles`
 

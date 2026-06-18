@@ -33,6 +33,36 @@ const PREDICATE_RULES: Record<
     const kebab = fileToKebab(stripped);
     return kebab ? `must-have-${kebab}` : "must-have";
   },
+  declareTypes: ({ items }) => {
+    const kebab = deriveKebabFromName(
+      getItemName(items[0] as string | { name: string })
+    );
+    return kebab ? `must-declare-${kebab}-type` : "must-declare-type";
+  },
+  declareConstants: ({ items }) => {
+    const kebab = deriveKebabFromName(
+      getItemName(items[0] as string | { name: string })
+    );
+    return kebab ? `must-declare-${kebab}-constant` : "must-declare-constant";
+  },
+  declareFunctions: ({ items }) => {
+    const kebab = deriveKebabFromName(
+      getItemName(items[0] as string | { name: string })
+    );
+    return kebab ? `must-declare-${kebab}-function` : "must-declare-function";
+  },
+  declareClasses: ({ items }) => {
+    const kebab = deriveKebabFromName(
+      getItemName(items[0] as string | { name: string })
+    );
+    return kebab ? `must-declare-${kebab}-class` : "must-declare-class";
+  },
+  declareInterfaces: ({ items }) => {
+    const kebab = deriveKebabFromName(
+      getItemName(items[0] as string | { name: string })
+    );
+    return kebab ? `must-declare-${kebab}-interface` : "must-declare-interface";
+  },
   export: ({ items }) => {
     const kebab = deriveKebabFromName(getItemName(items[0] as string));
     return kebab ? `must-export-${kebab}` : "must-export";
@@ -78,6 +108,24 @@ const PREDICATE_RULES: Record<
       getItemName(items[0] as string | { name: string })
     );
     return kebab ? `must-import-${kebab}-type` : "must-import-type";
+  },
+  importFromCurrentDir: ({ items }) =>
+    items[0] === false
+      ? "must-not-import-from-current-dir"
+      : "must-import-from-current-dir",
+  importFromParents: ({ items }) =>
+    items[0] === false
+      ? "must-not-import-from-parents"
+      : "must-import-from-parents",
+  importFromExternals: ({ items }) =>
+    items[0] === false
+      ? "must-not-import-from-externals"
+      : "must-import-from-externals",
+  useDeclarationOrder: ({ items }) => {
+    const kebab = deriveKebabFromName(items[0] as string);
+    return kebab
+      ? `must-use-${kebab}-declaration-order`
+      : "must-use-declaration-order";
   },
 };
 

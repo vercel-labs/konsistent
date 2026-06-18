@@ -30,6 +30,37 @@ describe("ReusableConventionV1Schema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts declaration, declaration order, and import source predicates", () => {
+    const result = ReusableConventionV1Schema.safeParse({
+      name: "locals",
+      description: "Local declarations and import sources.",
+      must: {
+        declareTypes: [{ name: "LocalType" }],
+        declareConstants: ["localConstant"],
+        declareFunctions: [
+          {
+            name: "createLocal",
+            receiveParamOfType: "LocalConfig",
+            returnValueOfType: "Local",
+          },
+        ],
+        declareInterfaces: [{ name: "Local", extend: "BaseLocal" }],
+        declareClasses: [
+          {
+            name: "LocalClass",
+            extend: "BaseClass",
+            implement: ["Serializable"],
+          },
+        ],
+        useDeclarationOrder: ["localValue", "createLocal"],
+        importFromCurrentDir: true,
+        importFromParents: false,
+        importFromExternals: true,
+      },
+    });
+    expect(result.success).toBe(true);
+  });
+
   it("rejects invalid name pattern", () => {
     const result = ReusableConventionV1Schema.safeParse({
       name: "Bad Name",

@@ -98,6 +98,175 @@
                   "type": "string"
                 }
               },
+              "declareTypes": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["name"],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              },
+              "declareConstants": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["name"],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              },
+              "declareFunctions": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "receiveParamOfType": {
+                          "type": "string"
+                        },
+                        "returnValueOfType": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["name"],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              },
+              "declareInterfaces": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "extend": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string"
+                                },
+                                "allowOmissions": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": ["type"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "required": ["name"],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              },
+              "declareClasses": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "extend": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string"
+                                },
+                                "allowOmissions": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": ["type"],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        "implement": {
+                          "type": "array",
+                          "items": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "type": {
+                                    "type": "string"
+                                  },
+                                  "allowOmissions": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": ["type"],
+                                "additionalProperties": false
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "required": ["name"],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              },
               "export": {
                 "type": "array",
                 "items": {
@@ -341,6 +510,24 @@
                     }
                   ]
                 }
+              },
+              "importFromCurrentDir": {
+                "type": "boolean"
+              },
+              "importFromParents": {
+                "type": "boolean"
+              },
+              "importFromExternals": {
+                "type": "boolean"
+              },
+              "useDeclarationOrder": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "areBarrelFiles": {
+                "type": "boolean"
               }
             },
             "additionalProperties": false

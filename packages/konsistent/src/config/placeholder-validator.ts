@@ -187,6 +187,55 @@ function collectUsagesInPredicates(opts: {
   }
 
   collectUsagesInDefinitionList({
+    list: predicates.declareTypes,
+    key: `${prefix}.declareTypes`,
+    objectFields: ["name"],
+    declared,
+    usages,
+  });
+  collectUsagesInDefinitionList({
+    list: predicates.declareConstants,
+    key: `${prefix}.declareConstants`,
+    objectFields: ["name"],
+    declared,
+    usages,
+  });
+  collectUsagesInDefinitionList({
+    list: predicates.declareFunctions,
+    key: `${prefix}.declareFunctions`,
+    objectFields: ["name", "receiveParamOfType", "returnValueOfType"],
+    declared,
+    usages,
+  });
+  collectUsagesInDefinitionList({
+    list: predicates.declareInterfaces,
+    key: `${prefix}.declareInterfaces`,
+    objectFields: ["name"],
+    extendField: true,
+    declared,
+    usages,
+  });
+  collectUsagesInDefinitionList({
+    list: predicates.declareClasses,
+    key: `${prefix}.declareClasses`,
+    objectFields: ["name"],
+    extendField: true,
+    implementField: true,
+    declared,
+    usages,
+  });
+  if (predicates.useDeclarationOrder) {
+    for (const name of predicates.useDeclarationOrder) {
+      pushStringUsages({
+        value: name,
+        key: `${prefix}.useDeclarationOrder`,
+        declared,
+        usages,
+      });
+    }
+  }
+
+  collectUsagesInDefinitionList({
     list: predicates.export,
     key: `${prefix}.export`,
     objectFields: ["name", "from"],

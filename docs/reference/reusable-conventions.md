@@ -132,7 +132,7 @@ When you write `{ use: "<vendor>/<name>", ...overrides }`, `konsistent` deep-mer
 | Field kind | Rule |
 | --- | --- |
 | Plain object (e.g. `must`, nested predicate definitions) | Recursive deep-merge. Keys you supply replace the inherited value; keys you omit pass through. |
-| Array (e.g. `paths`, `excludeFiles`, predicate lists like `haveFiles`, `export`, `exportFunctions`) | Your array fully replaces the inherited array. Use `"excludeFiles": []` to clear an inherited list. |
+| Array (e.g. `paths`, `excludeFiles`, predicate lists like `haveFiles`, `declareFunctions`, `export`, `exportFunctions`) | Your array fully replaces the inherited array. Use `"excludeFiles": []` to clear an inherited list. |
 | Primitive (e.g. `severity`, `description`) | Your value replaces the inherited value. |
 
 Arrays replace rather than concatenate so you can subtract from a shared convention, not just append. If you want to extend an inherited array, copy it into your override and add to it.
