@@ -18,6 +18,41 @@ export interface ImportInfo {
   pos: SourcePosition;
 }
 
+export type DeclarationSymbolKind =
+  | "function"
+  | "class"
+  | "interface"
+  | "type"
+  | "const"
+  | "enum";
+
+export interface DeclarationSymbolInfo {
+  isDefaultExport: boolean;
+  isExported: boolean;
+  kind: DeclarationSymbolKind;
+  name: string;
+  pos: SourcePosition;
+}
+
+export interface NamedExportSymbolInfo {
+  from?: string;
+  isType: boolean;
+  name: string;
+  pos: SourcePosition;
+  sourceName: string;
+}
+
+export interface DefaultExportSymbolInfo {
+  name: string;
+  pos: SourcePosition;
+}
+
+export interface ImportSourceInfo {
+  from: string;
+  isType: boolean;
+  pos: SourcePosition;
+}
+
 export interface ExtendsClauseInfo {
   name: string;
   typeArguments: string[];
@@ -79,10 +114,14 @@ export interface NonBarrelStatementInfo {
 export interface FileStructure {
   classes: ClassInfo[];
   constants: ConstantInfo[];
+  declarationSymbols: DeclarationSymbolInfo[];
+  defaultExportSymbols: DefaultExportSymbolInfo[];
   exports: ExportInfo[];
   functions: FunctionInfo[];
+  importSources: ImportSourceInfo[];
   imports: ImportInfo[];
   interfaces: InterfaceInfo[];
+  namedExportSymbols: NamedExportSymbolInfo[];
   nonBarrelStatements: NonBarrelStatementInfo[];
   typeAliases: TypeAliasInfo[];
 }

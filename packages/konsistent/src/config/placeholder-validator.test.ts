@@ -284,6 +284,50 @@ describe("validatePlaceholders", () => {
     }
   });
 
+  it("detects placeholders inside declaration predicates", () => {
+    const conventions: ConventionV1[] = [
+      {
+        name: "declarations",
+        paths: ["src/{x}"],
+        must: {
+          declareTypes: [{ name: "${missingType}" }],
+          declareConstants: ["${missingConstant}"],
+          declareFunctions: [
+            {
+              name: "create${missingFunction}",
+              receiveParamOfType: "${missingParam}",
+              returnValueOfType: "${missingReturn}",
+            },
+          ],
+          declareInterfaces: [
+            {
+              name: "Local",
+              extend: { type: "${missingExtend}", allowOmissions: true },
+            },
+          ],
+          declareClasses: [
+            {
+              name: "LocalClass",
+              implement: ["${missingImplement}"],
+            },
+          ],
+          useDeclarationOrder: ["${missingOrder}"],
+        },
+      },
+    ];
+
+    const result = validatePlaceholders({
+      conventions,
+      identifiers: ["declarations"],
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain('"${missingType}"');
+      expect(result.error).toContain("must.declareTypes");
+    }
+  });
+
   it("treats placeholders declared in for.files as in-scope for the block's predicates", () => {
     const conventions: ConventionV1[] = [
       {

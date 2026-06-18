@@ -8,6 +8,11 @@ import { checkHaveFiles } from "../predicates/have-files.js";
 import { checkHaveType } from "../predicates/have-type.js";
 import { parseFileStructure } from "../typescript/parser.js";
 import { checkAreBarrelFiles } from "../typescript/predicates/are-barrel-files.js";
+import { checkDeclareClasses } from "../typescript/predicates/declare-classes.js";
+import { checkDeclareConstants } from "../typescript/predicates/declare-constants.js";
+import { checkDeclareFunctions } from "../typescript/predicates/declare-functions.js";
+import { checkDeclareInterfaces } from "../typescript/predicates/declare-interfaces.js";
+import { checkDeclareTypes } from "../typescript/predicates/declare-types.js";
 import { checkExport } from "../typescript/predicates/export.js";
 import { checkExportClasses } from "../typescript/predicates/export-classes.js";
 import { checkExportConstants } from "../typescript/predicates/export-constants.js";
@@ -15,7 +20,9 @@ import { checkExportFunctions } from "../typescript/predicates/export-functions.
 import { checkExportInterfaces } from "../typescript/predicates/export-interfaces.js";
 import { checkExportTypes } from "../typescript/predicates/export-types.js";
 import { checkImport } from "../typescript/predicates/import.js";
+import { checkImportSource } from "../typescript/predicates/import-source.js";
 import { checkImportTypes } from "../typescript/predicates/import-types.js";
+import { checkUseDeclarationOrder } from "../typescript/predicates/use-declaration-order.js";
 import type { FileStructure } from "../typescript/types.js";
 import { toCamelCase, toPascalCase } from "./case-utils.js";
 import type { PredicateContext } from "./context.js";
@@ -56,6 +63,11 @@ function buildStaticPlaceholders(opts: {
 }
 
 export const TS_PREDICATES = new Set([
+  "declareTypes",
+  "declareConstants",
+  "declareFunctions",
+  "declareClasses",
+  "declareInterfaces",
   "export",
   "exportTypes",
   "exportConstants",
@@ -64,6 +76,10 @@ export const TS_PREDICATES = new Set([
   "exportInterfaces",
   "import",
   "importTypes",
+  "importFromCurrentDir",
+  "importFromParents",
+  "importFromExternals",
+  "useDeclarationOrder",
   "areBarrelFiles",
 ]);
 
@@ -215,6 +231,80 @@ const TS_PREDICATE_HANDLERS: Record<
     severity?: DiagnosticSeverity;
   }) => Diagnostic[]
 > = {
+  declareTypes: ({ must, context, fileStructure, conventionName, severity }) =>
+    must.declareTypes
+      ? checkDeclareTypes({
+          expected: must.declareTypes,
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        })
+      : [],
+  declareConstants: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.declareConstants
+      ? checkDeclareConstants({
+          expected: must.declareConstants,
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        })
+      : [],
+  declareFunctions: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.declareFunctions
+      ? checkDeclareFunctions({
+          expected: must.declareFunctions,
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        })
+      : [],
+  declareClasses: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.declareClasses
+      ? checkDeclareClasses({
+          expected: must.declareClasses,
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        })
+      : [],
+  declareInterfaces: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.declareInterfaces
+      ? checkDeclareInterfaces({
+          expected: must.declareInterfaces,
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        })
+      : [],
   export: ({ must, context, fileStructure, conventionName, severity }) =>
     must.export
       ? checkExport({
@@ -313,6 +403,76 @@ const TS_PREDICATE_HANDLERS: Record<
     must.importTypes
       ? checkImportTypes({
           expected: must.importTypes,
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        })
+      : [],
+  importFromCurrentDir: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.importFromCurrentDir === undefined
+      ? []
+      : checkImportSource({
+          expected: must.importFromCurrentDir,
+          predicateName: "importFromCurrentDir",
+          group: "currentDir",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
+  importFromParents: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.importFromParents === undefined
+      ? []
+      : checkImportSource({
+          expected: must.importFromParents,
+          predicateName: "importFromParents",
+          group: "parents",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
+  importFromExternals: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.importFromExternals === undefined
+      ? []
+      : checkImportSource({
+          expected: must.importFromExternals,
+          predicateName: "importFromExternals",
+          group: "externals",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
+  useDeclarationOrder: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.useDeclarationOrder
+      ? checkUseDeclarationOrder({
+          expected: must.useDeclarationOrder,
           context,
           fileStructure,
           conventionName,

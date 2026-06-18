@@ -229,6 +229,119 @@ describe("parseFileStructure", () => {
         isType: false,
       });
     });
+
+    it("extracts side-effect import sources", () => {
+      const result = parseFileStructure({
+        source: "import './setup';",
+      });
+      expect(result.imports).toHaveLength(0);
+      expect(result.importSources).toEqual([
+        {
+          from: "./setup",
+          isType: false,
+          pos: { line: 1, column: 1 },
+        },
+      ]);
+    });
+  });
+
+  describe("declaration symbols", () => {
+    it("extracts local declaration symbols", () => {
+      const result = parseFileStructure({
+        source: [
+          "function makeThing() {}",
+          "class Thing {}",
+          "interface ThingConfig {}",
+          "type ThingInput = string;",
+          "const thingId = 'thing';",
+          "enum ThingKind { A }",
+        ].join("\n"),
+      });
+      expect(result.declarationSymbols.map((symbol) => symbol.kind)).toEqual([
+        "function",
+        "class",
+        "interface",
+        "type",
+        "const",
+        "enum",
+      ]);
+      expect(result.declarationSymbols.map((symbol) => symbol.name)).toEqual([
+        "makeThing",
+        "Thing",
+        "ThingConfig",
+        "ThingInput",
+        "thingId",
+        "ThingKind",
+      ]);
+    });
+
+    it("marks direct exported declaration symbols", () => {
+      const result = parseFileStructure({
+        source: "export const thingId = 'thing';",
+      });
+      expect(result.declarationSymbols[0]).toMatchObject({
+        name: "thingId",
+        kind: "const",
+        isExported: true,
+        isDefaultExport: false,
+      });
+    });
+
+    it("marks default exported declaration symbols", () => {
+      const result = parseFileStructure({
+        source: "export default function makeThing() {}",
+      });
+      expect(result.declarationSymbols[0]).toMatchObject({
+        name: "makeThing",
+        kind: "function",
+        isExported: true,
+        isDefaultExport: true,
+      });
+    });
+
+    it("does not extract let or var declaration symbols", () => {
+      const result = parseFileStructure({
+        source: "let x = 1;\nvar y = 2;",
+      });
+      expect(result.declarationSymbols).toEqual([]);
+    });
+  });
+
+  describe("named export symbols", () => {
+    it("extracts exported names and source names from named exports", () => {
+      const result = parseFileStructure({
+        source:
+          "export { sourceName as exportedName, type TypeName } from './module';",
+      });
+      expect(result.namedExportSymbols).toEqual([
+        {
+          name: "exportedName",
+          sourceName: "sourceName",
+          isType: false,
+          from: "./module",
+          pos: { line: 1, column: 24 },
+        },
+        {
+          name: "TypeName",
+          sourceName: "TypeName",
+          isType: true,
+          from: "./module",
+          pos: { line: 1, column: 43 },
+        },
+      ]);
+    });
+
+    it("extracts default export references", () => {
+      const result = parseFileStructure({
+        source: "const value = 1;\nexport default value;",
+      });
+      expect(result.defaultExportSymbols).toEqual([
+        {
+          name: "value",
+          pos: { line: 2, column: 16 },
+        },
+      ]);
+    });
   });
 
   describe("interfaces", () => {

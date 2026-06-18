@@ -23,6 +23,10 @@ function createMockFileStructure(opts: {
     classes: [],
     functions: [],
     constants: [],
+    declarationSymbols: [],
+    defaultExportSymbols: [],
+    importSources: [],
+    namedExportSymbols: [],
     nonBarrelStatements: opts.nonBarrelStatements ?? [],
     typeAliases: [],
   };

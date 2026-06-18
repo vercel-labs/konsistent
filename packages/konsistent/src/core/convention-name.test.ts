@@ -68,6 +68,62 @@ describe("generateConventionName", () => {
     });
   });
 
+  describe("declareTypes", () => {
+    it("generates must-declare-{name-kebab}-type", () => {
+      expect(
+        generateConventionName({
+          must: { declareTypes: ["MyType"] },
+        })
+      ).toBe("must-declare-my-type-type");
+    });
+  });
+
+  describe("declareConstants", () => {
+    it("generates must-declare-{name-kebab}-constant", () => {
+      expect(
+        generateConventionName({
+          must: { declareConstants: ["pluginId"] },
+        })
+      ).toBe("must-declare-plugin-id-constant");
+    });
+  });
+
+  describe("declareFunctions", () => {
+    it("generates must-declare-{name-kebab}-function", () => {
+      expect(
+        generateConventionName({
+          must: {
+            declareFunctions: [{ name: "create${name.toPascalCase()}Adapter" }],
+          },
+        })
+      ).toBe("must-declare-create-adapter-function");
+    });
+  });
+
+  describe("declareClasses", () => {
+    it("generates must-declare-{name-kebab}-class", () => {
+      expect(
+        generateConventionName({
+          must: {
+            declareClasses: [{ name: "${name.toPascalCase()}Adapter" }],
+          },
+        })
+      ).toBe("must-declare-adapter-class");
+    });
+  });
+
+  describe("declareInterfaces", () => {
+    it("generates must-declare-{name-kebab}-interface", () => {
+      expect(
+        generateConventionName({
+          must: {
+            declareInterfaces: [{ name: "${id.toPascalCase()}Provider" }],
+          },
+        })
+      ).toBe("must-declare-provider-interface");
+    });
+  });
+
   describe("exportTypes", () => {
     it("generates must-export-{name-kebab}-type", () => {
       expect(
@@ -177,6 +233,36 @@ describe("generateConventionName", () => {
           },
         })
       ).toBe("must-import-provider-v1-type");
+    });
+  });
+
+  describe("import source predicates", () => {
+    it("generates current-dir import names", () => {
+      expect(
+        generateConventionName({ must: { importFromCurrentDir: true } })
+      ).toBe("must-import-from-current-dir");
+      expect(
+        generateConventionName({ must: { importFromCurrentDir: false } })
+      ).toBe("must-not-import-from-current-dir");
+    });
+
+    it("generates parent and external import names", () => {
+      expect(
+        generateConventionName({ must: { importFromParents: true } })
+      ).toBe("must-import-from-parents");
+      expect(
+        generateConventionName({ must: { importFromExternals: false } })
+      ).toBe("must-not-import-from-externals");
+    });
+  });
+
+  describe("useDeclarationOrder", () => {
+    it("generates declaration order names", () => {
+      expect(
+        generateConventionName({
+          must: { useDeclarationOrder: ["create${name.toPascalCase()}"] },
+        })
+      ).toBe("must-use-create-declaration-order");
     });
   });
 

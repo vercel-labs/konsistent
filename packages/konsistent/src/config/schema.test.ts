@@ -61,6 +61,55 @@ describe("ConfigV1Schema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts conventions with declaration predicates", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          must: {
+            declareTypes: [{ name: "LocalType" }],
+            declareConstants: ["localConstant"],
+            declareFunctions: [
+              {
+                name: "createLocal",
+                receiveParamOfType: "LocalConfig",
+                returnValueOfType: "Local",
+              },
+            ],
+            declareInterfaces: [{ name: "Local", extend: "BaseLocal" }],
+            declareClasses: [
+              {
+                name: "LocalClass",
+                extend: "BaseClass",
+                implement: ["Serializable"],
+              },
+            ],
+          },
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts conventions with declaration order and import source predicates", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          must: {
+            useDeclarationOrder: ["alpha", "beta"],
+            importFromCurrentDir: true,
+            importFromParents: false,
+            importFromExternals: true,
+          },
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
   it("rejects config with missing version", () => {
     const result = ConfigV1Schema.safeParse({
       conventions: [],
