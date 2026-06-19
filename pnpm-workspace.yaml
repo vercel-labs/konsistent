@@ -15,11 +15,17 @@ catalog:
   ajv: "^8.18.0"
   citty: "^0.2"
   del-cli: "^6"
+  esbuild: "^0.28.1"
   tsup: "^8"
   tsx: "^4.21.0"
   typescript: "^5.7"
+  vite: "^7.3.5"
   vitest: "^4"
   zod: "^4"
+
+overrides:
+  esbuild: "catalog:"
+  vite: "catalog:"
 
 allowBuilds:
   esbuild: true
