@@ -68,6 +68,62 @@ describe("generateConventionName", () => {
     });
   });
 
+  describe("declareTypes", () => {
+    it("generates must-declare-{name-kebab}-type", () => {
+      expect(
+        generateConventionName({
+          must: { declareTypes: ["MyType"] },
+        })
+      ).toBe("must-declare-my-type-type");
+    });
+  });
+
+  describe("declareConstants", () => {
+    it("generates must-declare-{name-kebab}-constant", () => {
+      expect(
+        generateConventionName({
+          must: { declareConstants: ["pluginId"] },
+        })
+      ).toBe("must-declare-plugin-id-constant");
+    });
+  });
+
+  describe("declareFunctions", () => {
+    it("generates must-declare-{name-kebab}-function", () => {
+      expect(
+        generateConventionName({
+          must: {
+            declareFunctions: [{ name: "create${name.toPascalCase()}Adapter" }],
+          },
+        })
+      ).toBe("must-declare-create-adapter-function");
+    });
+  });
+
+  describe("declareClasses", () => {
+    it("generates must-declare-{name-kebab}-class", () => {
+      expect(
+        generateConventionName({
+          must: {
+            declareClasses: [{ name: "${name.toPascalCase()}Adapter" }],
+          },
+        })
+      ).toBe("must-declare-adapter-class");
+    });
+  });
+
+  describe("declareInterfaces", () => {
+    it("generates must-declare-{name-kebab}-interface", () => {
+      expect(
+        generateConventionName({
+          must: {
+            declareInterfaces: [{ name: "${id.toPascalCase()}Provider" }],
+          },
+        })
+      ).toBe("must-declare-provider-interface");
+    });
+  });
+
   describe("exportTypes", () => {
     it("generates must-export-{name-kebab}-type", () => {
       expect(
@@ -180,6 +236,59 @@ describe("generateConventionName", () => {
     });
   });
 
+  describe("import source predicates", () => {
+    it("generates current-dir import names", () => {
+      expect(
+        generateConventionName({ must: { importFromCurrentDir: true } })
+      ).toBe("must-import-from-current-dir");
+      expect(
+        generateConventionName({ must: { importFromCurrentDir: false } })
+      ).toBe("must-not-import-from-current-dir");
+    });
+
+    it("generates parent and external import names", () => {
+      expect(
+        generateConventionName({ must: { importFromParents: true } })
+      ).toBe("must-import-from-parents");
+      expect(
+        generateConventionName({ must: { importFromExternals: false } })
+      ).toBe("must-not-import-from-externals");
+    });
+  });
+
+  describe("mustNot", () => {
+    it("generates negated names for mustNot predicates", () => {
+      expect(
+        generateConventionName({
+          mustNot: { exportConstants: ["debug"] },
+        })
+      ).toBe("must-not-export-debug-constant");
+    });
+
+    it("generates logical names for negated boolean predicates", () => {
+      expect(
+        generateConventionName({
+          mustNot: { importFromCurrentDir: true },
+        })
+      ).toBe("must-not-import-from-current-dir");
+      expect(
+        generateConventionName({
+          mustNot: { importFromCurrentDir: false },
+        })
+      ).toBe("must-import-from-current-dir");
+    });
+  });
+
+  describe("useDeclarationOrder", () => {
+    it("generates declaration order names", () => {
+      expect(
+        generateConventionName({
+          must: { useDeclarationOrder: ["create${name.toPascalCase()}"] },
+        })
+      ).toBe("must-use-create-declaration-order");
+    });
+  });
+
   describe("-and-more suffix", () => {
     it("appends when must object has multiple predicate keys", () => {
       expect(
@@ -230,6 +339,14 @@ describe("generateConventionName", () => {
           must: [{ must: { haveFiles: ["${name}.tsx"] } }],
         })
       ).toBe("must-have-tsx");
+    });
+
+    it("uses mustNot when the first block has no must", () => {
+      expect(
+        generateConventionName({
+          must: [{ mustNot: { export: ["debug"] } }],
+        })
+      ).toBe("must-not-export-debug");
     });
   });
 

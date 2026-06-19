@@ -5,6 +5,10 @@ export const ExportDefinitionV1Schema = z.strictObject({
   from: z.string().optional(),
 });
 
+export const DeclarationDefinitionV1Schema = z.strictObject({
+  name: z.string(),
+});
+
 export const ImportDefinitionV1Schema = z.strictObject({
   name: z.string(),
   from: z.string().optional(),
@@ -38,6 +42,21 @@ export const ClassDefinitionV1Schema = z.strictObject({
 export const MustPredicatesV1Schema = z.strictObject({
   haveType: z.enum(["file", "directory"]).optional(),
   haveFiles: z.array(z.string()).optional(),
+  declareTypes: z
+    .array(z.union([z.string(), DeclarationDefinitionV1Schema]))
+    .optional(),
+  declareConstants: z
+    .array(z.union([z.string(), DeclarationDefinitionV1Schema]))
+    .optional(),
+  declareFunctions: z
+    .array(z.union([z.string(), FunctionDefinitionV1Schema]))
+    .optional(),
+  declareInterfaces: z
+    .array(z.union([z.string(), InterfaceDefinitionV1Schema]))
+    .optional(),
+  declareClasses: z
+    .array(z.union([z.string(), ClassDefinitionV1Schema]))
+    .optional(),
   export: z.array(z.union([z.string(), ExportDefinitionV1Schema])).optional(),
   exportTypes: z
     .array(z.union([z.string(), ExportDefinitionV1Schema]))
@@ -58,10 +77,14 @@ export const MustPredicatesV1Schema = z.strictObject({
   importTypes: z
     .array(z.union([z.string(), ImportDefinitionV1Schema]))
     .optional(),
+  importFromCurrentDir: z.boolean().optional(),
+  importFromParents: z.boolean().optional(),
+  importFromExternals: z.boolean().optional(),
+  useDeclarationOrder: z.array(z.string()).optional(),
   areBarrelFiles: z.boolean().optional(),
 });
 
-export const MustBlockV1Schema = z.strictObject({
+const MustBlockV1Shape = {
   name: z
     .string()
     .regex(/^[a-z0-9-]+$/, "Must block name must match [a-z0-9-]+")
@@ -77,10 +100,22 @@ export const MustBlockV1Schema = z.strictObject({
     .strictObject({ files: z.union([z.string(), z.array(z.string())]) })
     .optional(),
   excludeFiles: z.array(z.string()).optional(),
-  must: MustPredicatesV1Schema,
-});
+};
 
-export const ReusableConventionV1Schema = z.strictObject({
+export const MustBlockV1Schema = z.union([
+  z.strictObject({
+    ...MustBlockV1Shape,
+    must: MustPredicatesV1Schema,
+    mustNot: MustPredicatesV1Schema.optional(),
+  }),
+  z.strictObject({
+    ...MustBlockV1Shape,
+    must: MustPredicatesV1Schema.optional(),
+    mustNot: MustPredicatesV1Schema,
+  }),
+]);
+
+const ReusableConventionV1Shape = {
   name: z
     .string()
     .regex(/^[a-z0-9-]+$/, "Convention name must match [a-z0-9-]+"),
@@ -97,8 +132,20 @@ export const ReusableConventionV1Schema = z.strictObject({
   for: z
     .strictObject({ files: z.union([z.string(), z.array(z.string())]) })
     .optional(),
-  must: MustPredicatesV1Schema,
-});
+};
+
+export const ReusableConventionV1Schema = z.union([
+  z.strictObject({
+    ...ReusableConventionV1Shape,
+    must: MustPredicatesV1Schema,
+    mustNot: MustPredicatesV1Schema.optional(),
+  }),
+  z.strictObject({
+    ...ReusableConventionV1Shape,
+    must: MustPredicatesV1Schema.optional(),
+    mustNot: MustPredicatesV1Schema,
+  }),
+]);
 
 export const ReusableConventionsPackageV1Schema = z.strictObject({
   conventionSpecVersion: z.literal("v1"),
@@ -106,6 +153,9 @@ export const ReusableConventionsPackageV1Schema = z.strictObject({
 });
 
 export type ExportDefinitionV1 = z.infer<typeof ExportDefinitionV1Schema>;
+export type DeclarationDefinitionV1 = z.infer<
+  typeof DeclarationDefinitionV1Schema
+>;
 export type ImportDefinitionV1 = z.infer<typeof ImportDefinitionV1Schema>;
 export type FunctionDefinitionV1 = z.infer<typeof FunctionDefinitionV1Schema>;
 export type InterfaceDefinitionV1 = z.infer<typeof InterfaceDefinitionV1Schema>;

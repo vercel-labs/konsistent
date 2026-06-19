@@ -32,16 +32,29 @@ describe("konsistent.schema.json", () => {
   });
 
   it("rejects additionalProperties in the must object", () => {
-    const objectBranch = schema.properties.conventions.items.anyOf.find(
-      (branch: { type?: string; properties?: Record<string, unknown> }) =>
-        branch.type === "object" &&
-        branch.properties !== undefined &&
-        Object.hasOwn(branch.properties, "paths") &&
-        !Object.hasOwn(branch.properties, "use")
+    const handWrittenBranch = schema.properties.conventions.items.anyOf.find(
+      (branch: { anyOf?: unknown[] }) => Array.isArray(branch.anyOf)
+    );
+    const objectBranch = handWrittenBranch.anyOf.find(
+      (branch: { properties?: Record<string, unknown>; required?: string[] }) =>
+        branch.required?.includes("must")
     );
     const mustSchema = objectBranch.properties.must;
     const predicatesSchema = mustSchema.anyOf[0];
     expect(predicatesSchema.additionalProperties).toBe(false);
+  });
+
+  it("rejects additionalProperties in the mustNot object", () => {
+    const handWrittenBranch = schema.properties.conventions.items.anyOf.find(
+      (branch: { anyOf?: unknown[] }) => Array.isArray(branch.anyOf)
+    );
+    const objectBranch = handWrittenBranch.anyOf.find(
+      (branch: { properties?: Record<string, unknown>; required?: string[] }) =>
+        branch.required?.includes("mustNot")
+    );
+    const mustNotSchema = objectBranch.properties.mustNot;
+    expect(mustNotSchema.additionalProperties).toBe(false);
+    expect(mustNotSchema.type).toBe("object");
   });
 
   const passingFixtures = readdirSync(fixturesDir).filter((name) => {

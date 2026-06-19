@@ -57,8 +57,8 @@ export function expandReferences(opts: {
     }
 
     const handWrittenResult = expandHandWritten({
-      entry: entry as ConventionV1 & {
-        must:
+      entry: entry as Omit<ConventionV1, "must"> & {
+        must?:
           | MustPredicatesV1
           | Array<
               string | MustBlockV1 | ({ use: string } & Record<string, unknown>)
@@ -78,8 +78,8 @@ export function expandReferences(opts: {
 }
 
 function expandHandWritten(opts: {
-  entry: ConventionV1 & {
-    must:
+  entry: Omit<ConventionV1, "must"> & {
+    must?:
       | MustPredicatesV1
       | Array<
           string | MustBlockV1 | ({ use: string } & Record<string, unknown>)
@@ -177,9 +177,13 @@ function expandMustBlockReference(opts: {
     };
   }
 
-  const base: Record<string, unknown> = {
-    must: reusable.must,
-  };
+  const base: Record<string, unknown> = {};
+  if (reusable.must !== undefined) {
+    base.must = reusable.must;
+  }
+  if (reusable.mustNot !== undefined) {
+    base.mustNot = reusable.mustNot;
+  }
   if (reusable.name !== undefined) {
     base.name = reusable.name;
   }
@@ -284,8 +288,13 @@ function expandStringReference(opts: {
     name: reusable.name,
     description: reusable.description,
     paths,
-    must: reusable.must,
   };
+  if (reusable.must !== undefined) {
+    candidate.must = reusable.must;
+  }
+  if (reusable.mustNot !== undefined) {
+    candidate.mustNot = reusable.mustNot;
+  }
   if (reusable.severity !== undefined) {
     candidate.severity = reusable.severity;
   }
@@ -337,8 +346,13 @@ function expandUseReference(opts: {
   const base: Record<string, unknown> = {
     name: reusable.name,
     description: reusable.description,
-    must: reusable.must,
   };
+  if (reusable.must !== undefined) {
+    base.must = reusable.must;
+  }
+  if (reusable.mustNot !== undefined) {
+    base.mustNot = reusable.mustNot;
+  }
   if (reusable.severity !== undefined) {
     base.severity = reusable.severity;
   }

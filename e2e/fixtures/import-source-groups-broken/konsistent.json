@@ -1,0 +1,32 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "current-dir-imports",
+      "paths": "src/current.ts",
+      "must": {
+        "importFromCurrentDir": true,
+        "importFromParents": false,
+        "importFromExternals": false
+      }
+    },
+    {
+      "name": "parent-imports",
+      "paths": "src/parent.ts",
+      "must": {
+        "importFromCurrentDir": false,
+        "importFromParents": true,
+        "importFromExternals": false
+      }
+    },
+    {
+      "name": "external-imports",
+      "paths": "src/external.ts",
+      "must": {
+        "importFromCurrentDir": false,
+        "importFromParents": false,
+        "importFromExternals": true
+      }
+    }
+  ]
+}

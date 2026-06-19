@@ -46,6 +46,31 @@ describe("expandReferences", () => {
     }
   });
 
+  it("expands a string-ref with mustNot predicates", () => {
+    const sourceMap = buildSourceMap({
+      common: [
+        {
+          name: "no-debug",
+          description: "Do not export debug helpers.",
+          paths: ["packages/{packageName}"],
+          mustNot: { exportConstants: ["debug"] },
+        },
+      ],
+    });
+
+    const result = expandReferences({
+      conventions: ["common/no-debug"],
+      sourceMap,
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.conventions[0]?.mustNot).toEqual({
+        exportConstants: ["debug"],
+      });
+    }
+  });
+
   it("emits the unknown-vendor error verbatim from the PRD", () => {
     const sourceMap: SourceMap = new Map();
 
@@ -341,6 +366,37 @@ describe("expandReferences", () => {
     }
   });
 
+  it("recursively merges nested mustNot predicates without dropping inherited keys", () => {
+    const sourceMap = buildSourceMap({
+      common: [
+        {
+          name: "merge-must-not",
+          description: "x",
+          paths: "src/*.ts",
+          mustNot: { export: ["debug"] },
+        },
+      ],
+    });
+
+    const result = expandReferences({
+      conventions: [
+        {
+          use: "common/merge-must-not",
+          mustNot: { exportTypes: ["Internal"] },
+        },
+      ],
+      sourceMap,
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.conventions[0]?.mustNot).toEqual({
+        export: ["debug"],
+        exportTypes: ["Internal"],
+      });
+    }
+  });
+
   it("replaces primitive values like severity", () => {
     const sourceMap = buildSourceMap({
       common: [
@@ -538,6 +594,40 @@ describe("expandReferences", () => {
     }
   });
 
+  it("expands a mustNot string reference nested inside a hand-written must[]", () => {
+    const sourceMap = buildSourceMap({
+      common: [
+        {
+          name: "no-debug",
+          description: "Block forbidding debug exports.",
+          mustNot: { exportConstants: ["debug"] },
+        },
+      ],
+    });
+
+    const handWritten = {
+      paths: "packages/{packageName}",
+      must: ["common/no-debug"],
+    } as Parameters<typeof expandReferences>[0]["conventions"][number];
+
+    const result = expandReferences({
+      conventions: [handWritten],
+      sourceMap,
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      const must = result.conventions[0]?.must;
+      if (Array.isArray(must)) {
+        expect(must[0]).toEqual({
+          name: "no-debug",
+          description: "Block forbidding debug exports.",
+          mustNot: { exportConstants: ["debug"] },
+        });
+      }
+    }
+  });
+
   it("errors when a string reference inside must[] points at a reusable with paths", () => {
     const sourceMap = buildSourceMap({
       common: [
@@ -647,6 +737,45 @@ describe("expandReferences", () => {
     }
   });
 
+  it("deep-merges override.mustNot onto inherited predicates inside must[]", () => {
+    const sourceMap = buildSourceMap({
+      common: [
+        {
+          name: "base-block",
+          description: "x",
+          mustNot: { export: ["debug"] },
+        },
+      ],
+    });
+
+    const handWritten = {
+      paths: "packages/{packageName}",
+      must: [
+        {
+          use: "common/base-block",
+          mustNot: { exportTypes: ["Internal"] },
+        },
+      ],
+    } as Parameters<typeof expandReferences>[0]["conventions"][number];
+
+    const result = expandReferences({
+      conventions: [handWritten],
+      sourceMap,
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      const must = result.conventions[0]?.must;
+      if (Array.isArray(must)) {
+        expect(must[0]).toEqual({
+          name: "base-block",
+          description: "x",
+          mustNot: { export: ["debug"], exportTypes: ["Internal"] },
+        });
+      }
+    }
+  });
+
   it("errors when a must[] use ref points to a reusable that declares paths", () => {
     const sourceMap = buildSourceMap({
       common: [
@@ -746,7 +875,7 @@ describe("expandReferences", () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error).toContain("conventions.0");
-      expect(result.error).toContain("severity");
+      expect(result.error).toContain("Invalid input");
     }
   });
 });

@@ -146,8 +146,9 @@ Use this as a systematic walkthrough:
 For every pattern you identify:
 - Path → glob with placeholders for the parts that vary.
 - Required files → `haveFiles`.
+- Local declarations → `declareTypes`, `declareConstants`, `declareFunctions`, `declareInterfaces`, `declareClasses`.
 - Exports → `export`, `exportTypes`, `exportConstants`, `exportFunctions`, `exportInterfaces`, `exportClasses`.
-- Imports → `import`, `importTypes`.
+- Imports → `import`, `importTypes`, `importFromCurrentDir`, `importFromParents`, `importFromExternals`.
 - Optional file conditions → `if.hasFile` blocks.
 - Subset-only rules → `if.placeholderSatisfies` with a `matches` or `segments` constraint.
 

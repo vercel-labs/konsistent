@@ -95,7 +95,7 @@ export const conventions = defineConventions([
 A reusable convention has the same fields as a hand-written one with two adjustments:
 
 - `name` and `description` are **required** (consumers see them in error messages and source listings).
-- `must` must use the **flat object form** (`MustPredicates`). The `MustBlock[]` form is not allowed in reusable conventions — see [Restrictions](../reference/reusable-conventions.md#restrictions).
+- `must` and `mustNot` must use the **flat object form** (`MustPredicates`). The `MustBlock[]` form is not allowed in reusable conventions — see [Restrictions](../reference/reusable-conventions.md#restrictions).
 - `paths` is **optional**. Omit it to force consumers to supply `paths` at the use-site (which is useful when the right pattern depends on the consuming project's layout). When `paths` is omitted, consumers can only reference the convention via the `use` form.
 
 ## 3. Build and verify

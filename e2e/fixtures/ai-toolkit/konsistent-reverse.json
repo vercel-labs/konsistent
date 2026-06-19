@@ -1,0 +1,29 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "no-provider-barrel-exports",
+      "paths": "packages/{providerId}/src/index.ts",
+      "mustNot": {
+        "export": ["${providerId}"],
+        "exportTypes": [
+          "${providerId.toPascalCase()}Provider",
+          "${providerId.toPascalCase()}ProviderSettings"
+        ]
+      }
+    },
+    {
+      "name": "no-provider-interface",
+      "paths": "packages/{providerId}/src/${providerId}-provider.ts",
+      "mustNot": {
+        "exportInterfaces": [
+          {
+            "name": "${providerId.toPascalCase()}Provider",
+            "extend": "ProviderV1"
+          }
+        ],
+        "importTypes": [{ "name": "ProviderV1", "from": "@ai-toolkit/core" }]
+      }
+    }
+  ]
+}

@@ -59,7 +59,7 @@ A bare string `"<vendor>/<name>"` inlines the named reusable convention as-is. T
 
 ### Object reference (`use` form)
 
-`{ "use": "<vendor>/<name>", ...overrides }` references a reusable convention and overlays your overrides on top of it. The override fields available are `paths`, `placeholders`, `excludeFiles`, `severity`, `if`, `for`, and `must` — the same optional fields a hand-written convention has, minus `name` and `description` (which come from the source).
+`{ "use": "<vendor>/<name>", ...overrides }` references a reusable convention and overlays your overrides on top of it. The override fields available are `paths`, `placeholders`, `excludeFiles`, `severity`, `if`, `for`, `must`, and `mustNot` — the same optional fields a hand-written convention has, minus `name` and `description` (which come from the source).
 
 Use this form when the reusable convention has no `paths` (so you must supply them) or when you want to adjust a field for your project.
 
@@ -121,9 +121,9 @@ A hand-written convention whose `must` is a `MustBlock[]` may also reference a r
 }
 ```
 
-Allowed override keys at this nesting level are every field a hand-written `MustBlock` exposes — `name`, `description`, `if`, `for`, `excludeFiles`, and `must`. Top-level-only fields (`paths`, `severity`) are not accepted at the use-site, and the referenced reusable convention must not declare them either: a reusable that ships `paths` or `severity` can only be referenced from the top level of `conventions[]`. Authors who want their reusable to be usable in both contexts should publish it without those fields.
+Allowed override keys at this nesting level are every field a hand-written `MustBlock` exposes — `name`, `description`, `if`, `for`, `excludeFiles`, `must`, and `mustNot`. Top-level-only fields (`paths`, `severity`) are not accepted at the use-site, and the referenced reusable convention must not declare them either: a reusable that ships `paths` or `severity` can only be referenced from the top level of `conventions[]`. Authors who want their reusable to be usable in both contexts should publish it without those fields.
 
-Override merge follows the same rules as the top-level `use` form: arrays replace, primitives replace, and `must` deep-merges with the inherited predicates.
+Override merge follows the same rules as the top-level `use` form: arrays replace, primitives replace, and `must`/`mustNot` deep-merge with the inherited predicates.
 
 ## Merge semantics
 
@@ -131,8 +131,8 @@ When you write `{ use: "<vendor>/<name>", ...overrides }`, `konsistent` deep-mer
 
 | Field kind | Rule |
 | --- | --- |
-| Plain object (e.g. `must`, nested predicate definitions) | Recursive deep-merge. Keys you supply replace the inherited value; keys you omit pass through. |
-| Array (e.g. `paths`, `excludeFiles`, predicate lists like `haveFiles`, `export`, `exportFunctions`) | Your array fully replaces the inherited array. Use `"excludeFiles": []` to clear an inherited list. |
+| Plain object (e.g. `must`, `mustNot`, nested predicate definitions) | Recursive deep-merge. Keys you supply replace the inherited value; keys you omit pass through. |
+| Array (e.g. `paths`, `excludeFiles`, predicate lists like `haveFiles`, `declareFunctions`, `export`, `exportFunctions`) | Your array fully replaces the inherited array. Use `"excludeFiles": []` to clear an inherited list. |
 | Primitive (e.g. `severity`, `description`) | Your value replaces the inherited value. |
 
 Arrays replace rather than concatenate so you can subtract from a shared convention, not just append. If you want to extend an inherited array, copy it into your override and add to it.
@@ -184,14 +184,14 @@ Note that `excludeFiles` was fully replaced (array-replace), while `must` was de
 
 ## Restrictions
 
-- **Reusable conventions only support the object form of `must`.** They cannot ship the `MustBlock[]` form. This keeps override semantics predictable — you always know the merge target is a flat predicate object. Your own hand-written conventions are unrestricted; you can still use `MustBlock[]` there. See [predicates.md](./predicates.md).
+- **Reusable conventions only support object-form `must` and `mustNot`.** They cannot ship the `MustBlock[]` form. This keeps override semantics predictable — you always know the merge target is a flat predicate object. Your own hand-written conventions can still use `MustBlock[]` in `must`; `mustNot` is object-form only everywhere. See [predicates.md](./predicates.md).
 - **The `conventionSources` value is a single string.** No object form (`{ package: ... }` / `{ path: ... }`) — auto-detection by leading `.` / `/` is unambiguous.
 - **No cross-source merging.** Two `conventionSources` entries cannot be merged into a single prefix. If two packages happen to ship a convention with the same name, your vendor prefix scopes them.
 - **`MustBlock[]` cannot be introduced via override.** Because the source convention's `must` is always object-form, deep-merge keeps the result object-form.
 
 ## Placeholder validation
 
-After expansion, `konsistent` walks every string inside each merged convention's `must` and checks that each `${placeholder}` referenced is declared as `{placeholder}` in at least one `paths` entry. This catches mismatches between a reusable convention's templates and the `paths` you supplied at the use-site, before any file is scanned.
+After expansion, `konsistent` walks every string inside each merged convention's `must` and `mustNot` and checks that each `${placeholder}` referenced is declared as `{placeholder}` in at least one `paths` entry. This catches mismatches between a reusable convention's templates and the `paths` you supplied at the use-site, before any file is scanned.
 
 ## Error reference
 
@@ -209,7 +209,7 @@ All errors below are returned from `loadConfig()` as `{ success: false, error }`
 | npm source missing exports condition | `Convention source "<prefix>" → "<specifier>": package does not declare an exports["./konsistent"] entry.` | The source package isn't a reusable-convention package; check the spelling or pick a different source. |
 | Reusable-convention package fails schema validation | `Convention source "<prefix>" → "<specifier>": invalid reusable-convention package at <path>: <issues>` | The author shipped an invalid package; report upstream. |
 | Empty source value | `Convention source "<prefix>" has empty value.` | Supply a path or npm specifier. |
-| Placeholder used in `must` but not declared in `paths` or `placeholders` | `Convention "<identifier>" references "${<placeholder>}" in <key>, but neither paths nor placeholders declare "{<placeholder>}".` | Either declare the placeholder in `paths` or `placeholders`, or remove the unresolved template from `must`. |
+| Placeholder used in `must` or `mustNot` but not declared in `paths` or `placeholders` | `Convention "<identifier>" references "${<placeholder>}" in <key>, but neither paths nor placeholders declare "{<placeholder>}".` | Either declare the placeholder in `paths` or `placeholders`, or remove the unresolved template. |
 | `use` inside `must[]` points at a reusable that declares `paths`/`severity` | `Convention "<prefix>/<name>" referenced in conventions[<i>].must[<j>] declares top-level-only field(s) "<field>". Such conventions can only be referenced at the top level of conventions[]. Either remove the field(s) from the source convention, or move the reference out of must[].` | Drop `paths`/`severity` from the reusable, or reference it directly from `conventions[]`. |
 
 `<identifier>` in the placeholder error is the convention's `name`, the `<vendor>/<name>` reference, or `conventions[<i>]` — whichever was available.
@@ -218,4 +218,4 @@ All errors below are returned from `loadConfig()` as `{ success: false, error }`
 
 - [Authoring reusable conventions](../guides/authoring-reusable-conventions.md) — publish your own.
 - [konsistent.json reference](./configuration.md) — the surrounding config shape.
-- [Path patterns](./path-patterns.md) — placeholder syntax used in `paths` and `must`.
+- [Path patterns](./path-patterns.md) — placeholder syntax used in `paths`, `must`, and `mustNot`.

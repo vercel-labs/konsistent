@@ -50,13 +50,15 @@ Switch from object to array form when you need:
   "if": { "hasFile": "index.test.tsx" },
   "for": { "files": "index.test.tsx" },
   "excludeFiles": ["components/legacy/**"],
-  "must": { "import": [{ "name": "render", "from": "@/test-utils" }] }
+  "must": { "import": [{ "name": "render", "from": "@/test-utils" }] },
+  "mustNot": { "exportConstants": ["debug"] }
 }
 ```
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `must` | `MustPredicates` | yes | The predicates this block enforces. See [predicates.md](./predicates.md). |
+| `must` | `MustPredicates` | yes, unless `mustNot` is present | The predicates this block enforces. See [predicates.md](./predicates.md). |
+| `mustNot` | `MustPredicates` | yes, unless `must` is present | The predicates this block forbids. |
 | `if` | `{ hasFile }` or `{ placeholderSatisfies }` | no | Gate. Block runs only if the condition holds. |
 | `for` | `{ files: string \| string[] }` | no | Scope. Predicates apply to files matching this pattern within the parent path. |
 | `excludeFiles` | `string[]` | no | Glob patterns to exclude from the block. |

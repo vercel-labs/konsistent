@@ -2,12 +2,16 @@ import ts from "typescript";
 import type {
   ClassInfo,
   ConstantInfo,
+  DeclarationSymbolInfo,
+  DefaultExportSymbolInfo,
   ExportInfo,
   ExtendsClauseInfo,
   FileStructure,
   FunctionInfo,
   ImportInfo,
+  ImportSourceInfo,
   InterfaceInfo,
+  NamedExportSymbolInfo,
   NonBarrelStatementInfo,
   ParamInfo,
   SourcePosition,
@@ -125,6 +129,33 @@ function processExportDeclaration(opts: {
   return exports;
 }
 
+function processNamedExportSymbols(opts: {
+  node: ts.ExportDeclaration;
+  sourceFile: ts.SourceFile;
+}): NamedExportSymbolInfo[] {
+  const { node, sourceFile } = opts;
+  const symbols: NamedExportSymbolInfo[] = [];
+  const from = node.moduleSpecifier
+    ? (node.moduleSpecifier as ts.StringLiteral).text
+    : undefined;
+
+  if (!(node.exportClause && ts.isNamedExports(node.exportClause))) {
+    return symbols;
+  }
+
+  for (const element of node.exportClause.elements) {
+    symbols.push({
+      name: element.name.getText(sourceFile),
+      sourceName: (element.propertyName ?? element.name).getText(sourceFile),
+      isType: node.isTypeOnly || element.isTypeOnly,
+      pos: getPosition({ sourceFile, node: element.name }),
+      ...(from === undefined ? {} : { from }),
+    });
+  }
+
+  return symbols;
+}
+
 function processExportedDeclaration(opts: {
   node: ts.Node;
   sourceFile: ts.SourceFile;
@@ -190,10 +221,14 @@ function processExportedDeclaration(opts: {
 interface ParseCollector {
   classes: ClassInfo[];
   constants: ConstantInfo[];
+  declarationSymbols: DeclarationSymbolInfo[];
+  defaultExportSymbols: DefaultExportSymbolInfo[];
   exports: ExportInfo[];
   functions: FunctionInfo[];
+  importSources: ImportSourceInfo[];
   imports: ImportInfo[];
   interfaces: InterfaceInfo[];
+  namedExportSymbols: NamedExportSymbolInfo[];
   nonBarrelStatements: NonBarrelStatementInfo[];
   typeAliases: TypeAliasInfo[];
 }
@@ -207,6 +242,12 @@ function processImportDeclaration(opts: {
   const pos = getPosition({ sourceFile, node });
   const moduleSpecifier = (node.moduleSpecifier as ts.StringLiteral).text;
   const isTypeOnly = node.importClause?.isTypeOnly ?? false;
+
+  collector.importSources.push({
+    from: moduleSpecifier,
+    isType: isTypeOnly,
+    pos,
+  });
 
   if (node.importClause?.namedBindings) {
     if (ts.isNamedImports(node.importClause.namedBindings)) {
@@ -235,6 +276,85 @@ function processImportDeclaration(opts: {
       isType: isTypeOnly,
       pos,
     });
+  }
+}
+
+function processDeclarationSymbols(opts: {
+  node: ts.Node;
+  sourceFile: ts.SourceFile;
+  collector: ParseCollector;
+}): void {
+  const { node, sourceFile, collector } = opts;
+  const isExported = hasExportModifier(node);
+  const isDefaultExport = hasDefaultModifier(node);
+
+  if (ts.isFunctionDeclaration(node) && node.name) {
+    collector.declarationSymbols.push({
+      name: node.name.getText(sourceFile),
+      kind: "function",
+      isExported,
+      isDefaultExport,
+      pos: getPosition({ sourceFile, node: node.name }),
+    });
+  }
+
+  if (ts.isClassDeclaration(node) && node.name) {
+    collector.declarationSymbols.push({
+      name: node.name.getText(sourceFile),
+      kind: "class",
+      isExported,
+      isDefaultExport,
+      pos: getPosition({ sourceFile, node: node.name }),
+    });
+  }
+
+  if (ts.isInterfaceDeclaration(node)) {
+    collector.declarationSymbols.push({
+      name: node.name.getText(sourceFile),
+      kind: "interface",
+      isExported,
+      isDefaultExport,
+      pos: getPosition({ sourceFile, node: node.name }),
+    });
+  }
+
+  if (ts.isTypeAliasDeclaration(node)) {
+    collector.declarationSymbols.push({
+      name: node.name.getText(sourceFile),
+      kind: "type",
+      isExported,
+      isDefaultExport,
+      pos: getPosition({ sourceFile, node: node.name }),
+    });
+  }
+
+  if (ts.isEnumDeclaration(node)) {
+    collector.declarationSymbols.push({
+      name: node.name.getText(sourceFile),
+      kind: "enum",
+      isExported,
+      isDefaultExport,
+      pos: getPosition({ sourceFile, node: node.name }),
+    });
+  }
+
+  if (ts.isVariableStatement(node)) {
+    // biome-ignore lint/suspicious/noBitwiseOperators: TypeScript NodeFlags is a bitfield enum
+    const isConst = (node.declarationList.flags & ts.NodeFlags.Const) !== 0;
+    if (!isConst) {
+      return;
+    }
+    for (const decl of node.declarationList.declarations) {
+      if (ts.isIdentifier(decl.name)) {
+        collector.declarationSymbols.push({
+          name: decl.name.getText(sourceFile),
+          kind: "const",
+          isExported,
+          isDefaultExport,
+          pos: getPosition({ sourceFile, node: decl.name }),
+        });
+      }
+    }
   }
 }
 
@@ -357,10 +477,14 @@ export function parseFileStructure(opts: {
   const collector: ParseCollector = {
     exports: [],
     imports: [],
+    importSources: [],
     interfaces: [],
     classes: [],
     functions: [],
     constants: [],
+    declarationSymbols: [],
+    namedExportSymbols: [],
+    defaultExportSymbols: [],
     nonBarrelStatements: [],
     typeAliases: [],
   };
@@ -368,6 +492,9 @@ export function parseFileStructure(opts: {
   ts.forEachChild(sourceFile, (node) => {
     if (ts.isExportDeclaration(node)) {
       collector.exports.push(...processExportDeclaration({ node, sourceFile }));
+      collector.namedExportSymbols.push(
+        ...processNamedExportSymbols({ node, sourceFile })
+      );
       return;
     }
 
@@ -379,6 +506,12 @@ export function parseFileStructure(opts: {
         isType: false,
         pos,
       });
+      if (!node.isExportEquals && ts.isIdentifier(node.expression)) {
+        collector.defaultExportSymbols.push({
+          name: node.expression.getText(sourceFile),
+          pos: getPosition({ sourceFile, node: node.expression }),
+        });
+      }
       return;
     }
 
@@ -388,6 +521,7 @@ export function parseFileStructure(opts: {
     }
 
     processDeclaration({ node, sourceFile, collector });
+    processDeclarationSymbols({ node, sourceFile, collector });
 
     if (hasExportModifier(node)) {
       processExportModifier({ node, sourceFile, collector });
