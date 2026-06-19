@@ -256,6 +256,29 @@ describe("generateConventionName", () => {
     });
   });
 
+  describe("mustNot", () => {
+    it("generates negated names for mustNot predicates", () => {
+      expect(
+        generateConventionName({
+          mustNot: { exportConstants: ["debug"] },
+        })
+      ).toBe("must-not-export-debug-constant");
+    });
+
+    it("generates logical names for negated boolean predicates", () => {
+      expect(
+        generateConventionName({
+          mustNot: { importFromCurrentDir: true },
+        })
+      ).toBe("must-not-import-from-current-dir");
+      expect(
+        generateConventionName({
+          mustNot: { importFromCurrentDir: false },
+        })
+      ).toBe("must-import-from-current-dir");
+    });
+  });
+
   describe("useDeclarationOrder", () => {
     it("generates declaration order names", () => {
       expect(
@@ -316,6 +339,14 @@ describe("generateConventionName", () => {
           must: [{ must: { haveFiles: ["${name}.tsx"] } }],
         })
       ).toBe("must-have-tsx");
+    });
+
+    it("uses mustNot when the first block has no must", () => {
+      expect(
+        generateConventionName({
+          must: [{ mustNot: { export: ["debug"] } }],
+        })
+      ).toBe("must-not-export-debug");
     });
   });
 

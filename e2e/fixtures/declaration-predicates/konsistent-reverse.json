@@ -1,0 +1,28 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "no-local-declarations",
+      "paths": "src/module.ts",
+      "mustNot": {
+        "declareTypes": ["LocalType"],
+        "declareConstants": ["localConstant"],
+        "declareFunctions": [
+          {
+            "name": "createLocal",
+            "receiveParamOfType": "LocalConfig",
+            "returnValueOfType": "LocalResult"
+          }
+        ],
+        "declareInterfaces": [{ "name": "LocalInterface", "extend": "BaseInterface" }],
+        "declareClasses": [
+          {
+            "name": "LocalClass",
+            "extend": "BaseClass",
+            "implement": ["Serializable"]
+          }
+        ]
+      }
+    }
+  ]
+}

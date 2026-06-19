@@ -30,6 +30,16 @@ describe("ReusableConventionV1Schema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts mustNot without must", () => {
+    const result = ReusableConventionV1Schema.safeParse({
+      name: "files-must-not-export-debug",
+      description: "Component files must not export debug helpers.",
+      paths: ["src/components/{name}.ts"],
+      mustNot: { exportConstants: ["debug"] },
+    });
+    expect(result.success).toBe(true);
+  });
+
   it("accepts declaration, declaration order, and import source predicates", () => {
     const result = ReusableConventionV1Schema.safeParse({
       name: "locals",
@@ -79,6 +89,23 @@ describe("ReusableConventionV1Schema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("rejects mustNot MustBlock[] form", () => {
+    const result = ReusableConventionV1Schema.safeParse({
+      name: "x",
+      description: "x",
+      mustNot: [{ must: { haveType: "file" } }],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects reusable conventions with neither must nor mustNot", () => {
+    const result = ReusableConventionV1Schema.safeParse({
+      name: "x",
+      description: "x",
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("rejects missing description", () => {
     const result = ReusableConventionV1Schema.safeParse({
       name: "x",
@@ -94,6 +121,16 @@ describe("ReusableConventionsPackageV1Schema", () => {
       conventionSpecVersion: "v1",
       conventions: [
         { name: "a", description: "d", must: { haveFiles: ["README.md"] } },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a package convention with mustNot", () => {
+    const result = ReusableConventionsPackageV1Schema.safeParse({
+      conventionSpecVersion: "v1",
+      conventions: [
+        { name: "a", description: "d", mustNot: { export: ["debug"] } },
       ],
     });
     expect(result.success).toBe(true);

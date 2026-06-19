@@ -1,0 +1,21 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "no-plugin-directories",
+      "paths": "plugins/{pluginName}",
+      "mustNot": {
+        "haveType": "directory",
+        "haveFiles": ["index.ts", "manifest.json", "README.md"]
+      }
+    },
+    {
+      "name": "no-plugin-exports",
+      "paths": "plugins/{pluginName}/index.ts",
+      "mustNot": {
+        "export": ["activate", "deactivate"],
+        "exportConstants": ["pluginId"]
+      }
+    }
+  ]
+}

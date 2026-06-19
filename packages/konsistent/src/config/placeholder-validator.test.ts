@@ -42,6 +42,28 @@ describe("validatePlaceholders", () => {
     }
   });
 
+  it("rejects a placeholder used in mustNot but absent from paths", () => {
+    const conventions: ConventionV1[] = [
+      {
+        name: "broken",
+        paths: ["packages/{packageName}"],
+        mustNot: { exportConstants: ["${componentName}Debug"] },
+      },
+    ];
+
+    const result = validatePlaceholders({
+      conventions,
+      identifiers: ["broken"],
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBe(
+        'Convention "broken" references "${componentName}" in mustNot.exportConstants, but neither paths nor placeholders declare "{componentName}".'
+      );
+    }
+  });
+
   it("reports only the missing placeholder when multiple are used and one is missing", () => {
     const conventions: ConventionV1[] = [
       {
@@ -109,6 +131,31 @@ describe("validatePlaceholders", () => {
     if (!result.ok) {
       expect(result.error).toContain('"${missing}"');
       expect(result.error).toContain("must.if.hasFile");
+    }
+  });
+
+  it("detects a placeholder inside a nested MustBlock mustNot predicate", () => {
+    const conventions: ConventionV1[] = [
+      {
+        name: "block-form",
+        paths: ["packages/{packageName}"],
+        must: [
+          {
+            mustNot: { exportConstants: ["${missing}Debug"] },
+          },
+        ],
+      },
+    ];
+
+    const result = validatePlaceholders({
+      conventions,
+      identifiers: ["block-form"],
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain('"${missing}"');
+      expect(result.error).toContain("mustNot.exportConstants");
     }
   });
 

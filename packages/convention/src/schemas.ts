@@ -84,7 +84,7 @@ export const MustPredicatesV1Schema = z.strictObject({
   areBarrelFiles: z.boolean().optional(),
 });
 
-export const MustBlockV1Schema = z.strictObject({
+const MustBlockV1Shape = {
   name: z
     .string()
     .regex(/^[a-z0-9-]+$/, "Must block name must match [a-z0-9-]+")
@@ -100,10 +100,22 @@ export const MustBlockV1Schema = z.strictObject({
     .strictObject({ files: z.union([z.string(), z.array(z.string())]) })
     .optional(),
   excludeFiles: z.array(z.string()).optional(),
-  must: MustPredicatesV1Schema,
-});
+};
 
-export const ReusableConventionV1Schema = z.strictObject({
+export const MustBlockV1Schema = z.union([
+  z.strictObject({
+    ...MustBlockV1Shape,
+    must: MustPredicatesV1Schema,
+    mustNot: MustPredicatesV1Schema.optional(),
+  }),
+  z.strictObject({
+    ...MustBlockV1Shape,
+    must: MustPredicatesV1Schema.optional(),
+    mustNot: MustPredicatesV1Schema,
+  }),
+]);
+
+const ReusableConventionV1Shape = {
   name: z
     .string()
     .regex(/^[a-z0-9-]+$/, "Convention name must match [a-z0-9-]+"),
@@ -120,8 +132,20 @@ export const ReusableConventionV1Schema = z.strictObject({
   for: z
     .strictObject({ files: z.union([z.string(), z.array(z.string())]) })
     .optional(),
-  must: MustPredicatesV1Schema,
-});
+};
+
+export const ReusableConventionV1Schema = z.union([
+  z.strictObject({
+    ...ReusableConventionV1Shape,
+    must: MustPredicatesV1Schema,
+    mustNot: MustPredicatesV1Schema.optional(),
+  }),
+  z.strictObject({
+    ...ReusableConventionV1Shape,
+    must: MustPredicatesV1Schema.optional(),
+    mustNot: MustPredicatesV1Schema,
+  }),
+]);
 
 export const ReusableConventionsPackageV1Schema = z.strictObject({
   conventionSpecVersion: z.literal("v1"),
