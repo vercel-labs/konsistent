@@ -1,6 +1,6 @@
 {
   "mode": "pre",
-  "tag": "alpha",
+  "tag": "beta",
   "initialVersions": {
     "konsistent": "0.0.0",
     "@konsistent/convention": "0.0.0",
