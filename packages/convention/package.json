@@ -1,7 +1,7 @@
 {
   "name": "@konsistent/convention",
   "description": "Convention spec for konsistent — Zod schemas and authoring helpers for reusable conventions.",
-  "version": "0.0.1-alpha.5",
+  "version": "0.0.0",
   "type": "module",
   "license": "Apache-2.0",
   "files": [
@@ -45,6 +45,7 @@
     "zod": "catalog:"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   }
 }
