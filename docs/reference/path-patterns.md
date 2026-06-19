@@ -1,6 +1,6 @@
 # Path patterns
 
-A convention's `paths` field declares which files or directories it applies to. Path patterns combine glob syntax with **placeholders** that capture parts of the path so they can be referenced inside `must` predicates.
+A convention's `paths` field declares which files or directories it applies to. Path patterns combine glob syntax with **placeholders** that capture parts of the path so they can be referenced inside `must` and `mustNot` predicates.
 
 ## Glob basics
 
@@ -19,7 +19,7 @@ A convention's `paths` field declares which files or directories it applies to. 
 
 ## Placeholders
 
-Wrap a path segment in `{name}` to extract it as a placeholder. The captured value becomes available inside `must` predicates as `${name}`.
+Wrap a path segment in `{name}` to extract it as a placeholder. The captured value becomes available inside `must` and `mustNot` predicates as `${name}`.
 
 ```json
 {
@@ -38,7 +38,7 @@ A placeholder matches one path segment by default. Use it where a literal value 
 "paths": "services/{svcName}/index.ts"
 ```
 
-The same placeholder can appear in both the path and the `must` predicates:
+The same placeholder can appear in both the path and the predicate values:
 
 ```json
 {
@@ -53,7 +53,7 @@ The same placeholder can appear in both the path and the `must` predicates:
 
 ## Static placeholder values
 
-Sometimes a placeholder name is used inside `must`, but the consumer's tree has only one concrete value and there's no wildcard segment to capture it from. Use the optional `placeholders` field on the convention to supply the value directly:
+Sometimes a placeholder name is used inside `must` or `mustNot`, but the consumer's tree has only one concrete value and there's no wildcard segment to capture it from. Use the optional `placeholders` field on the convention to supply the value directly:
 
 ```json
 {
@@ -65,7 +65,7 @@ Sometimes a placeholder name is used inside `must`, but the consumer's tree has 
 }
 ```
 
-This is equivalent to `paths: "packages/{providerId}/src/index.ts"` when the tree contains exactly one provider folder, but doesn't require a wildcard. It's especially useful when consuming a [reusable convention](./reusable-conventions.md) whose `must` references a placeholder that the local tree doesn't have a wildcard for.
+This is equivalent to `paths: "packages/{providerId}/src/index.ts"` when the tree contains exactly one provider folder, but doesn't require a wildcard. It's especially useful when consuming a [reusable convention](./reusable-conventions.md) whose predicates reference a placeholder that the local tree doesn't have a wildcard for.
 
 A name may not appear in both a `{name}` placeholder in `paths` and in `placeholders` — pick one source of truth.
 
@@ -98,7 +98,7 @@ For acronyms like `openai` → `OpenAI` instead of `Openai`, declare overrides w
 
 ### Template substitutions in predicates
 
-Templates work anywhere a string appears in `must`:
+Templates work anywhere a string appears in `must` or `mustNot`:
 
 ```json
 {

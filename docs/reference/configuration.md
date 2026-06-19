@@ -34,7 +34,7 @@ The `konsistent.json` file declares the structural conventions the CLI enforces.
 
 ## Conventions
 
-A convention is a rule that says "files matching `paths` must satisfy `must`."
+A convention is a rule that says "files matching `paths` must satisfy `must` and must not satisfy `mustNot`."
 
 ```json
 {
@@ -51,7 +51,8 @@ A convention is a rule that says "files matching `paths` must satisfy `must`."
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `paths` | `string` or `string[]` | yes | Glob pattern(s) with `{placeholder}` extraction. See [path-patterns.md](./path-patterns.md). |
-| `must` | `MustPredicates` or `MustBlock[]` | yes | The conditions that matched paths must satisfy. See [predicates.md](./predicates.md) and [conditional-rules.md](./conditional-rules.md). |
+| `must` | `MustPredicates` or `MustBlock[]` | yes, unless `mustNot` is present | The conditions that matched paths must satisfy. See [predicates.md](./predicates.md) and [conditional-rules.md](./conditional-rules.md). |
+| `mustNot` | `MustPredicates` | yes, unless `must` is present | The conditions that matched paths must not satisfy. Unlike `must`, this only accepts the object form. |
 | `name` | string matching `[a-z0-9-]+` | no | Identifier shown in violation reports. |
 | `description` | string | no | Human-readable explanation. |
 | `severity` | `"error"` \| `"warning"` | no, default `"error"` | See [Severity](#severity). |
@@ -90,6 +91,18 @@ All listed predicates apply unconditionally to every matched path. See [predicat
 ```
 
 Each entry is a `MustBlock` that can have `if`, `for`, `excludeFiles`, `name`, and `description`. See [conditional-rules.md](./conditional-rules.md). An entry may alternatively be a reusable-convention reference of the form `{ "use": "<vendor>/<name>", ...overrides }`, which expands into a `MustBlock` — see [reusable-conventions.md](./reusable-conventions.md#use-inside-a-parents-must).
+
+## `mustNot`: negated predicates
+
+`mustNot` accepts the same predicate object shape as object-form `must`, but reverses the result. For example, this fails when a matched file exports `debug`:
+
+```json
+"mustNot": {
+  "exportConstants": ["debug"]
+}
+```
+
+`mustNot` is only object-form. It cannot contain a `MustBlock[]`, string references, or `{ "use": ... }` references. Use it inside a `must` block when you need `if`, `for`, or `excludeFiles` scoping.
 
 ## Severity
 

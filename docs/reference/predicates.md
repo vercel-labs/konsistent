@@ -1,6 +1,6 @@
 # Predicates
 
-Predicates are the assertions inside a convention's `must` block. Each predicate checks one structural property of the matched path. Listing multiple predicates in the same `must` is equivalent to AND — they all must pass.
+Predicates are the assertions inside a convention's `must` or `mustNot` block. Each predicate checks one structural property of the matched path. Listing multiple predicates in the same `must` is equivalent to AND — they all must pass. Listing predicates in `mustNot` reverses the result — a matched path fails when it satisfies one of those predicates.
 
 The full machine-readable schema lives at `node_modules/konsistent/konsistent.schema.json`.
 
@@ -33,6 +33,16 @@ The full machine-readable schema lives at `node_modules/konsistent/konsistent.sc
   - [`areBarrelFiles`](#arebarrelfiles)
 
 All predicates support template substitutions in their string values — see [path-patterns.md](./path-patterns.md#case-transformations) for the full case-transformation catalog.
+
+`mustNot` accepts only the object form:
+
+```json
+"mustNot": {
+  "exportConstants": ["debug"]
+}
+```
+
+It does not accept `MustBlock[]` or reusable-convention references.
 
 ---
 
@@ -423,4 +433,4 @@ Multiple predicates in the same `must` are AND-ed:
 
 For OR-style logic (apply different predicates to different files), use [conditional rules](./conditional-rules.md) — the array form of `must` with `if`/`for` blocks.
 
-Note that **reusable conventions** (those published via `@konsistent/convention` and consumed via `conventionSources`) are restricted to the flat object form of `must` — the `MustBlock[]` form is unavailable on the author side. Hand-written conventions in your own `konsistent.json` retain the full surface area. See [reusable-conventions.md](./reusable-conventions.md#restrictions).
+Note that **reusable conventions** (those published via `@konsistent/convention` and consumed via `conventionSources`) are restricted to flat object-form `must` and `mustNot` predicates — the `MustBlock[]` form is unavailable on the author side. Hand-written conventions in your own `konsistent.json` can still use `MustBlock[]` in `must`. See [reusable-conventions.md](./reusable-conventions.md#restrictions).
