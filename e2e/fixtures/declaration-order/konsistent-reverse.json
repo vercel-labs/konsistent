@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "declarations-not-in-order",
+      "paths": "src/order.ts",
+      "mustNot": {
+        "useDeclarationOrder": ["alpha", "Beta", "gamma", "missing"]
+      }
+    }
+  ]
+}
