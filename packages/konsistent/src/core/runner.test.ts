@@ -7,10 +7,12 @@ function createMockFileSystem(opts: {
   globResults?: Map<string, string[]>;
   files?: Set<string>;
   directories?: Set<string>;
+  fileContents?: Map<string, string>;
 }): FileSystem {
   const globResults = opts.globResults ?? new Map<string, string[]>();
   const files = opts.files ?? new Set<string>();
   const directories = opts.directories ?? new Set<string>();
+  const fileContents = opts.fileContents ?? new Map<string, string>();
   return {
     glob(patterns: string[]): Promise<string[]> {
       const key = patterns.sort().join(",");
@@ -20,7 +22,7 @@ function createMockFileSystem(opts: {
     isFile: (p: string) => files.has(p),
     fileExists: (p: string) => files.has(p) || directories.has(p),
     readDir: () => [],
-    readFile: () => "",
+    readFile: (p: string) => fileContents.get(p) ?? "",
   };
 }
 
@@ -138,6 +140,115 @@ describe("run", () => {
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
+  });
+
+  it("reports diagnostics when mustNot scalar predicates pass", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          name: "not-files",
+          paths: "src/**/*.ts",
+          mustNot: { haveType: "file" },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/**/*.ts", ["src/index.ts"]]]),
+      files: new Set(["src/index.ts"]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].predicateName).toBe("mustNot.haveType");
+    expect(diagnostics[0].message).toBe('Forbidden path type "file"');
+    expect(diagnostics[0].conventionName).toBe("not-files");
+  });
+
+  it("returns no diagnostics when mustNot scalar predicates fail", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/**/*.ts",
+          mustNot: { haveType: "file" },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/**/*.ts", ["src/utils"]]]),
+      directories: new Set(["src/utils"]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
+  });
+
+  it("negates list predicates per item", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/module.ts",
+          mustNot: { exportConstants: ["debug", "missing"] },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
+      files: new Set(["src/module.ts"]),
+      fileContents: new Map([["src/module.ts", "export const debug = true;"]]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].predicateName).toBe("mustNot.exportConstants");
+    expect(diagnostics[0].message).toBe('Forbidden constant export "debug"');
+  });
+
+  it("applies block metadata to mustNot predicates", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          name: "components",
+          paths: "components/{name}",
+          severity: "warning",
+          must: [
+            {
+              name: "no-debug-tests",
+              if: { hasFile: "${name}.test.ts" },
+              for: { files: "*.test.ts" },
+              excludeFiles: ["helpers.test.ts"],
+              mustNot: { exportConstants: ["debug"] },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ["components/*", ["components/Button"]],
+        [
+          "components/Button/*.test.ts",
+          [
+            "components/Button/Button.test.ts",
+            "components/Button/helpers.test.ts",
+          ],
+        ],
+      ]),
+      directories: new Set(["components/Button"]),
+      files: new Set([
+        "components/Button/Button.test.ts",
+        "components/Button/helpers.test.ts",
+      ]),
+      fileContents: new Map([
+        ["components/Button/Button.test.ts", "export const debug = true;"],
+        ["components/Button/helpers.test.ts", "export const debug = true;"],
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].filePath).toBe("components/Button/Button.test.ts");
+    expect(diagnostics[0].conventionName).toBe("no-debug-tests");
+    expect(diagnostics[0].severity).toBe("warning");
   });
 
   it("evaluates must block when if.hasFile condition is met", async () => {

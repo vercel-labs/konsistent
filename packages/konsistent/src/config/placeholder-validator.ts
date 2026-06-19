@@ -36,8 +36,9 @@ export function validatePlaceholders(opts: {
       }
     }
 
-    const usages = collectUsagesInMust({
+    const usages = collectUsagesInAssertions({
       must: convention.must,
+      mustNot: convention.mustNot,
       declaredOuter: declared,
     });
 
@@ -86,24 +87,33 @@ interface Usage {
   name: string;
 }
 
-function collectUsagesInMust(opts: {
-  must: MustPredicatesV1 | MustBlockV1[];
+function collectUsagesInAssertions(opts: {
+  must?: MustPredicatesV1 | MustBlockV1[];
+  mustNot?: MustPredicatesV1;
   declaredOuter: Set<string>;
 }): Usage[] {
-  const { must, declaredOuter } = opts;
+  const { must, mustNot, declaredOuter } = opts;
   const usages: Usage[] = [];
   if (Array.isArray(must)) {
     for (const block of must) {
       collectUsagesInBlock({ block, declaredOuter, usages });
     }
-    return usages;
+  } else if (must) {
+    collectUsagesInPredicates({
+      predicates: must,
+      prefix: "must",
+      declared: declaredOuter,
+      usages,
+    });
   }
-  collectUsagesInPredicates({
-    predicates: must,
-    prefix: "must",
-    declared: declaredOuter,
-    usages,
-  });
+  if (mustNot) {
+    collectUsagesInPredicates({
+      predicates: mustNot,
+      prefix: "mustNot",
+      declared: declaredOuter,
+      usages,
+    });
+  }
   return usages;
 }
 
@@ -159,12 +169,22 @@ function collectUsagesInBlock(opts: {
     }
   }
 
-  collectUsagesInPredicates({
-    predicates: block.must,
-    prefix: "must",
-    declared: declaredHere,
-    usages,
-  });
+  if (block.must) {
+    collectUsagesInPredicates({
+      predicates: block.must,
+      prefix: "must",
+      declared: declaredHere,
+      usages,
+    });
+  }
+  if (block.mustNot) {
+    collectUsagesInPredicates({
+      predicates: block.mustNot,
+      prefix: "mustNot",
+      declared: declaredHere,
+      usages,
+    });
+  }
 }
 
 function collectUsagesInPredicates(opts: {

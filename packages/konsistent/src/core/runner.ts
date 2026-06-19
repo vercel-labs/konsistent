@@ -28,6 +28,7 @@ import { toCamelCase, toPascalCase } from "./case-utils.js";
 import type { PredicateContext } from "./context.js";
 import { generateConventionName } from "./convention-name.js";
 import type { Diagnostic, DiagnosticSeverity } from "./diagnostics.js";
+import { createDiagnostic } from "./diagnostics.js";
 import type { FileSystem } from "./filesystem.js";
 import type { MatchedPath } from "./path-matcher.js";
 import { matchPaths } from "./path-matcher.js";
@@ -144,13 +145,24 @@ function buildContext(opts: {
   };
 }
 
-function normalizeMustBlocks(
-  must: MustPredicatesV1 | MustBlockV1[]
-): MustBlockV1[] {
+function normalizeMustBlocks(opts: {
+  must?: MustPredicatesV1 | MustBlockV1[];
+  mustNot?: MustPredicatesV1;
+}): MustBlockV1[] {
+  const { must, mustNot } = opts;
   if (Array.isArray(must)) {
-    return must;
+    return mustNot ? [...must, { mustNot }] : must;
   }
-  return [{ must }];
+  if (must && mustNot) {
+    return [{ must, mustNot }];
+  }
+  if (must) {
+    return [{ must }];
+  }
+  if (mustNot) {
+    return [{ mustNot }];
+  }
+  return [];
 }
 
 function resolveBlockConventionName(opts: {
@@ -528,7 +540,148 @@ function getOrParseFileStructure(opts: {
   return structure;
 }
 
-function checkPredicates(opts: {
+const ITEM_LEVEL_MUST_NOT_PREDICATES = new Set<string>([
+  "haveFiles",
+  "declareTypes",
+  "declareConstants",
+  "declareFunctions",
+  "declareInterfaces",
+  "declareClasses",
+  "export",
+  "exportTypes",
+  "exportConstants",
+  "exportFunctions",
+  "exportInterfaces",
+  "exportClasses",
+  "import",
+  "importTypes",
+]);
+
+function resolveEntryName(opts: {
+  value: unknown;
+  context: PredicateContext;
+}): string {
+  const { value, context } = opts;
+  if (typeof value === "string") {
+    return context.resolveTemplate(value);
+  }
+  if (
+    value &&
+    typeof value === "object" &&
+    Object.hasOwn(value, "name") &&
+    typeof (value as { name: unknown }).name === "string"
+  ) {
+    return context.resolveTemplate((value as { name: string }).name);
+  }
+  return "unknown";
+}
+
+function formatForbiddenMessage(opts: {
+  key: string;
+  value: unknown;
+  context: PredicateContext;
+}): string {
+  const { key, value, context } = opts;
+  const name = resolveEntryName({ value, context });
+
+  switch (key) {
+    case "haveType":
+      return `Forbidden path type "${String(value)}"`;
+    case "haveFiles":
+      return `Forbidden file "${context.resolveTemplate(String(value))}"`;
+    case "declareTypes":
+      return `Forbidden type declaration "${name}"`;
+    case "declareConstants":
+      return `Forbidden constant declaration "${name}"`;
+    case "declareFunctions":
+      return `Forbidden function declaration "${name}"`;
+    case "declareInterfaces":
+      return `Forbidden interface declaration "${name}"`;
+    case "declareClasses":
+      return `Forbidden class declaration "${name}"`;
+    case "export":
+      return `Forbidden export "${name}"`;
+    case "exportTypes":
+      return `Forbidden type export "${name}"`;
+    case "exportConstants":
+      return `Forbidden constant export "${name}"`;
+    case "exportFunctions":
+      return `Forbidden function export "${name}"`;
+    case "exportInterfaces":
+      return `Forbidden interface export "${name}"`;
+    case "exportClasses":
+      return `Forbidden class export "${name}"`;
+    case "import":
+      return `Forbidden import "${name}"`;
+    case "importTypes":
+      return `Forbidden type import "${name}"`;
+    case "importFromCurrentDir":
+      return value === false
+        ? "Missing import from current directory is not allowed"
+        : "Forbidden import from current directory";
+    case "importFromParents":
+      return value === false
+        ? "Missing import from parent directories is not allowed"
+        : "Forbidden import from parent directories";
+    case "importFromExternals":
+      return value === false
+        ? "Missing import from external packages is not allowed"
+        : "Forbidden import from external packages";
+    case "useDeclarationOrder":
+      return `Forbidden declaration order "${(value as string[])
+        .map((entry) => context.resolveTemplate(entry))
+        .join('", "')}"`;
+    case "areBarrelFiles":
+      return value === false
+        ? "Forbidden non-barrel file"
+        : "Forbidden barrel file";
+    default:
+      return `Forbidden ${key}`;
+  }
+}
+
+function buildSingletonPredicate(opts: {
+  key: string;
+  value: unknown;
+}): MustPredicatesV1 {
+  return { [opts.key]: opts.value } as MustPredicatesV1;
+}
+
+function buildMustNotChecks(opts: {
+  mustNot: MustPredicatesV1;
+}): Array<{ key: string; predicate: MustPredicatesV1; value: unknown }> {
+  const checks: Array<{
+    key: string;
+    predicate: MustPredicatesV1;
+    value: unknown;
+  }> = [];
+
+  for (const key of Object.keys(opts.mustNot)) {
+    const value = opts.mustNot[key as keyof MustPredicatesV1];
+    if (value === undefined) {
+      continue;
+    }
+    if (Array.isArray(value) && ITEM_LEVEL_MUST_NOT_PREDICATES.has(key)) {
+      for (const item of value) {
+        checks.push({
+          key,
+          predicate: buildSingletonPredicate({ key, value: [item] }),
+          value: item,
+        });
+      }
+      continue;
+    }
+    checks.push({
+      key,
+      predicate: buildSingletonPredicate({ key, value }),
+      value,
+    });
+  }
+
+  return checks;
+}
+
+function checkMustPredicates(opts: {
   must: MustPredicatesV1;
   conventionName?: string;
   context: PredicateContext;
@@ -597,6 +750,84 @@ function checkPredicates(opts: {
   return diagnostics;
 }
 
+function checkMustNotPredicates(opts: {
+  mustNot: MustPredicatesV1;
+  conventionName?: string;
+  context: PredicateContext;
+  fileSystem: FileSystem;
+  fileStructureCache: Map<string, FileStructure>;
+  severity?: DiagnosticSeverity;
+}): Diagnostic[] {
+  const diagnostics: Diagnostic[] = [];
+  const checks = buildMustNotChecks({ mustNot: opts.mustNot });
+
+  for (const check of checks) {
+    const normalDiagnostics = checkMustPredicates({
+      must: check.predicate,
+      conventionName: opts.conventionName,
+      context: opts.context,
+      fileSystem: opts.fileSystem,
+      fileStructureCache: opts.fileStructureCache,
+      severity: opts.severity,
+    });
+    if (normalDiagnostics.length > 0) {
+      continue;
+    }
+    diagnostics.push(
+      createDiagnostic({
+        filePath: opts.context.path,
+        predicateName: `mustNot.${check.key}`,
+        message: formatForbiddenMessage({
+          key: check.key,
+          value: check.value,
+          context: opts.context,
+        }),
+        conventionName: opts.conventionName,
+        severity: opts.severity,
+      })
+    );
+  }
+
+  return diagnostics;
+}
+
+function checkPredicates(opts: {
+  must?: MustPredicatesV1;
+  mustNot?: MustPredicatesV1;
+  conventionName?: string;
+  context: PredicateContext;
+  fileSystem: FileSystem;
+  fileStructureCache: Map<string, FileStructure>;
+  severity?: DiagnosticSeverity;
+}): Diagnostic[] {
+  const diagnostics: Diagnostic[] = [];
+  if (opts.must) {
+    diagnostics.push(
+      ...checkMustPredicates({
+        must: opts.must,
+        conventionName: opts.conventionName,
+        context: opts.context,
+        fileSystem: opts.fileSystem,
+        fileStructureCache: opts.fileStructureCache,
+        severity: opts.severity,
+      })
+    );
+  }
+  if (opts.mustNot) {
+    diagnostics.push(
+      ...checkMustNotPredicates({
+        mustNot: opts.mustNot,
+        conventionName: opts.conventionName,
+        context: opts.context,
+        fileSystem: opts.fileSystem,
+        fileStructureCache: opts.fileStructureCache,
+        severity: opts.severity,
+      })
+    );
+  }
+  return diagnostics;
+}
+
 async function evaluateForBlock(opts: {
   block: MustBlockV1;
   parentContext: PredicateContext;
@@ -640,6 +871,7 @@ async function evaluateForBlock(opts: {
     }
     return checkPredicates({
       must: block.must,
+      mustNot: block.mustNot,
       conventionName,
       context: parentContext,
       fileSystem,
@@ -703,6 +935,7 @@ async function evaluateForBlock(opts: {
     diagnostics.push(
       ...checkPredicates({
         must: block.must,
+        mustNot: block.mustNot,
         conventionName,
         context: forContext,
         fileSystem,
@@ -771,9 +1004,16 @@ export async function run(opts: {
   for (let i = 0; i < config.conventions.length; i++) {
     const convention = config.conventions[i];
     const matched = matchResults[i];
-    const blocks = normalizeMustBlocks(convention.must);
+    const blocks = normalizeMustBlocks({
+      must: convention.must,
+      mustNot: convention.mustNot,
+    });
     const conventionName =
-      convention.name ?? generateConventionName({ must: convention.must });
+      convention.name ??
+      generateConventionName({
+        must: convention.must,
+        mustNot: convention.mustNot,
+      });
     const severity: DiagnosticSeverity = convention.severity ?? "error";
     const staticPlaceholders = buildStaticPlaceholders({
       raw: convention.placeholders,

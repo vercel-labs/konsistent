@@ -33,6 +33,33 @@ describe("ConfigV1Schema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts a convention with mustNot predicates and no must", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/components/*.ts",
+          mustNot: { exportConstants: ["debug"] },
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a convention with both must and mustNot", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/components/*.ts",
+          must: { haveType: "file" },
+          mustNot: { exportConstants: ["debug"] },
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
   it("accepts a convention with paths as array", () => {
     const result = ConfigV1Schema.safeParse({
       version: "v1",
@@ -171,6 +198,19 @@ describe("ConfigV1Schema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("rejects unknown predicates in mustNot", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          mustNot: { unknownPredicate: ["foo"] },
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("accepts must as an array of MustBlocks", () => {
     const result = ConfigV1Schema.safeParse({
       version: "v1",
@@ -185,6 +225,45 @@ describe("ConfigV1Schema", () => {
       ],
     });
     expect(result.success).toBe(true);
+  });
+
+  it("rejects top-level mustNot as an array of MustBlocks", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          mustNot: [{ must: { exportConstants: ["debug"] } }],
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects top-level mustNot as a string reference", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          mustNot: ["common/no-debug"],
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects top-level mustNot as a use reference", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          mustNot: [{ use: "common/no-debug" }],
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
   });
 
   it("accepts a MustBlock without if condition", () => {
@@ -307,7 +386,7 @@ describe("ConfigV1Schema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects a MustBlock array with missing must property", () => {
+  it("rejects a MustBlock array with neither must nor mustNot", () => {
     const result = ConfigV1Schema.safeParse({
       version: "v1",
       conventions: [
@@ -318,6 +397,21 @@ describe("ConfigV1Schema", () => {
       ],
     });
     expect(result.success).toBe(false);
+  });
+
+  it("accepts a MustBlock with only mustNot", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          must: [
+            { if: { hasFile: "index.ts" }, mustNot: { export: ["debug"] } },
+          ],
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
   });
 
   it("accepts a convention with severity error", () => {
@@ -482,6 +576,20 @@ describe("ConfigV1Schema", () => {
           severity: "warning",
           excludeFiles: ["src/skip.ts"],
           must: { haveType: "file" },
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a use-form reference with a mustNot override", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventionSources: { common: "./x.json" },
+      conventions: [
+        {
+          use: "common/some-convention",
+          mustNot: { exportConstants: ["debug"] },
         },
       ],
     });

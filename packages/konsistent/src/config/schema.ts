@@ -41,7 +41,21 @@ const PlaceholdersMapSchema = z.record(
     .regex(/^[a-zA-Z0-9_-]+$/, "Placeholder value must match [a-zA-Z0-9_-]+")
 );
 
-export const ConventionV1Schema = z.strictObject({
+const ConditionSchema = z.union([
+  z.strictObject({ hasFile: z.string() }),
+  z.strictObject({ placeholderSatisfies: z.string() }),
+]);
+
+const ForSchema = z.strictObject({
+  files: z.union([z.string(), z.array(z.string())]),
+});
+
+const ConventionMustSchema = z.union([
+  MustPredicatesV1Schema,
+  z.array(MustBlockV1Schema),
+]);
+
+const ConventionV1Shape = {
   name: z
     .string()
     .regex(/^[a-z0-9-]+$/, "Convention name must match [a-z0-9-]+")
@@ -51,16 +65,38 @@ export const ConventionV1Schema = z.strictObject({
   excludeFiles: z.array(z.string()).optional(),
   paths: z.union([z.string(), z.array(z.string())]),
   placeholders: PlaceholdersMapSchema.optional(),
-  must: z.union([MustPredicatesV1Schema, z.array(MustBlockV1Schema)]),
-});
+};
 
-export const MustBlockUseRefSchema = MustBlockV1Schema.partial().extend({
+export const ConventionV1Schema = z.union([
+  z.strictObject({
+    ...ConventionV1Shape,
+    must: ConventionMustSchema,
+    mustNot: MustPredicatesV1Schema.optional(),
+  }),
+  z.strictObject({
+    ...ConventionV1Shape,
+    must: ConventionMustSchema.optional(),
+    mustNot: MustPredicatesV1Schema,
+  }),
+]);
+
+export const MustBlockUseRefSchema = z.strictObject({
   use: z
     .string()
     .regex(
       /^[a-z0-9-]+\/[a-z0-9-]+$/,
       'Must block "use" must match "<vendor>/<name>"'
     ),
+  name: z
+    .string()
+    .regex(/^[a-z0-9-]+$/, "Must block name must match [a-z0-9-]+")
+    .optional(),
+  description: z.string().optional(),
+  if: ConditionSchema.optional(),
+  for: ForSchema.optional(),
+  excludeFiles: z.array(z.string()).optional(),
+  must: MustPredicatesV1Schema.optional(),
+  mustNot: MustPredicatesV1Schema.optional(),
 });
 
 const ConventionStringRefSchema = z
@@ -70,7 +106,18 @@ const ConventionStringRefSchema = z
     'Convention reference must match "<vendor>/<name>"'
   );
 
-const RawHandWrittenConventionV1Schema = z.strictObject({
+const RawMustSchema = z.union([
+  MustPredicatesV1Schema,
+  z.array(
+    z.union([
+      ConventionStringRefSchema,
+      MustBlockV1Schema,
+      MustBlockUseRefSchema,
+    ])
+  ),
+]);
+
+const RawHandWrittenConventionV1Shape = {
   name: z
     .string()
     .regex(/^[a-z0-9-]+$/, "Convention name must match [a-z0-9-]+")
@@ -80,17 +127,20 @@ const RawHandWrittenConventionV1Schema = z.strictObject({
   excludeFiles: z.array(z.string()).optional(),
   paths: z.union([z.string(), z.array(z.string())]),
   placeholders: PlaceholdersMapSchema.optional(),
-  must: z.union([
-    MustPredicatesV1Schema,
-    z.array(
-      z.union([
-        ConventionStringRefSchema,
-        MustBlockV1Schema,
-        MustBlockUseRefSchema,
-      ])
-    ),
-  ]),
-});
+};
+
+const RawHandWrittenConventionV1Schema = z.union([
+  z.strictObject({
+    ...RawHandWrittenConventionV1Shape,
+    must: RawMustSchema,
+    mustNot: MustPredicatesV1Schema.optional(),
+  }),
+  z.strictObject({
+    ...RawHandWrittenConventionV1Shape,
+    must: RawMustSchema.optional(),
+    mustNot: MustPredicatesV1Schema,
+  }),
+]);
 
 export const ConventionUseRefSchema = z.strictObject({
   use: z
@@ -103,16 +153,10 @@ export const ConventionUseRefSchema = z.strictObject({
   paths: z.union([z.string(), z.array(z.string())]).optional(),
   placeholders: PlaceholdersMapSchema.optional(),
   excludeFiles: z.array(z.string()).optional(),
-  if: z
-    .union([
-      z.strictObject({ hasFile: z.string() }),
-      z.strictObject({ placeholderSatisfies: z.string() }),
-    ])
-    .optional(),
-  for: z
-    .strictObject({ files: z.union([z.string(), z.array(z.string())]) })
-    .optional(),
+  if: ConditionSchema.optional(),
+  for: ForSchema.optional(),
   must: MustPredicatesV1Schema.optional(),
+  mustNot: MustPredicatesV1Schema.optional(),
 });
 
 export const ConfigV1Schema = z.strictObject({
