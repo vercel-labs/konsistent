@@ -104,6 +104,9 @@ describe("mustNot reverse configs", () => {
         "Forbidden import from current directory",
         "Forbidden import from parent directories",
         "Forbidden import from external packages",
+        "Forbidden type import from current directory",
+        "Forbidden type import from parent directories",
+        "Forbidden type import from external packages",
       ],
     });
     await expect(

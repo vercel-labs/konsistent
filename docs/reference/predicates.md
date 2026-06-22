@@ -28,6 +28,9 @@ The full machine-readable schema lives at `node_modules/konsistent/konsistent.sc
   - [`importFromCurrentDir`](#importfromcurrentdir)
   - [`importFromParents`](#importfromparents)
   - [`importFromExternals`](#importfromexternals)
+  - [`importTypesFromCurrentDir`](#importtypesfromcurrentdir)
+  - [`importTypesFromParents`](#importtypesfromparents)
+  - [`importTypesFromExternals`](#importtypesfromexternals)
 - [Structural predicates](#structural-predicates)
   - [`useDeclarationOrder`](#usedeclarationorder)
   - [`areBarrelFiles`](#arebarrelfiles)
@@ -338,33 +341,63 @@ Same shape as `import`. Useful for enforcing dependency direction — every adap
 
 ### `importFromCurrentDir`
 
-Assert whether the file imports from the current directory via `./...`.
+Assert whether the file has value imports from the current directory via `./...`.
 
 ```json
 "must": { "importFromCurrentDir": true }
 ```
 
-`true` requires at least one import whose module specifier is `"."` or starts with `"./"`. `false` forbids those imports. Both value and type imports count, as do side-effect imports such as `import "./setup"`.
+`true` requires at least one non-type import whose module specifier is `"."` or starts with `"./"`. `false` forbids those imports. Type-only imports are ignored. Side-effect imports such as `import "./setup"` count as value imports.
 
 ### `importFromParents`
 
-Assert whether the file imports from parent directories via `../...`.
+Assert whether the file has value imports from parent directories via `../...`.
 
 ```json
 "must": { "importFromParents": false }
 ```
 
-`true` requires at least one import whose module specifier is `".."` or starts with `"../"`. `false` forbids those imports.
+`true` requires at least one non-type import whose module specifier is `".."` or starts with `"../"`. `false` forbids those imports. Type-only imports are ignored.
 
 ### `importFromExternals`
 
-Assert whether the file imports from external module specifiers.
+Assert whether the file has value imports from external module specifiers.
 
 ```json
 "must": { "importFromExternals": true }
 ```
 
-`true` requires at least one import that is not `./...` or `../...`. `false` forbids those imports. Scoped packages, `node:` modules, and unresolved path aliases such as `@/utils` count as external because `konsistent` does not resolve module aliases.
+`true` requires at least one non-type import that is not `./...` or `../...`. `false` forbids those imports. Scoped packages, `node:` modules, and unresolved path aliases such as `@/utils` count as external because `konsistent` does not resolve module aliases. Type-only imports are ignored.
+
+### `importTypesFromCurrentDir`
+
+Assert whether the file has type-only imports from the current directory via `./...`.
+
+```json
+"must": { "importTypesFromCurrentDir": true }
+```
+
+`true` requires at least one type import whose module specifier is `"."` or starts with `"./"`. `false` forbids those imports. Value imports are ignored.
+
+### `importTypesFromParents`
+
+Assert whether the file has type-only imports from parent directories via `../...`.
+
+```json
+"must": { "importTypesFromParents": false }
+```
+
+`true` requires at least one type import whose module specifier is `".."` or starts with `"../"`. `false` forbids those imports. Value imports are ignored.
+
+### `importTypesFromExternals`
+
+Assert whether the file has type-only imports from external module specifiers.
+
+```json
+"must": { "importTypesFromExternals": true }
+```
+
+`true` requires at least one type import that is not `./...` or `../...`. `false` forbids those imports. Scoped packages, `node:` modules, and unresolved path aliases such as `@/utils` count as external because `konsistent` does not resolve module aliases. Value imports are ignored.
 
 ---
 

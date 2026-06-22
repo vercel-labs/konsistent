@@ -1,3 +1,3 @@
-import type { Shared } from "../shared";
+import { sharedValue, type Shared } from "../shared";
 
-export type Current = Shared;
+export const current = (shared: Shared) => shared.value || sharedValue;

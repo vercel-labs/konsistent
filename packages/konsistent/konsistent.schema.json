@@ -577,6 +577,15 @@
                   "importFromExternals": {
                     "type": "boolean"
                   },
+                  "importTypesFromCurrentDir": {
+                    "type": "boolean"
+                  },
+                  "importTypesFromParents": {
+                    "type": "boolean"
+                  },
+                  "importTypesFromExternals": {
+                    "type": "boolean"
+                  },
                   "useDeclarationOrder": {
                     "type": "array",
                     "items": {
@@ -1034,6 +1043,15 @@
                     "type": "boolean"
                   },
                   "importFromExternals": {
+                    "type": "boolean"
+                  },
+                  "importTypesFromCurrentDir": {
+                    "type": "boolean"
+                  },
+                  "importTypesFromParents": {
+                    "type": "boolean"
+                  },
+                  "importTypesFromExternals": {
                     "type": "boolean"
                   },
                   "useDeclarationOrder": {
@@ -1548,6 +1566,15 @@
                           "importFromExternals": {
                             "type": "boolean"
                           },
+                          "importTypesFromCurrentDir": {
+                            "type": "boolean"
+                          },
+                          "importTypesFromParents": {
+                            "type": "boolean"
+                          },
+                          "importTypesFromExternals": {
+                            "type": "boolean"
+                          },
                           "useDeclarationOrder": {
                             "type": "array",
                             "items": {
@@ -2077,6 +2104,15 @@
                                         "importFromExternals": {
                                           "type": "boolean"
                                         },
+                                        "importTypesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromExternals": {
+                                          "type": "boolean"
+                                        },
                                         "useDeclarationOrder": {
                                           "type": "array",
                                           "items": {
@@ -2534,6 +2570,15 @@
                                           "type": "boolean"
                                         },
                                         "importFromExternals": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromExternals": {
                                           "type": "boolean"
                                         },
                                         "useDeclarationOrder": {
@@ -3059,6 +3104,15 @@
                                         "importFromExternals": {
                                           "type": "boolean"
                                         },
+                                        "importTypesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromExternals": {
+                                          "type": "boolean"
+                                        },
                                         "useDeclarationOrder": {
                                           "type": "array",
                                           "items": {
@@ -3516,6 +3570,15 @@
                                           "type": "boolean"
                                         },
                                         "importFromExternals": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromExternals": {
                                           "type": "boolean"
                                         },
                                         "useDeclarationOrder": {
@@ -4047,6 +4110,15 @@
                                     "importFromExternals": {
                                       "type": "boolean"
                                     },
+                                    "importTypesFromCurrentDir": {
+                                      "type": "boolean"
+                                    },
+                                    "importTypesFromParents": {
+                                      "type": "boolean"
+                                    },
+                                    "importTypesFromExternals": {
+                                      "type": "boolean"
+                                    },
                                     "useDeclarationOrder": {
                                       "type": "array",
                                       "items": {
@@ -4504,6 +4576,15 @@
                                       "type": "boolean"
                                     },
                                     "importFromExternals": {
+                                      "type": "boolean"
+                                    },
+                                    "importTypesFromCurrentDir": {
+                                      "type": "boolean"
+                                    },
+                                    "importTypesFromParents": {
+                                      "type": "boolean"
+                                    },
+                                    "importTypesFromExternals": {
                                       "type": "boolean"
                                     },
                                     "useDeclarationOrder": {
@@ -4972,6 +5053,15 @@
                         "type": "boolean"
                       },
                       "importFromExternals": {
+                        "type": "boolean"
+                      },
+                      "importTypesFromCurrentDir": {
+                        "type": "boolean"
+                      },
+                      "importTypesFromParents": {
+                        "type": "boolean"
+                      },
+                      "importTypesFromExternals": {
                         "type": "boolean"
                       },
                       "useDeclarationOrder": {
@@ -5484,6 +5574,15 @@
                           "importFromExternals": {
                             "type": "boolean"
                           },
+                          "importTypesFromCurrentDir": {
+                            "type": "boolean"
+                          },
+                          "importTypesFromParents": {
+                            "type": "boolean"
+                          },
+                          "importTypesFromExternals": {
+                            "type": "boolean"
+                          },
                           "useDeclarationOrder": {
                             "type": "array",
                             "items": {
@@ -6013,6 +6112,15 @@
                                         "importFromExternals": {
                                           "type": "boolean"
                                         },
+                                        "importTypesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromExternals": {
+                                          "type": "boolean"
+                                        },
                                         "useDeclarationOrder": {
                                           "type": "array",
                                           "items": {
@@ -6470,6 +6578,15 @@
                                           "type": "boolean"
                                         },
                                         "importFromExternals": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromExternals": {
                                           "type": "boolean"
                                         },
                                         "useDeclarationOrder": {
@@ -6995,6 +7112,15 @@
                                         "importFromExternals": {
                                           "type": "boolean"
                                         },
+                                        "importTypesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromExternals": {
+                                          "type": "boolean"
+                                        },
                                         "useDeclarationOrder": {
                                           "type": "array",
                                           "items": {
@@ -7452,6 +7578,15 @@
                                           "type": "boolean"
                                         },
                                         "importFromExternals": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "importTypesFromExternals": {
                                           "type": "boolean"
                                         },
                                         "useDeclarationOrder": {
@@ -7983,6 +8118,15 @@
                                     "importFromExternals": {
                                       "type": "boolean"
                                     },
+                                    "importTypesFromCurrentDir": {
+                                      "type": "boolean"
+                                    },
+                                    "importTypesFromParents": {
+                                      "type": "boolean"
+                                    },
+                                    "importTypesFromExternals": {
+                                      "type": "boolean"
+                                    },
                                     "useDeclarationOrder": {
                                       "type": "array",
                                       "items": {
@@ -8440,6 +8584,15 @@
                                       "type": "boolean"
                                     },
                                     "importFromExternals": {
+                                      "type": "boolean"
+                                    },
+                                    "importTypesFromCurrentDir": {
+                                      "type": "boolean"
+                                    },
+                                    "importTypesFromParents": {
+                                      "type": "boolean"
+                                    },
+                                    "importTypesFromExternals": {
                                       "type": "boolean"
                                     },
                                     "useDeclarationOrder": {
@@ -8908,6 +9061,15 @@
                         "type": "boolean"
                       },
                       "importFromExternals": {
+                        "type": "boolean"
+                      },
+                      "importTypesFromCurrentDir": {
+                        "type": "boolean"
+                      },
+                      "importTypesFromParents": {
+                        "type": "boolean"
+                      },
+                      "importTypesFromExternals": {
                         "type": "boolean"
                       },
                       "useDeclarationOrder": {

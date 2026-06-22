@@ -136,6 +136,18 @@ const PREDICATE_RULES: Record<
     (items[0] === false) === negated
       ? "must-import-from-externals"
       : "must-not-import-from-externals",
+  importTypesFromCurrentDir: ({ items, negated }) =>
+    (items[0] === false) === negated
+      ? "must-import-type-from-current-dir"
+      : "must-not-import-type-from-current-dir",
+  importTypesFromParents: ({ items, negated }) =>
+    (items[0] === false) === negated
+      ? "must-import-type-from-parents"
+      : "must-not-import-type-from-parents",
+  importTypesFromExternals: ({ items, negated }) =>
+    (items[0] === false) === negated
+      ? "must-import-type-from-externals"
+      : "must-not-import-type-from-externals",
   useDeclarationOrder: ({ items, negated }) => {
     const kebab = deriveKebabFromName(items[0] as string);
     const prefix = negated ? "must-not-use" : "must-use";

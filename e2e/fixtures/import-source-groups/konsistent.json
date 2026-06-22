@@ -7,7 +7,10 @@
       "must": {
         "importFromCurrentDir": true,
         "importFromParents": false,
-        "importFromExternals": false
+        "importFromExternals": false,
+        "importTypesFromCurrentDir": true,
+        "importTypesFromParents": false,
+        "importTypesFromExternals": false
       }
     },
     {
@@ -16,7 +19,10 @@
       "must": {
         "importFromCurrentDir": false,
         "importFromParents": true,
-        "importFromExternals": false
+        "importFromExternals": false,
+        "importTypesFromCurrentDir": false,
+        "importTypesFromParents": true,
+        "importTypesFromExternals": false
       }
     },
     {
@@ -25,7 +31,10 @@
       "must": {
         "importFromCurrentDir": false,
         "importFromParents": false,
-        "importFromExternals": true
+        "importFromExternals": true,
+        "importTypesFromCurrentDir": false,
+        "importTypesFromParents": false,
+        "importTypesFromExternals": true
       }
     }
   ]

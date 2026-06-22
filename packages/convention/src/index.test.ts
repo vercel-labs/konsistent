@@ -67,6 +67,9 @@ describe("ReusableConventionV1Schema", () => {
         importFromCurrentDir: true,
         importFromParents: false,
         importFromExternals: true,
+        importTypesFromCurrentDir: true,
+        importTypesFromParents: false,
+        importTypesFromExternals: true,
       },
     });
     expect(result.success).toBe(true);

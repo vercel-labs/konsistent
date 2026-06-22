@@ -22,7 +22,7 @@
 - [CLI](./reference/cli.md) — commands, flags, output formats, exit codes.
 - [konsistent.json configuration](./reference/configuration.md) — top-level schema and convention shape.
 - [Path patterns](./reference/path-patterns.md) — globs, placeholders, case transformations, negation.
-- [Predicates](./reference/predicates.md) — every `must` predicate (`haveType`, `haveFiles`, `export`, `exportTypes`, `exportConstants`, `exportFunctions`, `exportInterfaces`, `exportClasses`, `import`, `importTypes`).
+- [Predicates](./reference/predicates.md) — every `must` predicate (`haveType`, `haveFiles`, `export`, `exportTypes`, `exportConstants`, `exportFunctions`, `exportInterfaces`, `exportClasses`, `import`, `importTypes`, import source predicates).
 - [Constraints](./reference/constraints.md) — `matches`, `segments` for filtering placeholders.
 - [Conditional rules](./reference/conditional-rules.md) — `if`, `for`, `excludeFiles` blocks inside `must` arrays.
 - [Case maps](./reference/case-maps.md) — `kebabToPascalMap`, `kebabToCamelMap` for acronyms and special casing.
