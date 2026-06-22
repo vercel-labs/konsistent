@@ -101,6 +101,7 @@ describe("ConfigV1Schema", () => {
               {
                 name: "createLocal",
                 receiveParamOfType: "LocalConfig",
+                receiveParamsOfTypes: ["LocalConfig"],
                 returnValueOfType: "Local",
               },
             ],
@@ -130,6 +131,9 @@ describe("ConfigV1Schema", () => {
             importFromCurrentDir: true,
             importFromParents: false,
             importFromExternals: true,
+            importTypesFromCurrentDir: true,
+            importTypesFromParents: false,
+            importTypesFromExternals: true,
           },
         },
       ],

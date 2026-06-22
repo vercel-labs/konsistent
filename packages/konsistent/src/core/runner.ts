@@ -80,6 +80,9 @@ export const TS_PREDICATES = new Set([
   "importFromCurrentDir",
   "importFromParents",
   "importFromExternals",
+  "importTypesFromCurrentDir",
+  "importTypesFromParents",
+  "importTypesFromExternals",
   "useDeclarationOrder",
   "areBarrelFiles",
 ]);
@@ -434,6 +437,7 @@ const TS_PREDICATE_HANDLERS: Record<
           expected: must.importFromCurrentDir,
           predicateName: "importFromCurrentDir",
           group: "currentDir",
+          importKind: "value",
           context,
           fileStructure,
           conventionName,
@@ -452,6 +456,7 @@ const TS_PREDICATE_HANDLERS: Record<
           expected: must.importFromParents,
           predicateName: "importFromParents",
           group: "parents",
+          importKind: "value",
           context,
           fileStructure,
           conventionName,
@@ -470,6 +475,64 @@ const TS_PREDICATE_HANDLERS: Record<
           expected: must.importFromExternals,
           predicateName: "importFromExternals",
           group: "externals",
+          importKind: "value",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
+  importTypesFromCurrentDir: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.importTypesFromCurrentDir === undefined
+      ? []
+      : checkImportSource({
+          expected: must.importTypesFromCurrentDir,
+          predicateName: "importTypesFromCurrentDir",
+          group: "currentDir",
+          importKind: "type",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
+  importTypesFromParents: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.importTypesFromParents === undefined
+      ? []
+      : checkImportSource({
+          expected: must.importTypesFromParents,
+          predicateName: "importTypesFromParents",
+          group: "parents",
+          importKind: "type",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
+  importTypesFromExternals: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.importTypesFromExternals === undefined
+      ? []
+      : checkImportSource({
+          expected: must.importTypesFromExternals,
+          predicateName: "importTypesFromExternals",
+          group: "externals",
+          importKind: "type",
           context,
           fileStructure,
           conventionName,
@@ -627,6 +690,18 @@ function formatForbiddenMessage(opts: {
       return value === false
         ? "Missing import from external packages is not allowed"
         : "Forbidden import from external packages";
+    case "importTypesFromCurrentDir":
+      return value === false
+        ? "Missing type import from current directory is not allowed"
+        : "Forbidden type import from current directory";
+    case "importTypesFromParents":
+      return value === false
+        ? "Missing type import from parent directories is not allowed"
+        : "Forbidden type import from parent directories";
+    case "importTypesFromExternals":
+      return value === false
+        ? "Missing type import from external packages is not allowed"
+        : "Forbidden type import from external packages";
     case "useDeclarationOrder":
       return `Forbidden declaration order "${(value as string[])
         .map((entry) => context.resolveTemplate(entry))

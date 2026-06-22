@@ -84,6 +84,7 @@ Inside `${...}` template substitutions, methods transform the captured value:
 | `${name.toCamelCase()}` | `my-thing` → `myThing` |
 | `${name.toKebabCase()}` | `MyThing` → `my-thing` |
 | `${name.toSnakeCase()}` | `MyThing` → `my_thing` |
+| `${name.toConstantCase()}` | `my-thing` → `MY_THING` (uppercase snake case) |
 | `${name.toFlatCase()}` | `my-thing` → `mything` |
 | `${name.toNthSegment(0)}` | `my-thing` → `my` (split by `-`, return nth segment) |
 | `${name.toNthSegmentPascalCase(1)}` | `my-thing` → `Thing` |
@@ -107,7 +108,9 @@ Templates work anywhere a string appears in `must` or `mustNot`:
     "exportFunctions": [
       {
         "name": "create${adapterName.toPascalCase()}Adapter",
-        "receiveParamOfType": "${adapterName.toPascalCase()}AdapterConfig",
+        "receiveParamsOfTypes": [
+          "${adapterName.toPascalCase()}AdapterConfig"
+        ],
         "returnValueOfType": "${adapterName.toPascalCase()}Adapter"
       }
     ]

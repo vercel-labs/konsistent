@@ -1,7 +1,11 @@
 import type { PredicateContext } from "../../core/context.js";
 import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
 import { createDiagnostic } from "../../core/diagnostics.js";
-import type { FileStructure, FunctionInfo } from "../types.js";
+import type {
+  FileStructure,
+  FunctionInfo,
+  TypeAnnotationInfo,
+} from "../types.js";
 import {
   createExportedDeclarationDiagnostic,
   createMissingDeclarationDiagnostic,
@@ -13,13 +17,23 @@ import {
 interface FunctionDef {
   name: string;
   receiveParamOfType?: string;
+  receiveParamsOfTypes?: string[];
   returnValueOfType?: string;
+}
+
+function typeMatches(opts: {
+  actual: TypeAnnotationInfo | undefined;
+  expected: string;
+}): boolean {
+  const { actual, expected } = opts;
+  return actual?.text === expected || actual?.baseName === expected;
 }
 
 function checkSignature(opts: {
   funcInfo: FunctionInfo;
   resolvedName: string;
   resolvedParamType: string | undefined;
+  resolvedParamTypes: string[] | undefined;
   resolvedReturnType: string | undefined;
   checkContext: DeclarationCheckContext;
 }): Diagnostic[] {
@@ -27,16 +41,15 @@ function checkSignature(opts: {
     funcInfo,
     resolvedName,
     resolvedParamType,
+    resolvedParamTypes,
     resolvedReturnType,
     checkContext,
   } = opts;
   const diagnostics: Diagnostic[] = [];
 
   if (resolvedParamType) {
-    const hasParam = funcInfo.params.some(
-      (p) =>
-        p.typeName?.text === resolvedParamType ||
-        p.typeName?.baseName === resolvedParamType
+    const hasParam = funcInfo.params.some((p) =>
+      typeMatches({ actual: p.typeName, expected: resolvedParamType })
     );
     if (!hasParam) {
       diagnostics.push(
@@ -53,10 +66,29 @@ function checkSignature(opts: {
     }
   }
 
+  if (resolvedParamTypes) {
+    for (const [index, expectedType] of resolvedParamTypes.entries()) {
+      const param = funcInfo.params[index];
+      if (typeMatches({ actual: param?.typeName, expected: expectedType })) {
+        continue;
+      }
+      diagnostics.push(
+        createDiagnostic({
+          filePath: checkContext.context.path,
+          predicateName: checkContext.predicateName,
+          message: `Function "${resolvedName}" parameter ${index + 1} must be of type "${expectedType}"`,
+          conventionName: checkContext.conventionName,
+          line: funcInfo.pos.line,
+          column: funcInfo.pos.column,
+          severity: checkContext.severity,
+        })
+      );
+    }
+  }
+
   if (
     resolvedReturnType &&
-    funcInfo.returnType?.text !== resolvedReturnType &&
-    funcInfo.returnType?.baseName !== resolvedReturnType
+    !typeMatches({ actual: funcInfo.returnType, expected: resolvedReturnType })
   ) {
     diagnostics.push(
       createDiagnostic({
@@ -97,6 +129,9 @@ export function checkDeclareFunctions(opts: {
     const resolvedParamType = definition.receiveParamOfType
       ? context.resolveTemplate(definition.receiveParamOfType)
       : undefined;
+    const resolvedParamTypes = definition.receiveParamsOfTypes?.map((type) =>
+      context.resolveTemplate(type)
+    );
     const resolvedReturnType = definition.returnValueOfType
       ? context.resolveTemplate(definition.returnValueOfType)
       : undefined;
@@ -137,6 +172,7 @@ export function checkDeclareFunctions(opts: {
         funcInfo,
         resolvedName,
         resolvedParamType,
+        resolvedParamTypes,
         resolvedReturnType,
         checkContext,
       })

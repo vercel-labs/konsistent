@@ -201,7 +201,7 @@ describe("function-signatures-broken fixture", () => {
       };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain(
-        'Function "createAuthService" must receive a parameter of type "AuthConfig"'
+        'Function "createAuthService" parameter 2 must be of type "AuthLogger"'
       );
       expect(error.stdout).toContain(
         'Function "createPaymentsService" must return value of type "PaymentsService"'
@@ -209,6 +209,19 @@ describe("function-signatures-broken fixture", () => {
       expect(error.stdout).toContain("must-export-create-service-function");
       expect(error.stdout).toContain("Found 2 errors.");
     }
+  });
+});
+
+describe("deprecated-function-param fixture", () => {
+  const cwd = resolve(fixturesDir, "deprecated-function-param");
+
+  it("konsistent validate exits 0 and warns for receiveParamOfType", async () => {
+    const { stdout, stderr } = await runCli({ args: ["validate"], cwd });
+    expect(stdout).toContain("Configuration is valid");
+    expect(stderr).toContain('"receiveParamOfType" is deprecated');
+    expect(stderr).toContain(
+      "conventions[0].must.exportFunctions[0].receiveParamOfType"
+    );
   });
 });
 
@@ -300,7 +313,7 @@ describe("class-and-function-contracts-broken fixture", () => {
         'Class "DatabaseAdapter" must extend "BaseAdapter"'
       );
       expect(error.stdout).toContain(
-        'Function "createDatabaseAdapter" must receive a parameter of type "DatabaseAdapterConfig"'
+        'Function "createDatabaseAdapter" parameter 1 must be of type "DatabaseAdapterConfig"'
       );
       expect(error.stdout).toContain(
         'Function "createDatabaseAdapter" must return value of type "DatabaseAdapter"'
@@ -1035,6 +1048,9 @@ describe("case-maps-broken fixture", () => {
       );
       expect(error.stdout).toContain(
         'Missing export type "OpenAIProviderConfig"'
+      );
+      expect(error.stdout).toContain(
+        'Missing export constant "OPENAI_PROVIDER_ID"'
       );
     }
   });

@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "paths": "index.ts",
+      "must": {
+        "exportFunctions": [
+          {
+            "name": "createThing",
+            "receiveParamOfType": "ThingConfig"
+          }
+        ]
+      }
+    }
+  ]
+}

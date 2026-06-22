@@ -16,7 +16,11 @@ export const ImportDefinitionV1Schema = z.strictObject({
 
 export const FunctionDefinitionV1Schema = z.strictObject({
   name: z.string(),
+  /**
+   * Deprecated: use receiveParamsOfTypes instead.
+   */
   receiveParamOfType: z.string().optional(),
+  receiveParamsOfTypes: z.array(z.string()).optional(),
   returnValueOfType: z.string().optional(),
 });
 
@@ -80,6 +84,9 @@ export const MustPredicatesV1Schema = z.strictObject({
   importFromCurrentDir: z.boolean().optional(),
   importFromParents: z.boolean().optional(),
   importFromExternals: z.boolean().optional(),
+  importTypesFromCurrentDir: z.boolean().optional(),
+  importTypesFromParents: z.boolean().optional(),
+  importTypesFromExternals: z.boolean().optional(),
   useDeclarationOrder: z.array(z.string()).optional(),
   areBarrelFiles: z.boolean().optional(),
 });

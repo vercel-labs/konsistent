@@ -1,3 +1,3 @@
-import { helper } from "./helper";
+import { helper, type HelperOptions } from "./helper";
 
-export const current = helper;
+export const current = (options: HelperOptions) => `${helper}:${options.value}`;
