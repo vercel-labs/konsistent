@@ -23,6 +23,7 @@ describe("checkImportSource", () => {
       expected: true,
       predicateName: "importFromCurrentDir",
       group: "currentDir",
+      importKind: "value",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
         source: "import { helper } from './helper';",
@@ -36,6 +37,7 @@ describe("checkImportSource", () => {
       expected: false,
       predicateName: "importFromCurrentDir",
       group: "currentDir",
+      importKind: "value",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({ source: "import './setup';" }),
     });
@@ -51,6 +53,36 @@ describe("checkImportSource", () => {
       expected: true,
       predicateName: "importFromParents",
       group: "parents",
+      importKind: "value",
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({
+        source: "import { parent } from '../parent';",
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("ignores type imports for value import source predicates", () => {
+    const result = checkImportSource({
+      expected: true,
+      predicateName: "importFromParents",
+      group: "parents",
+      importKind: "value",
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({
+        source: "import type { Parent } from '../parent';",
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe("Missing import from parent directories");
+  });
+
+  it("matches type imports from parents", () => {
+    const result = checkImportSource({
+      expected: true,
+      predicateName: "importTypesFromParents",
+      group: "parents",
+      importKind: "type",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
         source: "import type { Parent } from '../parent';",
@@ -59,11 +91,70 @@ describe("checkImportSource", () => {
     expect(result).toEqual([]);
   });
 
+  it("ignores value imports for type import source predicates", () => {
+    const result = checkImportSource({
+      expected: true,
+      predicateName: "importTypesFromCurrentDir",
+      group: "currentDir",
+      importKind: "type",
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({
+        source: "import { helper } from './helper';",
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe(
+      "Missing type import from current directory"
+    );
+  });
+
+  it("rejects forbidden type imports from externals", () => {
+    const result = checkImportSource({
+      expected: false,
+      predicateName: "importTypesFromExternals",
+      group: "externals",
+      importKind: "type",
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({
+        source: "import type { ZodType } from 'zod';",
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe(
+      "Type import from external packages is not allowed"
+    );
+  });
+
+  it("matches mixed imports for both value and type predicates", () => {
+    const fileStructure = parseSource({
+      source: "import { type HelperOptions, helper } from './helper';",
+    });
+    const valueResult = checkImportSource({
+      expected: true,
+      predicateName: "importFromCurrentDir",
+      group: "currentDir",
+      importKind: "value",
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure,
+    });
+    const typeResult = checkImportSource({
+      expected: true,
+      predicateName: "importTypesFromCurrentDir",
+      group: "currentDir",
+      importKind: "type",
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure,
+    });
+    expect(valueResult).toEqual([]);
+    expect(typeResult).toEqual([]);
+  });
+
   it("reports missing parent imports", () => {
     const result = checkImportSource({
       expected: true,
       predicateName: "importFromParents",
       group: "parents",
+      importKind: "value",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
         source: "import { helper } from './helper';",
@@ -86,6 +177,7 @@ describe("checkImportSource", () => {
       expected: true,
       predicateName: "importFromExternals",
       group: "externals",
+      importKind: "value",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure,
     });
@@ -97,6 +189,7 @@ describe("checkImportSource", () => {
       expected: false,
       predicateName: "importFromExternals",
       group: "externals",
+      importKind: "value",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({ source: "import react from 'react';" }),
     });

@@ -243,6 +243,50 @@ describe("parseFileStructure", () => {
         },
       ]);
     });
+
+    it("marks import type clauses as type import sources", () => {
+      const result = parseFileStructure({
+        source: "import type { Foo } from './types';",
+      });
+      expect(result.importSources).toEqual([
+        {
+          from: "./types",
+          isType: true,
+          pos: { line: 1, column: 1 },
+        },
+      ]);
+    });
+
+    it("marks individual type specifiers as type import sources", () => {
+      const result = parseFileStructure({
+        source: "import { type Foo } from './types';",
+      });
+      expect(result.importSources).toEqual([
+        {
+          from: "./types",
+          isType: true,
+          pos: { line: 1, column: 1 },
+        },
+      ]);
+    });
+
+    it("marks mixed imports as value and type import sources", () => {
+      const result = parseFileStructure({
+        source: "import { type Foo, bar } from './module';",
+      });
+      expect(result.importSources).toEqual([
+        {
+          from: "./module",
+          isType: false,
+          pos: { line: 1, column: 1 },
+        },
+        {
+          from: "./module",
+          isType: true,
+          pos: { line: 1, column: 1 },
+        },
+      ]);
+    });
   });
 
   describe("declaration symbols", () => {

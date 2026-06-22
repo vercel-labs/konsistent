@@ -1,3 +1,3 @@
-import { z } from "zod";
+import { z, type ZodType } from "zod";
 
-export const external = z.string();
+export const external: ZodType = z.string();

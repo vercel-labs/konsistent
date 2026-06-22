@@ -4,6 +4,7 @@ import { createDiagnostic } from "../../core/diagnostics.js";
 import type { FileStructure, ImportSourceInfo } from "../types.js";
 
 type ImportSourceGroup = "currentDir" | "parents" | "externals";
+type ImportSourceKind = "type" | "value";
 
 function isImportSourceInGroup(opts: {
   from: string;
@@ -35,10 +36,14 @@ function getGroupLabel(group: ImportSourceGroup): string {
 function findImportSource(opts: {
   fileStructure: FileStructure;
   group: ImportSourceGroup;
+  importKind: ImportSourceKind;
 }): ImportSourceInfo | undefined {
-  const { fileStructure, group } = opts;
-  return fileStructure.importSources.find((source) =>
-    isImportSourceInGroup({ from: source.from, group })
+  const { fileStructure, group, importKind } = opts;
+  const isType = importKind === "type";
+  return fileStructure.importSources.find(
+    (source) =>
+      isImportSourceInGroup({ from: source.from, group }) &&
+      source.isType === isType
   );
 }
 
@@ -46,6 +51,7 @@ export function checkImportSource(opts: {
   expected: boolean;
   predicateName: string;
   group: ImportSourceGroup;
+  importKind: ImportSourceKind;
   context: PredicateContext;
   fileStructure: FileStructure;
   conventionName?: string;
@@ -55,20 +61,23 @@ export function checkImportSource(opts: {
     expected,
     predicateName,
     group,
+    importKind,
     context,
     fileStructure,
     conventionName,
     severity,
   } = opts;
-  const found = findImportSource({ fileStructure, group });
+  const found = findImportSource({ fileStructure, group, importKind });
   const label = getGroupLabel(group);
+  const noun = importKind === "type" ? "type import" : "import";
+  const capitalizedNoun = importKind === "type" ? "Type import" : "Import";
 
   if (expected && !found) {
     return [
       createDiagnostic({
         filePath: context.path,
         predicateName,
-        message: `Missing import from ${label}`,
+        message: `Missing ${noun} from ${label}`,
         conventionName,
         severity,
       }),
@@ -80,7 +89,7 @@ export function checkImportSource(opts: {
       createDiagnostic({
         filePath: context.path,
         predicateName,
-        message: `Import from ${label} is not allowed`,
+        message: `${capitalizedNoun} from ${label} is not allowed`,
         conventionName,
         line: found.pos.line,
         column: found.pos.column,

@@ -233,6 +233,40 @@ interface ParseCollector {
   typeAliases: TypeAliasInfo[];
 }
 
+function getImportSourceKinds(opts: { node: ts.ImportDeclaration }): {
+  hasType: boolean;
+  hasValue: boolean;
+} {
+  const { node } = opts;
+  const { importClause } = node;
+  if (!importClause) {
+    return { hasType: false, hasValue: true };
+  }
+  if (importClause.isTypeOnly) {
+    return { hasType: true, hasValue: false };
+  }
+
+  let hasType = false;
+  let hasValue = Boolean(importClause.name);
+  const { namedBindings } = importClause;
+
+  if (namedBindings) {
+    if (ts.isNamespaceImport(namedBindings)) {
+      hasValue = true;
+    } else {
+      for (const element of namedBindings.elements) {
+        if (element.isTypeOnly) {
+          hasType = true;
+        } else {
+          hasValue = true;
+        }
+      }
+    }
+  }
+
+  return { hasType, hasValue: hasValue || !hasType };
+}
+
 function processImportDeclaration(opts: {
   node: ts.ImportDeclaration;
   sourceFile: ts.SourceFile;
@@ -242,12 +276,22 @@ function processImportDeclaration(opts: {
   const pos = getPosition({ sourceFile, node });
   const moduleSpecifier = (node.moduleSpecifier as ts.StringLiteral).text;
   const isTypeOnly = node.importClause?.isTypeOnly ?? false;
+  const sourceKinds = getImportSourceKinds({ node });
 
-  collector.importSources.push({
-    from: moduleSpecifier,
-    isType: isTypeOnly,
-    pos,
-  });
+  if (sourceKinds.hasValue) {
+    collector.importSources.push({
+      from: moduleSpecifier,
+      isType: false,
+      pos,
+    });
+  }
+  if (sourceKinds.hasType) {
+    collector.importSources.push({
+      from: moduleSpecifier,
+      isType: true,
+      pos,
+    });
+  }
 
   if (node.importClause?.namedBindings) {
     if (ts.isNamedImports(node.importClause.namedBindings)) {
