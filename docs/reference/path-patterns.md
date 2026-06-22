@@ -107,7 +107,9 @@ Templates work anywhere a string appears in `must` or `mustNot`:
     "exportFunctions": [
       {
         "name": "create${adapterName.toPascalCase()}Adapter",
-        "receiveParamOfType": "${adapterName.toPascalCase()}AdapterConfig",
+        "receiveParamsOfTypes": [
+          "${adapterName.toPascalCase()}AdapterConfig"
+        ],
         "returnValueOfType": "${adapterName.toPascalCase()}Adapter"
       }
     ]

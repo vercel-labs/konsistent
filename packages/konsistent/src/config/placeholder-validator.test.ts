@@ -343,6 +343,7 @@ describe("validatePlaceholders", () => {
             {
               name: "create${missingFunction}",
               receiveParamOfType: "${missingParam}",
+              receiveParamsOfTypes: ["${missingParamAtIndex}"],
               returnValueOfType: "${missingReturn}",
             },
           ],
@@ -371,7 +372,9 @@ describe("validatePlaceholders", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error).toContain('"${missingType}"');
+      expect(result.error).toContain('"${missingParamAtIndex}"');
       expect(result.error).toContain("must.declareTypes");
+      expect(result.error).toContain("must.declareFunctions");
     }
   });
 

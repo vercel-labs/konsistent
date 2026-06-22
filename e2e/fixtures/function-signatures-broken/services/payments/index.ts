@@ -4,6 +4,13 @@ export interface PaymentsConfig {
 export interface PaymentsService {
   charge(): Promise<void>;
 }
-export function createPaymentsService(config: PaymentsConfig): any {
+export interface PaymentsLogger {
+  info(message: string): void;
+}
+export function createPaymentsService(
+  config: PaymentsConfig,
+  logger: PaymentsLogger
+): any {
+  logger.info(config.apiKey);
   return { charge: async () => {} };
 }

@@ -101,6 +101,7 @@ describe("ConfigV1Schema", () => {
               {
                 name: "createLocal",
                 receiveParamOfType: "LocalConfig",
+                receiveParamsOfTypes: ["LocalConfig"],
                 returnValueOfType: "Local",
               },
             ],

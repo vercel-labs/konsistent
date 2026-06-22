@@ -164,6 +164,159 @@ describe("checkExportFunctions", () => {
     expect(result).toEqual([]);
   });
 
+  it("returns no diagnostic when ordered param types match", () => {
+    const result = checkExportFunctions({
+      expected: [
+        { name: "myFunc", receiveParamsOfTypes: ["Request", "Context"] },
+      ],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: "myFunc",
+            kind: "function",
+            isType: false,
+            pos: { line: 3, column: 1 },
+          },
+        ],
+        functions: [
+          {
+            name: "myFunc",
+            params: [
+              {
+                name: "req",
+                typeName: { text: "Request", baseName: "Request" },
+              },
+              {
+                name: "ctx",
+                typeName: { text: "Context", baseName: "Context" },
+              },
+              {
+                name: "signal",
+                typeName: { text: "AbortSignal", baseName: "AbortSignal" },
+              },
+            ],
+            pos: { line: 3, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("returns diagnostic when ordered param type does not match", () => {
+    const result = checkExportFunctions({
+      expected: [
+        { name: "myFunc", receiveParamsOfTypes: ["Request", "Context"] },
+      ],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: "myFunc",
+            kind: "function",
+            isType: false,
+            pos: { line: 3, column: 1 },
+          },
+        ],
+        functions: [
+          {
+            name: "myFunc",
+            params: [
+              {
+                name: "req",
+                typeName: { text: "Request", baseName: "Request" },
+              },
+              {
+                name: "ctx",
+                typeName: { text: "WrongContext", baseName: "WrongContext" },
+              },
+            ],
+            pos: { line: 3, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe(
+      'Function "myFunc" parameter 2 must be of type "Context"'
+    );
+  });
+
+  it("returns diagnostic when ordered param is missing", () => {
+    const result = checkExportFunctions({
+      expected: [
+        { name: "myFunc", receiveParamsOfTypes: ["Request", "Context"] },
+      ],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: "myFunc",
+            kind: "function",
+            isType: false,
+            pos: { line: 3, column: 1 },
+          },
+        ],
+        functions: [
+          {
+            name: "myFunc",
+            params: [
+              {
+                name: "req",
+                typeName: { text: "Request", baseName: "Request" },
+              },
+            ],
+            pos: { line: 3, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe(
+      'Function "myFunc" parameter 2 must be of type "Context"'
+    );
+  });
+
+  it("enforces deprecated and ordered param checks when both are present", () => {
+    const result = checkExportFunctions({
+      expected: [
+        {
+          name: "myFunc",
+          receiveParamOfType: "LegacyRequest",
+          receiveParamsOfTypes: ["Request"],
+        },
+      ],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: createMockFileStructure({
+        exports: [
+          {
+            name: "myFunc",
+            kind: "function",
+            isType: false,
+            pos: { line: 3, column: 1 },
+          },
+        ],
+        functions: [
+          {
+            name: "myFunc",
+            params: [
+              {
+                name: "req",
+                typeName: { text: "Request", baseName: "Request" },
+              },
+            ],
+            pos: { line: 3, column: 1 },
+          },
+        ],
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe(
+      'Function "myFunc" must receive a parameter of type "LegacyRequest"'
+    );
+  });
+
   it("returns diagnostic when return type does not match", () => {
     const result = checkExportFunctions({
       expected: [{ name: "myFunc", returnValueOfType: "Promise<Response>" }],

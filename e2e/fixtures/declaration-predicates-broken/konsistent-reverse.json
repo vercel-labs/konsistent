@@ -10,7 +10,7 @@
         "declareFunctions": [
           {
             "name": "createLocal",
-            "receiveParamOfType": "LocalConfig",
+            "receiveParamsOfTypes": ["LocalConfig"],
             "returnValueOfType": "LocalResult"
           }
         ],

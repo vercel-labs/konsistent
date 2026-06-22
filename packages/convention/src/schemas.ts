@@ -16,7 +16,11 @@ export const ImportDefinitionV1Schema = z.strictObject({
 
 export const FunctionDefinitionV1Schema = z.strictObject({
   name: z.string(),
+  /**
+   * Deprecated: use receiveParamsOfTypes instead.
+   */
   receiveParamOfType: z.string().optional(),
+  receiveParamsOfTypes: z.array(z.string()).optional(),
   returnValueOfType: z.string().optional(),
 });
 

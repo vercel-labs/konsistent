@@ -4,6 +4,14 @@ export interface AuthConfig {
 export interface AuthService {
   authenticate(): Promise<void>;
 }
-export function createAuthService(config: AuthConfig): AuthService {
+export interface AuthLogger {
+  info(message: string): void;
+}
+export function createAuthService(
+  config: AuthConfig,
+  logger: AuthLogger,
+  retryCount: number
+): AuthService {
+  logger.info(`auth retries: ${retryCount}`);
   return { authenticate: async () => {} };
 }

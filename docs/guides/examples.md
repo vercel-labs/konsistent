@@ -99,7 +99,7 @@ Service factories must accept a typed config and return a typed service:
     "exportFunctions": [
       {
         "name": "create${serviceName.toPascalCase()}Service",
-        "receiveParamOfType": "${serviceName.toPascalCase()}Config",
+        "receiveParamsOfTypes": ["${serviceName.toPascalCase()}Config"],
         "returnValueOfType": "${serviceName.toPascalCase()}Service"
       }
     ]

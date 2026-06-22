@@ -108,14 +108,14 @@ Assert local `const` declarations.
 
 ### `declareFunctions`
 
-Assert local function declarations. Optionally validate parameter and return type, using the same fields as `exportFunctions`.
+Assert local function declarations. Optionally validate parameters and return type, using the same fields as `exportFunctions`.
 
 ```json
 "must": {
   "declareFunctions": [
     {
       "name": "createInternalClient",
-      "receiveParamOfType": "ClientConfig",
+      "receiveParamsOfTypes": ["ClientConfig"],
       "returnValueOfType": "Client"
     }
   ]
@@ -222,14 +222,14 @@ Assert `const` exports specifically. Stricter than `export` — a `function` or 
 
 ### `exportFunctions`
 
-Assert function exports. Optionally validate the parameter and return type.
+Assert function exports. Optionally validate parameters and return type.
 
 ```json
 "must": {
   "exportFunctions": [
     {
       "name": "create${serviceName.toPascalCase()}Service",
-      "receiveParamOfType": "${serviceName.toPascalCase()}Config",
+      "receiveParamsOfTypes": ["${serviceName.toPascalCase()}Config"],
       "returnValueOfType": "${serviceName.toPascalCase()}Service"
     }
   ]
@@ -239,7 +239,8 @@ Assert function exports. Optionally validate the parameter and return type.
 | Field | Type | Description |
 | --- | --- | --- |
 | `name` | string | The function name. Templates allowed. |
-| `receiveParamOfType` | string | Optional. Type the first parameter must have. |
+| `receiveParamsOfTypes` | string[] | Optional. Ordered parameter types to enforce by index. Extra function parameters are allowed. |
+| `receiveParamOfType` | string | Deprecated. Optional type at least one parameter must have. Use `receiveParamsOfTypes` instead. |
 | `returnValueOfType` | string | Optional. Type the return value must have. |
 
 The bare-string form (`"exportFunctions": ["myFunction"]`) checks existence only.

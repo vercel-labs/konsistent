@@ -224,6 +224,7 @@ function collectUsagesInPredicates(opts: {
     list: predicates.declareFunctions,
     key: `${prefix}.declareFunctions`,
     objectFields: ["name", "receiveParamOfType", "returnValueOfType"],
+    arrayFields: ["receiveParamsOfTypes"],
     declared,
     usages,
   });
@@ -280,6 +281,7 @@ function collectUsagesInPredicates(opts: {
     list: predicates.exportFunctions,
     key: `${prefix}.exportFunctions`,
     objectFields: ["name", "receiveParamOfType", "returnValueOfType"],
+    arrayFields: ["receiveParamsOfTypes"],
     declared,
     usages,
   });
@@ -320,6 +322,7 @@ function collectUsagesInDefinitionList(opts: {
   list: ReadonlyArray<string | Record<string, unknown>> | undefined;
   key: string;
   objectFields: string[];
+  arrayFields?: string[];
   extendField?: boolean;
   implementField?: boolean;
   declared: Set<string>;
@@ -329,6 +332,7 @@ function collectUsagesInDefinitionList(opts: {
     list,
     key,
     objectFields,
+    arrayFields,
     extendField,
     implementField,
     declared,
@@ -342,20 +346,80 @@ function collectUsagesInDefinitionList(opts: {
       pushStringUsages({ value: entry, key, declared, usages });
       continue;
     }
-    for (const field of objectFields) {
-      const value = entry[field];
-      if (typeof value === "string") {
-        pushStringUsages({ value, key, declared, usages });
-      }
-    }
+    collectObjectFieldUsages({
+      entry,
+      fields: objectFields,
+      key,
+      declared,
+      usages,
+    });
+    collectArrayFieldUsages({
+      entry,
+      fields: arrayFields ?? [],
+      key,
+      declared,
+      usages,
+    });
     if (extendField) {
       collectExtendUsages({ value: entry.extend, key, declared, usages });
     }
     if (implementField && Array.isArray(entry.implement)) {
-      for (const item of entry.implement) {
-        collectExtendUsages({ value: item, key, declared, usages });
+      collectImplementUsages({
+        values: entry.implement,
+        key,
+        declared,
+        usages,
+      });
+    }
+  }
+}
+
+function collectObjectFieldUsages(opts: {
+  entry: Record<string, unknown>;
+  fields: string[];
+  key: string;
+  declared: Set<string>;
+  usages: Usage[];
+}): void {
+  const { entry, fields, key, declared, usages } = opts;
+  for (const field of fields) {
+    const value = entry[field];
+    if (typeof value === "string") {
+      pushStringUsages({ value, key, declared, usages });
+    }
+  }
+}
+
+function collectArrayFieldUsages(opts: {
+  entry: Record<string, unknown>;
+  fields: string[];
+  key: string;
+  declared: Set<string>;
+  usages: Usage[];
+}): void {
+  const { entry, fields, key, declared, usages } = opts;
+  for (const field of fields) {
+    const value = entry[field];
+    if (!Array.isArray(value)) {
+      continue;
+    }
+    for (const item of value) {
+      if (typeof item === "string") {
+        pushStringUsages({ value: item, key, declared, usages });
       }
     }
+  }
+}
+
+function collectImplementUsages(opts: {
+  values: unknown[];
+  key: string;
+  declared: Set<string>;
+  usages: Usage[];
+}): void {
+  const { values, key, declared, usages } = opts;
+  for (const item of values) {
+    collectExtendUsages({ value: item, key, declared, usages });
   }
 }
 
