@@ -199,6 +199,12 @@
                             "receiveParamOfType": {
                               "type": "string"
                             },
+                            "receiveParamsOfTypes": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
                             "returnValueOfType": {
                               "type": "string"
                             }
@@ -396,6 +402,12 @@
                             },
                             "receiveParamOfType": {
                               "type": "string"
+                            },
+                            "receiveParamsOfTypes": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             "returnValueOfType": {
                               "type": "string"
@@ -646,6 +658,12 @@
                             "receiveParamOfType": {
                               "type": "string"
                             },
+                            "receiveParamsOfTypes": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
                             "returnValueOfType": {
                               "type": "string"
                             }
@@ -843,6 +861,12 @@
                             },
                             "receiveParamOfType": {
                               "type": "string"
+                            },
+                            "receiveParamsOfTypes": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
                             },
                             "returnValueOfType": {
                               "type": "string"
@@ -1146,6 +1170,12 @@
                                     "receiveParamOfType": {
                                       "type": "string"
                                     },
+                                    "receiveParamsOfTypes": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string"
+                                      }
+                                    },
                                     "returnValueOfType": {
                                       "type": "string"
                                     }
@@ -1343,6 +1373,12 @@
                                     },
                                     "receiveParamOfType": {
                                       "type": "string"
+                                    },
+                                    "receiveParamsOfTypes": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "returnValueOfType": {
                                       "type": "string"
@@ -1663,6 +1699,12 @@
                                                   "receiveParamOfType": {
                                                     "type": "string"
                                                   },
+                                                  "receiveParamsOfTypes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string"
+                                                    }
+                                                  },
                                                   "returnValueOfType": {
                                                     "type": "string"
                                                   }
@@ -1860,6 +1902,12 @@
                                                   },
                                                   "receiveParamOfType": {
                                                     "type": "string"
+                                                  },
+                                                  "receiveParamsOfTypes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string"
+                                                    }
                                                   },
                                                   "returnValueOfType": {
                                                     "type": "string"
@@ -2110,6 +2158,12 @@
                                                   "receiveParamOfType": {
                                                     "type": "string"
                                                   },
+                                                  "receiveParamsOfTypes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string"
+                                                    }
+                                                  },
                                                   "returnValueOfType": {
                                                     "type": "string"
                                                   }
@@ -2307,6 +2361,12 @@
                                                   },
                                                   "receiveParamOfType": {
                                                     "type": "string"
+                                                  },
+                                                  "receiveParamsOfTypes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string"
+                                                    }
                                                   },
                                                   "returnValueOfType": {
                                                     "type": "string"
@@ -2621,6 +2681,12 @@
                                                   "receiveParamOfType": {
                                                     "type": "string"
                                                   },
+                                                  "receiveParamsOfTypes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string"
+                                                    }
+                                                  },
                                                   "returnValueOfType": {
                                                     "type": "string"
                                                   }
@@ -2818,6 +2884,12 @@
                                                   },
                                                   "receiveParamOfType": {
                                                     "type": "string"
+                                                  },
+                                                  "receiveParamsOfTypes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string"
+                                                    }
                                                   },
                                                   "returnValueOfType": {
                                                     "type": "string"
@@ -3068,6 +3140,12 @@
                                                   "receiveParamOfType": {
                                                     "type": "string"
                                                   },
+                                                  "receiveParamsOfTypes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string"
+                                                    }
+                                                  },
                                                   "returnValueOfType": {
                                                     "type": "string"
                                                   }
@@ -3265,6 +3343,12 @@
                                                   },
                                                   "receiveParamOfType": {
                                                     "type": "string"
+                                                  },
+                                                  "receiveParamsOfTypes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string"
+                                                    }
                                                   },
                                                   "returnValueOfType": {
                                                     "type": "string"
@@ -3585,6 +3669,12 @@
                                               "receiveParamOfType": {
                                                 "type": "string"
                                               },
+                                              "receiveParamsOfTypes": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
+                                              },
                                               "returnValueOfType": {
                                                 "type": "string"
                                               }
@@ -3782,6 +3872,12 @@
                                               },
                                               "receiveParamOfType": {
                                                 "type": "string"
+                                              },
+                                              "receiveParamsOfTypes": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
                                               },
                                               "returnValueOfType": {
                                                 "type": "string"
@@ -4032,6 +4128,12 @@
                                               "receiveParamOfType": {
                                                 "type": "string"
                                               },
+                                              "receiveParamsOfTypes": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
+                                              },
                                               "returnValueOfType": {
                                                 "type": "string"
                                               }
@@ -4229,6 +4331,12 @@
                                               },
                                               "receiveParamOfType": {
                                                 "type": "string"
+                                              },
+                                              "receiveParamsOfTypes": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
                                               },
                                               "returnValueOfType": {
                                                 "type": "string"
@@ -4488,6 +4596,12 @@
                                 "receiveParamOfType": {
                                   "type": "string"
                                 },
+                                "receiveParamsOfTypes": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
                                 "returnValueOfType": {
                                   "type": "string"
                                 }
@@ -4685,6 +4799,12 @@
                                 },
                                 "receiveParamOfType": {
                                   "type": "string"
+                                },
+                                "receiveParamsOfTypes": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
                                 },
                                 "returnValueOfType": {
                                   "type": "string"
@@ -4986,6 +5106,12 @@
                                     "receiveParamOfType": {
                                       "type": "string"
                                     },
+                                    "receiveParamsOfTypes": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string"
+                                      }
+                                    },
                                     "returnValueOfType": {
                                       "type": "string"
                                     }
@@ -5183,6 +5309,12 @@
                                     },
                                     "receiveParamOfType": {
                                       "type": "string"
+                                    },
+                                    "receiveParamsOfTypes": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     },
                                     "returnValueOfType": {
                                       "type": "string"
@@ -5503,6 +5635,12 @@
                                                   "receiveParamOfType": {
                                                     "type": "string"
                                                   },
+                                                  "receiveParamsOfTypes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string"
+                                                    }
+                                                  },
                                                   "returnValueOfType": {
                                                     "type": "string"
                                                   }
@@ -5700,6 +5838,12 @@
                                                   },
                                                   "receiveParamOfType": {
                                                     "type": "string"
+                                                  },
+                                                  "receiveParamsOfTypes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string"
+                                                    }
                                                   },
                                                   "returnValueOfType": {
                                                     "type": "string"
@@ -5950,6 +6094,12 @@
                                                   "receiveParamOfType": {
                                                     "type": "string"
                                                   },
+                                                  "receiveParamsOfTypes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string"
+                                                    }
+                                                  },
                                                   "returnValueOfType": {
                                                     "type": "string"
                                                   }
@@ -6147,6 +6297,12 @@
                                                   },
                                                   "receiveParamOfType": {
                                                     "type": "string"
+                                                  },
+                                                  "receiveParamsOfTypes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string"
+                                                    }
                                                   },
                                                   "returnValueOfType": {
                                                     "type": "string"
@@ -6461,6 +6617,12 @@
                                                   "receiveParamOfType": {
                                                     "type": "string"
                                                   },
+                                                  "receiveParamsOfTypes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string"
+                                                    }
+                                                  },
                                                   "returnValueOfType": {
                                                     "type": "string"
                                                   }
@@ -6658,6 +6820,12 @@
                                                   },
                                                   "receiveParamOfType": {
                                                     "type": "string"
+                                                  },
+                                                  "receiveParamsOfTypes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string"
+                                                    }
                                                   },
                                                   "returnValueOfType": {
                                                     "type": "string"
@@ -6908,6 +7076,12 @@
                                                   "receiveParamOfType": {
                                                     "type": "string"
                                                   },
+                                                  "receiveParamsOfTypes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string"
+                                                    }
+                                                  },
                                                   "returnValueOfType": {
                                                     "type": "string"
                                                   }
@@ -7105,6 +7279,12 @@
                                                   },
                                                   "receiveParamOfType": {
                                                     "type": "string"
+                                                  },
+                                                  "receiveParamsOfTypes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string"
+                                                    }
                                                   },
                                                   "returnValueOfType": {
                                                     "type": "string"
@@ -7425,6 +7605,12 @@
                                               "receiveParamOfType": {
                                                 "type": "string"
                                               },
+                                              "receiveParamsOfTypes": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
+                                              },
                                               "returnValueOfType": {
                                                 "type": "string"
                                               }
@@ -7622,6 +7808,12 @@
                                               },
                                               "receiveParamOfType": {
                                                 "type": "string"
+                                              },
+                                              "receiveParamsOfTypes": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
                                               },
                                               "returnValueOfType": {
                                                 "type": "string"
@@ -7872,6 +8064,12 @@
                                               "receiveParamOfType": {
                                                 "type": "string"
                                               },
+                                              "receiveParamsOfTypes": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
+                                              },
                                               "returnValueOfType": {
                                                 "type": "string"
                                               }
@@ -8069,6 +8267,12 @@
                                               },
                                               "receiveParamOfType": {
                                                 "type": "string"
+                                              },
+                                              "receiveParamsOfTypes": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
                                               },
                                               "returnValueOfType": {
                                                 "type": "string"
@@ -8328,6 +8532,12 @@
                                 "receiveParamOfType": {
                                   "type": "string"
                                 },
+                                "receiveParamsOfTypes": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
                                 "returnValueOfType": {
                                   "type": "string"
                                 }
@@ -8525,6 +8735,12 @@
                                 },
                                 "receiveParamOfType": {
                                   "type": "string"
+                                },
+                                "receiveParamsOfTypes": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
                                 },
                                 "returnValueOfType": {
                                   "type": "string"

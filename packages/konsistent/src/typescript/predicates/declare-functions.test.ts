@@ -66,4 +66,24 @@ describe("checkDeclareFunctions", () => {
       'Function "createThing" must return value of type "Thing"'
     );
   });
+
+  it("checks ordered local function params", () => {
+    const result = checkDeclareFunctions({
+      expected: [
+        {
+          name: "createThing",
+          receiveParamsOfTypes: ["ThingConfig", "ThingContext"],
+        },
+      ],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({
+        source:
+          "function createThing(config: ThingConfig, ctx: WrongContext) {}",
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe(
+      'Function "createThing" parameter 2 must be of type "ThingContext"'
+    );
+  });
 });

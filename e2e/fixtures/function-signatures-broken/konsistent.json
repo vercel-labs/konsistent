@@ -8,7 +8,10 @@
         "exportFunctions": [
           {
             "name": "create${serviceName.toPascalCase()}Service",
-            "receiveParamOfType": "${serviceName.toPascalCase()}Config",
+            "receiveParamsOfTypes": [
+              "${serviceName.toPascalCase()}Config",
+              "${serviceName.toPascalCase()}Logger"
+            ],
             "returnValueOfType": "${serviceName.toPascalCase()}Service"
           }
         ]
