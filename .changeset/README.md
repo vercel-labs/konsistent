@@ -6,13 +6,3 @@ find the full documentation for it [in our repository](https://github.com/change
 
 We have a quick list of common questions to get you started engaging with this project in
 [our documentation](https://github.com/changesets/changesets/blob/main/docs/common-questions.md)
-
-## Pre-release mode
-
-This repository is permanently in `pre` mode with the `alpha` tag. All packages publish as `0.0.1-alpha.*`. Only `patch` changesets are accepted — `minor` and `major` bumps would break the stable-version invariant and are rejected by the `Verify Changesets` workflow.
-
-Add a changeset with:
-
-```sh
-pnpm changeset
-```
