@@ -38,3 +38,9 @@ export function toSnakeCase(value: string): string {
     .map((w) => w.toLowerCase())
     .join("_");
 }
+
+export function toConstantCase(value: string): string {
+  return splitWords(value)
+    .map((w) => w.toUpperCase())
+    .join("_");
+}

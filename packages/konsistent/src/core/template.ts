@@ -29,6 +29,8 @@ export function resolveTemplate(opts: {
         return placeholder.toKebabCase();
       case "toSnakeCase":
         return placeholder.toSnakeCase();
+      case "toConstantCase":
+        return placeholder.toConstantCase();
       case "toFlatCase":
         return placeholder.toFlatCase();
       case "toNthSegment":
