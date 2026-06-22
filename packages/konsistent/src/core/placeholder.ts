@@ -1,5 +1,6 @@
 import {
   toCamelCase,
+  toConstantCase,
   toKebabCase,
   toPascalCase,
   toSnakeCase,
@@ -74,6 +75,18 @@ export class PlaceholderValue {
       return mapped.replace(/-/g, "_");
     }
     return toSnakeCase(this.raw);
+  }
+
+  /**
+   * Transform the value to CONSTANT_CASE, also known as uppercase snake case.
+   */
+  toConstantCase(): string {
+    const mapped =
+      this.pascalToKebabMap?.[this.raw] ?? this.camelToKebabMap?.[this.raw];
+    if (mapped) {
+      return mapped.replace(/-/g, "_").toUpperCase();
+    }
+    return toConstantCase(this.raw);
   }
 
   toFlatCase(): string {

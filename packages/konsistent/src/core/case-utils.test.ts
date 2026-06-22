@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   splitWords,
   toCamelCase,
+  toConstantCase,
   toKebabCase,
   toPascalCase,
   toSnakeCase,
@@ -74,5 +75,19 @@ describe("toSnakeCase", () => {
 
   it("converts camelCase", () => {
     expect(toSnakeCase("testUtils")).toBe("test_utils");
+  });
+});
+
+describe("toConstantCase", () => {
+  it("converts hyphenated", () => {
+    expect(toConstantCase("test-utils")).toBe("TEST_UTILS");
+  });
+
+  it("converts snake_case", () => {
+    expect(toConstantCase("test_utils")).toBe("TEST_UTILS");
+  });
+
+  it("converts camelCase", () => {
+    expect(toConstantCase("testUtils")).toBe("TEST_UTILS");
   });
 });

@@ -1049,6 +1049,9 @@ describe("case-maps-broken fixture", () => {
       expect(error.stdout).toContain(
         'Missing export type "OpenAIProviderConfig"'
       );
+      expect(error.stdout).toContain(
+        'Missing export constant "OPENAI_PROVIDER_ID"'
+      );
     }
   });
 });
