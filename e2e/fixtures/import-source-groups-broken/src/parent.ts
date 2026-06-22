@@ -1,3 +1,3 @@
-import { z } from "zod";
+import { z, type ZodType } from "zod";
 
-export const parent = z.string();
+export const parent: ZodType = z.string();

@@ -20,7 +20,8 @@
         "exportFunctions": [
           { "name": "create${providerId.toPascalCase()}Provider" }
         ],
-        "exportTypes": ["${providerId.toPascalCase()}ProviderConfig"]
+        "exportTypes": ["${providerId.toPascalCase()}ProviderConfig"],
+        "exportConstants": ["${providerId.toConstantCase()}_PROVIDER_ID"]
       }
     }
   ]

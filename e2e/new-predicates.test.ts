@@ -100,6 +100,18 @@ describe("import-source-groups-broken fixture", () => {
       expect(error.stdout).toContain(
         "Import from current directory is not allowed"
       );
+      expect(error.stdout).toContain(
+        "Missing type import from current directory"
+      );
+      expect(error.stdout).toContain(
+        "Type import from parent directories is not allowed"
+      );
+      expect(error.stdout).toContain(
+        "Missing type import from external packages"
+      );
+      expect(error.stdout).toContain(
+        "Type import from current directory is not allowed"
+      );
     }
   });
 });

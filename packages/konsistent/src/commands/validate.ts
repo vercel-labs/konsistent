@@ -1,5 +1,6 @@
 import { defineCommand } from "citty";
 import pc from "picocolors";
+import { collectDeprecationWarnings } from "../config/deprecation-warnings.js";
 import {
   loadConfig,
   normalizePlaceholderArg,
@@ -47,6 +48,11 @@ export default defineCommand({
       console.error(pc.red(result.error));
       process.exit(1);
       return;
+    }
+    for (const warning of collectDeprecationWarnings({
+      config: result.config,
+    })) {
+      console.warn(pc.yellow(warning));
     }
     console.log(pc.green("Configuration is valid."));
   },

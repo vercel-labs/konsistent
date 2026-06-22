@@ -26,6 +26,11 @@ const mixedSeverityPath = resolve(
   "../../../../e2e/fixtures/mixed-severity"
 );
 
+const deprecatedFunctionParamPath = resolve(
+  import.meta.dirname,
+  "../../../../e2e/fixtures/deprecated-function-param"
+);
+
 afterEach(() => {
   vi.restoreAllMocks();
 });
@@ -131,6 +136,28 @@ describe("validate command", () => {
     const logSpy = vi.spyOn(console, "log").mockImplementation(vi.fn());
     await runCommand(validateCommand, { rawArgs: [] });
     expect(logSpy).toHaveBeenCalled();
+  });
+
+  it("warns without exiting when receiveParamOfType is used", async () => {
+    vi.spyOn(process, "cwd").mockReturnValue(deprecatedFunctionParamPath);
+    const exitSpy = vi
+      .spyOn(process, "exit")
+      .mockImplementation(() => undefined as never);
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(vi.fn());
+    const logSpy = vi.spyOn(console, "log").mockImplementation(vi.fn());
+    await runCommand(validateCommand, { rawArgs: [] });
+    expect(exitSpy).not.toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Configuration is valid")
+    );
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('"receiveParamOfType" is deprecated')
+    );
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "conventions[0].must.exportFunctions[0].receiveParamOfType"
+      )
+    );
   });
 });
 

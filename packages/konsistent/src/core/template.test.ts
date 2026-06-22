@@ -60,6 +60,14 @@ describe("resolveTemplate", () => {
     expect(result).toBe("test_utils_config.ts");
   });
 
+  it("resolves ${name.toConstantCase()}", () => {
+    const result = resolveTemplate({
+      template: "${name.toConstantCase()}_CONFIG.ts",
+      placeholders: makePlaceholders({ map: { name: "test-utils" } }),
+    });
+    expect(result).toBe("TEST_UTILS_CONFIG.ts");
+  });
+
   it("resolves ${name.toFlatCase()}", () => {
     const result = resolveTemplate({
       template: "${name.toFlatCase()}-config.ts",

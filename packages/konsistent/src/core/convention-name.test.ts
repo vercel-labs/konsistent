@@ -254,6 +254,18 @@ describe("generateConventionName", () => {
         generateConventionName({ must: { importFromExternals: false } })
       ).toBe("must-not-import-from-externals");
     });
+
+    it("generates type import source names", () => {
+      expect(
+        generateConventionName({ must: { importTypesFromCurrentDir: true } })
+      ).toBe("must-import-type-from-current-dir");
+      expect(
+        generateConventionName({ must: { importTypesFromParents: false } })
+      ).toBe("must-not-import-type-from-parents");
+      expect(
+        generateConventionName({ must: { importTypesFromExternals: true } })
+      ).toBe("must-import-type-from-externals");
+    });
   });
 
   describe("mustNot", () => {
@@ -276,6 +288,16 @@ describe("generateConventionName", () => {
           mustNot: { importFromCurrentDir: false },
         })
       ).toBe("must-import-from-current-dir");
+      expect(
+        generateConventionName({
+          mustNot: { importTypesFromCurrentDir: true },
+        })
+      ).toBe("must-not-import-type-from-current-dir");
+      expect(
+        generateConventionName({
+          mustNot: { importTypesFromCurrentDir: false },
+        })
+      ).toBe("must-import-type-from-current-dir");
     });
   });
 

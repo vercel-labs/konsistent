@@ -466,6 +466,59 @@ describe("PlaceholderValue", () => {
     });
   });
 
+  describe("toConstantCase", () => {
+    it("uppercases single word", () => {
+      expect(new PlaceholderValue({ value: "Openai" }).toConstantCase()).toBe(
+        "OPENAI"
+      );
+    });
+
+    it("converts hyphens", () => {
+      expect(
+        new PlaceholderValue({ value: "test-utils" }).toConstantCase()
+      ).toBe("TEST_UTILS");
+    });
+
+    it("converts snake_case", () => {
+      expect(
+        new PlaceholderValue({ value: "test_utils" }).toConstantCase()
+      ).toBe("TEST_UTILS");
+    });
+
+    it("converts camelCase", () => {
+      expect(
+        new PlaceholderValue({ value: "testUtils" }).toConstantCase()
+      ).toBe("TEST_UTILS");
+    });
+
+    it("uses pascalToKebabMap when entry exists", () => {
+      expect(
+        new PlaceholderValue({
+          value: "GraphQL",
+          pascalToKebabMap: { GraphQL: "graphql" },
+        }).toConstantCase()
+      ).toBe("GRAPHQL");
+    });
+
+    it("uses camelToKebabMap when entry exists", () => {
+      expect(
+        new PlaceholderValue({
+          value: "graphQL",
+          camelToKebabMap: { graphQL: "graphql" },
+        }).toConstantCase()
+      ).toBe("GRAPHQL");
+    });
+
+    it("converts hyphens in mapped value to underscores", () => {
+      expect(
+        new PlaceholderValue({
+          value: "GraphQL",
+          pascalToKebabMap: { GraphQL: "graph-ql" },
+        }).toConstantCase()
+      ).toBe("GRAPH_QL");
+    });
+  });
+
   describe("extract", () => {
     it("returns first capture group when regex has subgroups", () => {
       expect(
