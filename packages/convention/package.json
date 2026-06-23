@@ -47,5 +47,20 @@
   "publishConfig": {
     "access": "public",
     "provenance": true
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vercel-labs/konsistent",
+    "directory": "packages/convention"
+  },
+  "bugs": {
+    "url": "https://github.com/vercel-labs/konsistent/issues"
+  },
+  "keywords": [
+    "lint",
+    "consistent code",
+    "code conventions",
+    "JavaScript",
+    "TypeScript"
+  ]
 }
