@@ -18,7 +18,7 @@
     "fix:deps": "syncpack fix-mismatches && syncpack format",
     "publish:packages": "pnpm build && node tools/scripts/publish-packages.mjs",
     "changeset": "changeset",
-    "ci:version": "changeset version && pnpm install --no-frozen-lockfile",
+    "ci:version": "pnpm -F @konsistent/convention build && pnpm -F konsistent build && changeset version && pnpm install --no-frozen-lockfile",
     "ci:release": "turbo build --filter='./packages/*' && changeset publish",
     "prepare": "husky",
     "konsistent": "KONSISTENT_NO_UPDATE_CHECK=true konsistent"
