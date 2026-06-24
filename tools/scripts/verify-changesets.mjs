@@ -2,7 +2,6 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 const ROOT = path.resolve(import.meta.dirname, "..", "..");
-const ALLOWED_BUMPS = new Set(["patch"]);
 const NEWLINE_RE = /\r?\n/;
 const FRONTMATTER_RE = /^---\n([\s\S]+?)\n---/;
 const QUOTE_RE = /^['"]|['"]$/g;
@@ -23,8 +22,54 @@ async function writeSummary(body) {
   await fs.appendFile(file, `${body}\n`);
 }
 
-async function parseChangeset(relativePath) {
-  const absolutePath = path.join(ROOT, relativePath);
+async function getPackageVersions({ root }) {
+  const packagesPath = path.join(root, "packages");
+  let packageDirs;
+  try {
+    packageDirs = await fs.readdir(packagesPath, { withFileTypes: true });
+  } catch (error) {
+    if (error && typeof error === "object" && error.code === "ENOENT") {
+      return new Map();
+    }
+    throw error;
+  }
+  const versions = new Map();
+  for (const packageDir of packageDirs) {
+    if (!packageDir.isDirectory()) {
+      continue;
+    }
+    const packageJsonPath = path.join(
+      packagesPath,
+      packageDir.name,
+      "package.json"
+    );
+    let packageJson;
+    try {
+      packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf8"));
+    } catch (error) {
+      if (error && typeof error === "object" && error.code === "ENOENT") {
+        continue;
+      }
+      throw error;
+    }
+    if (
+      packageJson &&
+      typeof packageJson.name === "string" &&
+      typeof packageJson.version === "string"
+    ) {
+      versions.set(packageJson.name, packageJson.version);
+    }
+  }
+  return versions;
+}
+
+function isInvalidBump({ bump, packageVersions, pkg }) {
+  const expected = packageVersions.get(pkg) === "0.0.0" ? "major" : "patch";
+  return bump !== expected;
+}
+
+async function parseChangeset({ relativePath, root }) {
+  const absolutePath = path.join(root, relativePath);
   const stat = await fs.lstat(absolutePath);
   if (stat.isSymbolicLink()) {
     throw new Error(
@@ -65,11 +110,13 @@ async function parseChangeset(relativePath) {
   return bumps;
 }
 
-async function main() {
-  const packageFiles = splitLines(process.env.PACKAGE_FILES);
-  const addedChangesets = splitLines(process.env.ADDED_CHANGESETS);
-  const allChangedChangesets = splitLines(process.env.ALL_CHANGED_CHANGESETS);
-
+async function verifyChangesets({
+  addedChangesets,
+  allChangedChangesets,
+  packageFiles,
+  root,
+}) {
+  const packageVersions = await getPackageVersions({ root });
   const errors = [];
 
   if (packageFiles.length > 0 && addedChangesets.length === 0) {
@@ -91,9 +138,9 @@ async function main() {
       continue;
     }
     try {
-      const bumps = await parseChangeset(file);
-      const invalid = Object.entries(bumps).filter(
-        ([, bump]) => !ALLOWED_BUMPS.has(bump)
+      const bumps = await parseChangeset({ relativePath: file, root });
+      const invalid = Object.entries(bumps).filter(([pkg, bump]) =>
+        isInvalidBump({ bump, packageVersions, pkg })
       );
       if (invalid.length > 0) {
         errors.push(
@@ -109,6 +156,20 @@ async function main() {
       errors.push(error.message);
     }
   }
+
+  return errors;
+}
+
+async function main() {
+  const packageFiles = splitLines(process.env.PACKAGE_FILES);
+  const addedChangesets = splitLines(process.env.ADDED_CHANGESETS);
+  const allChangedChangesets = splitLines(process.env.ALL_CHANGED_CHANGESETS);
+  const errors = await verifyChangesets({
+    addedChangesets,
+    allChangedChangesets,
+    packageFiles,
+    root: ROOT,
+  });
 
   if (errors.length > 0) {
     await writeSummary(
