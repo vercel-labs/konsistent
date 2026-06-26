@@ -1,7 +1,7 @@
 {
   "name": "konsistent-fixture-reusable-convention-string-ref-pkg-broken",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1-beta.0",
   "dependencies": {
     "@konsistent/common-conventions": "workspace:*",
     "konsistent": "workspace:*"
