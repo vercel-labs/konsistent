@@ -21,11 +21,20 @@ Check if the `konsistent` package is already installed:
 
 - `konsistent` available in root `package.json`
 - `node_modules/konsistent` directory exists
+- a `konsistent` script exists in `package.json`
 
 If not, the `konsistent` CLI must be installed first. Use the project's package manager. For example, with PNPM:
 
 ```bash
 pnpm add konsistent --save-dev
+```
+
+Then, ensure `package.json` has a `konsistent` script which invokes the `konsistent` CLI. At a minimum:
+
+```
+  "scripts": {
+    "konsistent": "konsistent"
+  }
 ```
 
 Once the package has been successfully installed, proceed to the primary workflow.
@@ -73,8 +82,7 @@ If `node_modules/konsistent/docs/` is not present (e.g. the project doesn't have
 - Group related predicates in one convention when they apply to the same path.
 - Use separate conventions for the same path when different severities are needed.
 - Use path negation to exclude known exceptions rather than listing all included paths.
-- Check `package.json` for a `konsistent` script (e.g. `"konsistent": "konsistent"`) — if present, use `npm run konsistent` (or the project's package manager equivalent) instead of `npx konsistent`.
-- Validate the generated config by running `konsistent validate`.
-- Test the config against the actual codebase by running `konsistent` (with no arguments).
+- Validate the generated config by running `konsistent validate` via the `package.json` script (e.g. `pnpm konsistent validate`).
+- Test the config against the actual codebase by running `konsistent` via the `package.json` script (with no arguments).
 
 **Important reminder:** The objective is NOT to write a `konsistent.json` file that leads to zero errors when running the CLI. That would defeat the purpose. The objective is to create a konsistent.json file that identifies violations to patterns used in the codebase, even if they are not being 100% adhered to.
