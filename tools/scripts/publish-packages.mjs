@@ -143,9 +143,17 @@ async function readPackages() {
       })
   );
 
-  return Object.fromEntries(
-    packageEntries.filter((packageEntry) => packageEntry !== null)
-  );
+  const packagesByFolder = Object.create(null);
+
+  for (const packageEntry of packageEntries) {
+    if (packageEntry === null) {
+      continue;
+    }
+
+    packagesByFolder[packageEntry[0]] = packageEntry[1];
+  }
+
+  return packagesByFolder;
 }
 
 function isRegistryNotFoundError({ stderr, stdout }) {

@@ -27,7 +27,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2",
     "@changesets/cli": "^2.31.0",
-    "@felixarntz/biome": "^0.1.1",
+    "@felixarntz/biome": "^0.2.0",
     "husky": "^9.1.7",
     "konsistent": "workspace:*",
     "syncpack": "^15",
