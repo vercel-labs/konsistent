@@ -3,7 +3,12 @@
   "extends": ["ultracite/biome/core"],
   "plugins": ["./node_modules/@felixarntz/biome/rules/all.grit"],
   "files": {
-    "includes": ["!**/e2e/fixtures", "!**/agent-artifacts", "!**/.pnpm-store"]
+    "includes": [
+      "!**/e2e/fixtures",
+      "!**/agent-artifacts",
+      "!**/.pnpm-store",
+      "!**/.changeset"
+    ]
   },
   "linter": {
     "rules": {
