@@ -82,6 +82,7 @@ If `node_modules/konsistent/docs/` is not present (e.g. the project doesn't have
 - Group related predicates in one convention when they apply to the same path.
 - Use separate conventions for the same path when different severities are needed.
 - Use path negation to exclude known exceptions rather than listing all included paths.
+- Consider conventions between related files as well, not only within a single file. Use the `haveFiles` predicate to ensure a specific other file exists based on the matched file, and use `for.files` to enforce conventions within specific other related files based on the matched file.
 - Validate the generated config by running `konsistent validate` via the `package.json` script (e.g. `pnpm konsistent validate`).
 - Test the config against the actual codebase by running `konsistent` via the `package.json` script (with no arguments).
 
