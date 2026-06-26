@@ -15,6 +15,21 @@ description: >
 
 Create or modify a `konsistent.json` file that enforces structural conventions for the project. The `konsistent` CLI checks filesystem structure and TypeScript exports/imports — it is not a style linter.
 
+## Prerequisites
+
+Check if the `konsistent` package is already installed:
+
+- `konsistent` available in root `package.json`
+- `node_modules/konsistent` directory exists
+
+If not, the `konsistent` CLI must be installed first. Use the project's package manager. For example, with PNPM:
+
+```bash
+pnpm add konsistent --save-dev
+```
+
+Once the package has been successfully installed, proceed to the primary workflow.
+
 ## Workflow
 
 1. Check if `konsistent.json` already exists at the project root.
