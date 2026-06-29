@@ -49,8 +49,8 @@ importers:
         specifier: ^2.31.0
         version: 2.31.0(@types/node@24.12.2)
       '@felixarntz/biome':
-        specifier: ^0.1.1
-        version: 0.1.1
+        specifier: ^0.2.0
+        version: 0.2.0
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -520,8 +520,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@felixarntz/biome@0.1.1':
-    resolution: {integrity: sha512-+ksRF5ei1RyiaYuwm3qMy2uClrXJ13TC4+9XqzJpJUGNxJ9rfgBBkvmzVNFGlcLbjGm5DooRb+QeTc4GzN6wAg==}
+  '@felixarntz/biome@0.2.0':
+    resolution: {integrity: sha512-af/2XLBXlv/omR2QwNaXLWB+AggbWnM00mimhfxBqgaahd7arZCsSrwbLV5pzcCuMM2OSqIB9wxEk/YNojdqzA==}
 
   '@inquirer/external-editor@1.0.3':
     resolution: {integrity: sha512-RWbSrDiYmO4LbejWY7ttpxczuwQyZLBUyygsA9Nsv95hpzUWwnNTVQmAq3xuh7vNwCp07UTmE5i11XAEExx4RA==}
@@ -2042,7 +2042,7 @@ snapshots:
   '@esbuild/win32-x64@0.28.1':
     optional: true
 
-  '@felixarntz/biome@0.1.1': {}
+  '@felixarntz/biome@0.2.0': {}
 
   '@inquirer/external-editor@1.0.3(@types/node@24.12.2)':
     dependencies:
