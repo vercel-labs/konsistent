@@ -115,3 +115,28 @@ describe("import-source-groups-broken fixture", () => {
     }
   });
 });
+
+describe("import-from fixture", () => {
+  const cwd = resolve(fixturesDir, "import-from");
+
+  it("konsistent check exits 0 when importFrom predicates pass", async () => {
+    await expect(runCli({ cwd })).resolves.not.toThrow();
+  });
+});
+
+describe("import-from-broken fixture", () => {
+  const cwd = resolve(fixturesDir, "import-from-broken");
+
+  it("konsistent check exits 1 with importFrom violations", async () => {
+    try {
+      await runCli({ cwd });
+      expect.fail("Expected check to exit with code 1");
+    } catch (err: unknown) {
+      const error = err as { stdout: string; code: number; status: number };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain('Missing import from "./helper"');
+      expect(error.stdout).toContain('Missing import from "@scope/pkg"');
+      expect(error.stdout).toContain('Forbidden import from "react"');
+    }
+  });
+});

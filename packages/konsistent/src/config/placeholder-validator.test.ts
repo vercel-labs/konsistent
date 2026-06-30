@@ -378,6 +378,27 @@ describe("validatePlaceholders", () => {
     }
   });
 
+  it("detects placeholders inside importFrom", () => {
+    const conventions: ConventionV1[] = [
+      {
+        name: "imports",
+        paths: ["src/{x}"],
+        must: { importFrom: "@scope/${missingPackage}" },
+      },
+    ];
+
+    const result = validatePlaceholders({
+      conventions,
+      identifiers: ["imports"],
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain('"${missingPackage}"');
+      expect(result.error).toContain("must.importFrom");
+    }
+  });
+
   it("treats placeholders declared in for.files as in-scope for the block's predicates", () => {
     const conventions: ConventionV1[] = [
       {

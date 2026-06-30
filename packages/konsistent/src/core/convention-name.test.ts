@@ -224,6 +224,24 @@ describe("generateConventionName", () => {
     });
   });
 
+  describe("importFrom", () => {
+    it("generates must-import-from-{source-kebab}", () => {
+      expect(
+        generateConventionName({
+          must: { importFrom: "@ai-sdk/react" },
+        })
+      ).toBe("must-import-from-ai-sdk-react");
+    });
+
+    it("strips template expressions from sources", () => {
+      expect(
+        generateConventionName({
+          must: { importFrom: "@scope/${packageName}" },
+        })
+      ).toBe("must-import-from-scope");
+    });
+  });
+
   describe("importTypes", () => {
     it("generates must-import-{name-kebab}-type", () => {
       expect(
@@ -298,6 +316,11 @@ describe("generateConventionName", () => {
           mustNot: { importTypesFromCurrentDir: false },
         })
       ).toBe("must-import-type-from-current-dir");
+      expect(
+        generateConventionName({
+          mustNot: { importFrom: "react" },
+        })
+      ).toBe("must-not-import-from-react");
     });
   });
 

@@ -1,0 +1,20 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "path-imports",
+      "paths": "src/path.ts",
+      "must": { "importFrom": "./helper" }
+    },
+    {
+      "name": "package-imports",
+      "paths": "src/package.ts",
+      "must": { "importFrom": "@scope/pkg" }
+    },
+    {
+      "name": "no-react-imports",
+      "paths": "src/no-react.ts",
+      "mustNot": { "importFrom": "react" }
+    }
+  ]
+}
