@@ -16,6 +16,7 @@
     "konsistent-fixture-reusable-convention-unknown-source": "0.0.0"
   },
   "changesets": [
-    "lucky-bees-fly"
+    "lucky-bees-fly",
+    "sunny-lights-obey"
   ]
 }
