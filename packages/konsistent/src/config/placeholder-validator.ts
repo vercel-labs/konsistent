@@ -309,6 +309,14 @@ function collectUsagesInPredicates(opts: {
     declared,
     usages,
   });
+  if (predicates.importFrom) {
+    pushStringUsages({
+      value: predicates.importFrom,
+      key: `${prefix}.importFrom`,
+      declared,
+      usages,
+    });
+  }
   collectUsagesInDefinitionList({
     list: predicates.importTypes,
     key: `${prefix}.importTypes`,

@@ -203,6 +203,29 @@ describe("run", () => {
     expect(diagnostics[0].message).toBe('Forbidden constant export "debug"');
   });
 
+  it("reports diagnostics when mustNot importFrom matches", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/module.ts",
+          mustNot: { importFrom: "react" },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
+      files: new Set(["src/module.ts"]),
+      fileContents: new Map([
+        ["src/module.ts", "import { jsx } from 'react/jsx-runtime';"],
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].predicateName).toBe("mustNot.importFrom");
+    expect(diagnostics[0].message).toBe('Forbidden import from "react"');
+  });
+
   it("applies block metadata to mustNot predicates", async () => {
     const config: ConfigV1 = {
       version: "v1",

@@ -18,6 +18,16 @@ function fileToKebab(file: string): string {
   return file.replace(/[./]/g, "-").replace(/^-+|-+$/g, "");
 }
 
+function sourceToKebab(source: string): string {
+  const stripped = stripTemplateExpressions(source);
+  return stripped
+    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .toLowerCase()
+    .replace(/-{2,}/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function getItemName(item: string | { name: string }): string {
   return typeof item === "string" ? item : item.name;
 }
@@ -115,6 +125,11 @@ const PREDICATE_RULES: Record<
       getItemName(items[0] as string | { name: string })
     );
     const prefix = negated ? "must-not-import" : "must-import";
+    return kebab ? `${prefix}-${kebab}` : prefix;
+  },
+  importFrom: ({ items, negated }) => {
+    const kebab = sourceToKebab(items[0] as string);
+    const prefix = negated ? "must-not-import-from" : "must-import-from";
     return kebab ? `${prefix}-${kebab}` : prefix;
   },
   importTypes: ({ items, negated }) => {

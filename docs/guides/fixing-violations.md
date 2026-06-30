@@ -210,17 +210,19 @@ Search first: grep for `X` and case/suffix variants. Also look for object factor
   - Adding `extends`/`implements` requires adding new methods or refactoring existing ones to match the contract.
   - Base class or interface does not exist after search.
 
-#### `import` / `importTypes`
+#### `import` / `importTypes` / `importFrom`
 
-Message: `Missing import "X" from "<module>"` or `Missing import type "X" from "<module>"`.
+Message: `Missing import "X" from "<module>"`, `Missing import type "X" from "<module>"`, or `Missing import from "<module>"`.
 
-Search first: confirm the export `X` exists at `<module>`. If not, find where `X` (or its variants) is currently imported from.
+Search first: confirm the export `X` exists at `<module>` for named-import rules, or that the target module/package is already used by sibling files for `importFrom`. If not, find where `X` (or its variants) is currently imported from.
 
 - **Trivial**:
   - Export exists at the specified module path → add the import statement.
   - Symbol is currently imported from a different path → change the import path.
+  - For `importFrom`, a sibling file imports from the same package/path for the same role → add the analogous import.
 - **Non-trivial**:
   - Export does not exist at the target path *and* the symbol does not exist anywhere. Usually cascades from a separate violation — fix that first; this one may resolve automatically.
+  - For `importFrom`, no sibling establishes why the dependency should exist. Adding a new dependency may be a design decision.
 
 If a single source file is missing an export and many consumers fail `import` rules pointing at it, fix the source once; consumers will then validate. Address the root cause, not the downstream symptoms.
 

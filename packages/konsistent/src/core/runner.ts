@@ -20,6 +20,7 @@ import { checkExportFunctions } from "../typescript/predicates/export-functions.
 import { checkExportInterfaces } from "../typescript/predicates/export-interfaces.js";
 import { checkExportTypes } from "../typescript/predicates/export-types.js";
 import { checkImport } from "../typescript/predicates/import.js";
+import { checkImportFrom } from "../typescript/predicates/import-from.js";
 import { checkImportSource } from "../typescript/predicates/import-source.js";
 import { checkImportTypes } from "../typescript/predicates/import-types.js";
 import { checkUseDeclarationOrder } from "../typescript/predicates/use-declaration-order.js";
@@ -76,6 +77,7 @@ export const TS_PREDICATES = new Set([
   "exportClasses",
   "exportInterfaces",
   "import",
+  "importFrom",
   "importTypes",
   "importFromCurrentDir",
   "importFromParents",
@@ -414,6 +416,16 @@ const TS_PREDICATE_HANDLERS: Record<
           severity,
         })
       : [],
+  importFrom: ({ must, context, fileStructure, conventionName, severity }) =>
+    must.importFrom === undefined
+      ? []
+      : checkImportFrom({
+          expected: must.importFrom,
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
   importTypes: ({ must, context, fileStructure, conventionName, severity }) =>
     must.importTypes
       ? checkImportTypes({
@@ -676,6 +688,8 @@ function formatForbiddenMessage(opts: {
       return `Forbidden class export "${name}"`;
     case "import":
       return `Forbidden import "${name}"`;
+    case "importFrom":
+      return `Forbidden import from "${context.resolveTemplate(String(value))}"`;
     case "importTypes":
       return `Forbidden type import "${name}"`;
     case "importFromCurrentDir":

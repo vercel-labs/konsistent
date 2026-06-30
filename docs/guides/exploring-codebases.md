@@ -148,7 +148,7 @@ For every pattern you identify:
 - Required files → `haveFiles`.
 - Local declarations → `declareTypes`, `declareConstants`, `declareFunctions`, `declareInterfaces`, `declareClasses`.
 - Exports → `export`, `exportTypes`, `exportConstants`, `exportFunctions`, `exportInterfaces`, `exportClasses`.
-- Imports → `import`, `importTypes`, `importFromCurrentDir`, `importFromParents`, `importFromExternals`, `importTypesFromCurrentDir`, `importTypesFromParents`, `importTypesFromExternals`.
+- Imports → `import`, `importFrom`, `importTypes`, `importFromCurrentDir`, `importFromParents`, `importFromExternals`, `importTypesFromCurrentDir`, `importTypesFromParents`, `importTypesFromExternals`.
 - Optional file conditions → `if.hasFile` blocks.
 - Subset-only rules → `if.placeholderSatisfies` with a `matches` or `segments` constraint.
 

@@ -24,6 +24,7 @@ The full machine-readable schema lives at `node_modules/konsistent/konsistent.sc
   - [`exportClasses`](#exportclasses)
 - [Import predicates](#import-predicates)
   - [`import`](#import)
+  - [`importFrom`](#importfrom)
   - [`importTypes`](#importtypes)
   - [`importFromCurrentDir`](#importfromcurrentdir)
   - [`importFromParents`](#importfromparents)
@@ -324,6 +325,24 @@ Assert named value imports.
 | `from` | string | Optional. Module specifier the import must come from. |
 
 Bare-string form (`"import": ["useState"]`) checks the binding regardless of source.
+
+### `importFrom`
+
+Assert that the file has at least one import statement from a specific module path or package.
+
+```json
+"must": { "importFrom": "react" }
+```
+
+```json
+"must": { "importFrom": "./setup" }
+```
+
+The value is a string. Relative and absolute path-like specifiers are matched exactly, so `"./setup"` only matches `import "./setup"`.
+
+Package roots match the package itself and its subpaths. For example, `"react"` matches imports from `"react"` and `"react/jsx-runtime"`, and `"@scope/pkg"` matches `"@scope/pkg"` and `"@scope/pkg/subpath"`. Similarly named packages such as `"react-dom"` or `"@scope/pkg-extra"` do not match.
+
+Both value imports and type-only imports count because this predicate checks import statements by source. Side-effect imports such as `import "./setup"` also count.
 
 ### `importTypes`
 
