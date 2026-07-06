@@ -16,7 +16,6 @@
     "check:deps": "syncpack lint",
     "fix": "ultracite fix",
     "fix:deps": "syncpack fix-mismatches && syncpack format",
-    "publish:packages": "pnpm build && node tools/scripts/publish-packages.mjs",
     "set-latest-dist-tags": "node tools/scripts/set-latest-dist-tags.mjs",
     "changeset": "changeset",
     "ci:version": "pnpm -F @konsistent/convention build && pnpm -F konsistent build && changeset version && pnpm install --no-frozen-lockfile",
