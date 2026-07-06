@@ -383,7 +383,7 @@ describe("validatePlaceholders", () => {
       {
         name: "imports",
         paths: ["src/{x}"],
-        must: { importFrom: "@scope/${missingPackage}" },
+        must: { importFrom: ["@scope/pkg", "@scope/${missingPackage}/*"] },
       },
     ];
 

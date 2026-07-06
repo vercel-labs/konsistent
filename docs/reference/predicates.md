@@ -328,19 +328,21 @@ Bare-string form (`"import": ["useState"]`) checks the binding regardless of sou
 
 ### `importFrom`
 
-Assert that the file has at least one import statement from a specific module path or package.
+Assert that the file has at least one import statement from a specific module specifier.
 
 ```json
 "must": { "importFrom": "react" }
 ```
 
 ```json
-"must": { "importFrom": "./setup" }
+"must": { "importFrom": ["./setup", "package/*"] }
 ```
 
-The value is a string. Relative and absolute path-like specifiers are matched exactly, so `"./setup"` only matches `import "./setup"`.
+The value is a string or an array of strings. When an array is used in `must`, every entry must be satisfied.
 
-Package roots match the package itself and its subpaths. For example, `"react"` matches imports from `"react"` and `"react/jsx-runtime"`, and `"@scope/pkg"` matches `"@scope/pkg"` and `"@scope/pkg/subpath"`. Similarly named packages such as `"react-dom"` or `"@scope/pkg-extra"` do not match.
+By default, entries match exactly. For example, `"package"` only matches `import ... from "package"` and does not match `import ... from "package/v4"`.
+
+Use a trailing `/*` to match subpaths under a prefix. For example, `"package/*"` matches `"package/v4"`, and `"@scope/pkg/*"` matches `"@scope/pkg/subpath"`. The wildcard does not match the root itself, so `"package/*"` does not match `"package"`.
 
 Both value imports and type-only imports count because this predicate checks import statements by source. Side-effect imports such as `import "./setup"` also count.
 

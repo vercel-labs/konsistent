@@ -9,12 +9,17 @@
     {
       "name": "package-imports",
       "paths": "src/package.ts",
-      "must": { "importFrom": "@scope/pkg" }
+      "must": { "importFrom": ["@scope/pkg/*", "react"] }
     },
     {
       "name": "no-react-imports",
       "paths": "src/no-react.ts",
       "mustNot": { "importFrom": "react" }
+    },
+    {
+      "name": "no-package-root-imports",
+      "paths": "src/no-package-root.ts",
+      "mustNot": { "importFrom": "package" }
     }
   ]
 }
