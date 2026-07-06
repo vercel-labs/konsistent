@@ -1,5 +1,12 @@
 # @konsistent/common-conventions
 
+## 1.0.0-beta.2
+
+### Patch Changes
+
+- Updated dependencies [b424bab]
+  - @konsistent/convention@1.0.0-beta.2
+
 ## 1.0.0-beta.1
 
 ### Patch Changes

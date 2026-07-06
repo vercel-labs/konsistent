@@ -1,5 +1,13 @@
 # konsistent
 
+## 1.0.0-beta.2
+
+### Patch Changes
+
+- b424bab: fix(konsistent): fix `importFrom` predicate to distinguish between exact vs sub match imports
+- Updated dependencies [b424bab]
+  - @konsistent/convention@1.0.0-beta.2
+
 ## 1.0.0-beta.1
 
 ### Patch Changes
