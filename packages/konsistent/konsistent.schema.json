@@ -546,7 +546,17 @@
                     }
                   },
                   "importFrom": {
-                    "type": "string"
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
                   },
                   "importTypes": {
                     "type": "array",
@@ -1017,7 +1027,17 @@
                     }
                   },
                   "importFrom": {
-                    "type": "string"
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
                   },
                   "importTypes": {
                     "type": "array",
@@ -1541,7 +1561,17 @@
                             }
                           },
                           "importFrom": {
-                            "type": "string"
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            ]
                           },
                           "importTypes": {
                             "type": "array",
@@ -2082,7 +2112,17 @@
                                           }
                                         },
                                         "importFrom": {
-                                          "type": "string"
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
                                         },
                                         "importTypes": {
                                           "type": "array",
@@ -2553,7 +2593,17 @@
                                           }
                                         },
                                         "importFrom": {
-                                          "type": "string"
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
                                         },
                                         "importTypes": {
                                           "type": "array",
@@ -3088,7 +3138,17 @@
                                           }
                                         },
                                         "importFrom": {
-                                          "type": "string"
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
                                         },
                                         "importTypes": {
                                           "type": "array",
@@ -3559,7 +3619,17 @@
                                           }
                                         },
                                         "importFrom": {
-                                          "type": "string"
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
                                         },
                                         "importTypes": {
                                           "type": "array",
@@ -4100,7 +4170,17 @@
                                       }
                                     },
                                     "importFrom": {
-                                      "type": "string"
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
                                     },
                                     "importTypes": {
                                       "type": "array",
@@ -4571,7 +4651,17 @@
                                       }
                                     },
                                     "importFrom": {
-                                      "type": "string"
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
                                     },
                                     "importTypes": {
                                       "type": "array",
@@ -5051,7 +5141,17 @@
                         }
                       },
                       "importFrom": {
-                        "type": "string"
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ]
                       },
                       "importTypes": {
                         "type": "array",
@@ -5573,7 +5673,17 @@
                             }
                           },
                           "importFrom": {
-                            "type": "string"
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            ]
                           },
                           "importTypes": {
                             "type": "array",
@@ -6114,7 +6224,17 @@
                                           }
                                         },
                                         "importFrom": {
-                                          "type": "string"
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
                                         },
                                         "importTypes": {
                                           "type": "array",
@@ -6585,7 +6705,17 @@
                                           }
                                         },
                                         "importFrom": {
-                                          "type": "string"
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
                                         },
                                         "importTypes": {
                                           "type": "array",
@@ -7120,7 +7250,17 @@
                                           }
                                         },
                                         "importFrom": {
-                                          "type": "string"
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
                                         },
                                         "importTypes": {
                                           "type": "array",
@@ -7591,7 +7731,17 @@
                                           }
                                         },
                                         "importFrom": {
-                                          "type": "string"
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
                                         },
                                         "importTypes": {
                                           "type": "array",
@@ -8132,7 +8282,17 @@
                                       }
                                     },
                                     "importFrom": {
-                                      "type": "string"
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
                                     },
                                     "importTypes": {
                                       "type": "array",
@@ -8603,7 +8763,17 @@
                                       }
                                     },
                                     "importFrom": {
-                                      "type": "string"
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
                                     },
                                     "importTypes": {
                                       "type": "array",
@@ -9083,7 +9253,17 @@
                         }
                       },
                       "importFrom": {
-                        "type": "string"
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ]
                       },
                       "importTypes": {
                         "type": "array",

@@ -128,7 +128,7 @@ describe("ConfigV1Schema", () => {
           paths: "src/*.ts",
           must: {
             useDeclarationOrder: ["alpha", "beta"],
-            importFrom: "react",
+            importFrom: ["react", "zod/*"],
             importFromCurrentDir: true,
             importFromParents: false,
             importFromExternals: true,
@@ -142,13 +142,26 @@ describe("ConfigV1Schema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects importFrom when it is not a string", () => {
+  it("rejects importFrom when it is neither a string nor a string array", () => {
     const result = ConfigV1Schema.safeParse({
       version: "v1",
       conventions: [
         {
           paths: "src/*.ts",
-          must: { importFrom: ["react"] },
+          must: { importFrom: 123 },
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects importFrom arrays with non-string items", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          must: { importFrom: ["react", 123] },
         },
       ],
     });

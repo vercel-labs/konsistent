@@ -78,7 +78,7 @@ export const MustPredicatesV1Schema = z.strictObject({
     .array(z.union([z.string(), ClassDefinitionV1Schema]))
     .optional(),
   import: z.array(z.union([z.string(), ImportDefinitionV1Schema])).optional(),
-  importFrom: z.string().optional(),
+  importFrom: z.union([z.string(), z.array(z.string())]).optional(),
   importTypes: z
     .array(z.union([z.string(), ImportDefinitionV1Schema]))
     .optional(),

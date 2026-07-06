@@ -629,6 +629,7 @@ const ITEM_LEVEL_MUST_NOT_PREDICATES = new Set<string>([
   "exportInterfaces",
   "exportClasses",
   "import",
+  "importFrom",
   "importTypes",
 ]);
 

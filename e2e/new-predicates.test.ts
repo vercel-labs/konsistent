@@ -135,8 +135,10 @@ describe("import-from-broken fixture", () => {
       const error = err as { stdout: string; code: number; status: number };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain('Missing import from "./helper"');
-      expect(error.stdout).toContain('Missing import from "@scope/pkg"');
+      expect(error.stdout).toContain('Missing import from "@scope/pkg/*"');
+      expect(error.stdout).toContain('Missing import from "react"');
       expect(error.stdout).toContain('Forbidden import from "react"');
+      expect(error.stdout).toContain('Forbidden import from "package/*"');
     }
   });
 });

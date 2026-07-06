@@ -64,7 +64,7 @@ describe("ReusableConventionV1Schema", () => {
           },
         ],
         useDeclarationOrder: ["localValue", "createLocal"],
-        importFrom: "react",
+        importFrom: ["react", "zod/*"],
         importFromCurrentDir: true,
         importFromParents: false,
         importFromExternals: true,

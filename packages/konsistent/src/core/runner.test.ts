@@ -203,13 +203,13 @@ describe("run", () => {
     expect(diagnostics[0].message).toBe('Forbidden constant export "debug"');
   });
 
-  it("reports diagnostics when mustNot importFrom matches", async () => {
+  it("returns no diagnostics when mustNot importFrom does not match a subpath", async () => {
     const config: ConfigV1 = {
       version: "v1",
       conventions: [
         {
           paths: "src/module.ts",
-          mustNot: { importFrom: "react" },
+          mustNot: { importFrom: "package" },
         },
       ],
     };
@@ -217,13 +217,64 @@ describe("run", () => {
       globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
       files: new Set(["src/module.ts"]),
       fileContents: new Map([
-        ["src/module.ts", "import { jsx } from 'react/jsx-runtime';"],
+        ["src/module.ts", "import { value } from 'package/v4';"],
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
+  });
+
+  it("reports diagnostics when mustNot importFrom wildcard matches a subpath", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/module.ts",
+          mustNot: { importFrom: "package/*" },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
+      files: new Set(["src/module.ts"]),
+      fileContents: new Map([
+        ["src/module.ts", "import { value } from 'package/v4';"],
       ]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
     expect(diagnostics[0].predicateName).toBe("mustNot.importFrom");
-    expect(diagnostics[0].message).toBe('Forbidden import from "react"');
+    expect(diagnostics[0].message).toBe('Forbidden import from "package/*"');
+  });
+
+  it("reports diagnostics per matching mustNot importFrom array item", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/module.ts",
+          mustNot: { importFrom: ["react", "package/*", "never"] },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
+      files: new Set(["src/module.ts"]),
+      fileContents: new Map([
+        [
+          "src/module.ts",
+          [
+            "import React from 'react';",
+            "import { value } from 'package/v4';",
+          ].join("\n"),
+        ],
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics.map((d) => d.message)).toEqual([
+      'Forbidden import from "react"',
+      'Forbidden import from "package/*"',
+    ]);
   });
 
   it("applies block metadata to mustNot predicates", async () => {

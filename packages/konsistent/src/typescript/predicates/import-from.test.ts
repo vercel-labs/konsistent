@@ -48,20 +48,43 @@ describe("checkImportFrom", () => {
     expect(result[0].filePath).toBe("src/index.ts");
   });
 
-  it("matches package subpaths from an unscoped package root", () => {
+  it("matches exact package import sources", () => {
     const result = checkImportFrom({
       expected: "react",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
-        source: "import { jsx } from 'react/jsx-runtime';",
+        source: "import React from 'react';",
       }),
     });
     expect(result).toEqual([]);
   });
 
-  it("matches package subpaths from a scoped package root", () => {
+  it("does not match package subpaths without a wildcard", () => {
     const result = checkImportFrom({
-      expected: "@scope/pkg",
+      expected: "package",
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({
+        source: "import { value } from 'package/v4';",
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe('Missing import from "package"');
+  });
+
+  it("matches package subpaths with a trailing wildcard", () => {
+    const result = checkImportFrom({
+      expected: "package/*",
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({
+        source: "import { value } from 'package/v4';",
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("matches scoped package subpaths with a trailing wildcard", () => {
+    const result = checkImportFrom({
+      expected: "@scope/pkg/*",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
         source: "import { tool } from '@scope/pkg/tools';",
@@ -70,27 +93,27 @@ describe("checkImportFrom", () => {
     expect(result).toEqual([]);
   });
 
-  it("does not match similarly named packages", () => {
+  it("does not match package roots with a trailing wildcard", () => {
     const result = checkImportFrom({
-      expected: "react",
+      expected: "package/*",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
-        source: "import { render } from 'react-dom';",
+        source: "import { value } from 'package';",
       }),
     });
     expect(result).toHaveLength(1);
+    expect(result[0].message).toBe('Missing import from "package/*"');
   });
 
-  it("treats package subpaths as exact sources", () => {
+  it("does not match similarly named packages with a trailing wildcard", () => {
     const result = checkImportFrom({
-      expected: "@scope/pkg/tools",
+      expected: "react/*",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
-        source: "import { helper } from '@scope/pkg/tools/helper';",
+        source: "import { render } from 'react-dom/client';",
       }),
     });
     expect(result).toHaveLength(1);
-    expect(result[0].message).toBe('Missing import from "@scope/pkg/tools"');
   });
 
   it("matches type-only import statements", () => {
@@ -106,7 +129,7 @@ describe("checkImportFrom", () => {
 
   it("resolves template placeholders in the source", () => {
     const result = checkImportFrom({
-      expected: "@scope/${packageName}",
+      expected: "@scope/${packageName}/*",
       context: createMockContext({
         path: "src/index.ts",
         placeholders: { packageName: { toString: () => "pkg" } },
@@ -116,6 +139,35 @@ describe("checkImportFrom", () => {
       }),
     });
     expect(result).toEqual([]);
+  });
+
+  it("requires every import source in an array", () => {
+    const result = checkImportFrom({
+      expected: ["react", "package/*"],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({
+        source: [
+          "import React from 'react';",
+          "import { value } from 'package/v4';",
+        ].join("\n"),
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("returns diagnostics for missing import sources in an array", () => {
+    const result = checkImportFrom({
+      expected: ["react", "package"],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({
+        source: "import { value } from 'package/v4';",
+      }),
+    });
+    expect(result).toHaveLength(2);
+    expect(result.map((d) => d.message)).toEqual([
+      'Missing import from "react"',
+      'Missing import from "package"',
+    ]);
   });
 
   it("includes conventionName when provided", () => {
