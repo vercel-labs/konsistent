@@ -1,5 +1,11 @@
 # @konsistent/convention
 
+## 1.0.0-beta.3
+
+### Patch Changes
+
+- aac62d5: feat(konsistent): allow enforcing types for declared or exported constants
+
 ## 1.0.0-beta.2
 
 ### Patch Changes
