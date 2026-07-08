@@ -104,10 +104,15 @@ Assert local type declarations. Interfaces and type aliases qualify.
 
 ### `declareConstants`
 
-Assert local `const` declarations.
+Assert local `const` declarations. Optionally validate an explicit type
+annotation using the same `schema` field as `exportConstants`.
 
 ```json
-"must": { "declareConstants": ["DEFAULT_OPTIONS"] }
+"must": {
+  "declareConstants": [
+    { "name": "DEFAULT_PORT", "schema": { "type": "number" } }
+  ]
+}
 ```
 
 ### `declareFunctions`
@@ -212,17 +217,59 @@ Same shape as `export`: bare string or `{ name, from? }`.
 
 ### `exportConstants`
 
-Assert `const` exports specifically. Stricter than `export` — a `function` or `let` with the right name will not satisfy this predicate.
+Assert `const` exports specifically. Stricter than `export` — a `function` or `let` with the right name will not satisfy this predicate. An object entry can use `schema` to validate the constant's explicit type annotation.
 
 ```json
 "must": {
-  "exportConstants": ["pluginId", "DEFAULT_CONFIG"]
+  "exportConstants": [
+    "pluginId",
+    {
+      "name": "mode",
+      "schema": {
+        "type": "string",
+        "enum": ["development", "production"]
+      }
+    },
+    {
+      "name": "tags",
+      "schema": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    },
+    {
+      "name": "options",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "endpoint": { "type": "string" },
+          "metadata": {}
+        },
+        "required": ["endpoint"],
+        "additionalProperties": false
+      }
+    }
+  ]
 }
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `name` | string | The constant name. Templates allowed. |
+| `schema` | object | Optional. Supported JSON Schema subset for the constant's explicit type annotation. |
+
+The supported `schema` forms are:
+
+- Scalar: `{ "type": "string" }`, using `string`, `number`, `boolean`, or `null`.
+- Enum: `{ "type": "string", "enum": ["a", "b"] }`. The annotation must contain exactly the configured literal values, although their order does not matter.
+- Array: `{ "type": "array", "items": { "type": "string" } }`. Items must use a scalar schema. `T[]`, `Array<T>`, `readonly T[]`, and `ReadonlyArray<T>` annotations qualify.
+- Object: `{ "type": "object", "properties": { ... }, "required": [...], "additionalProperties": false }`. An empty property schema (`{}`) checks only that the property is permitted or required; a scalar schema also checks its type.
+
+For object schemas, `required` defaults to an empty array and `additionalProperties` defaults to `true`. Required properties must be non-optional in the TypeScript annotation.
+
+This is deliberately a strict subset of JSON Schema. Unsupported keywords and shapes are rejected during configuration validation, including `integer`, `$ref`, combinators, nested object or array schemas, tuple schemas, enum array items, schema-valued `additionalProperties`, and constraints such as `minItems`.
+
+Schema checks require an explicit annotation on a locally declared constant. Inferred types, named type aliases or interfaces, tuples, index signatures, methods, computed properties, nested types, and cross-file re-exports are not resolved. Enum values and property names inside `schema` are literal data and do not expand placeholders.
 
 ### `exportFunctions`
 

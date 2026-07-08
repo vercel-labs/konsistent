@@ -1,4 +1,5 @@
 import ts from "typescript";
+import { parseConstantTypeAnnotation } from "./constant-type-schema.js";
 import type {
   ClassInfo,
   ConstantInfo,
@@ -418,6 +419,7 @@ function processVariableStatement(opts: {
       const pos = getPosition({ sourceFile, node });
       collector.constants.push({
         name: decl.name.getText(sourceFile),
+        typeInfo: parseConstantTypeAnnotation({ node: decl.type }),
         typeName: extractTypeAnnotation(decl.type),
         pos,
       });

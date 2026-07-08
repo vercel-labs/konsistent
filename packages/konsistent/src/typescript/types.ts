@@ -91,6 +91,7 @@ export interface FunctionInfo {
 export interface ConstantInfo {
   name: string;
   pos: SourcePosition;
+  typeInfo?: ConstantTypeInfo;
   typeName?: TypeAnnotationInfo;
 }
 
@@ -125,3 +126,5 @@ export interface FileStructure {
   nonBarrelStatements: NonBarrelStatementInfo[];
   typeAliases: TypeAliasInfo[];
 }
+
+import type { ConstantTypeInfo } from "./constant-type-schema.js";
