@@ -1,0 +1,41 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "constant-schemas",
+      "paths": "src/constants.ts",
+      "must": {
+        "declareConstants": [
+          { "name": "localPort", "schema": { "type": "number" } }
+        ],
+        "exportConstants": [
+          {
+            "name": "mode",
+            "schema": {
+              "type": "string",
+              "enum": ["development", "production"]
+            }
+          },
+          {
+            "name": "tags",
+            "schema": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          {
+            "name": "options",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "endpoint": { "type": "string" }
+              },
+              "required": ["endpoint"],
+              "additionalProperties": false
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

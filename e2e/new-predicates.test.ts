@@ -48,6 +48,40 @@ describe("declaration-predicates-broken fixture", () => {
   });
 });
 
+describe("constant-schemas fixture", () => {
+  const cwd = resolve(fixturesDir, "constant-schemas");
+
+  it("konsistent check exits 0 when constant schemas match", async () => {
+    await expect(runCli({ cwd })).resolves.not.toThrow();
+  });
+});
+
+describe("constant-schemas-broken fixture", () => {
+  const cwd = resolve(fixturesDir, "constant-schemas-broken");
+
+  it("konsistent check exits 1 with constant schema violations", async () => {
+    try {
+      await runCli({ cwd });
+      expect.fail("Expected check to exit with code 1");
+    } catch (err: unknown) {
+      const error = err as { stdout: string; code: number; status: number };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain(
+        'Constant "localPort" must have an explicit type annotation'
+      );
+      expect(error.stdout).toContain(
+        'Constant "mode" must have exactly the configured enum values'
+      );
+      expect(error.stdout).toContain(
+        'Constant "tags" must be an array with items of type "string"'
+      );
+      expect(error.stdout).toContain(
+        'Constant "options" must not have additional property "retries"'
+      );
+    }
+  });
+});
+
 describe("declaration-order fixture", () => {
   const cwd = resolve(fixturesDir, "declaration-order");
 

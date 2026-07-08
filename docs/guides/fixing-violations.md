@@ -155,6 +155,8 @@ Search first: grep for `X`, case variants, stripped variants (`createX` ↔ `X`,
 
 For `exportConstants`, the value must be a `const`. If a `let` or `function` exists under the right name, conversion to `const` is safe only if there are no reassignments — verify by grepping.
 
+When a constant entry includes `schema`, the constant must also have a matching explicit type annotation. Add or adjust the annotation only after confirming the initializer and all assignments satisfy it. Schema checks support scalar, literal-union enum, homogeneous scalar array, and inline object annotations; they do not infer initializer types or resolve named types.
+
 #### `exportTypes`
 
 Message: `Missing export type "X"`.
