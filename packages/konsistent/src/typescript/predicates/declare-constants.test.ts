@@ -43,4 +43,45 @@ describe("checkDeclareConstants", () => {
     );
     expect(result[0].predicateName).toBe("declareConstants");
   });
+
+  it("validates a configured constant schema", () => {
+    const result = checkDeclareConstants({
+      expected: [
+        {
+          name: "modes",
+          schema: {
+            type: "array",
+            items: { type: "string" },
+          },
+        },
+      ],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({
+        source: "const modes: readonly string[] = [];",
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("reports a mismatched constant schema", () => {
+    const result = checkDeclareConstants({
+      expected: [{ name: "port", schema: { type: "number" } }],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({ source: 'const port: string = "3000";' }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe('Constant "port" must be of type "number"');
+  });
+
+  it("requires an explicit annotation when a schema is configured", () => {
+    const result = checkDeclareConstants({
+      expected: [{ name: "port", schema: { type: "number" } }],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({ source: "const port = 3000;" }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe(
+      'Constant "port" must have an explicit type annotation'
+    );
+  });
 });

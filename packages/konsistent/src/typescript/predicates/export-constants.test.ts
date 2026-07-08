@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PredicateContext } from "../../core/context.js";
+import { parseFileStructure } from "../parser.js";
 import type { FileStructure } from "../types.js";
 import { checkExportConstants } from "./export-constants.js";
 
@@ -170,5 +171,50 @@ describe("checkExportConstants", () => {
       conventionName: "const-exports",
     });
     expect(result[0].conventionName).toBe("const-exports");
+  });
+
+  it("validates a configured constant schema", () => {
+    const result = checkExportConstants({
+      expected: [
+        {
+          name: "mode",
+          schema: {
+            type: "string",
+            enum: ["development", "production"],
+          },
+        },
+      ],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source:
+          'export const mode: "development" | "production" = "development";',
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("reports an object schema mismatch", () => {
+    const result = checkExportConstants({
+      expected: [
+        {
+          name: "options",
+          schema: {
+            type: "object",
+            properties: { endpoint: { type: "string" } },
+            required: ["endpoint"],
+            additionalProperties: false,
+          },
+        },
+      ],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source:
+          'export const options: { endpoint: string; retries: number } = { endpoint: "", retries: 1 };',
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe(
+      'Constant "options" must not have additional property "retries"'
+    );
   });
 });

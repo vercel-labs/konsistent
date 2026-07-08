@@ -1,5 +1,8 @@
+import type { ConstantDefinitionV1 } from "@konsistent/convention";
 import type { PredicateContext } from "../../core/context.js";
 import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
+import { createDiagnostic } from "../../core/diagnostics.js";
+import { matchConstantTypeSchema } from "../constant-type-schema.js";
 import type { FileStructure } from "../types.js";
 import {
   createExportedDeclarationDiagnostic,
@@ -11,7 +14,7 @@ import {
 } from "./declaration-utils.js";
 
 export function checkDeclareConstants(opts: {
-  expected: (string | { name: string })[];
+  expected: (string | ConstantDefinitionV1)[];
   context: PredicateContext;
   fileStructure: FileStructure;
   conventionName?: string;
@@ -27,6 +30,7 @@ export function checkDeclareConstants(opts: {
   };
 
   for (const entry of expected) {
+    const definition = typeof entry === "string" ? { name: entry } : entry;
     const resolvedName = resolveDefinitionName({ entry, context });
     const symbol = findDeclarationSymbol({
       fileStructure,
@@ -53,6 +57,30 @@ export function checkDeclareConstants(opts: {
           symbol,
         })
       );
+      continue;
+    }
+
+    if (definition.schema) {
+      const constantInfo = fileStructure.constants.find(
+        (constant) => constant.name === resolvedName
+      );
+      const result = matchConstantTypeSchema({
+        actual: constantInfo?.typeInfo,
+        schema: definition.schema,
+      });
+      if (!result.matches) {
+        diagnostics.push(
+          createDiagnostic({
+            filePath: context.path,
+            predicateName: "declareConstants",
+            message: `Constant "${resolvedName}" ${result.reason}`,
+            conventionName,
+            line: constantInfo?.pos.line ?? symbol.pos.line,
+            column: constantInfo?.pos.column ?? symbol.pos.column,
+            severity,
+          })
+        );
+      }
     }
   }
 

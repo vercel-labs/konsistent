@@ -203,6 +203,54 @@ describe("run", () => {
     expect(diagnostics[0].message).toBe('Forbidden constant export "debug"');
   });
 
+  it("forbids a constant matching a mustNot schema", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/module.ts",
+          mustNot: {
+            exportConstants: [{ name: "debug", schema: { type: "boolean" } }],
+          },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
+      files: new Set(["src/module.ts"]),
+      fileContents: new Map([
+        ["src/module.ts", "export const debug: boolean = true;"],
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].predicateName).toBe("mustNot.exportConstants");
+    expect(diagnostics[0].message).toBe('Forbidden constant export "debug"');
+  });
+
+  it("allows a mustNot constant with a different schema", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/module.ts",
+          mustNot: {
+            exportConstants: [{ name: "debug", schema: { type: "boolean" } }],
+          },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
+      files: new Set(["src/module.ts"]),
+      fileContents: new Map([
+        ["src/module.ts", 'export const debug: string = "true";'],
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
+  });
+
   it("returns no diagnostics when mustNot importFrom does not match a subpath", async () => {
     const config: ConfigV1 = {
       version: "v1",

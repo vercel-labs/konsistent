@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  ConstantDefinitionV1Schema,
+  ExportConstantDefinitionV1Schema,
+} from "./constant-schema.js";
 
 export const ExportDefinitionV1Schema = z.strictObject({
   name: z.string(),
@@ -50,7 +54,7 @@ export const MustPredicatesV1Schema = z.strictObject({
     .array(z.union([z.string(), DeclarationDefinitionV1Schema]))
     .optional(),
   declareConstants: z
-    .array(z.union([z.string(), DeclarationDefinitionV1Schema]))
+    .array(z.union([z.string(), ConstantDefinitionV1Schema]))
     .optional(),
   declareFunctions: z
     .array(z.union([z.string(), FunctionDefinitionV1Schema]))
@@ -66,7 +70,7 @@ export const MustPredicatesV1Schema = z.strictObject({
     .array(z.union([z.string(), ExportDefinitionV1Schema]))
     .optional(),
   exportConstants: z
-    .array(z.union([z.string(), ExportDefinitionV1Schema]))
+    .array(z.union([z.string(), ExportConstantDefinitionV1Schema]))
     .optional(),
   exportFunctions: z
     .array(z.union([z.string(), FunctionDefinitionV1Schema]))

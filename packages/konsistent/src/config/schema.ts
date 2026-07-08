@@ -6,7 +6,15 @@ import { z } from "zod";
 
 export type {
   ClassDefinitionV1,
+  ConstantArraySchemaV1,
+  ConstantDefinitionV1,
+  ConstantEnumSchemaV1,
+  ConstantObjectSchemaV1,
+  ConstantScalarSchemaV1,
+  ConstantScalarTypeV1,
+  ConstantValueSchemaV1,
   DeclarationDefinitionV1,
+  ExportConstantDefinitionV1,
   ExportDefinitionV1,
   FunctionDefinitionV1,
   ImportDefinitionV1,
@@ -18,7 +26,15 @@ export type {
 } from "@konsistent/convention";
 export {
   ClassDefinitionV1Schema,
+  ConstantArraySchemaV1Schema,
+  ConstantDefinitionV1Schema,
+  ConstantEnumSchemaV1Schema,
+  ConstantObjectSchemaV1Schema,
+  ConstantScalarSchemaV1Schema,
+  ConstantScalarTypeV1Schema,
+  ConstantValueSchemaV1Schema,
   DeclarationDefinitionV1Schema,
+  ExportConstantDefinitionV1Schema,
   ExportDefinitionV1Schema,
   FunctionDefinitionV1Schema,
   ImportDefinitionV1Schema,
