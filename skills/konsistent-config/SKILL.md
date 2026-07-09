@@ -61,7 +61,9 @@ If or once all of these are ready, proceed to section 2.
 
 Explore the user's codebase to understand existing structure and naming patterns. Refer to `node_modules/konsistent/docs/guides/exploring-codebases.md` for what to look out for.
 
-Make sure you review the codebase for structural conventions _holistically_. For large codebases with multiple layers of nested subdirectories, consider using subagents for individual sections of the codebase. For each subagent, you must make them aware of all the required patterns outlined in the following sub sections.
+Make sure you review the codebase for structural conventions _holistically_. For large codebases with multiple layers of nested subdirectories, consider using subagents for individual sections of the codebase. Make each subagent aware of all the analysis requirements outlined in the following subsections, and use subagents to gather raw evidence rather than make final dominance decisions.
+
+When subagents explore separate sections, ensure their findings can be combined into complete relevant cohorts. Each subagent must report the scope it examined, the total instances in that scope, conforming and nonconforming counts, competing patterns, and representative examples. The primary agent must merge these findings, reconstruct each complete cohort, and decide dominance using the combined evidence. A pattern that is dominant within one delegated section is not necessarily dominant across the complete cohort.
 
 Consider conventions between related files as well, not only within a single file. Use the `haveFiles` predicate to ensure a specific other file exists based on the matched file, and use `for.files` to enforce conventions within specific other related files based on the matched file.
 
