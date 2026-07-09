@@ -73,7 +73,7 @@ Do not write the configuration until you have recorded the evidence for each can
   - For example, use the `haveFiles` predicate to ensure a specific other file exists based on the matched file, and use `for.files` to enforce conventions within specific other related files based on the matched file.
 2. Count the total cohort, the conforming instances, and the nonconforming instances. Always include the denominator; a few matching examples alone do not establish dominance.
 3. Search for counterexamples as deliberately as you search for supporting examples. Inspect representative conforming and nonconforming instances.
-4. Compare competing patterns. A candidate is dominant only when it clearly outweighs the alternatives across the relevant cohort, not merely because it occurs three times.
+4. Compare competing patterns. By default, a candidate is dominant only when it occurs at least three times and accounts for at least two-thirds of the relevant cohort.
 5. When encountering competing patterns without a dominant "winner", pause and ask the user for which pattern to enforce (or whether to not enforce any of them).
 6. For each convention established (either by dominant candidate or by user decision), decide whether nonconforming instances are violations or belong to a genuinely different semantic cohort. Existing variation by itself does not establish a legitimate exception.
 
@@ -82,9 +82,9 @@ Use an evidence table while exploring:
 | Candidate convention | Cohort | Follows | Violates | Competing patterns | Decision |
 | --- | --- | ---: | ---: | --- | --- |
 | Every package has `src/index.ts` | 12 packages | 10 | 2 | None | Enforce |
-| Service files use the `-service` suffix | 9 service files | 5 | 4 | `-service` vs. `-svc` | Ambiguous; skip |
+| Service files use the `-service` suffix | 9 service files | 5 | 4 | `-service` vs. `-svc` | Ambiguous; ask user |
 
-Do not invent conditions that make all competing variants valid. If the evidence is ambiguous, skip the candidate or ask the user which convention is intended.
+Do not invent conditions that make all competing variants valid. If the evidence is ambiguous, pause and ask the user which convention to enforce or whether to enforce none of them.
 
 #### Adversarial Review
 
@@ -119,6 +119,8 @@ Do not weaken, narrow, condition, or exclude a convention solely because existin
 #### Verification
 
 Validate the generated config by running `konsistent validate` via the `package.json` script (e.g. `pnpm konsistent validate`).
+
+After validation succeeds, audit the actual codebase by running `konsistent` via the `package.json` script with no arguments. Treat reported violations as audit findings, not as configuration failures.
 
 ## References
 
