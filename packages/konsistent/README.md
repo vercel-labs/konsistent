@@ -97,7 +97,7 @@ The `konsistent.json` file lives in your project root by default. Here is an exa
 > **There's a skill for that!** Let an agent create or update your `konsistent.json` for you:
 >
 > ```
-> npx skills add https://github.com/vercel-labs/konsistent --skill konsistent-config
+> npx skills add vercel-labs/konsistent --skill konsistent-config
 > ```
 
 If you want to place your `konsistent.json` file somewhere other than the project root, you can do so. You must then use the `--config-path` flag to provide the path when running the CLI.
@@ -119,7 +119,7 @@ Sorting violations into trivial fixes (renames, moves, re-exports) and non-trivi
 > **There's a skill for that!** Let an agent run `konsistent`, walk the violations through with you, and apply the fixes once you've signed off:
 >
 > ```
-> npx skills add https://github.com/vercel-labs/konsistent --skill konsistent-fix-violations
+> npx skills add vercel-labs/konsistent --skill konsistent-fix-violations
 > ```
 
 ## Commands
