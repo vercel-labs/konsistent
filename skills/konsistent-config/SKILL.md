@@ -17,7 +17,7 @@ Create or modify a `konsistent.json` file that enforces structural conventions f
 
 ## Core Objective
 
-**Important reminder:** DO NOT to write a `konsistent.json` file that leads to zero errors when running the `konsistent` check. That would defeat the purpose. The objective is to create a `konsistent.json` file that identifies violations to patterns used in the codebase, even if they are not being 100% adhered to. Add conventions based on dominant patterns in the codebase, even if other instances violate those patterns.
+**Important reminder:** DO NOT write a `konsistent.json` file that leads to zero errors when running the `konsistent` check. That would defeat the purpose. The objective is to create a `konsistent.json` file that identifies violations to patterns used in the codebase, even if they are not being 100% adhered to. Add conventions based on dominant patterns in the codebase, even if other instances violate those patterns.
 
 Treat the existing codebase as evidence from which to infer conventions, not as a specification that every convention must accept. Existing files that do not follow a dominant pattern are expected findings, not proof that the convention is wrong.
 
@@ -122,7 +122,16 @@ Do not weaken, narrow, condition, or exclude a convention solely because existin
 
 Validate the generated config by running `konsistent validate` via the `package.json` script (e.g. `pnpm konsistent validate`).
 
-After validation succeeds, audit the actual codebase by running `konsistent` via the `package.json` script with no arguments. Treat reported violations as audit findings, not as configuration failures.
+After validation succeeds, freeze the evidence-based configuration and audit the actual codebase by running `konsistent` via the `package.json` script with no arguments. Treat reported violations as audit findings, not as configuration failures.
+
+A post-audit configuration change is allowed only when one of the following is true:
+
+- The configuration does not encode the pattern recorded in the evidence table.
+- The path pattern accidentally includes a separate semantic cohort.
+- The configuration uses the `konsistent` schema or predicate API incorrectly.
+- Newly discovered code changes the recorded evidence enough that the candidate is no longer dominant.
+
+“Existing files fail this rule” is never sufficient justification for changing the configuration. For every post-audit change, state which allowed reason applies and update the recorded evidence when relevant.
 
 ## References
 
@@ -150,26 +159,13 @@ All canonical documentation lives in `node_modules/konsistent/docs/` (published 
 
 - Do not attempt to use `*` in declaration or export names. These wildcards are only allowed in path segments.
 
-## Freeze Before Audit
-
-Finish the evidence-based configuration before running `konsistent` against the codebase. After the first audit run, treat reported violations as findings rather than configuration failures.
-
-A post-audit configuration change is allowed only when one of the following is true:
-
-- The configuration does not encode the pattern recorded in the evidence table.
-- The path pattern accidentally includes a separate semantic cohort.
-- The configuration uses the `konsistent` schema or predicate API incorrectly.
-- Newly discovered code changes the recorded evidence enough that the candidate is no longer dominant.
-
-“Existing files fail this rule” is never sufficient justification for changing the configuration. For every post-audit change, state which allowed reason applies and update the recorded evidence when relevant.
-
 ## Completion Report
 
 When handing off the configuration, report:
 
 - Every inferred convention and its evidence ratio, such as 10 of 12 instances.
 - Representative conforming examples.
-- Representative violations surfaced by the audit.
+- Representative violations surfaced by the audit, or an explicit statement that none were found.
 - Ambiguous candidate patterns that were intentionally skipped.
 - Every exclusion and the semantic reason it is outside the convention's cohort.
 
