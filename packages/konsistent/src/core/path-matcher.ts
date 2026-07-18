@@ -179,33 +179,100 @@ function mergeExtracted(opts: {
   return true;
 }
 
+interface SegmentMatchResult {
+  allConstraints: Record<string, string>;
+  extracted: Record<string, string>;
+}
+
+function matchSegmentsRecursive(opts: {
+  patternSegments: string[];
+  pathSegments: string[];
+  pi: number;
+  si: number;
+  extracted: Record<string, string>;
+  allConstraints: Record<string, string>;
+}): SegmentMatchResult | null {
+  const { patternSegments, pathSegments, pi, si, extracted, allConstraints } =
+    opts;
+
+  if (pi === patternSegments.length) {
+    return si === pathSegments.length ? { extracted, allConstraints } : null;
+  }
+
+  const patternSegment = patternSegments[pi];
+
+  // `**` matches zero or more whole path segments (unlike every other
+  // segment kind here, which consumes exactly one). Greedily try the
+  // longest consumption first, backtracking down to zero — konsistent's
+  // `paths` patterns never place two `**` segments in one pattern, so this
+  // never needs to explore more than one `**` per call, keeping it linear
+  // in practice despite the backtracking loop.
+  if (patternSegment === "**") {
+    for (let consumed = pathSegments.length - si; consumed >= 0; consumed--) {
+      const result = matchSegmentsRecursive({
+        patternSegments,
+        pathSegments,
+        pi: pi + 1,
+        si: si + consumed,
+        extracted,
+        allConstraints,
+      });
+      if (result !== null) {
+        return result;
+      }
+    }
+    return null;
+  }
+
+  if (si >= pathSegments.length) {
+    return null;
+  }
+
+  const segmentResult = extractValueFromSegment({
+    patternSegment,
+    pathSegment: pathSegments[si],
+  });
+  if (segmentResult === null) {
+    return null;
+  }
+
+  const nextExtracted = { ...extracted };
+  if (
+    !mergeExtracted({ existing: nextExtracted, incoming: segmentResult.values })
+  ) {
+    return null;
+  }
+  const nextConstraints = { ...allConstraints, ...segmentResult.constraints };
+
+  return matchSegmentsRecursive({
+    patternSegments,
+    pathSegments,
+    pi: pi + 1,
+    si: si + 1,
+    extracted: nextExtracted,
+    allConstraints: nextConstraints,
+  });
+}
+
 function tryExtractPlaceholders(opts: {
   pattern: string;
   pathSegments: string[];
 }): Record<string, string> | null {
   const { pattern, pathSegments } = opts;
   const patternSegments = pattern.split("/");
-  if (patternSegments.length !== pathSegments.length) {
+
+  const matched = matchSegmentsRecursive({
+    patternSegments,
+    pathSegments,
+    pi: 0,
+    si: 0,
+    extracted: {},
+    allConstraints: {},
+  });
+  if (matched === null) {
     return null;
   }
-
-  const extracted: Record<string, string> = {};
-  const allConstraints: Record<string, string> = {};
-  for (let i = 0; i < patternSegments.length; i++) {
-    const segmentResult = extractValueFromSegment({
-      patternSegment: patternSegments[i],
-      pathSegment: pathSegments[i],
-    });
-    if (segmentResult === null) {
-      return null;
-    }
-    if (
-      !mergeExtracted({ existing: extracted, incoming: segmentResult.values })
-    ) {
-      return null;
-    }
-    Object.assign(allConstraints, segmentResult.constraints);
-  }
+  const { extracted, allConstraints } = matched;
 
   if (
     !satisfiesConstraints({ values: extracted, constraints: allConstraints })

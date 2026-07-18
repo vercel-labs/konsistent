@@ -361,6 +361,88 @@ describe("matchPaths", () => {
     expect(results).toHaveLength(2);
   });
 
+  it("matches ** with zero, one, and many intermediate segments alongside a placeholder", async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        [
+          "app/**/*/routes.ts",
+          ["app/routes.ts", "app/admin/routes.ts", "app/admin/users/routes.ts"],
+        ],
+      ]),
+    });
+    const results = await matchPaths({
+      patterns: ["app/**/{segment}/routes.ts"],
+      fileSystem: fs,
+    });
+    // "app/routes.ts" has no segment before "routes.ts" for `{segment}` to
+    // capture, so `**` backtracking to zero still leaves the placeholder
+    // segment unsatisfied and the path is excluded.
+    expect(results).toHaveLength(2);
+    expect(results[0].placeholders.segment.toString()).toBe("admin");
+    expect(results[1].placeholders.segment.toString()).toBe("users");
+  });
+
+  it("matches ** with zero intermediate segments when nothing follows it", async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ["app/**/*.ts", ["app/routes.ts", "app/admin/routes.ts"]],
+      ]),
+    });
+    const results = await matchPaths({
+      patterns: ["app/**/{name}.ts"],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(2);
+    expect(results[0].placeholders.name.toString()).toBe("routes");
+    expect(results[1].placeholders.name.toString()).toBe("routes");
+  });
+
+  it("matches ** with many intermediate segments", async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        [
+          "app/**/*.ts",
+          ["app/admin/users/settings/routes.ts", "app/routes.ts"],
+        ],
+      ]),
+    });
+    const results = await matchPaths({
+      patterns: ["app/**/{name}.ts"],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(2);
+    expect(results[0].placeholders.name.toString()).toBe("routes");
+    expect(results[1].placeholders.name.toString()).toBe("routes");
+  });
+
+  it("rejects a path that doesn't satisfy a literal segment after **", async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ["app/**/*.ts", ["app/admin/other.txt", "app/admin/routes.ts"]],
+      ]),
+    });
+    const results = await matchPaths({
+      patterns: ["app/**/{name}.ts"],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(1);
+    expect(results[0].path).toBe("app/admin/routes.ts");
+  });
+
+  it("still enforces exact segment count when the pattern has no **", async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ["packages/*/src", ["packages/openai", "packages/openai/src"]],
+      ]),
+    });
+    const results = await matchPaths({
+      patterns: ["packages/{name}/src"],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(1);
+    expect(results[0].path).toBe("packages/openai/src");
+  });
+
   it("unconstrained placeholders still work normally", async () => {
     const fs = createMockFileSystem({
       globResults: new Map([
