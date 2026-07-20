@@ -1,5 +1,13 @@
 # konsistent
 
+## 1.0.0-beta.4
+
+### Patch Changes
+
+- 8455569: feat(konsistent): validate schemas for declared and exported type definitions
+- Updated dependencies [8455569]
+  - @konsistent/convention@1.0.0-beta.4
+
 ## 1.0.0-beta.3
 
 ### Patch Changes

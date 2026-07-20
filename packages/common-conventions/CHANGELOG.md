@@ -1,5 +1,12 @@
 # @konsistent/common-conventions
 
+## 1.0.0-beta.4
+
+### Patch Changes
+
+- Updated dependencies [8455569]
+  - @konsistent/convention@1.0.0-beta.4
+
 ## 1.0.0-beta.3
 
 ### Patch Changes
