@@ -9,6 +9,8 @@ export type {
   ConstantScalarTypeV1,
   ConstantValueSchemaV1,
   ExportConstantDefinitionV1,
+  ExportTypeDefinitionV1,
+  TypeDefinitionV1,
 } from "./constant-schema.js";
 export {
   ConstantArraySchemaV1Schema,
@@ -19,6 +21,8 @@ export {
   ConstantScalarTypeV1Schema,
   ConstantValueSchemaV1Schema,
   ExportConstantDefinitionV1Schema,
+  ExportTypeDefinitionV1Schema,
+  TypeDefinitionV1Schema,
 } from "./constant-schema.js";
 export type {
   ClassDefinitionV1,

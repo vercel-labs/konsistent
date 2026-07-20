@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PredicateContext } from "../../core/context.js";
+import { parseFileStructure } from "../parser.js";
 import type { FileStructure } from "../types.js";
 import { checkExportTypes } from "./export-types.js";
 
@@ -233,5 +234,93 @@ describe("checkExportTypes", () => {
       conventionName: "type-exports",
     });
     expect(result[0].conventionName).toBe("type-exports");
+  });
+
+  it("validates a partial object schema for a local type export", () => {
+    const result = checkExportTypes({
+      expected: [
+        {
+          name: "ModuleSettings",
+          schema: {
+            type: "object",
+            properties: {
+              model: { type: "string" },
+              timeout: { type: "number" },
+            },
+          },
+        },
+      ],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source: `
+          export type ModuleSettings = {
+            model?: string;
+            timeout?: number;
+            reasoning?: "low" | "medium" | "high";
+          };
+        `,
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("reports a local exported type missing a configured property", () => {
+    const result = checkExportTypes({
+      expected: [
+        {
+          name: "ModuleSettings",
+          schema: {
+            type: "object",
+            properties: { timeout: { type: "number" } },
+          },
+        },
+      ],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source: "export type ModuleSettings = { model?: string };",
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe(
+      'Type "ModuleSettings" must define property "timeout"'
+    );
+  });
+
+  it("validates schemas for exported interfaces", () => {
+    const result = checkExportTypes({
+      expected: [
+        {
+          name: "Settings",
+          schema: {
+            type: "object",
+            properties: { enabled: { type: "boolean" } },
+          },
+        },
+      ],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source: "export interface Settings { enabled?: boolean }",
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("requires a local definition for schema-constrained re-exports", () => {
+    const result = checkExportTypes({
+      expected: [
+        {
+          name: "Settings",
+          schema: { type: "object", properties: {} },
+        },
+      ],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source: 'export type { Settings } from "./settings";',
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe(
+      'Type "Settings" must have a local type definition'
+    );
   });
 });

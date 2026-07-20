@@ -85,4 +85,25 @@ describe("konsistent.schema.json", () => {
     const valid = validate(config);
     expect(valid).toBe(false);
   });
+
+  it("rejects exportTypes entries with both from and schema", () => {
+    const valid = validate({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/settings.ts",
+          must: {
+            exportTypes: [
+              {
+                name: "Settings",
+                from: "./settings",
+                schema: { type: "object", properties: {} },
+              },
+            ],
+          },
+        },
+      ],
+    });
+    expect(valid).toBe(false);
+  });
 });

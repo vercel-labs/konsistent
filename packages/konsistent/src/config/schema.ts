@@ -16,6 +16,7 @@ export type {
   DeclarationDefinitionV1,
   ExportConstantDefinitionV1,
   ExportDefinitionV1,
+  ExportTypeDefinitionV1,
   FunctionDefinitionV1,
   ImportDefinitionV1,
   InterfaceDefinitionV1,
@@ -23,6 +24,7 @@ export type {
   MustPredicatesV1,
   ReusableConventionsPackageV1,
   ReusableConventionV1,
+  TypeDefinitionV1,
 } from "@konsistent/convention";
 export {
   ClassDefinitionV1Schema,
@@ -36,6 +38,7 @@ export {
   DeclarationDefinitionV1Schema,
   ExportConstantDefinitionV1Schema,
   ExportDefinitionV1Schema,
+  ExportTypeDefinitionV1Schema,
   FunctionDefinitionV1Schema,
   ImportDefinitionV1Schema,
   InterfaceDefinitionV1Schema,
@@ -43,6 +46,7 @@ export {
   MustPredicatesV1Schema,
   ReusableConventionsPackageV1Schema,
   ReusableConventionV1Schema,
+  TypeDefinitionV1Schema,
 } from "@konsistent/convention";
 
 const PlaceholdersMapSchema = z.record(

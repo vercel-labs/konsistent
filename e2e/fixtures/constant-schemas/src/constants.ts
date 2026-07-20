@@ -5,3 +5,4 @@ export const tags: readonly string[] = ["stable"];
 export const options: { endpoint: string; metadata?: unknown } = {
   endpoint: "https://example.com",
 };
+export const optionalOptions: { metadata?: unknown } = {};

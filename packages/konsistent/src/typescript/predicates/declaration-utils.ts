@@ -34,6 +34,19 @@ export function findDeclarationSymbol(opts: {
   );
 }
 
+export function findTypeDefinition(opts: {
+  fileStructure: FileStructure;
+  name: string;
+}) {
+  const { fileStructure, name } = opts;
+  return (
+    fileStructure.typeAliases.find((typeAlias) => typeAlias.name === name) ??
+    fileStructure.interfaces.find(
+      (interfaceInfo) => interfaceInfo.name === name
+    )
+  );
+}
+
 export function isDeclarationSymbolExported(opts: {
   fileStructure: FileStructure;
   symbol: DeclarationSymbolInfo;

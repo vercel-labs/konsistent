@@ -2,6 +2,8 @@ import { z } from "zod";
 import {
   ConstantDefinitionV1Schema,
   ExportConstantDefinitionV1Schema,
+  ExportTypeDefinitionV1Schema,
+  TypeDefinitionV1Schema,
 } from "./constant-schema.js";
 
 export const ExportDefinitionV1Schema = z.strictObject({
@@ -51,7 +53,7 @@ export const MustPredicatesV1Schema = z.strictObject({
   haveType: z.enum(["file", "directory"]).optional(),
   haveFiles: z.array(z.string()).optional(),
   declareTypes: z
-    .array(z.union([z.string(), DeclarationDefinitionV1Schema]))
+    .array(z.union([z.string(), TypeDefinitionV1Schema]))
     .optional(),
   declareConstants: z
     .array(z.union([z.string(), ConstantDefinitionV1Schema]))
@@ -67,7 +69,7 @@ export const MustPredicatesV1Schema = z.strictObject({
     .optional(),
   export: z.array(z.union([z.string(), ExportDefinitionV1Schema])).optional(),
   exportTypes: z
-    .array(z.union([z.string(), ExportDefinitionV1Schema]))
+    .array(z.union([z.string(), ExportTypeDefinitionV1Schema]))
     .optional(),
   exportConstants: z
     .array(z.union([z.string(), ExportConstantDefinitionV1Schema]))

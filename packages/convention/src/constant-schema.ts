@@ -106,6 +106,19 @@ export const ExportConstantDefinitionV1Schema = z.strictObject({
   schema: ConstantValueSchemaV1Schema.optional(),
 });
 
+export const TypeDefinitionV1Schema = z.strictObject({
+  name: z.string(),
+  schema: ConstantValueSchemaV1Schema.optional(),
+});
+
+export const ExportTypeDefinitionV1Schema = z.union([
+  TypeDefinitionV1Schema,
+  z.strictObject({
+    name: z.string(),
+    from: z.string(),
+  }),
+]);
+
 export type ConstantScalarTypeV1 = z.infer<typeof ConstantScalarTypeV1Schema>;
 export type ConstantScalarSchemaV1 = z.infer<
   typeof ConstantScalarSchemaV1Schema
@@ -119,4 +132,8 @@ export type ConstantValueSchemaV1 = z.infer<typeof ConstantValueSchemaV1Schema>;
 export type ConstantDefinitionV1 = z.infer<typeof ConstantDefinitionV1Schema>;
 export type ExportConstantDefinitionV1 = z.infer<
   typeof ExportConstantDefinitionV1Schema
+>;
+export type TypeDefinitionV1 = z.infer<typeof TypeDefinitionV1Schema>;
+export type ExportTypeDefinitionV1 = z.infer<
+  typeof ExportTypeDefinitionV1Schema
 >;

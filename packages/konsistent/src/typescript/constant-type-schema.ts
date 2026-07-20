@@ -44,6 +44,8 @@ export type ConstantTypeInfo =
   | ConstantObjectTypeInfo
   | UnsupportedConstantTypeInfo;
 
+export type TypeShapeInfo = ConstantTypeInfo;
+
 export interface ConstantSchemaMatchResult {
   matches: boolean;
   reason?: string;
@@ -162,13 +164,14 @@ function getPropertyName(name: ts.PropertyName): string | undefined {
   return;
 }
 
-function parseObjectType(
-  node: ts.TypeLiteralNode
-): ConstantObjectTypeInfo | undefined {
+function parseObjectType(opts: {
+  members: ts.NodeArray<ts.TypeElement>;
+}): ConstantObjectTypeInfo | undefined {
+  const { members } = opts;
   const properties: ConstantObjectPropertyTypeInfo[] = [];
   const names = new Set<string>();
 
-  for (const member of node.members) {
+  for (const member of members) {
     if (!(ts.isPropertySignature(member) && member.name)) {
       return;
     }
@@ -188,7 +191,7 @@ function parseObjectType(
   return { kind: "object", properties };
 }
 
-export function parseConstantTypeAnnotation(opts: {
+export function parseTypeShape(opts: {
   node: ts.TypeNode | undefined;
 }): ConstantTypeInfo | undefined {
   const { node } = opts;
@@ -212,10 +215,22 @@ export function parseConstantTypeAnnotation(opts: {
   }
 
   if (ts.isTypeLiteralNode(node)) {
-    return parseObjectType(node) ?? { kind: "unsupported" };
+    return (
+      parseObjectType({ members: node.members }) ?? { kind: "unsupported" }
+    );
   }
 
   return { kind: "unsupported" };
+}
+
+export function parseInterfaceTypeShape(opts: {
+  node: ts.InterfaceDeclaration;
+}): ConstantTypeInfo {
+  const { node } = opts;
+  if (node.heritageClauses?.length) {
+    return { kind: "unsupported" };
+  }
+  return parseObjectType({ members: node.members }) ?? { kind: "unsupported" };
 }
 
 function scalarValueKey(value: ConstantScalarValue): string {
@@ -269,29 +284,34 @@ function matchObjectSchema(opts: {
   const actualProperties = new Map(
     actual.properties.map((property) => [property.name, property])
   );
+  const requiredProperties = new Set(schema.required ?? []);
 
-  for (const name of schema.required ?? []) {
+  for (const [name, propertySchema] of Object.entries(schema.properties)) {
     const property = actualProperties.get(name);
     if (!property) {
       return {
         matches: false,
-        reason: `must have required property "${name}"`,
+        reason: requiredProperties.has(name)
+          ? `must have required property "${name}"`
+          : `must define property "${name}"`,
       };
     }
-    if (property.optional) {
+    if (requiredProperties.has(name) && property.optional) {
       return {
         matches: false,
         reason: `property "${name}" must not be optional`,
       };
     }
-  }
-
-  for (const [name, propertySchema] of Object.entries(schema.properties)) {
-    const property = actualProperties.get(name);
-    if (!(property && Object.hasOwn(propertySchema, "type"))) {
-      continue;
+    if (!(requiredProperties.has(name) || property.optional)) {
+      return {
+        matches: false,
+        reason: `property "${name}" must be optional`,
+      };
     }
-    if (property.scalarType !== propertySchema.type) {
+    if (
+      Object.hasOwn(propertySchema, "type") &&
+      property.scalarType !== propertySchema.type
+    ) {
       return {
         matches: false,
         reason: `property "${name}" must be of type "${propertySchema.type}"`,
@@ -314,16 +334,18 @@ function matchObjectSchema(opts: {
   return { matches: true };
 }
 
-export function matchConstantTypeSchema(opts: {
+function matchTypeSchema(opts: {
   actual: ConstantTypeInfo | undefined;
+  missingReason: string;
   schema: ConstantValueSchemaV1;
+  unsupportedReason: string;
 }): ConstantSchemaMatchResult {
-  const { actual, schema } = opts;
+  const { actual, missingReason, schema, unsupportedReason } = opts;
   if (!actual) {
-    return { matches: false, reason: "must have an explicit type annotation" };
+    return { matches: false, reason: missingReason };
   }
   if (actual.kind === "unsupported") {
-    return { matches: false, reason: "uses an unsupported type annotation" };
+    return { matches: false, reason: unsupportedReason };
   }
   if (Object.hasOwn(schema, "enum")) {
     return matchEnumSchema({ actual, schema });
@@ -344,4 +366,26 @@ export function matchConstantTypeSchema(opts: {
     return { matches: false, reason: `must be of type "${schema.type}"` };
   }
   return { matches: true };
+}
+
+export function matchConstantTypeSchema(opts: {
+  actual: ConstantTypeInfo | undefined;
+  schema: ConstantValueSchemaV1;
+}): ConstantSchemaMatchResult {
+  return matchTypeSchema({
+    ...opts,
+    missingReason: "must have an explicit type annotation",
+    unsupportedReason: "uses an unsupported type annotation",
+  });
+}
+
+export function matchTypeDefinitionSchema(opts: {
+  actual: ConstantTypeInfo | undefined;
+  schema: ConstantValueSchemaV1;
+}): ConstantSchemaMatchResult {
+  return matchTypeSchema({
+    ...opts,
+    missingReason: "must have a local type definition",
+    unsupportedReason: "uses an unsupported type definition",
+  });
 }

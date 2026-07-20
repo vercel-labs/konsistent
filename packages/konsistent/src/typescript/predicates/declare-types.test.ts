@@ -53,4 +53,58 @@ describe("checkDeclareTypes", () => {
     );
     expect(result[0].predicateName).toBe("declareTypes");
   });
+
+  it("validates schemas for local type aliases and interfaces", () => {
+    const result = checkDeclareTypes({
+      expected: [
+        {
+          name: "Settings",
+          schema: {
+            type: "object",
+            properties: { model: { type: "string" } },
+          },
+        },
+        {
+          name: "Options",
+          schema: {
+            type: "object",
+            properties: { enabled: { type: "boolean" } },
+          },
+        },
+      ],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({
+        source: [
+          "type Settings = { model?: string; extra?: number };",
+          "interface Options { enabled?: boolean }",
+        ].join("\n"),
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("reports schema mismatches for local type definitions", () => {
+    const result = checkDeclareTypes({
+      expected: [
+        {
+          name: "Settings",
+          schema: {
+            type: "object",
+            properties: { timeout: { type: "number" } },
+          },
+        },
+      ],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({
+        source: "type Settings = { model?: string };",
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      message: 'Type "Settings" must define property "timeout"',
+      predicateName: "declareTypes",
+      line: 1,
+      column: 1,
+    });
+  });
 });

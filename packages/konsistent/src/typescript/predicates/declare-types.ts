@@ -1,17 +1,21 @@
+import type { TypeDefinitionV1 } from "@konsistent/convention";
 import type { PredicateContext } from "../../core/context.js";
 import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
+import { createDiagnostic } from "../../core/diagnostics.js";
+import { matchTypeDefinitionSchema } from "../constant-type-schema.js";
 import type { FileStructure } from "../types.js";
 import {
   createExportedDeclarationDiagnostic,
   createMissingDeclarationDiagnostic,
   type DeclarationCheckContext,
   findDeclarationSymbol,
+  findTypeDefinition,
   isDeclarationSymbolExported,
   resolveDefinitionName,
 } from "./declaration-utils.js";
 
 export function checkDeclareTypes(opts: {
-  expected: (string | { name: string })[];
+  expected: (string | TypeDefinitionV1)[];
   context: PredicateContext;
   fileStructure: FileStructure;
   conventionName?: string;
@@ -27,6 +31,7 @@ export function checkDeclareTypes(opts: {
   };
 
   for (const entry of expected) {
+    const definition = typeof entry === "string" ? { name: entry } : entry;
     const resolvedName = resolveDefinitionName({ entry, context });
     const symbol = findDeclarationSymbol({
       fileStructure,
@@ -53,6 +58,31 @@ export function checkDeclareTypes(opts: {
           symbol,
         })
       );
+      continue;
+    }
+
+    if (definition.schema) {
+      const typeDefinition = findTypeDefinition({
+        fileStructure,
+        name: resolvedName,
+      });
+      const result = matchTypeDefinitionSchema({
+        actual: typeDefinition?.typeInfo,
+        schema: definition.schema,
+      });
+      if (!result.matches) {
+        diagnostics.push(
+          createDiagnostic({
+            filePath: context.path,
+            predicateName: "declareTypes",
+            message: `Type "${resolvedName}" ${result.reason}`,
+            conventionName,
+            line: typeDefinition?.pos.line ?? symbol.pos.line,
+            column: typeDefinition?.pos.column ?? symbol.pos.column,
+            severity,
+          })
+        );
+      }
     }
   }
 

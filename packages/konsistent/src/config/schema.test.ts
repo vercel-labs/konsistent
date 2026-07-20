@@ -95,7 +95,12 @@ describe("ConfigV1Schema", () => {
         {
           paths: "src/*.ts",
           must: {
-            declareTypes: [{ name: "LocalType" }],
+            declareTypes: [
+              {
+                name: "LocalType",
+                schema: { type: "object", properties: {} },
+              },
+            ],
             declareConstants: ["localConstant"],
             declareFunctions: [
               {
@@ -118,6 +123,27 @@ describe("ConfigV1Schema", () => {
       ],
     });
     expect(result.success).toBe(true);
+  });
+
+  it("rejects exportTypes entries with both from and schema", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          must: {
+            exportTypes: [
+              {
+                name: "Settings",
+                from: "./settings",
+                schema: { type: "object", properties: {} },
+              },
+            ],
+          },
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
   });
 
   it("accepts conventions with declaration order and import source predicates", () => {

@@ -4,6 +4,7 @@
   "plugins": ["./node_modules/@felixarntz/biome/rules/all.grit"],
   "files": {
     "includes": [
+      "!!packages/konsistent/konsistent.schema.json",
       "!**/e2e/fixtures",
       "!**/agent-artifacts",
       "!**/.pnpm-store",

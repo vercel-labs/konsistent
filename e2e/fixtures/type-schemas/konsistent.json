@@ -1,0 +1,34 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "type-schemas",
+      "paths": "src/types.ts",
+      "must": {
+        "declareTypes": [
+          {
+            "name": "InternalSettings",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean" }
+              }
+            }
+          }
+        ],
+        "exportTypes": [
+          {
+            "name": "ModuleSettings",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "model": { "type": "string" },
+                "timeout": { "type": "number" }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

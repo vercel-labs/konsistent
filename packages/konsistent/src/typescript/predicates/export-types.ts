@@ -1,10 +1,16 @@
+import type {
+  ExportTypeDefinitionV1,
+  TypeDefinitionV1,
+} from "@konsistent/convention";
 import type { PredicateContext } from "../../core/context.js";
 import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
 import { createDiagnostic } from "../../core/diagnostics.js";
+import { matchTypeDefinitionSchema } from "../constant-type-schema.js";
 import type { FileStructure } from "../types.js";
+import { findTypeDefinition } from "./declaration-utils.js";
 
 export function checkExportTypes(opts: {
-  expected: (string | { name: string; from?: string })[];
+  expected: (string | ExportTypeDefinitionV1)[];
   context: PredicateContext;
   fileStructure: FileStructure;
   conventionName?: string;
@@ -16,11 +22,11 @@ export function checkExportTypes(opts: {
   for (const entry of expected) {
     const definition = typeof entry === "string" ? { name: entry } : entry;
     const resolvedName = context.resolveTemplate(definition.name);
-    const resolvedFrom = definition.from
-      ? context.resolveTemplate(definition.from)
+    const resolvedFrom = Object.hasOwn(definition, "from")
+      ? context.resolveTemplate((definition as { from: string }).from)
       : undefined;
 
-    const found = fileStructure.exports.some(
+    const found = fileStructure.exports.find(
       (e) =>
         e.name === resolvedName &&
         e.isType &&
@@ -39,6 +45,34 @@ export function checkExportTypes(opts: {
           severity,
         })
       );
+      continue;
+    }
+
+    const schema = Object.hasOwn(definition, "schema")
+      ? (definition as TypeDefinitionV1).schema
+      : undefined;
+    if (schema) {
+      const typeDefinition = findTypeDefinition({
+        fileStructure,
+        name: resolvedName,
+      });
+      const result = matchTypeDefinitionSchema({
+        actual: typeDefinition?.typeInfo,
+        schema,
+      });
+      if (!result.matches) {
+        diagnostics.push(
+          createDiagnostic({
+            filePath: context.path,
+            predicateName: "exportTypes",
+            message: `Type "${resolvedName}" ${result.reason}`,
+            conventionName,
+            line: typeDefinition?.pos.line ?? found.pos.line,
+            column: typeDefinition?.pos.column ?? found.pos.column,
+            severity,
+          })
+        );
+      }
     }
   }
 

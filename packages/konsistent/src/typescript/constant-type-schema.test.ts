@@ -1,6 +1,9 @@
 import type { ConstantValueSchemaV1 } from "@konsistent/convention";
 import { describe, expect, it } from "vitest";
-import { matchConstantTypeSchema } from "./constant-type-schema.js";
+import {
+  matchConstantTypeSchema,
+  matchTypeDefinitionSchema,
+} from "./constant-type-schema.js";
 import { parseFileStructure } from "./parser.js";
 
 function getTypeInfo(opts: { type: string }) {
@@ -16,6 +19,21 @@ function matches(opts: {
     actual: getTypeInfo({ type: opts.type }),
     schema: opts.schema,
   }).matches;
+}
+
+function matchDefinition(opts: {
+  name: string;
+  schema: ConstantValueSchemaV1;
+  source: string;
+}) {
+  const fileStructure = parseFileStructure({ source: opts.source });
+  const definition =
+    fileStructure.typeAliases.find((item) => item.name === opts.name) ??
+    fileStructure.interfaces.find((item) => item.name === opts.name);
+  return matchTypeDefinitionSchema({
+    actual: definition?.typeInfo,
+    schema: opts.schema,
+  });
 }
 
 describe("constant type schemas", () => {
@@ -136,6 +154,38 @@ describe("constant type schemas", () => {
     );
   });
 
+  it("requires configured non-required properties to exist and be optional", () => {
+    const schema = {
+      type: "object" as const,
+      properties: { name: { type: "string" as const } },
+    };
+    expect(matches({ type: "{ name?: string }", schema })).toBe(true);
+    expect(matches({ type: "{}", schema })).toBe(false);
+    expect(matches({ type: "{ name: string }", schema })).toBe(false);
+  });
+
+  it("reports exact object property declaration mismatches", () => {
+    const schema = {
+      type: "object" as const,
+      properties: { name: { type: "string" as const } },
+    };
+    expect(
+      matchConstantTypeSchema({ actual: getTypeInfo({ type: "{}" }), schema })
+    ).toEqual({
+      matches: false,
+      reason: 'must define property "name"',
+    });
+    expect(
+      matchConstantTypeSchema({
+        actual: getTypeInfo({ type: "{ name: string }" }),
+        schema,
+      })
+    ).toEqual({
+      matches: false,
+      reason: 'property "name" must be optional',
+    });
+  });
+
   it("allows additional properties by default", () => {
     expect(
       matches({
@@ -168,6 +218,88 @@ describe("constant type schemas", () => {
     expect(result).toEqual({
       matches: false,
       reason: "must have an explicit type annotation",
+    });
+  });
+});
+
+describe("type definition schemas", () => {
+  const partialSettingsSchema = {
+    type: "object" as const,
+    properties: {
+      model: { type: "string" as const },
+      timeout: { type: "number" as const },
+    },
+  };
+
+  it("partially matches configured optional type alias properties", () => {
+    const result = matchDefinition({
+      name: "ModuleSettings",
+      schema: partialSettingsSchema,
+      source: `
+        type ModuleSettings = {
+          model?: string;
+          timeout?: number;
+          reasoning?: "low" | "medium" | "high";
+        };
+      `,
+    });
+    expect(result).toEqual({ matches: true });
+  });
+
+  it("rejects a type alias missing a configured optional property", () => {
+    const result = matchDefinition({
+      name: "ModuleSettings",
+      schema: partialSettingsSchema,
+      source: `
+        type ModuleSettings = {
+          model?: string;
+          reasoning?: "low" | "medium" | "high";
+        };
+      `,
+    });
+    expect(result).toEqual({
+      matches: false,
+      reason: 'must define property "timeout"',
+    });
+  });
+
+  it("matches directly declared interface properties", () => {
+    const result = matchDefinition({
+      name: "Settings",
+      schema: {
+        type: "object",
+        properties: { enabled: { type: "boolean" } },
+      },
+      source: "interface Settings { enabled?: boolean }",
+    });
+    expect(result).toEqual({ matches: true });
+  });
+
+  it.each([
+    "type Settings = BaseSettings;",
+    "interface Settings extends BaseSettings { enabled?: boolean }",
+    "interface Settings { run(): void }",
+  ])("rejects unsupported type definition %s", (source) => {
+    const result = matchDefinition({
+      name: "Settings",
+      schema: { type: "object", properties: {} },
+      source,
+    });
+    expect(result).toEqual({
+      matches: false,
+      reason: "uses an unsupported type definition",
+    });
+  });
+
+  it("requires a local type definition", () => {
+    expect(
+      matchTypeDefinitionSchema({
+        actual: undefined,
+        schema: { type: "object", properties: {} },
+      })
+    ).toEqual({
+      matches: false,
+      reason: "must have a local type definition",
     });
   });
 });
