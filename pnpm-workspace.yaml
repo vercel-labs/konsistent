@@ -25,6 +25,7 @@ catalog:
 
 overrides:
   esbuild: "catalog:"
+  "read-yaml-file@1>js-yaml": "3.15.0"
   vite: "catalog:"
 
 allowBuilds:
