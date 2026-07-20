@@ -45,7 +45,12 @@ describe("ReusableConventionV1Schema", () => {
       name: "locals",
       description: "Local declarations and import sources.",
       must: {
-        declareTypes: [{ name: "LocalType" }],
+        declareTypes: [
+          {
+            name: "LocalType",
+            schema: { type: "object", properties: {} },
+          },
+        ],
         declareConstants: ["localConstant"],
         declareFunctions: [
           {
@@ -71,6 +76,13 @@ describe("ReusableConventionV1Schema", () => {
         importTypesFromCurrentDir: true,
         importTypesFromParents: false,
         importTypesFromExternals: true,
+        exportTypes: [
+          { name: "PublicType", from: "./public" },
+          {
+            name: "LocalExport",
+            schema: { type: "object", properties: {} },
+          },
+        ],
       },
     });
     expect(result.success).toBe(true);

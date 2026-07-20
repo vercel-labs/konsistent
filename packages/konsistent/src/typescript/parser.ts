@@ -1,5 +1,8 @@
 import ts from "typescript";
-import { parseConstantTypeAnnotation } from "./constant-type-schema.js";
+import {
+  parseInterfaceTypeShape,
+  parseTypeShape,
+} from "./constant-type-schema.js";
 import type {
   ClassInfo,
   ConstantInfo,
@@ -419,7 +422,7 @@ function processVariableStatement(opts: {
       const pos = getPosition({ sourceFile, node });
       collector.constants.push({
         name: decl.name.getText(sourceFile),
-        typeInfo: parseConstantTypeAnnotation({ node: decl.type }),
+        typeInfo: parseTypeShape({ node: decl.type }),
         typeName: extractTypeAnnotation(decl.type),
         pos,
       });
@@ -442,6 +445,7 @@ function processDeclaration(opts: {
         clauses: node.heritageClauses,
         kind: ts.SyntaxKind.ExtendsKeyword,
       }),
+      typeInfo: parseInterfaceTypeShape({ node }),
       pos,
     });
   }
@@ -482,6 +486,7 @@ function processDeclaration(opts: {
     const pos = getPosition({ sourceFile, node });
     collector.typeAliases.push({
       name: node.name.getText(sourceFile),
+      typeInfo: parseTypeShape({ node: node.type }),
       pos,
     });
   }

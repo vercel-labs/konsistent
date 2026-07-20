@@ -96,10 +96,22 @@ All declaration predicates accept an array of bare strings or objects with a `na
 
 ### `declareTypes`
 
-Assert local type declarations. Interfaces and type aliases qualify.
+Assert local type declarations. Interfaces and type aliases qualify. An object
+entry can use `schema` to validate the local definition using the same supported
+shapes and declaration semantics as `exportTypes`.
 
 ```json
-"must": { "declareTypes": ["InternalConfig"] }
+"must": {
+  "declareTypes": [
+    {
+      "name": "InternalConfig",
+      "schema": {
+        "type": "object",
+        "properties": { "enabled": { "type": "boolean" } }
+      }
+    }
+  ]
+}
 ```
 
 ### `declareConstants`
@@ -194,7 +206,9 @@ When `from` is omitted, only the export's existence is checked. When `from` is s
 
 ### `exportTypes`
 
-Assert type-only exports. Both `export type X` and `export interface X` (when exported as a type via `export type { ... }`) match.
+Assert type-only exports. Exported type aliases and interfaces qualify. Use
+`from` to require a re-export, or use `schema` to validate a locally defined
+exported type.
 
 ```json
 "must": {
@@ -213,7 +227,32 @@ Assert type-only exports. Both `export type X` and `export interface X` (when ex
 }
 ```
 
-Same shape as `export`: bare string or `{ name, from? }`.
+```json
+"must": {
+  "exportTypes": [
+    {
+      "name": "ModuleSettings",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "model": { "type": "string" },
+          "timeout": { "type": "number" }
+        }
+      }
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `name` | string | The type name. Templates allowed. |
+| `from` | string | Optional. Require a type re-export from this module specifier. |
+| `schema` | object | Optional. Validate a locally declared type definition. |
+
+`from` and `schema` are mutually exclusive. Schema validation never resolves a
+type definition from another file. The `schema` field supports the same forms
+and declaration semantics documented under [`exportConstants`](#exportconstants).
 
 ### `exportConstants`
 
@@ -263,13 +302,13 @@ The supported `schema` forms are:
 - Scalar: `{ "type": "string" }`, using `string`, `number`, `boolean`, or `null`.
 - Enum: `{ "type": "string", "enum": ["a", "b"] }`. The annotation must contain exactly the configured literal values, although their order does not matter.
 - Array: `{ "type": "array", "items": { "type": "string" } }`. Items must use a scalar schema. `T[]`, `Array<T>`, `readonly T[]`, and `ReadonlyArray<T>` annotations qualify.
-- Object: `{ "type": "object", "properties": { ... }, "required": [...], "additionalProperties": false }`. An empty property schema (`{}`) checks only that the property is permitted or required; a scalar schema also checks its type.
+- Object: `{ "type": "object", "properties": { ... }, "required": [...], "additionalProperties": false }`. Every configured property must be declared. An empty property schema (`{}`) checks its presence and optionality without constraining its type; a scalar schema also checks its type.
 
-For object schemas, `required` defaults to an empty array and `additionalProperties` defaults to `true`. Required properties must be non-optional in the TypeScript annotation.
+Object schemas describe TypeScript declaration shapes rather than ordinary JSON Schema instances. Every name in `properties` must exist in the annotation or definition. Names listed in `required` must be non-optional (`name: Type`); all other configured names must be optional (`name?: Type`). `required` defaults to an empty array. `additionalProperties` defaults to `true`, allowing unconfigured TypeScript properties; set it to `false` to reject them.
 
 This is deliberately a strict subset of JSON Schema. Unsupported keywords and shapes are rejected during configuration validation, including `integer`, `$ref`, combinators, nested object or array schemas, tuple schemas, enum array items, schema-valued `additionalProperties`, and constraints such as `minItems`.
 
-Schema checks require an explicit annotation on a locally declared constant. Inferred types, named type aliases or interfaces, tuples, index signatures, methods, computed properties, nested types, and cross-file re-exports are not resolved. Enum values and property names inside `schema` are literal data and do not expand placeholders.
+Constant schema checks require an explicit annotation on a locally declared constant. Type schema checks require a local type alias or interface definition; interfaces with `extends` are unsupported. Inferred types, named type references, tuples, intersections, index signatures, methods, computed properties, nested types, inherited properties, and cross-file re-exports are not resolved. Enum values and property names inside `schema` are literal data and do not expand placeholders.
 
 ### `exportFunctions`
 

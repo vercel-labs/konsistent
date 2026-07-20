@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { ConstantValueSchemaV1Schema } from "./constant-schema.js";
+import {
+  ConstantValueSchemaV1Schema,
+  ExportTypeDefinitionV1Schema,
+  TypeDefinitionV1Schema,
+} from "./constant-schema.js";
 
 describe("ConstantValueSchemaV1Schema", () => {
   it.each([
@@ -50,5 +54,36 @@ describe("ConstantValueSchemaV1Schema", () => {
     { type: "string", oneOf: [{ type: "string" }] },
   ])("rejects unsupported schema %#", (schema) => {
     expect(ConstantValueSchemaV1Schema.safeParse(schema).success).toBe(false);
+  });
+});
+
+describe("type definition schemas", () => {
+  it("accepts schemas for local type definitions", () => {
+    expect(
+      TypeDefinitionV1Schema.safeParse({
+        name: "Settings",
+        schema: { type: "object", properties: {} },
+      }).success
+    ).toBe(true);
+  });
+
+  it.each([
+    { name: "Settings" },
+    { name: "Settings", from: "./settings" },
+    { name: "Settings", schema: { type: "object", properties: {} } },
+  ])("accepts exported type definition %#", (definition) => {
+    expect(ExportTypeDefinitionV1Schema.safeParse(definition).success).toBe(
+      true
+    );
+  });
+
+  it("rejects an exported type definition with both from and schema", () => {
+    expect(
+      ExportTypeDefinitionV1Schema.safeParse({
+        name: "Settings",
+        from: "./settings",
+        schema: { type: "object", properties: {} },
+      }).success
+    ).toBe(false);
   });
 });

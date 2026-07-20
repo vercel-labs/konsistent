@@ -397,6 +397,10 @@ describe("parseFileStructure", () => {
       expect(result.interfaces[0]).toMatchObject({
         name: "Foo",
         extends: [],
+        typeInfo: {
+          kind: "object",
+          properties: [{ name: "bar", optional: false, scalarType: "string" }],
+        },
       });
     });
 
@@ -411,6 +415,7 @@ describe("parseFileStructure", () => {
           { name: "Bar", typeArguments: [] },
           { name: "Baz", typeArguments: [] },
         ],
+        typeInfo: { kind: "unsupported" },
       });
     });
 
@@ -603,7 +608,26 @@ describe("parseFileStructure", () => {
         source: "type ID = string | number;",
       });
       expect(result.typeAliases).toHaveLength(1);
-      expect(result.typeAliases[0]).toMatchObject({ name: "ID" });
+      expect(result.typeAliases[0]).toMatchObject({
+        name: "ID",
+        typeInfo: { kind: "unsupported" },
+      });
+    });
+
+    it("extracts type alias shapes", () => {
+      const result = parseFileStructure({
+        source: "type Settings = { model?: string; timeout: number };",
+      });
+      expect(result.typeAliases[0]).toMatchObject({
+        name: "Settings",
+        typeInfo: {
+          kind: "object",
+          properties: [
+            { name: "model", optional: true, scalarType: "string" },
+            { name: "timeout", optional: false, scalarType: "number" },
+          ],
+        },
+      });
     });
   });
 

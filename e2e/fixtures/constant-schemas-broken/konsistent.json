@@ -33,6 +33,15 @@
               "required": ["endpoint"],
               "additionalProperties": false
             }
+          },
+          {
+            "name": "optionalOptions",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "metadata": {}
+              }
+            }
           }
         ]
       }

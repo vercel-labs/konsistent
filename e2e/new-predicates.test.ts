@@ -78,6 +78,35 @@ describe("constant-schemas-broken fixture", () => {
       expect(error.stdout).toContain(
         'Constant "options" must not have additional property "retries"'
       );
+      expect(error.stdout).toContain(
+        'Constant "optionalOptions" property "metadata" must be optional'
+      );
+    }
+  });
+});
+
+describe("type-schemas fixture", () => {
+  const cwd = resolve(fixturesDir, "type-schemas");
+
+  it("konsistent check exits 0 for partial type schema matches", async () => {
+    await expect(runCli({ cwd })).resolves.not.toThrow();
+  });
+});
+
+describe("type-schemas-broken fixture", () => {
+  const cwd = resolve(fixturesDir, "type-schemas-broken");
+
+  it("konsistent check exits 1 for a missing configured property", async () => {
+    try {
+      await runCli({ cwd });
+      expect.fail("Expected check to exit with code 1");
+    } catch (err: unknown) {
+      const error = err as { stdout: string; code: number; status: number };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain(
+        'Type "ModuleSettings" must define property "timeout"'
+      );
+      expect(error.stdout).toContain("type-schemas");
     }
   });
 });

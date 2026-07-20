@@ -67,6 +67,7 @@ export interface InterfaceInfo {
   extends: ExtendsClauseInfo[];
   name: string;
   pos: SourcePosition;
+  typeInfo?: TypeShapeInfo;
 }
 
 export interface ClassInfo {
@@ -98,6 +99,7 @@ export interface ConstantInfo {
 export interface TypeAliasInfo {
   name: string;
   pos: SourcePosition;
+  typeInfo?: TypeShapeInfo;
 }
 
 export type NonBarrelStatementKind =
@@ -127,4 +129,7 @@ export interface FileStructure {
   typeAliases: TypeAliasInfo[];
 }
 
-import type { ConstantTypeInfo } from "./constant-type-schema.js";
+import type {
+  ConstantTypeInfo,
+  TypeShapeInfo,
+} from "./constant-type-schema.js";

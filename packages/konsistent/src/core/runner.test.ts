@@ -251,6 +251,72 @@ describe("run", () => {
     expect(diagnostics).toEqual([]);
   });
 
+  it("forbids an exported type matching a mustNot schema", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/module.ts",
+          mustNot: {
+            exportTypes: [
+              {
+                name: "DebugSettings",
+                schema: {
+                  type: "object",
+                  properties: { enabled: { type: "boolean" } },
+                },
+              },
+            ],
+          },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
+      files: new Set(["src/module.ts"]),
+      fileContents: new Map([
+        ["src/module.ts", "export type DebugSettings = { enabled?: boolean };"],
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].predicateName).toBe("mustNot.exportTypes");
+    expect(diagnostics[0].message).toBe(
+      'Forbidden type export "DebugSettings"'
+    );
+  });
+
+  it("allows a mustNot exported type with different optionality", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/module.ts",
+          mustNot: {
+            exportTypes: [
+              {
+                name: "DebugSettings",
+                schema: {
+                  type: "object",
+                  properties: { enabled: { type: "boolean" } },
+                },
+              },
+            ],
+          },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
+      files: new Set(["src/module.ts"]),
+      fileContents: new Map([
+        ["src/module.ts", "export type DebugSettings = { enabled: boolean };"],
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
+  });
+
   it("returns no diagnostics when mustNot importFrom does not match a subpath", async () => {
     const config: ConfigV1 = {
       version: "v1",
