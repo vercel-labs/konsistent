@@ -1120,6 +1120,17 @@ describe("exclude-files-broken fixture", () => {
   });
 });
 
+describe("globstar-placeholder-backtracking fixture", () => {
+  const cwd = resolve(fixturesDir, "globstar-placeholder-backtracking");
+
+  it("konsistent check enforces a later valid globstar split", async () => {
+    await expect(runCli({ args: ["check"], cwd })).rejects.toMatchObject({
+      code: 1,
+      stdout: expect.stringContaining('Missing export "foo"'),
+    });
+  });
+});
+
 describe("placeholder-constraints fixture", () => {
   const cwd = resolve(fixturesDir, "placeholder-constraints");
 
