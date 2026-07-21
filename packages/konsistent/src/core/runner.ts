@@ -32,7 +32,7 @@ import type { Diagnostic, DiagnosticSeverity } from "./diagnostics.js";
 import { createDiagnostic } from "./diagnostics.js";
 import type { FileSystem } from "./filesystem.js";
 import type { MatchedPath } from "./path-matcher.js";
-import { matchPaths } from "./path-matcher.js";
+import { matchesPathPattern, matchPaths } from "./path-matcher.js";
 import { PlaceholderValue } from "./placeholder.js";
 import {
   parsePlaceholderConstraint,
@@ -189,6 +189,9 @@ function isFileExcluded(opts: {
   for (const pattern of excludeFiles) {
     const resolved = context.resolveTemplate(pattern);
     if (filePath === resolved || basename(filePath) === resolved) {
+      return true;
+    }
+    if (matchesPathPattern({ pattern: resolved, filePath })) {
       return true;
     }
   }

@@ -16,7 +16,7 @@
       "must": [
         {
           "for": { "files": "{testFile}.spec.ts" },
-          "excludeFiles": ["plugins/auth/helpers.spec.ts"],
+          "excludeFiles": ["**/helpers.spec.ts"],
           "must": {
             "export": ["describe"]
           }
