@@ -1,3 +1,7 @@
+import {
+  compileImportSourceConstraints,
+  doesImportSourceConstraintMatch,
+} from "@konsistent/convention";
 import type { PredicateContext } from "../../core/context.js";
 import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
 import { createDiagnostic } from "../../core/diagnostics.js";
@@ -21,6 +25,7 @@ export function checkExactImportSource(opts: {
   expected: string | string[];
   importKind?: ExactImportSourceKind;
   predicateName?: string;
+  selectorSyntax?: boolean;
   context: PredicateContext;
   fileStructure: FileStructure;
   conventionName?: string;
@@ -30,23 +35,69 @@ export function checkExactImportSource(opts: {
     expected,
     importKind = "value",
     predicateName = "importValuesFrom",
+    selectorSyntax = true,
     context,
     fileStructure,
     conventionName,
     severity,
   } = opts;
   const diagnostics: Diagnostic[] = [];
-  const expectedSources = typeof expected === "string" ? [expected] : expected;
+  const resolvedExpected =
+    typeof expected === "string"
+      ? resolveConfiguredSource({ source: expected, context, selectorSyntax })
+      : expected.map((source) =>
+          resolveConfiguredSource({ source, context, selectorSyntax })
+        );
+
+  if (selectorSyntax) {
+    const compiled = compileImportSourceConstraints({
+      expected: resolvedExpected,
+    });
+    if (!compiled.success) {
+      throw new Error(compiled.error);
+    }
+
+    for (const constraint of compiled.constraints) {
+      const found = fileStructure.importSources.find(
+        (importSource) =>
+          (importKind === "either" ||
+            importSource.isType === (importKind === "type")) &&
+          doesImportSourceConstraintMatch({
+            source: importSource.from,
+            constraint,
+          })
+      );
+
+      if (found) {
+        continue;
+      }
+
+      diagnostics.push(
+        createDiagnostic({
+          filePath: context.path,
+          predicateName,
+          message: `Missing ${importKind === "type" ? "type import" : "import"} from "${constraint.source}"`,
+          conventionName,
+          severity,
+        })
+      );
+    }
+    return diagnostics;
+  }
+
+  const expectedSources =
+    typeof resolvedExpected === "string"
+      ? [resolvedExpected]
+      : resolvedExpected;
 
   for (const source of expectedSources) {
-    const resolvedFrom = context.resolveTemplate(source);
     const found = fileStructure.importSources.find(
       (importSource) =>
         (importKind === "either" ||
           importSource.isType === (importKind === "type")) &&
         doesImportSourceMatch({
           from: importSource.from,
-          expected: resolvedFrom,
+          expected: source,
         })
     );
 
@@ -58,7 +109,7 @@ export function checkExactImportSource(opts: {
       createDiagnostic({
         filePath: context.path,
         predicateName,
-        message: `Missing ${importKind === "type" ? "type import" : "import"} from "${resolvedFrom}"`,
+        message: `Missing ${importKind === "type" ? "type import" : "import"} from "${source}"`,
         conventionName,
         severity,
       })
@@ -66,4 +117,15 @@ export function checkExactImportSource(opts: {
   }
 
   return diagnostics;
+}
+
+function resolveConfiguredSource(opts: {
+  source: string;
+  context: PredicateContext;
+  selectorSyntax: boolean;
+}): string {
+  if (opts.selectorSyntax && opts.source.startsWith("!")) {
+    return `!${opts.context.resolveTemplate(opts.source.slice(1))}`;
+  }
+  return opts.context.resolveTemplate(opts.source);
 }

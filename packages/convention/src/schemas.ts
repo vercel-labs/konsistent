@@ -5,6 +5,7 @@ import {
   ExportTypeDefinitionV1Schema,
   TypeDefinitionV1Schema,
 } from "./constant-schema.js";
+import { compileImportSourceConstraints } from "./import-source-selector.js";
 
 export const ExportDefinitionV1Schema = z.strictObject({
   name: z.string(),
@@ -59,6 +60,18 @@ const ExactImportSourcePredicateV1Schema = z.union([
   z.string(),
   z.array(z.string()),
 ]);
+const ImportSourceSelectorPredicateV1Schema =
+  ExactImportSourcePredicateV1Schema.superRefine((value, context) => {
+    const result = compileImportSourceConstraints({ expected: value });
+    if (result.success) {
+      return;
+    }
+    context.addIssue({
+      code: "custom",
+      message: result.error,
+      path: result.index === undefined ? [] : [result.index],
+    });
+  });
 
 export const MustPredicatesV1Schema = z.strictObject({
   haveType: z.enum(["file", "directory"]).optional(),
@@ -109,8 +122,8 @@ export const MustPredicatesV1Schema = z.strictObject({
     deprecated: true,
     description: "Use importValues instead.",
   }),
-  importValuesFrom: ExactImportSourcePredicateV1Schema.optional(),
-  importTypesFrom: ExactImportSourcePredicateV1Schema.optional(),
+  importValuesFrom: ImportSourceSelectorPredicateV1Schema.optional(),
+  importTypesFrom: ImportSourceSelectorPredicateV1Schema.optional(),
   /**
    * @deprecated Use importValuesFrom or importTypesFrom instead.
    */

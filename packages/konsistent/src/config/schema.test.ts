@@ -195,6 +195,66 @@ describe("ConfigV1Schema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("accepts nested import source selectors", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          must: {
+            importValuesFrom: [
+              "react",
+              "@ai-sdk/*",
+              "!@ai-sdk/harness/*",
+              "@ai-sdk/harness/bridge",
+            ],
+          },
+          mustNot: {
+            importTypesFrom: [
+              "@vendor/project/*",
+              "!@vendor/project/internal/*",
+              "@vendor/project/internal/public/*",
+            ],
+          },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects dangling import source exclusions", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          must: {
+            importValuesFrom: ["react", "!@ai-sdk/harness"],
+          },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects redundant overlapping import source constraints", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          mustNot: {
+            importTypesFrom: ["@ai-sdk/react", "@ai-sdk/*"],
+          },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
   it("rejects config with missing version", () => {
     const result = ConfigV1Schema.safeParse({
       conventions: [],

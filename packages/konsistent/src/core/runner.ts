@@ -1,4 +1,8 @@
 import { basename, dirname, join, posix } from "node:path";
+import {
+  compileImportSourceConstraints,
+  importSourceConstraintValue,
+} from "@konsistent/convention";
 import type {
   ConfigV1,
   MustBlockV1,
@@ -490,6 +494,7 @@ const TS_PREDICATE_HANDLERS: Record<
           expected: must.importFrom,
           importKind: "either",
           predicateName: "importFrom",
+          selectorSyntax: false,
           context,
           fileStructure,
           conventionName,
@@ -887,6 +892,28 @@ function buildMustNotChecks(opts: {
   for (const key of Object.keys(opts.mustNot)) {
     const value = opts.mustNot[key as keyof MustPredicatesV1];
     if (value === undefined) {
+      continue;
+    }
+    if (
+      Array.isArray(value) &&
+      (key === "importValuesFrom" || key === "importTypesFrom")
+    ) {
+      const compiled = compileImportSourceConstraints({
+        expected: value as string[],
+      });
+      if (!compiled.success) {
+        throw new Error(compiled.error);
+      }
+      for (const constraint of compiled.constraints) {
+        checks.push({
+          key,
+          predicate: buildSingletonPredicate({
+            key,
+            value: importSourceConstraintValue({ constraint }),
+          }),
+          value: constraint.source,
+        });
+      }
       continue;
     }
     if (Array.isArray(value) && ITEM_LEVEL_MUST_NOT_PREDICATES.has(key)) {

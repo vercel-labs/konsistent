@@ -391,6 +391,111 @@ describe("run", () => {
     ]);
   });
 
+  it("allows excluded value imports in a mustNot selector", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/module.ts",
+          mustNot: {
+            importValuesFrom: [
+              "@ai-sdk/*",
+              "!@ai-sdk/harness",
+              "!@ai-sdk/harness/*",
+              "@ai-sdk/harness/bridge",
+            ],
+          },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
+      files: new Set(["src/module.ts"]),
+      fileContents: new Map([
+        [
+          "src/module.ts",
+          [
+            "import { harness } from '@ai-sdk/harness';",
+            "import { testing } from '@ai-sdk/harness/testing';",
+          ].join("\n"),
+        ],
+      ]),
+    });
+
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
+  });
+
+  it("forbids selected and re-included value imports as one selector", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/module.ts",
+          mustNot: {
+            importValuesFrom: [
+              "@ai-sdk/*",
+              "!@ai-sdk/harness",
+              "!@ai-sdk/harness/*",
+              "@ai-sdk/harness/bridge",
+            ],
+          },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
+      files: new Set(["src/module.ts"]),
+      fileContents: new Map([
+        [
+          "src/module.ts",
+          [
+            "import { core } from '@ai-sdk/core';",
+            "import { bridge } from '@ai-sdk/harness/bridge';",
+          ].join("\n"),
+        ],
+      ]),
+    });
+
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].predicateName).toBe("mustNot.importValuesFrom");
+    expect(diagnostics[0].message).toBe('Forbidden import from "@ai-sdk/*"');
+  });
+
+  it("groups type import selectors while keeping exact constraints additive", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/module.ts",
+          mustNot: {
+            importTypesFrom: ["react", "@vendor/*", "!@vendor/allowed"],
+          },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
+      files: new Set(["src/module.ts"]),
+      fileContents: new Map([
+        [
+          "src/module.ts",
+          [
+            "import type { ReactNode } from 'react';",
+            "import type { Tool } from '@vendor/project';",
+          ].join("\n"),
+        ],
+      ]),
+    });
+
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics.map((diagnostic) => diagnostic.message)).toEqual([
+      'Forbidden type import from "react"',
+      'Forbidden type import from "@vendor/*"',
+    ]);
+  });
+
   it("applies block metadata to mustNot predicates", async () => {
     const config: ConfigV1 = {
       version: "v1",
