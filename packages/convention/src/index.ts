@@ -25,6 +25,19 @@ export {
   TypeDefinitionV1Schema,
 } from "./constant-schema.js";
 export type {
+  CompileImportSourceConstraintsResult,
+  ExactImportSourceConstraint,
+  ImportSourceConstraint,
+  ImportSourcePattern,
+  ImportSourceSelectorConstraint,
+  ImportSourceSelectorRule,
+} from "./import-source-selector.js";
+export {
+  compileImportSourceConstraints,
+  doesImportSourceConstraintMatch,
+  importSourceConstraintValue,
+} from "./import-source-selector.js";
+export type {
   ClassDefinitionV1,
   DeclarationDefinitionV1,
   ExportDefinitionV1,

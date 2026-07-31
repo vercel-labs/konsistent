@@ -93,6 +93,19 @@ describe("checkExactImportSource", () => {
     expect(result).toEqual([]);
   });
 
+  it("matches package roots and sub-entrypoints from a vendor", () => {
+    for (const source of ["@vendor/project", "@vendor/project/tools"]) {
+      const result = checkExactImportSource({
+        expected: "@vendor/*",
+        context: createMockContext({ path: "src/index.ts" }),
+        fileStructure: parseSource({
+          source: `import { value } from '${source}';`,
+        }),
+      });
+      expect(result).toEqual([]);
+    }
+  });
+
   it("does not match package roots with a trailing wildcard", () => {
     const result = checkExactImportSource({
       expected: "package/*",
@@ -223,6 +236,90 @@ describe("checkExactImportSource", () => {
     expect(result).toEqual([]);
   });
 
+  it("resolves template placeholders in selector exclusions", () => {
+    const result = checkExactImportSource({
+      expected: [
+        "@${vendor}/*",
+        "!@${vendor}/harness/*",
+        "@${vendor}/harness/bridge",
+      ],
+      context: createMockContext({
+        path: "src/index.ts",
+        placeholders: { vendor: { toString: () => "ai-sdk" } },
+      }),
+      fileStructure: parseSource({
+        source: "import { bridge } from '@ai-sdk/harness/bridge';",
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("accepts selected imports and rejects excluded imports", () => {
+    const expected = [
+      "@ai-sdk/*",
+      "!@ai-sdk/harness",
+      "!@ai-sdk/harness/*",
+      "@ai-sdk/harness/bridge",
+    ];
+    const context = createMockContext({ path: "src/index.ts" });
+
+    expect(
+      checkExactImportSource({
+        expected,
+        context,
+        fileStructure: parseSource({
+          source: "import { generate } from '@ai-sdk/core';",
+        }),
+      })
+    ).toEqual([]);
+    expect(
+      checkExactImportSource({
+        expected,
+        context,
+        fileStructure: parseSource({
+          source: "import { harness } from '@ai-sdk/harness';",
+        }),
+      }).map((diagnostic) => diagnostic.message)
+    ).toEqual(['Missing import from "@ai-sdk/*"']);
+    expect(
+      checkExactImportSource({
+        expected,
+        context,
+        fileStructure: parseSource({
+          source: "import { bridge } from '@ai-sdk/harness/bridge';",
+        }),
+      })
+    ).toEqual([]);
+  });
+
+  it("applies selectors only to imports of the requested kind", () => {
+    const expected = ["@vendor/*", "!@vendor/excluded"];
+    const context = createMockContext({ path: "src/index.ts" });
+
+    expect(
+      checkExactImportSource({
+        expected,
+        importKind: "type",
+        predicateName: "importTypesFrom",
+        context,
+        fileStructure: parseSource({
+          source: "import type { Tool } from '@vendor/project';",
+        }),
+      })
+    ).toEqual([]);
+    expect(
+      checkExactImportSource({
+        expected,
+        importKind: "type",
+        predicateName: "importTypesFrom",
+        context,
+        fileStructure: parseSource({
+          source: "import { tool } from '@vendor/project';",
+        }),
+      }).map((diagnostic) => diagnostic.message)
+    ).toEqual(['Missing type import from "@vendor/*"']);
+  });
+
   it("requires every import source in an array", () => {
     const result = checkExactImportSource({
       expected: ["react", "package/*"],
@@ -249,6 +346,24 @@ describe("checkExactImportSource", () => {
     expect(result.map((d) => d.message)).toEqual([
       'Missing import from "react"',
       'Missing import from "package"',
+    ]);
+  });
+
+  it("keeps exact entries and a wildcard selector as MUST-ALL constraints", () => {
+    const result = checkExactImportSource({
+      expected: ["react", "zod", "@ai-sdk/*", "!@ai-sdk/harness"],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({
+        source: [
+          "import React from 'react';",
+          "import { harness } from '@ai-sdk/harness';",
+        ].join("\n"),
+      }),
+    });
+
+    expect(result.map((diagnostic) => diagnostic.message)).toEqual([
+      'Missing import from "zod"',
+      'Missing import from "@ai-sdk/*"',
     ]);
   });
 

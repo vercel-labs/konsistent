@@ -12,8 +12,8 @@ const cliBinary = resolve(
 
 const fixturesDir = resolve(import.meta.dirname, "fixtures");
 
-function runCli(opts: { cwd: string }) {
-  return execFile("node", [cliBinary, "check"], {
+function runCli(opts: { cwd: string; args?: string[] }) {
+  return execFile("node", [cliBinary, ...(opts.args ?? ["check"])], {
     cwd: opts.cwd,
     env: { ...process.env, GITHUB_ACTIONS: "" },
   });
@@ -204,6 +204,45 @@ describe("import-values-and-types-from-broken fixture", () => {
       expect(error.stdout).toContain('Forbidden import from "package/*"');
       expect(error.stdout).toContain(
         'Forbidden type import from "types-package/*"'
+      );
+      expect(error.stdout).toContain('Missing import from "@vendor/*"');
+      expect(error.stdout).toContain(
+        'Missing type import from "@type-vendor/*"'
+      );
+      expect(error.stdout).toContain(
+        'Forbidden import from "@blocked-vendor/*"'
+      );
+      expect(error.stdout).toContain(
+        'Forbidden type import from "@blocked-types-vendor/*"'
+      );
+      expect(error.stdout).toContain('Missing import from "@ai-sdk/*"');
+      expect(error.stdout).toContain(
+        'Missing type import from "@vendor/project/*"'
+      );
+      expect(error.stdout).toContain('Forbidden import from "@ai-sdk/*"');
+      expect(error.stdout).toContain(
+        'Forbidden type import from "@vendor/project/*"'
+      );
+    }
+  });
+});
+
+describe("import-source-selectors-invalid fixture", () => {
+  const cwd = resolve(fixturesDir, "import-source-selectors-invalid");
+
+  it("fails konsistent validate for an unrelated exclusion", async () => {
+    try {
+      await runCli({ cwd, args: ["validate"] });
+      expect.fail("Expected validate to exit with code 1");
+    } catch (err: unknown) {
+      const error = err as {
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stderr).toContain(
+        'Import source pattern "react" must be strictly nested under wildcard selector "@ai-sdk/*"'
       );
     }
   });

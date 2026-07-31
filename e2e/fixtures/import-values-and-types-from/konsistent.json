@@ -28,6 +28,108 @@
       "name": "no-package-type-imports",
       "paths": "src/no-package-types.ts",
       "mustNot": { "importTypesFrom": "types-package/*" }
+    },
+    {
+      "name": "must-additive-value-imports",
+      "paths": "src/must-additive-values.ts",
+      "must": {
+        "importValuesFrom": [
+          "react",
+          "project/*",
+          "@vendor/*",
+          "@other/toolkit/*"
+        ]
+      }
+    },
+    {
+      "name": "must-additive-type-imports",
+      "paths": "src/must-additive-types.ts",
+      "must": {
+        "importTypesFrom": [
+          "type-react",
+          "type-project/*",
+          "@type-vendor/*",
+          "@types/toolkit/*"
+        ]
+      }
+    },
+    {
+      "name": "must-not-additive-value-imports",
+      "paths": "src/must-not-additive-values.ts",
+      "mustNot": {
+        "importValuesFrom": [
+          "blocked",
+          "blocked-project/*",
+          "@blocked-vendor/*",
+          "@blocked/toolkit/*"
+        ]
+      }
+    },
+    {
+      "name": "must-not-additive-type-imports",
+      "paths": "src/must-not-additive-types.ts",
+      "mustNot": {
+        "importTypesFrom": [
+          "blocked-types",
+          "blocked-type-project/*",
+          "@blocked-types-vendor/*",
+          "@blocked-types/toolkit/*"
+        ]
+      }
+    },
+    {
+      "name": "must-mixed-value-selector",
+      "paths": "src/must-mixed-value-selector.ts",
+      "must": {
+        "importValuesFrom": [
+          "react",
+          "zod",
+          "@ai-sdk/*",
+          "!@ai-sdk/harness",
+          "!@ai-sdk/harness/*",
+          "@ai-sdk/harness/bridge"
+        ]
+      }
+    },
+    {
+      "name": "must-mixed-type-selector",
+      "paths": "src/must-mixed-type-selector.ts",
+      "must": {
+        "importTypesFrom": [
+          "type-react",
+          "type-zod",
+          "@vendor/project/*",
+          "!@vendor/project/internal/*",
+          "@vendor/project/internal/public/*",
+          "!@vendor/project/internal/public/private"
+        ]
+      }
+    },
+    {
+      "name": "must-not-mixed-value-selector",
+      "paths": "src/must-not-mixed-value-selector.ts",
+      "mustNot": {
+        "importValuesFrom": [
+          "forbidden",
+          "@ai-sdk/*",
+          "!@ai-sdk/harness",
+          "!@ai-sdk/harness/*",
+          "@ai-sdk/harness/bridge"
+        ]
+      }
+    },
+    {
+      "name": "must-not-mixed-type-selector",
+      "paths": "src/must-not-mixed-type-selector.ts",
+      "mustNot": {
+        "importTypesFrom": [
+          "forbidden-types",
+          "@vendor/project/*",
+          "!@vendor/project/internal/*",
+          "@vendor/project/internal/public/*",
+          "!@vendor/project/internal/public/private"
+        ]
+      }
     }
   ]
 }
