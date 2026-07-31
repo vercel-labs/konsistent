@@ -16,10 +16,13 @@
     "konsistent-fixture-reusable-convention-unknown-source": "0.0.0"
   },
   "changesets": [
+    "four-wings-brake",
     "lucky-bees-fly",
     "ripe-places-rhyme",
     "salty-stamps-cover",
     "sunny-lights-obey",
-    "tame-buttons-rush"
+    "tame-buttons-rush",
+    "twenty-cameras-tan",
+    "whole-ideas-punch"
   ]
 }

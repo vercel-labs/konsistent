@@ -1,5 +1,17 @@
 # konsistent
 
+## 1.0.0-beta.5
+
+### Patch Changes
+
+- 81f7863: feat(konsistent): add nested source selector handling for both `importValuesFrom` and `importTypesFrom`
+- 949472f: feat(konsistent): split `importFrom` into `importValuesFrom` and `importTypesFrom` and rename existing bare import predicates to their `importValues*` equivalents for clarity and consistency
+- ed02f5c: feat(konsistent): support requiring aliases for value and type imports and exports
+- Updated dependencies [81f7863]
+- Updated dependencies [949472f]
+- Updated dependencies [ed02f5c]
+  - @konsistent/convention@1.0.0-beta.5
+
 ## 1.0.0-beta.4
 
 ### Patch Changes

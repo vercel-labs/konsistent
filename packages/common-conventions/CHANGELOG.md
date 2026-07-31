@@ -1,5 +1,14 @@
 # @konsistent/common-conventions
 
+## 1.0.0-beta.5
+
+### Patch Changes
+
+- Updated dependencies [81f7863]
+- Updated dependencies [949472f]
+- Updated dependencies [ed02f5c]
+  - @konsistent/convention@1.0.0-beta.5
+
 ## 1.0.0-beta.4
 
 ### Patch Changes
