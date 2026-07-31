@@ -86,7 +86,7 @@ Check if barrel files re-export from specific submodules:
 - Do `index.ts` files consistently re-export from a file whose name follows the directory name?
 - Do they re-export from a fixed set of submodules?
 
-This is the [`from`](../reference/predicates.md#export) field on `export` and `exportTypes`.
+This is the [`from`](../reference/predicates.md#exportvalues) field on `exportValues` and `exportTypes`.
 
 ### Conditional patterns
 
@@ -147,8 +147,8 @@ For every pattern you identify:
 - Path → glob with placeholders for the parts that vary.
 - Required files → `haveFiles`.
 - Local declarations → `declareTypes`, `declareConstants`, `declareFunctions`, `declareInterfaces`, `declareClasses`.
-- Exports → `export`, `exportTypes`, `exportConstants`, `exportFunctions`, `exportInterfaces`, `exportClasses`.
-- Imports → `import`, `importFrom`, `importTypes`, `importFromCurrentDir`, `importFromParents`, `importFromExternals`, `importTypesFromCurrentDir`, `importTypesFromParents`, `importTypesFromExternals`.
+- Exports → `exportValues`, `exportTypes`, `exportConstants`, `exportFunctions`, `exportInterfaces`, `exportClasses`.
+- Imports → `importValues`, `importTypes`, `importValuesFrom`, `importTypesFrom`, `importValuesFromCurrentDir`, `importValuesFromParents`, `importValuesFromExternals`, `importTypesFromCurrentDir`, `importTypesFromParents`, `importTypesFromExternals`.
 - Optional file conditions → `if.hasFile` blocks.
 - Subset-only rules → `if.placeholderSatisfies` with a `matches` or `segments` constraint.
 

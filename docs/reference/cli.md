@@ -96,7 +96,7 @@ Machine-readable JSON array. Each entry has the shape:
     "severity": "error",
     "conventionName": "must-export-and-more",
     "filePath": "packages/openai/src/index.ts",
-    "predicateName": "export",
+    "predicateName": "exportValues",
     "message": "Missing export \"openai\"",
     "line": 1
   }

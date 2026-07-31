@@ -26,7 +26,7 @@ The array form is a list of `MustBlock`s. Each block independently decides wheth
     {
       "if": { "hasFile": "index.test.tsx" },
       "for": { "files": "index.test.tsx" },
-      "must": { "import": [{ "name": "render", "from": "@/test-utils" }] }
+      "must": { "importValues": [{ "name": "render", "from": "@/test-utils" }] }
     },
     {
       "for": { "files": "*.stories.tsx" },
@@ -50,7 +50,7 @@ Switch from object to array form when you need:
   "if": { "hasFile": "index.test.tsx" },
   "for": { "files": "index.test.tsx" },
   "excludeFiles": ["components/legacy/**"],
-  "must": { "import": [{ "name": "render", "from": "@/test-utils" }] },
+  "must": { "importValues": [{ "name": "render", "from": "@/test-utils" }] },
   "mustNot": { "exportConstants": ["debug"] }
 }
 ```
@@ -76,7 +76,7 @@ Block applies only when the named file exists at (or relative to) the matched pa
     {
       "if": { "hasFile": "index.test.tsx" },
       "for": { "files": "index.test.tsx" },
-      "must": { "import": [{ "name": "render", "from": "@/test-utils" }] }
+      "must": { "importValues": [{ "name": "render", "from": "@/test-utils" }] }
     }
   ]
 }
@@ -120,7 +120,7 @@ For `components/Button`, the block runs once per `*.stories.tsx` file inside `Bu
   "must": [
     {
       "for": { "files": ["*.test.ts", "*.spec.ts"] },
-      "must": { "import": [{ "name": "createTestContext", "from": "@/test-utils" }] }
+      "must": { "importValues": [{ "name": "createTestContext", "from": "@/test-utils" }] }
     }
   ]
 }
@@ -132,7 +132,7 @@ For `components/Button`, the block runs once per `*.stories.tsx` file inside `Bu
 {
   "if": { "hasFile": "index.test.tsx" },
   "for": { "files": "index.test.tsx" },
-  "must": { "import": [{ "name": "render", "from": "@/test-utils" }] }
+  "must": { "importValues": [{ "name": "render", "from": "@/test-utils" }] }
 }
 ```
 
@@ -150,7 +150,7 @@ At the convention level:
   "paths": "plugins/{pluginName}/index.ts",
   "excludeFiles": ["plugins/storage/index.ts"],
   "must": {
-    "export": ["activate"],
+    "exportValues": ["activate"],
     "exportConstants": ["pluginId"]
   }
 }
@@ -162,7 +162,7 @@ Inside a block:
 {
   "for": { "files": "*.spec.ts" },
   "excludeFiles": ["plugins/auth/helpers.spec.ts"],
-  "must": { "import": [{ "name": "createTestContext", "from": "@/test-utils" }] }
+  "must": { "importValues": [{ "name": "createTestContext", "from": "@/test-utils" }] }
 }
 ```
 
@@ -182,7 +182,7 @@ The optional `name` field on a block is shown in violation messages alongside th
       "name": "test-render-helper",
       "if": { "hasFile": "index.test.tsx" },
       "for": { "files": "index.test.tsx" },
-      "must": { "import": [{ "name": "render", "from": "@/test-utils" }] }
+      "must": { "importValues": [{ "name": "render", "from": "@/test-utils" }] }
     },
     {
       "name": "story-meta",

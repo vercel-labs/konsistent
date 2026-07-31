@@ -141,7 +141,7 @@ Prefix a pattern with `!` to exclude paths matched by other entries. Negation is
     "!packages/test-utils/src/index.ts"
   ],
   "must": {
-    "export": ["${packageName}"]
+    "exportValues": ["${packageName}"]
   }
 }
 ```
