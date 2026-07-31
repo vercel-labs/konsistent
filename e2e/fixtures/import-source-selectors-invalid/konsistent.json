@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "invalid-import-source-selector",
+      "paths": "src/index.ts",
+      "must": {
+        "importValuesFrom": ["@ai-sdk/*", "!react"]
+      }
+    }
+  ]
+}

@@ -425,11 +425,49 @@ Assert that the file has at least one value import from a specific module specif
 "must": { "importValuesFrom": ["./setup", "package/*"] }
 ```
 
-The value is a string or an array of strings. When an array is used in `must`, every entry must be satisfied.
+The value is a string or an array of strings. Independent array entries are additive: every entry must be satisfied in `must`, and every entry is forbidden in `mustNot`.
 
 By default, entries match exactly. For example, `"package"` only matches `import ... from "package"` and does not match `import ... from "package/v4"`.
 
-Use a trailing `/*` to match subpaths under a prefix. For example, `"package/*"` matches `"package/v4"`, and `"@scope/pkg/*"` matches `"@scope/pkg/subpath"`. The wildcard does not match the root itself, so `"package/*"` does not match `"package"`.
+Use a trailing `/*` to select import sources below a prefix:
+
+- `"@vendor/*"` matches every package from that vendor, including package sub-entrypoints such as `"@vendor/project/testing"`.
+- `"package/*"` matches unvendored package entrypoints such as `"package/v4"`, but not the package root `"package"`.
+- `"@vendor/package/*"` matches vendored package entrypoints such as `"@vendor/package/testing"`, but not the package root `"@vendor/package"`.
+
+Other wildcard positions are invalid.
+
+Within an array, negate part of a wildcard selector by prefixing a nested pattern with `!`:
+
+```json
+"must": {
+  "importValuesFrom": [
+    "react",
+    "zod",
+    "@ai-sdk/*",
+    "!@ai-sdk/harness"
+  ]
+}
+```
+
+This requires imports from `"react"`, `"zod"`, and any package from the `@ai-sdk` vendor except the exact `"@ai-sdk/harness"` package. The exact exclusion does not exclude harness entrypoints; use `"!@ai-sdk/harness/*"` to exclude those as well.
+
+Re-include a more specific part of an excluded wildcard branch with another positive pattern:
+
+```json
+"mustNot": {
+  "importValuesFrom": [
+    "@ai-sdk/*",
+    "!@ai-sdk/harness",
+    "!@ai-sdk/harness/*",
+    "@ai-sdk/harness/bridge"
+  ]
+}
+```
+
+This forbids imports from the `@ai-sdk` vendor, allows the harness package and its entrypoints, then forbids the exact bridge entrypoint again. `must` uses the same selected set but requires at least one matching import instead.
+
+Selector rules must be strictly nested and must change the preceding selector. Dangling or unrelated exclusions, redundant re-inclusions, and overlapping independent entries are invalid configurations. For example, `"@ai-sdk/react"` cannot be combined as an independent requirement with `"@ai-sdk/*"`.
 
 ### `importTypes`
 
@@ -453,7 +491,7 @@ Assert that the file has at least one type import from a specific module specifi
 "must": { "importTypesFrom": ["./types", "@scope/package/*"] }
 ```
 
-It uses the same string or string-array shape, exact matching, and trailing `/*` subpath matching as `importValuesFrom`. Value-only and side-effect imports do not count. A mixed statement such as `import { value, type Options } from "./module"` satisfies both `importValuesFrom` and `importTypesFrom`.
+It uses the same additive array behavior, trailing `/*` selectors, exclusions, and nested re-inclusions as `importValuesFrom`. Value-only and side-effect imports do not count. A mixed statement such as `import { value, type Options } from "./module"` satisfies both `importValuesFrom` and `importTypesFrom`.
 
 ### `importValuesFromCurrentDir`
 
