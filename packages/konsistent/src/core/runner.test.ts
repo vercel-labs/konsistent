@@ -317,13 +317,13 @@ describe("run", () => {
     expect(diagnostics).toEqual([]);
   });
 
-  it("returns no diagnostics when mustNot importFrom does not match a subpath", async () => {
+  it("returns no diagnostics when mustNot importValuesFrom does not match a subpath", async () => {
     const config: ConfigV1 = {
       version: "v1",
       conventions: [
         {
           paths: "src/module.ts",
-          mustNot: { importFrom: "package" },
+          mustNot: { importValuesFrom: "package" },
         },
       ],
     };
@@ -338,13 +338,13 @@ describe("run", () => {
     expect(diagnostics).toEqual([]);
   });
 
-  it("reports diagnostics when mustNot importFrom wildcard matches a subpath", async () => {
+  it("reports diagnostics when mustNot importValuesFrom wildcard matches a subpath", async () => {
     const config: ConfigV1 = {
       version: "v1",
       conventions: [
         {
           paths: "src/module.ts",
-          mustNot: { importFrom: "package/*" },
+          mustNot: { importValuesFrom: "package/*" },
         },
       ],
     };
@@ -357,17 +357,17 @@ describe("run", () => {
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
-    expect(diagnostics[0].predicateName).toBe("mustNot.importFrom");
+    expect(diagnostics[0].predicateName).toBe("mustNot.importValuesFrom");
     expect(diagnostics[0].message).toBe('Forbidden import from "package/*"');
   });
 
-  it("reports diagnostics per matching mustNot importFrom array item", async () => {
+  it("reports diagnostics per matching mustNot importValuesFrom array item", async () => {
     const config: ConfigV1 = {
       version: "v1",
       conventions: [
         {
           paths: "src/module.ts",
-          mustNot: { importFrom: ["react", "package/*", "never"] },
+          mustNot: { importValuesFrom: ["react", "package/*", "never"] },
         },
       ],
     };
@@ -1426,12 +1426,12 @@ describe("caching behavior", () => {
         {
           name: "convention-a",
           paths: "src/shared.ts",
-          must: { export: [{ name: "x" }] },
+          must: { exportValues: [{ name: "x" }] },
         },
         {
           name: "convention-b",
           paths: "src/shared.ts",
-          must: { export: [{ name: "x" }] },
+          must: { exportValues: [{ name: "x" }] },
         },
       ],
     };
@@ -1466,11 +1466,11 @@ describe("caching behavior", () => {
           must: [
             {
               for: { files: "*.ts" },
-              must: { export: [{ name: "x" }] },
+              must: { exportValues: [{ name: "x" }] },
             },
             {
               for: { files: "*.ts" },
-              must: { export: [{ name: "x" }] },
+              must: { exportValues: [{ name: "x" }] },
             },
           ],
         },

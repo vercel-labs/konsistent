@@ -20,7 +20,7 @@
             "files": "*/${providerId}-{modelKind:segments(1)}-model.ts"
           },
           "must": {
-            "export": [
+            "exportValues": [
               "${providerId.toPascalCase()}${modelKind.toPascalCase()}ModelConfig"
             ]
           }

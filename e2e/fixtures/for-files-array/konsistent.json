@@ -7,7 +7,7 @@
       "must": [
         {
           "for": { "files": ["*.test.tsx", "*.spec.tsx"] },
-          "must": { "export": ["describe"] }
+          "must": { "exportValues": ["describe"] }
         }
       ]
     }

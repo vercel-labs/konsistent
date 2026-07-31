@@ -34,7 +34,7 @@ Each violation has the shape:
   "severity": "error",
   "conventionName": "must-export-and-more",
   "filePath": "packages/openai/src/index.ts",
-  "predicateName": "export",
+  "predicateName": "exportValues",
   "message": "Missing export \"openai\""
 }
 ```
@@ -140,7 +140,7 @@ Search first: read the matched directory. Is the expected content present in a f
 
 Always check what *should* go in the file by reading sibling files matched by the same path pattern. If a clear template exists, the violation is trivial.
 
-#### `export` / `exportConstants`
+#### `exportValues` / `exportConstants`
 
 Message: `Missing export "X"` / `Missing export const "X"`.
 
@@ -214,21 +214,21 @@ Search first: grep for `X` and case/suffix variants. Also look for object factor
   - Adding `extends`/`implements` requires adding new methods or refactoring existing ones to match the contract.
   - Base class or interface does not exist after search.
 
-#### `import` / `importTypes` / `importFrom`
+#### `importValues` / `importTypes` / `importValuesFrom` / `importTypesFrom`
 
 Message: `Missing import "X" from "<module>"`, `Missing import type "X" from "<module>"`, or `Missing import from "<specifier>"`.
 
-Search first: confirm the export `X` exists at `<module>` for named-import rules, or that the target module specifier is already used by sibling files for `importFrom`. If not, find where `X` (or its variants) is currently imported from.
+Search first: confirm the export `X` exists at `<module>` for named-import rules, or that the target module specifier is already used by sibling files for `importValuesFrom` or `importTypesFrom`. If not, find where `X` (or its variants) is currently imported from.
 
 - **Trivial**:
   - Export exists at the specified module path → add the import statement.
   - Symbol is currently imported from a different path → change the import path.
-  - For `importFrom`, a sibling file imports from the same exact specifier, or from a subpath covered by a configured `/*` wildcard, for the same role → add the analogous import.
+  - For `importValuesFrom` or `importTypesFrom`, a sibling file uses the same import kind and exact specifier, or a subpath covered by a configured `/*` wildcard, for the same role → add the analogous import.
 - **Non-trivial**:
   - Export does not exist at the target path *and* the symbol does not exist anywhere. Usually cascades from a separate violation — fix that first; this one may resolve automatically.
-  - For `importFrom`, no sibling establishes why the dependency should exist. Adding a new dependency may be a design decision.
+  - For `importValuesFrom` or `importTypesFrom`, no sibling establishes why the dependency should exist. Adding a new dependency may be a design decision.
 
-If a single source file is missing an export and many consumers fail `import` rules pointing at it, fix the source once; consumers will then validate. Address the root cause, not the downstream symptoms.
+If a single module source is missing an export and many consumers fail `importValues` rules pointing at it, fix the source once; consumers will then validate. Address the root cause, not the downstream symptoms.
 
 ## 7. Decide on backwards-compatibility
 

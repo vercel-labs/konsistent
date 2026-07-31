@@ -1,0 +1,9 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "paths": "index.ts",
+      "must": { "importFrom": 123 }
+    }
+  ]
+}

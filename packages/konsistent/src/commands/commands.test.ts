@@ -31,6 +31,11 @@ const deprecatedFunctionParamPath = resolve(
   "../../../../e2e/fixtures/deprecated-function-param"
 );
 
+const deprecatedPredicatesPath = resolve(
+  import.meta.dirname,
+  "../../../../e2e/fixtures/deprecated-predicates"
+);
+
 afterEach(() => {
   vi.restoreAllMocks();
 });
@@ -41,6 +46,30 @@ describe("check command", () => {
     await expect(
       runCommand(checkCommand, { rawArgs: [] })
     ).resolves.not.toThrow();
+  });
+
+  it("warns for deprecated predicates without affecting JSON output or exit status", async () => {
+    vi.spyOn(process, "cwd").mockReturnValue(deprecatedPredicatesPath);
+    const exitSpy = vi
+      .spyOn(process, "exit")
+      .mockImplementation(() => undefined as never);
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(vi.fn());
+    const writeSpy = vi
+      .spyOn(process.stdout, "write")
+      .mockImplementation(() => true);
+
+    await runCommand(checkCommand, {
+      rawArgs: ["--format", "json", "--error-on-warnings"],
+    });
+
+    expect(exitSpy).not.toHaveBeenCalled();
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'Use "importValuesFrom" or "importTypesFrom" instead.'
+      )
+    );
+    const output = writeSpy.mock.calls.map((call) => call[0]).join("");
+    expect(() => JSON.parse(output)).not.toThrow();
   });
 });
 
@@ -156,6 +185,28 @@ describe("validate command", () => {
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining(
         "conventions[0].must.exportFunctions[0].receiveParamOfType"
+      )
+    );
+  });
+
+  it("warns without exiting for every deprecated predicate", async () => {
+    vi.spyOn(process, "cwd").mockReturnValue(deprecatedPredicatesPath);
+    const exitSpy = vi
+      .spyOn(process, "exit")
+      .mockImplementation(() => undefined as never);
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(vi.fn());
+    const logSpy = vi.spyOn(console, "log").mockImplementation(vi.fn());
+
+    await runCommand(validateCommand, { rawArgs: [] });
+
+    expect(exitSpy).not.toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Configuration is valid")
+    );
+    expect(warnSpy).toHaveBeenCalledTimes(6);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'Use "importValuesFrom" or "importTypesFrom" instead.'
       )
     );
   });

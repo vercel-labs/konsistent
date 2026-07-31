@@ -8,7 +8,7 @@
         {
           "if": { "hasFile": "${componentName}.test.tsx" },
           "for": { "files": "${componentName}.test.tsx" },
-          "must": { "export": ["describe"] }
+          "must": { "exportValues": ["describe"] }
         },
         {
           "for": { "files": "{storyFile}.stories.tsx" },

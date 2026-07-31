@@ -12,7 +12,7 @@
     {
       "paths": "plugins/{pluginName}/index.ts",
       "must": {
-        "export": ["activate", "deactivate"],
+        "exportValues": ["activate", "deactivate"],
         "exportConstants": ["pluginId"]
       }
     }

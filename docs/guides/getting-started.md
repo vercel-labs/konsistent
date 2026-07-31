@@ -75,7 +75,7 @@ Most useful conventions involve **placeholders** — captured parts of the path 
       "name": "package-barrels",
       "paths": "packages/{packageName}/src/index.ts",
       "must": {
-        "export": ["${packageName}"]
+        "exportValues": ["${packageName}"]
       }
     }
   ]

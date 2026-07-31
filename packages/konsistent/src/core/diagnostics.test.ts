@@ -37,7 +37,7 @@ describe("createDiagnostic", () => {
   it("defaults severity to error when not specified", () => {
     const d = createDiagnostic({
       filePath: "src/foo.ts",
-      predicateName: "export",
+      predicateName: "exportValues",
       message: "Missing export",
     });
     expect(d.severity).toBe("error");
@@ -46,7 +46,7 @@ describe("createDiagnostic", () => {
   it("creates a warning diagnostic when severity is warning", () => {
     const d = createDiagnostic({
       filePath: "src/foo.ts",
-      predicateName: "export",
+      predicateName: "exportValues",
       message: "Missing export",
       severity: "warning",
     });
@@ -56,7 +56,7 @@ describe("createDiagnostic", () => {
   it("creates an error diagnostic when severity is explicitly error", () => {
     const d = createDiagnostic({
       filePath: "src/foo.ts",
-      predicateName: "export",
+      predicateName: "exportValues",
       message: "Missing export",
       severity: "error",
     });

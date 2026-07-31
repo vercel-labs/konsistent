@@ -225,6 +225,47 @@ describe("deprecated-function-param fixture", () => {
   });
 });
 
+describe("deprecated-predicates fixture", () => {
+  const cwd = resolve(fixturesDir, "deprecated-predicates");
+
+  it("konsistent validate exits 0 and names every replacement", async () => {
+    const { stdout, stderr } = await runCli({ args: ["validate"], cwd });
+    expect(stdout).toContain("Configuration is valid");
+    expect(stderr).toContain('Use "exportValues" instead.');
+    expect(stderr).toContain('Use "importValues" instead.');
+    expect(stderr).toContain(
+      'Use "importValuesFrom" or "importTypesFrom" instead.'
+    );
+    expect(stderr).toContain('Use "importValuesFromCurrentDir" instead.');
+    expect(stderr).toContain('Use "importValuesFromParents" instead.');
+    expect(stderr).toContain('Use "importValuesFromExternals" instead.');
+  });
+
+  it("konsistent check keeps deprecations out of JSON and the exit code", async () => {
+    const { stdout, stderr } = await runCli({
+      args: ["check", "--format", "json", "--error-on-warnings"],
+      cwd,
+    });
+    expect(() => JSON.parse(stdout)).not.toThrow();
+    expect(stderr).toContain(
+      'Use "importValuesFrom" or "importTypesFrom" instead.'
+    );
+  });
+
+  it("konsistent validate rejects a malformed deprecated predicate", async () => {
+    await expect(
+      runCli({
+        args: [
+          "validate",
+          "--config-path",
+          resolve(cwd, "konsistent-invalid.json"),
+        ],
+        cwd,
+      })
+    ).rejects.toMatchObject({ code: 1 });
+  });
+});
+
 describe("ai-toolkit-broken-exports fixture", () => {
   const cwd = resolve(fixturesDir, "ai-toolkit-broken-exports");
 
@@ -485,7 +526,7 @@ describe("monorepo-with-negation-broken fixture", () => {
       expect(parsed[0]).toMatchObject({
         severity: "error",
         conventionName: "package-barrel-exports",
-        predicateName: "export",
+        predicateName: "exportValues",
         message: 'Missing export "cli"',
       });
       expect(parsed[0].filePath).toContain("packages/cli/src/index.ts");

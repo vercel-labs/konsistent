@@ -10,12 +10,61 @@ const schema = JSON.parse(readFileSync(schemaPath, "utf-8"));
 const ajv = new Ajv();
 const validate = ajv.compile(schema);
 
+function collectDeprecatedPropertySchemas(opts: {
+  value: unknown;
+  into?: Record<string, unknown>[];
+}): Record<string, unknown>[] {
+  const into = opts.into ?? [];
+  if (Array.isArray(opts.value)) {
+    for (const value of opts.value) {
+      collectDeprecatedPropertySchemas({ value, into });
+    }
+    return into;
+  }
+  if (!(opts.value && typeof opts.value === "object")) {
+    return into;
+  }
+
+  const record = opts.value as Record<string, unknown>;
+  const properties = record.properties;
+  if (properties && typeof properties === "object") {
+    for (const property of Object.values(properties)) {
+      if (
+        property &&
+        typeof property === "object" &&
+        (property as Record<string, unknown>).deprecated === true
+      ) {
+        into.push(property as Record<string, unknown>);
+      }
+    }
+  }
+  for (const value of Object.values(record)) {
+    collectDeprecatedPropertySchemas({ value, into });
+  }
+  return into;
+}
+
 function readFixtureConfig(fixtureName: string): unknown {
   const configPath = resolve(fixturesDir, fixtureName, "konsistent.json");
   return JSON.parse(readFileSync(configPath, "utf-8"));
 }
 
 describe("konsistent.schema.json", () => {
+  it("marks legacy predicate properties as deprecated", () => {
+    const matches = collectDeprecatedPropertySchemas({ value: schema });
+    expect(matches.length).toBeGreaterThan(0);
+    expect(new Set(matches.map((match) => match.description))).toEqual(
+      new Set([
+        "Use exportValues instead.",
+        "Use importValues instead.",
+        "Use importValuesFrom or importTypesFrom instead.",
+        "Use importValuesFromCurrentDir instead.",
+        "Use importValuesFromParents instead.",
+        "Use importValuesFromExternals instead.",
+      ])
+    );
+  });
+
   it("is valid JSON Schema draft-07", () => {
     expect(schema.$schema).toBe("http://json-schema.org/draft-07/schema#");
   });

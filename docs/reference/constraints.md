@@ -81,7 +81,7 @@ chat_language           → 2 segments
         "files": "*/${providerId}-{modelKind:segments(1)}-model.ts"
       },
       "must": {
-        "export": [
+        "exportValues": [
           "${providerId.toPascalCase()}${modelKind.toPascalCase()}ModelConfig"
         ]
       }

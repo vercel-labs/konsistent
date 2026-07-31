@@ -13,7 +13,7 @@
       "name": "no-plugin-exports",
       "paths": "plugins/{pluginName}/index.ts",
       "mustNot": {
-        "export": ["activate", "deactivate"],
+        "exportValues": ["activate", "deactivate"],
         "exportConstants": ["pluginId"]
       }
     }

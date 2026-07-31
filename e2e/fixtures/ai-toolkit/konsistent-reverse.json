@@ -5,7 +5,7 @@
       "name": "no-provider-barrel-exports",
       "paths": "packages/{providerId}/src/index.ts",
       "mustNot": {
-        "export": ["${providerId}"],
+        "exportValues": ["${providerId}"],
         "exportTypes": [
           "${providerId.toPascalCase()}Provider",
           "${providerId.toPascalCase()}ProviderSettings"

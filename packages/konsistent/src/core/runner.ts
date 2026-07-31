@@ -13,16 +13,16 @@ import { checkDeclareConstants } from "../typescript/predicates/declare-constant
 import { checkDeclareFunctions } from "../typescript/predicates/declare-functions.js";
 import { checkDeclareInterfaces } from "../typescript/predicates/declare-interfaces.js";
 import { checkDeclareTypes } from "../typescript/predicates/declare-types.js";
-import { checkExport } from "../typescript/predicates/export.js";
 import { checkExportClasses } from "../typescript/predicates/export-classes.js";
 import { checkExportConstants } from "../typescript/predicates/export-constants.js";
 import { checkExportFunctions } from "../typescript/predicates/export-functions.js";
 import { checkExportInterfaces } from "../typescript/predicates/export-interfaces.js";
 import { checkExportTypes } from "../typescript/predicates/export-types.js";
-import { checkImport } from "../typescript/predicates/import.js";
-import { checkImportFrom } from "../typescript/predicates/import-from.js";
+import { checkExportValues } from "../typescript/predicates/export-values.js";
 import { checkImportSource } from "../typescript/predicates/import-source.js";
+import { checkExactImportSource } from "../typescript/predicates/import-source-exact.js";
 import { checkImportTypes } from "../typescript/predicates/import-types.js";
+import { checkImportValues } from "../typescript/predicates/import-values.js";
 import { checkUseDeclarationOrder } from "../typescript/predicates/use-declaration-order.js";
 import type { FileStructure } from "../typescript/types.js";
 import { toCamelCase, toPascalCase } from "./case-utils.js";
@@ -71,17 +71,24 @@ export const TS_PREDICATES = new Set([
   "declareClasses",
   "declareInterfaces",
   "export",
+  "exportValues",
   "exportTypes",
   "exportConstants",
   "exportFunctions",
   "exportClasses",
   "exportInterfaces",
   "import",
+  "importValues",
   "importFrom",
+  "importValuesFrom",
+  "importTypesFrom",
   "importTypes",
   "importFromCurrentDir",
   "importFromParents",
   "importFromExternals",
+  "importValuesFromCurrentDir",
+  "importValuesFromParents",
+  "importValuesFromExternals",
   "importTypesFromCurrentDir",
   "importTypesFromParents",
   "importTypesFromExternals",
@@ -322,10 +329,22 @@ const TS_PREDICATE_HANDLERS: Record<
           severity,
         })
       : [],
+  exportValues: ({ must, context, fileStructure, conventionName, severity }) =>
+    must.exportValues
+      ? checkExportValues({
+          expected: must.exportValues,
+          predicateName: "exportValues",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        })
+      : [],
   export: ({ must, context, fileStructure, conventionName, severity }) =>
     must.export
-      ? checkExport({
+      ? checkExportValues({
           expected: must.export,
+          predicateName: "export",
           context,
           fileStructure,
           conventionName,
@@ -406,21 +425,71 @@ const TS_PREDICATE_HANDLERS: Record<
           severity,
         })
       : [],
-  import: ({ must, context, fileStructure, conventionName, severity }) =>
-    must.import
-      ? checkImport({
-          expected: must.import,
+  importValues: ({ must, context, fileStructure, conventionName, severity }) =>
+    must.importValues
+      ? checkImportValues({
+          expected: must.importValues,
+          predicateName: "importValues",
           context,
           fileStructure,
           conventionName,
           severity,
         })
       : [],
+  import: ({ must, context, fileStructure, conventionName, severity }) =>
+    must.import
+      ? checkImportValues({
+          expected: must.import,
+          predicateName: "import",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        })
+      : [],
+  importValuesFrom: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.importValuesFrom === undefined
+      ? []
+      : checkExactImportSource({
+          expected: must.importValuesFrom,
+          importKind: "value",
+          predicateName: "importValuesFrom",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
+  importTypesFrom: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.importTypesFrom === undefined
+      ? []
+      : checkExactImportSource({
+          expected: must.importTypesFrom,
+          importKind: "type",
+          predicateName: "importTypesFrom",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
   importFrom: ({ must, context, fileStructure, conventionName, severity }) =>
     must.importFrom === undefined
       ? []
-      : checkImportFrom({
+      : checkExactImportSource({
           expected: must.importFrom,
+          importKind: "either",
+          predicateName: "importFrom",
           context,
           fileStructure,
           conventionName,
@@ -436,6 +505,25 @@ const TS_PREDICATE_HANDLERS: Record<
           severity,
         })
       : [],
+  importValuesFromCurrentDir: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.importValuesFromCurrentDir === undefined
+      ? []
+      : checkImportSource({
+          expected: must.importValuesFromCurrentDir,
+          predicateName: "importValuesFromCurrentDir",
+          group: "currentDir",
+          importKind: "value",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
   importFromCurrentDir: ({
     must,
     context,
@@ -455,6 +543,25 @@ const TS_PREDICATE_HANDLERS: Record<
           conventionName,
           severity,
         }),
+  importValuesFromParents: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.importValuesFromParents === undefined
+      ? []
+      : checkImportSource({
+          expected: must.importValuesFromParents,
+          predicateName: "importValuesFromParents",
+          group: "parents",
+          importKind: "value",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
   importFromParents: ({
     must,
     context,
@@ -468,6 +575,25 @@ const TS_PREDICATE_HANDLERS: Record<
           expected: must.importFromParents,
           predicateName: "importFromParents",
           group: "parents",
+          importKind: "value",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
+  importValuesFromExternals: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.importValuesFromExternals === undefined
+      ? []
+      : checkImportSource({
+          expected: must.importValuesFromExternals,
+          predicateName: "importValuesFromExternals",
+          group: "externals",
           importKind: "value",
           context,
           fileStructure,
@@ -622,13 +748,17 @@ const ITEM_LEVEL_MUST_NOT_PREDICATES = new Set<string>([
   "declareFunctions",
   "declareInterfaces",
   "declareClasses",
+  "exportValues",
   "export",
   "exportTypes",
   "exportConstants",
   "exportFunctions",
   "exportInterfaces",
   "exportClasses",
+  "importValues",
   "import",
+  "importValuesFrom",
+  "importTypesFrom",
   "importFrom",
   "importTypes",
 ]);
@@ -675,6 +805,7 @@ function formatForbiddenMessage(opts: {
       return `Forbidden interface declaration "${name}"`;
     case "declareClasses":
       return `Forbidden class declaration "${name}"`;
+    case "exportValues":
     case "export":
       return `Forbidden export "${name}"`;
     case "exportTypes":
@@ -687,20 +818,27 @@ function formatForbiddenMessage(opts: {
       return `Forbidden interface export "${name}"`;
     case "exportClasses":
       return `Forbidden class export "${name}"`;
+    case "importValues":
     case "import":
       return `Forbidden import "${name}"`;
+    case "importValuesFrom":
     case "importFrom":
       return `Forbidden import from "${context.resolveTemplate(String(value))}"`;
+    case "importTypesFrom":
+      return `Forbidden type import from "${context.resolveTemplate(String(value))}"`;
     case "importTypes":
       return `Forbidden type import "${name}"`;
+    case "importValuesFromCurrentDir":
     case "importFromCurrentDir":
       return value === false
         ? "Missing import from current directory is not allowed"
         : "Forbidden import from current directory";
+    case "importValuesFromParents":
     case "importFromParents":
       return value === false
         ? "Missing import from parent directories is not allowed"
         : "Forbidden import from parent directories";
+    case "importValuesFromExternals":
     case "importFromExternals":
       return value === false
         ? "Missing import from external packages is not allowed"

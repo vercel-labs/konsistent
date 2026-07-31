@@ -1,0 +1,33 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "path-imports",
+      "paths": "src/path.ts",
+      "must": { "importValuesFrom": "./helper" }
+    },
+    {
+      "name": "package-imports",
+      "paths": "src/package.ts",
+      "must": {
+        "importValuesFrom": "react",
+        "importTypesFrom": "@scope/pkg/*"
+      }
+    },
+    {
+      "name": "no-react-imports",
+      "paths": "src/no-react.ts",
+      "mustNot": { "importValuesFrom": "react" }
+    },
+    {
+      "name": "no-package-root-imports",
+      "paths": "src/no-package-root.ts",
+      "mustNot": { "importValuesFrom": "package" }
+    },
+    {
+      "name": "no-package-type-imports",
+      "paths": "src/no-package-types.ts",
+      "mustNot": { "importTypesFrom": "types-package/*" }
+    }
+  ]
+}

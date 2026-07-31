@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { PredicateContext } from "../../core/context.js";
 import type { FileStructure } from "../types.js";
-import { checkExport } from "./export.js";
+import { checkExportValues } from "./export-values.js";
 
 function createMockContext(opts: {
   path: string;
@@ -41,9 +41,9 @@ function createMockFileStructure(opts: {
   };
 }
 
-describe("checkExport", () => {
+describe("checkExportValues", () => {
   it("returns no diagnostics when export is found", () => {
-    const result = checkExport({
+    const result = checkExportValues({
       expected: ["myFunc"],
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({
@@ -61,21 +61,21 @@ describe("checkExport", () => {
   });
 
   it("returns diagnostic when export is missing", () => {
-    const result = checkExport({
+    const result = checkExportValues({
       expected: ["missingExport"],
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({ exports: [] }),
     });
     expect(result).toHaveLength(1);
     expect(result[0].message).toBe('Missing export "missingExport"');
-    expect(result[0].predicateName).toBe("export");
+    expect(result[0].predicateName).toBe("exportValues");
     expect(result[0].filePath).toBe("src/index.ts");
     expect(result[0].line).toBeUndefined();
     expect(result[0].column).toBeUndefined();
   });
 
   it("resolves template placeholders in export names", () => {
-    const result = checkExport({
+    const result = checkExportValues({
       expected: ["${providerId}"],
       context: createMockContext({
         path: "src/index.ts",
@@ -96,7 +96,7 @@ describe("checkExport", () => {
   });
 
   it("returns diagnostic for template-expanded name when missing", () => {
-    const result = checkExport({
+    const result = checkExportValues({
       expected: ["${providerId}"],
       context: createMockContext({
         path: "src/index.ts",
@@ -109,7 +109,7 @@ describe("checkExport", () => {
   });
 
   it("accepts ExportDefinition object form", () => {
-    const result = checkExport({
+    const result = checkExportValues({
       expected: [{ name: "myConst" }],
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({
@@ -127,7 +127,7 @@ describe("checkExport", () => {
   });
 
   it("ignores type-only exports when checking", () => {
-    const result = checkExport({
+    const result = checkExportValues({
       expected: ["MyInterface"],
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({
@@ -146,7 +146,7 @@ describe("checkExport", () => {
   });
 
   it("returns no diagnostics when re-export with matching from is found", () => {
-    const result = checkExport({
+    const result = checkExportValues({
       expected: [{ name: "helper", from: "./utils" }],
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({
@@ -165,7 +165,7 @@ describe("checkExport", () => {
   });
 
   it("returns diagnostic when from does not match", () => {
-    const result = checkExport({
+    const result = checkExportValues({
       expected: [{ name: "helper", from: "./utils" }],
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({
@@ -185,7 +185,7 @@ describe("checkExport", () => {
   });
 
   it("resolves template placeholders in from", () => {
-    const result = checkExport({
+    const result = checkExportValues({
       expected: [{ name: "helper", from: "./${name}" }],
       context: createMockContext({
         path: "src/index.ts",
@@ -207,7 +207,7 @@ describe("checkExport", () => {
   });
 
   it("does not require from when not specified in object form", () => {
-    const result = checkExport({
+    const result = checkExportValues({
       expected: [{ name: "helper" }],
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({
@@ -226,7 +226,7 @@ describe("checkExport", () => {
   });
 
   it("includes conventionName when provided", () => {
-    const result = checkExport({
+    const result = checkExportValues({
       expected: ["missing"],
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({ exports: [] }),

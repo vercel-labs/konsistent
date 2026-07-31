@@ -5,9 +5,9 @@
       "name": "current-dir-imports",
       "paths": "src/current.ts",
       "must": {
-        "importFromCurrentDir": true,
-        "importFromParents": false,
-        "importFromExternals": false,
+        "importValuesFromCurrentDir": true,
+        "importValuesFromParents": false,
+        "importValuesFromExternals": false,
         "importTypesFromCurrentDir": true,
         "importTypesFromParents": false,
         "importTypesFromExternals": false
@@ -17,9 +17,9 @@
       "name": "parent-imports",
       "paths": "src/parent.ts",
       "must": {
-        "importFromCurrentDir": false,
-        "importFromParents": true,
-        "importFromExternals": false,
+        "importValuesFromCurrentDir": false,
+        "importValuesFromParents": true,
+        "importValuesFromExternals": false,
         "importTypesFromCurrentDir": false,
         "importTypesFromParents": true,
         "importTypesFromExternals": false
@@ -29,9 +29,9 @@
       "name": "external-imports",
       "paths": "src/external.ts",
       "must": {
-        "importFromCurrentDir": false,
-        "importFromParents": false,
-        "importFromExternals": true,
+        "importValuesFromCurrentDir": false,
+        "importValuesFromParents": false,
+        "importValuesFromExternals": true,
         "importTypesFromCurrentDir": false,
         "importTypesFromParents": false,
         "importTypesFromExternals": true

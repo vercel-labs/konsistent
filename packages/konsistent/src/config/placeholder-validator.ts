@@ -257,6 +257,13 @@ function collectUsagesInPredicates(opts: {
   }
 
   collectUsagesInDefinitionList({
+    list: predicates.exportValues,
+    key: `${prefix}.exportValues`,
+    objectFields: ["name", "from"],
+    declared,
+    usages,
+  });
+  collectUsagesInDefinitionList({
     list: predicates.export,
     key: `${prefix}.export`,
     objectFields: ["name", "from"],
@@ -303,26 +310,37 @@ function collectUsagesInPredicates(opts: {
     usages,
   });
   collectUsagesInDefinitionList({
+    list: predicates.importValues,
+    key: `${prefix}.importValues`,
+    objectFields: ["name", "from"],
+    declared,
+    usages,
+  });
+  collectUsagesInDefinitionList({
     list: predicates.import,
     key: `${prefix}.import`,
     objectFields: ["name", "from"],
     declared,
     usages,
   });
-  if (predicates.importFrom !== undefined) {
-    const importFrom =
-      typeof predicates.importFrom === "string"
-        ? [predicates.importFrom]
-        : predicates.importFrom;
-    for (const source of importFrom) {
-      pushStringUsages({
-        value: source,
-        key: `${prefix}.importFrom`,
-        declared,
-        usages,
-      });
-    }
-  }
+  collectImportFromUsages({
+    sources: predicates.importValuesFrom,
+    key: `${prefix}.importValuesFrom`,
+    declared,
+    usages,
+  });
+  collectImportFromUsages({
+    sources: predicates.importTypesFrom,
+    key: `${prefix}.importTypesFrom`,
+    declared,
+    usages,
+  });
+  collectImportFromUsages({
+    sources: predicates.importFrom,
+    key: `${prefix}.importFrom`,
+    declared,
+    usages,
+  });
   collectUsagesInDefinitionList({
     list: predicates.importTypes,
     key: `${prefix}.importTypes`,
@@ -330,6 +348,22 @@ function collectUsagesInPredicates(opts: {
     declared,
     usages,
   });
+}
+
+function collectImportFromUsages(opts: {
+  sources: string | string[] | undefined;
+  key: string;
+  declared: Set<string>;
+  usages: Usage[];
+}): void {
+  const { sources, key, declared, usages } = opts;
+  if (sources === undefined) {
+    return;
+  }
+  const entries = typeof sources === "string" ? [sources] : sources;
+  for (const source of entries) {
+    pushStringUsages({ value: source, key, declared, usages });
+  }
 }
 
 function collectUsagesInDefinitionList(opts: {

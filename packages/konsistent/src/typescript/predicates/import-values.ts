@@ -3,14 +3,22 @@ import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
 import { createDiagnostic } from "../../core/diagnostics.js";
 import type { FileStructure } from "../types.js";
 
-export function checkExport(opts: {
+export function checkImportValues(opts: {
   expected: (string | { name: string; from?: string })[];
+  predicateName?: "import" | "importValues";
   context: PredicateContext;
   fileStructure: FileStructure;
   conventionName?: string;
   severity?: DiagnosticSeverity;
 }): Diagnostic[] {
-  const { expected, context, fileStructure, conventionName, severity } = opts;
+  const {
+    expected,
+    predicateName = "importValues",
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  } = opts;
   const diagnostics: Diagnostic[] = [];
 
   for (const entry of expected) {
@@ -20,21 +28,19 @@ export function checkExport(opts: {
       ? context.resolveTemplate(definition.from)
       : undefined;
 
-    const found = fileStructure.exports.some(
-      (e) =>
-        e.name === resolvedName &&
-        !e.isType &&
-        (resolvedFrom === undefined || e.from === resolvedFrom)
+    const found = fileStructure.imports.some(
+      (i) =>
+        i.name === resolvedName &&
+        !i.isType &&
+        (resolvedFrom === undefined || i.from === resolvedFrom)
     );
 
     if (!found) {
       diagnostics.push(
         createDiagnostic({
           filePath: context.path,
-          predicateName: "export",
-          message: resolvedFrom
-            ? `Missing export "${resolvedName}" from "${resolvedFrom}"`
-            : `Missing export "${resolvedName}"`,
+          predicateName,
+          message: `Missing import "${resolvedName}"`,
           conventionName,
           severity,
         })

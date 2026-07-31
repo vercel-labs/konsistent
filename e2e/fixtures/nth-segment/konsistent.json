@@ -5,7 +5,7 @@
       "name": "scoped-modules",
       "paths": "modules/{scopedName}/src/index.ts",
       "must": {
-        "export": ["${scopedName.toNthSegment(1)}"],
+        "exportValues": ["${scopedName.toNthSegment(1)}"],
         "exportTypes": ["${scopedName.toNthSegmentPascalCase(0)}${scopedName.toNthSegmentPascalCase(1)}"]
       }
     }

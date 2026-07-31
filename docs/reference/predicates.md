@@ -16,19 +16,20 @@ The full machine-readable schema lives at `node_modules/konsistent/konsistent.sc
   - [`declareInterfaces`](#declareinterfaces)
   - [`declareClasses`](#declareclasses)
 - [Export predicates](#export-predicates)
-  - [`export`](#export)
+  - [`exportValues`](#exportvalues)
   - [`exportTypes`](#exporttypes)
   - [`exportConstants`](#exportconstants)
   - [`exportFunctions`](#exportfunctions)
   - [`exportInterfaces`](#exportinterfaces)
   - [`exportClasses`](#exportclasses)
 - [Import predicates](#import-predicates)
-  - [`import`](#import)
-  - [`importFrom`](#importfrom)
+  - [`importValues`](#importvalues)
   - [`importTypes`](#importtypes)
-  - [`importFromCurrentDir`](#importfromcurrentdir)
-  - [`importFromParents`](#importfromparents)
-  - [`importFromExternals`](#importfromexternals)
+  - [`importValuesFrom`](#importvaluesfrom)
+  - [`importTypesFrom`](#importtypesfrom)
+  - [`importValuesFromCurrentDir`](#importvaluesfromcurrentdir)
+  - [`importValuesFromParents`](#importvaluesfromparents)
+  - [`importValuesFromExternals`](#importvaluesfromexternals)
   - [`importTypesFromCurrentDir`](#importtypesfromcurrentdir)
   - [`importTypesFromParents`](#importtypesfromparents)
   - [`importTypesFromExternals`](#importtypesfromexternals)
@@ -181,17 +182,17 @@ All export predicates accept an array of either:
 
 The string form is shorthand for `{ "name": "<value>" }`.
 
-### `export`
+### `exportValues`
 
-Assert named value exports — anything that is not a type-only export. Functions, classes, constants, and re-exported values all qualify.
+Assert named value exports — anything that is not syntactically type-only. Functions, classes, constants, and re-exported values all qualify.
 
 ```json
-"must": { "export": ["myFunction", "${name}"] }
+"must": { "exportValues": ["myFunction", "${name}"] }
 ```
 
 ```json
 "must": {
-  "export": [
+  "exportValues": [
     { "name": "${providerId}", "from": "./${providerId}-provider" }
   ]
 }
@@ -256,7 +257,7 @@ and declaration semantics documented under [`exportConstants`](#exportconstants)
 
 ### `exportConstants`
 
-Assert `const` exports specifically. Stricter than `export` — a `function` or `let` with the right name will not satisfy this predicate. An object entry can use `schema` to validate the constant's explicit type annotation.
+Assert `const` exports specifically. Stricter than `exportValues` — a `function` or `let` with the right name will not satisfy this predicate. An object entry can use `schema` to validate the constant's explicit type annotation.
 
 ```json
 "must": {
@@ -393,13 +394,13 @@ Assert class exports. Optionally validate `extends` and `implements` clauses.
 
 ## Import predicates
 
-### `import`
+### `importValues`
 
 Assert named value imports.
 
 ```json
 "must": {
-  "import": [
+  "importValues": [
     { "name": "useState", "from": "react" }
   ]
 }
@@ -410,18 +411,18 @@ Assert named value imports.
 | `name` | string | The imported binding. Templates allowed. |
 | `from` | string | Optional. Module specifier the import must come from. |
 
-Bare-string form (`"import": ["useState"]`) checks the binding regardless of source.
+Bare-string form (`"importValues": ["useState"]`) checks the binding regardless of source.
 
-### `importFrom`
+### `importValuesFrom`
 
-Assert that the file has at least one import statement from a specific module specifier.
+Assert that the file has at least one value import from a specific module specifier. Side-effect imports such as `import "./setup"` count as value imports; imports containing only type bindings do not.
 
 ```json
-"must": { "importFrom": "react" }
+"must": { "importValuesFrom": "react" }
 ```
 
 ```json
-"must": { "importFrom": ["./setup", "package/*"] }
+"must": { "importValuesFrom": ["./setup", "package/*"] }
 ```
 
 The value is a string or an array of strings. When an array is used in `must`, every entry must be satisfied.
@@ -430,11 +431,9 @@ By default, entries match exactly. For example, `"package"` only matches `import
 
 Use a trailing `/*` to match subpaths under a prefix. For example, `"package/*"` matches `"package/v4"`, and `"@scope/pkg/*"` matches `"@scope/pkg/subpath"`. The wildcard does not match the root itself, so `"package/*"` does not match `"package"`.
 
-Both value imports and type-only imports count because this predicate checks import statements by source. Side-effect imports such as `import "./setup"` also count.
-
 ### `importTypes`
 
-Assert type-only imports (`import type { ... } from`).
+Assert named type imports, whether they use `import type { ... } from` or inline `type` specifiers.
 
 ```json
 "must": {
@@ -444,67 +443,77 @@ Assert type-only imports (`import type { ... } from`).
 }
 ```
 
-Same shape as `import`. Useful for enforcing dependency direction — every adapter's implementation file must `import type` its base from a specific module.
+Same shape as `importValues`. Useful for enforcing dependency direction — every adapter's implementation file must `import type` its base from a specific module.
 
-### `importFromCurrentDir`
+### `importTypesFrom`
+
+Assert that the file has at least one type import from a specific module specifier.
+
+```json
+"must": { "importTypesFrom": ["./types", "@scope/package/*"] }
+```
+
+It uses the same string or string-array shape, exact matching, and trailing `/*` subpath matching as `importValuesFrom`. Value-only and side-effect imports do not count. A mixed statement such as `import { value, type Options } from "./module"` satisfies both `importValuesFrom` and `importTypesFrom`.
+
+### `importValuesFromCurrentDir`
 
 Assert whether the file has value imports from the current directory via `./...`.
 
 ```json
-"must": { "importFromCurrentDir": true }
+"must": { "importValuesFromCurrentDir": true }
 ```
 
-`true` requires at least one non-type import whose module specifier is `"."` or starts with `"./"`. `false` forbids those imports. Type-only imports are ignored. Side-effect imports such as `import "./setup"` count as value imports.
+`true` requires at least one value import whose module specifier is `"."` or starts with `"./"`. `false` forbids those imports. Imports containing only type bindings are ignored. Side-effect imports such as `import "./setup"` count as value imports.
 
-### `importFromParents`
+### `importValuesFromParents`
 
 Assert whether the file has value imports from parent directories via `../...`.
 
 ```json
-"must": { "importFromParents": false }
+"must": { "importValuesFromParents": false }
 ```
 
-`true` requires at least one non-type import whose module specifier is `".."` or starts with `"../"`. `false` forbids those imports. Type-only imports are ignored.
+`true` requires at least one value import whose module specifier is `".."` or starts with `"../"`. `false` forbids those imports. Imports containing only type bindings are ignored.
 
-### `importFromExternals`
+### `importValuesFromExternals`
 
 Assert whether the file has value imports from external module specifiers.
 
 ```json
-"must": { "importFromExternals": true }
+"must": { "importValuesFromExternals": true }
 ```
 
-`true` requires at least one non-type import that is not `./...` or `../...`. `false` forbids those imports. Scoped packages, `node:` modules, and unresolved path aliases such as `@/utils` count as external because `konsistent` does not resolve module aliases. Type-only imports are ignored.
+`true` requires at least one value import that is not `./...` or `../...`. `false` forbids those imports. Scoped packages, `node:` modules, and unresolved path aliases such as `@/utils` count as external because `konsistent` does not resolve module aliases. Imports containing only type bindings are ignored.
 
 ### `importTypesFromCurrentDir`
 
-Assert whether the file has type-only imports from the current directory via `./...`.
+Assert whether the file has type imports from the current directory via `./...`.
 
 ```json
 "must": { "importTypesFromCurrentDir": true }
 ```
 
-`true` requires at least one type import whose module specifier is `"."` or starts with `"./"`. `false` forbids those imports. Value imports are ignored.
+`true` requires at least one type import whose module specifier is `"."` or starts with `"./"`. `false` forbids those imports. Imports containing only value bindings are ignored.
 
 ### `importTypesFromParents`
 
-Assert whether the file has type-only imports from parent directories via `../...`.
+Assert whether the file has type imports from parent directories via `../...`.
 
 ```json
 "must": { "importTypesFromParents": false }
 ```
 
-`true` requires at least one type import whose module specifier is `".."` or starts with `"../"`. `false` forbids those imports. Value imports are ignored.
+`true` requires at least one type import whose module specifier is `".."` or starts with `"../"`. `false` forbids those imports. Imports containing only value bindings are ignored.
 
 ### `importTypesFromExternals`
 
-Assert whether the file has type-only imports from external module specifiers.
+Assert whether the file has type imports from external module specifiers.
 
 ```json
 "must": { "importTypesFromExternals": true }
 ```
 
-`true` requires at least one type import that is not `./...` or `../...`. `false` forbids those imports. Scoped packages, `node:` modules, and unresolved path aliases such as `@/utils` count as external because `konsistent` does not resolve module aliases. Value imports are ignored.
+`true` requires at least one type import that is not `./...` or `../...`. `false` forbids those imports. Scoped packages, `node:` modules, and unresolved path aliases such as `@/utils` count as external because `konsistent` does not resolve module aliases. Imports containing only value bindings are ignored.
 
 ---
 
@@ -566,7 +575,7 @@ Multiple predicates in the same `must` are AND-ed:
 ```json
 "must": {
   "haveType": "file",
-  "export": ["createService"],
+  "exportValues": ["createService"],
   "exportTypes": ["ServiceConfig"],
   "importTypes": [{ "name": "ServiceBase", "from": "../base" }]
 }

@@ -38,17 +38,17 @@ describe("generateConventionName", () => {
     });
   });
 
-  describe("export", () => {
+  describe("exportValues", () => {
     it("generates must-export-{name-kebab}", () => {
-      expect(generateConventionName({ must: { export: ["activate"] } })).toBe(
-        "must-export-activate"
-      );
+      expect(
+        generateConventionName({ must: { exportValues: ["activate"] } })
+      ).toBe("must-export-activate");
     });
 
     it("appends -and-more for multiple exports", () => {
       expect(
         generateConventionName({
-          must: { export: ["activate", "deactivate"] },
+          must: { exportValues: ["activate", "deactivate"] },
         })
       ).toBe("must-export-activate-and-more");
     });
@@ -56,14 +56,14 @@ describe("generateConventionName", () => {
     it("strips template expressions and converts to kebab", () => {
       expect(
         generateConventionName({
-          must: { export: ["create${name.toPascalCase()}Adapter"] },
+          must: { exportValues: ["create${name.toPascalCase()}Adapter"] },
         })
       ).toBe("must-export-create-adapter");
     });
 
     it("falls back when template stripping leaves empty string", () => {
       expect(
-        generateConventionName({ must: { export: ["${providerId}"] } })
+        generateConventionName({ must: { exportValues: ["${providerId}"] } })
       ).toBe("must-export");
     });
   });
@@ -212,23 +212,23 @@ describe("generateConventionName", () => {
     });
   });
 
-  describe("import", () => {
+  describe("importValues", () => {
     it("generates must-import-{name-kebab}", () => {
       expect(
         generateConventionName({
           must: {
-            import: [{ name: "BaseAdapter", from: "@app/core" }],
+            importValues: [{ name: "BaseAdapter", from: "@app/core" }],
           },
         })
       ).toBe("must-import-base-adapter");
     });
   });
 
-  describe("importFrom", () => {
+  describe("importValuesFrom", () => {
     it("generates must-import-from-{source-kebab}", () => {
       expect(
         generateConventionName({
-          must: { importFrom: "@ai-sdk/react" },
+          must: { importValuesFrom: "@ai-sdk/react" },
         })
       ).toBe("must-import-from-ai-sdk-react");
     });
@@ -236,9 +236,17 @@ describe("generateConventionName", () => {
     it("strips template expressions from sources", () => {
       expect(
         generateConventionName({
-          must: { importFrom: "@scope/${packageName}" },
+          must: { importValuesFrom: "@scope/${packageName}" },
         })
       ).toBe("must-import-from-scope");
+    });
+
+    it("generates type import source names", () => {
+      expect(
+        generateConventionName({
+          must: { importTypesFrom: "@ai-sdk/react" },
+        })
+      ).toBe("must-import-type-from-ai-sdk-react");
     });
   });
 
@@ -257,19 +265,19 @@ describe("generateConventionName", () => {
   describe("import source predicates", () => {
     it("generates current-dir import names", () => {
       expect(
-        generateConventionName({ must: { importFromCurrentDir: true } })
+        generateConventionName({ must: { importValuesFromCurrentDir: true } })
       ).toBe("must-import-from-current-dir");
       expect(
-        generateConventionName({ must: { importFromCurrentDir: false } })
+        generateConventionName({ must: { importValuesFromCurrentDir: false } })
       ).toBe("must-not-import-from-current-dir");
     });
 
     it("generates parent and external import names", () => {
       expect(
-        generateConventionName({ must: { importFromParents: true } })
+        generateConventionName({ must: { importValuesFromParents: true } })
       ).toBe("must-import-from-parents");
       expect(
-        generateConventionName({ must: { importFromExternals: false } })
+        generateConventionName({ must: { importValuesFromExternals: false } })
       ).toBe("must-not-import-from-externals");
     });
 
@@ -298,12 +306,12 @@ describe("generateConventionName", () => {
     it("generates logical names for negated boolean predicates", () => {
       expect(
         generateConventionName({
-          mustNot: { importFromCurrentDir: true },
+          mustNot: { importValuesFromCurrentDir: true },
         })
       ).toBe("must-not-import-from-current-dir");
       expect(
         generateConventionName({
-          mustNot: { importFromCurrentDir: false },
+          mustNot: { importValuesFromCurrentDir: false },
         })
       ).toBe("must-import-from-current-dir");
       expect(
@@ -318,7 +326,7 @@ describe("generateConventionName", () => {
       ).toBe("must-import-type-from-current-dir");
       expect(
         generateConventionName({
-          mustNot: { importFrom: "react" },
+          mustNot: { importValuesFrom: "react" },
         })
       ).toBe("must-not-import-from-react");
     });
@@ -339,7 +347,7 @@ describe("generateConventionName", () => {
       expect(
         generateConventionName({
           must: {
-            export: ["activate"],
+            exportValues: ["activate"],
             exportConstants: ["pluginId"],
           },
         })
@@ -349,7 +357,7 @@ describe("generateConventionName", () => {
     it("appends when predicate array has multiple items", () => {
       expect(
         generateConventionName({
-          must: { export: ["activate", "deactivate"] },
+          must: { exportValues: ["activate", "deactivate"] },
         })
       ).toBe("must-export-activate-and-more");
     });
@@ -358,7 +366,7 @@ describe("generateConventionName", () => {
       expect(
         generateConventionName({
           must: {
-            export: ["activate", "deactivate"],
+            exportValues: ["activate", "deactivate"],
             exportConstants: ["pluginId"],
           },
         })
@@ -372,7 +380,7 @@ describe("generateConventionName", () => {
         generateConventionName({
           must: [
             { must: { haveFiles: ["${componentName}.tsx"] } },
-            { must: { export: ["describe"] } },
+            { must: { exportValues: ["describe"] } },
           ],
         })
       ).toBe("must-have-tsx");
@@ -389,7 +397,7 @@ describe("generateConventionName", () => {
     it("uses mustNot when the first block has no must", () => {
       expect(
         generateConventionName({
-          must: [{ mustNot: { export: ["debug"] } }],
+          must: [{ mustNot: { exportValues: ["debug"] } }],
         })
       ).toBe("must-not-export-debug");
     });
@@ -404,7 +412,7 @@ describe("generateConventionName", () => {
       expect(
         generateConventionName({
           must: {
-            export: ["${providerId}"],
+            exportValues: ["${providerId}"],
             exportTypes: ["${providerId.toPascalCase()}Provider"],
           },
         })

@@ -40,7 +40,7 @@ Every plugin must have specific files and exports:
     {
       "paths": "plugins/{pluginName}/index.ts",
       "must": {
-        "export": ["activate", "deactivate"],
+        "exportValues": ["activate", "deactivate"],
         "exportConstants": ["pluginId"]
       }
     }
@@ -56,7 +56,7 @@ Every package barrel exports a value named after the directory:
 {
   "paths": "packages/{name}/src/index.ts",
   "must": {
-    "export": ["${name}"],
+    "exportValues": ["${name}"],
     "exportTypes": ["${name.toPascalCase()}Config"]
   }
 }
@@ -74,7 +74,7 @@ Force the barrel to re-export from a specific source file (catches stray local d
   "description": "Barrel files must re-export from the correct source modules",
   "paths": "packages/{providerId}/src/index.ts",
   "must": {
-    "export": [{ "name": "${providerId}", "from": "./${providerId}-provider" }],
+    "exportValues": [{ "name": "${providerId}", "from": "./${providerId}-provider" }],
     "exportTypes": [
       {
         "name": "${providerId.toPascalCase()}Provider",
@@ -85,7 +85,7 @@ Force the barrel to re-export from a specific source file (catches stray local d
 }
 ```
 
-The `from` field on [`export`](../reference/predicates.md#export) and [`exportTypes`](../reference/predicates.md#exporttypes) requires the export to be a re-export from the named module.
+The `from` field on [`exportValues`](../reference/predicates.md#exportvalues) and [`exportTypes`](../reference/predicates.md#exporttypes) requires the export to be a re-export from the named module.
 
 ## Factory function with typed signature
 
@@ -193,7 +193,7 @@ Every package barrel exports a function named after the package — except `test
     "!packages/test-utils/src/index.ts"
   ],
   "must": {
-    "export": ["${packageName}"]
+    "exportValues": ["${packageName}"]
   }
 }
 ```
@@ -212,7 +212,7 @@ Each `components/<Name>/` folder must have an `index.tsx`. Test files are option
     {
       "if": { "hasFile": "index.test.tsx" },
       "for": { "files": "index.test.tsx" },
-      "must": { "import": [{ "name": "render", "from": "@/test-utils" }] }
+      "must": { "importValues": [{ "name": "render", "from": "@/test-utils" }] }
     },
     {
       "for": { "files": "*.stories.tsx" },
@@ -235,7 +235,7 @@ Every test file in a module must import the project's shared test context helper
   "must": [
     {
       "for": { "files": ["*.test.ts", "*.spec.ts"] },
-      "must": { "import": [{ "name": "createTestContext", "from": "@/test-utils" }] }
+      "must": { "importValues": [{ "name": "createTestContext", "from": "@/test-utils" }] }
     }
   ]
 }
@@ -280,7 +280,7 @@ A scoped module name like `auth-session` is split, and each segment used differe
   "name": "scoped-modules",
   "paths": "modules/{scopedName}/src/index.ts",
   "must": {
-    "export": ["${scopedName.toNthSegment(1)}"],
+    "exportValues": ["${scopedName.toNthSegment(1)}"],
     "exportTypes": [
       "${scopedName.toNthSegmentPascalCase(0)}${scopedName.toNthSegmentPascalCase(1)}"
     ]
@@ -303,7 +303,7 @@ For `modules/auth-session/src/index.ts`:
       "for": { "files": "*.spec.ts" },
       "excludeFiles": ["plugins/auth/helpers.spec.ts"],
       "must": {
-        "import": [{ "name": "createTestContext", "from": "@/test-utils" }]
+        "importValues": [{ "name": "createTestContext", "from": "@/test-utils" }]
       }
     }
   ]

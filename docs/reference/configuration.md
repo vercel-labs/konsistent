@@ -43,7 +43,7 @@ A convention is a rule that says "files matching `paths` must satisfy `must` and
   "severity": "error",
   "paths": "packages/{providerId}/src/index.ts",
   "must": {
-    "export": ["${providerId}"]
+    "exportValues": ["${providerId}"]
   }
 }
 ```
@@ -71,7 +71,7 @@ The configuration is `strict` — unknown fields cause a validation error. Run `
 "must": {
   "haveType": "directory",
   "haveFiles": ["index.ts"],
-  "export": ["createService"]
+  "exportValues": ["createService"]
 }
 ```
 
@@ -85,7 +85,7 @@ All listed predicates apply unconditionally to every matched path. See [predicat
   {
     "if": { "hasFile": "index.test.ts" },
     "for": { "files": "index.test.ts" },
-    "must": { "import": [{ "name": "createTestContext", "from": "@/test-utils" }] }
+    "must": { "importValues": [{ "name": "createTestContext", "from": "@/test-utils" }] }
   }
 ]
 ```
@@ -129,7 +129,7 @@ Skip specific files from a convention without changing the path pattern:
   "paths": "src/**/*.ts",
   "excludeFiles": ["**/*.test.ts", "src/internal/**"],
   "must": {
-    "export": ["default"]
+    "exportValues": ["default"]
   }
 }
 ```

@@ -3,6 +3,8 @@ import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
 import { createDiagnostic } from "../../core/diagnostics.js";
 import type { FileStructure } from "../types.js";
 
+export type ExactImportSourceKind = "either" | "type" | "value";
+
 function doesImportSourceMatch(opts: {
   from: string;
   expected: string;
@@ -15,21 +17,37 @@ function doesImportSourceMatch(opts: {
   return from === expected;
 }
 
-export function checkImportFrom(opts: {
+export function checkExactImportSource(opts: {
   expected: string | string[];
+  importKind?: ExactImportSourceKind;
+  predicateName?: string;
   context: PredicateContext;
   fileStructure: FileStructure;
   conventionName?: string;
   severity?: DiagnosticSeverity;
 }): Diagnostic[] {
-  const { expected, context, fileStructure, conventionName, severity } = opts;
+  const {
+    expected,
+    importKind = "value",
+    predicateName = "importValuesFrom",
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  } = opts;
   const diagnostics: Diagnostic[] = [];
   const expectedSources = typeof expected === "string" ? [expected] : expected;
 
   for (const source of expectedSources) {
     const resolvedFrom = context.resolveTemplate(source);
-    const found = fileStructure.importSources.find((importSource) =>
-      doesImportSourceMatch({ from: importSource.from, expected: resolvedFrom })
+    const found = fileStructure.importSources.find(
+      (importSource) =>
+        (importKind === "either" ||
+          importSource.isType === (importKind === "type")) &&
+        doesImportSourceMatch({
+          from: importSource.from,
+          expected: resolvedFrom,
+        })
     );
 
     if (found) {
@@ -39,8 +57,8 @@ export function checkImportFrom(opts: {
     diagnostics.push(
       createDiagnostic({
         filePath: context.path,
-        predicateName: "importFrom",
-        message: `Missing import from "${resolvedFrom}"`,
+        predicateName,
+        message: `Missing ${importKind === "type" ? "type import" : "import"} from "${resolvedFrom}"`,
         conventionName,
         severity,
       })

@@ -463,7 +463,7 @@ describe("createGithubReporter", () => {
       {
         severity: "error",
         filePath: "packages/openai/src/index.ts",
-        predicateName: "export",
+        predicateName: "exportValues",
         message: 'Missing export "openai"',
         conventionName: "provider-packages",
       },
@@ -565,21 +565,21 @@ describe("createMarkdownReporter", () => {
       {
         severity: "error",
         filePath: "packages/openai/src/index.ts",
-        predicateName: "export",
+        predicateName: "exportValues",
         message: 'Missing export "openai"',
         conventionName: "provider-packages",
       },
       {
         severity: "error",
         filePath: "packages/openai/src/index.ts",
-        predicateName: "export",
+        predicateName: "exportValues",
         message: 'Missing export type "OpenaiProvider"',
         conventionName: "provider-packages",
       },
       {
         severity: "error",
         filePath: "packages/openai/src/openai-provider.ts",
-        predicateName: "importType",
+        predicateName: "importTypes",
         message: 'Missing import type "ProviderV1"',
         conventionName: "provider-interface",
       },

@@ -253,7 +253,7 @@ describe("expandReferences", () => {
         {
           name: "provider-barrel",
           description: "x",
-          must: { export: ["${providerId}"] },
+          must: { exportValues: ["${providerId}"] },
         },
       ],
     });
@@ -342,7 +342,7 @@ describe("expandReferences", () => {
           name: "merge-must",
           description: "x",
           paths: "src/*.ts",
-          must: { export: ["foo"] },
+          must: { exportValues: ["foo"] },
         },
       ],
     });
@@ -360,7 +360,7 @@ describe("expandReferences", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.conventions[0]?.must).toEqual({
-        export: ["foo"],
+        exportValues: ["foo"],
         exportTypes: ["Bar"],
       });
     }
@@ -373,7 +373,7 @@ describe("expandReferences", () => {
           name: "merge-must-not",
           description: "x",
           paths: "src/*.ts",
-          mustNot: { export: ["debug"] },
+          mustNot: { exportValues: ["debug"] },
         },
       ],
     });
@@ -391,7 +391,7 @@ describe("expandReferences", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.conventions[0]?.mustNot).toEqual({
-        export: ["debug"],
+        exportValues: ["debug"],
         exportTypes: ["Internal"],
       });
     }
@@ -743,7 +743,7 @@ describe("expandReferences", () => {
         {
           name: "base-block",
           description: "x",
-          mustNot: { export: ["debug"] },
+          mustNot: { exportValues: ["debug"] },
         },
       ],
     });
@@ -770,7 +770,7 @@ describe("expandReferences", () => {
         expect(must[0]).toEqual({
           name: "base-block",
           description: "x",
-          mustNot: { export: ["debug"], exportTypes: ["Internal"] },
+          mustNot: { exportValues: ["debug"], exportTypes: ["Internal"] },
         });
       }
     }
