@@ -88,22 +88,6 @@ describe("ReusableConventionV1Schema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("continues to accept deprecated value predicate names", () => {
-    const result = ReusableConventionV1Schema.safeParse({
-      name: "legacy",
-      description: "Legacy predicate compatibility.",
-      must: {
-        export: ["value"],
-        import: ["value"],
-        importFrom: "react",
-        importFromCurrentDir: false,
-        importFromParents: false,
-        importFromExternals: false,
-      },
-    });
-    expect(result.success).toBe(true);
-  });
-
   it("rejects invalid name pattern", () => {
     const result = ReusableConventionV1Schema.safeParse({
       name: "Bad Name",

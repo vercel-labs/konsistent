@@ -21,7 +21,7 @@ describe("checkImportSource", () => {
   it("requires imports from the current directory", () => {
     const result = checkImportSource({
       expected: true,
-      predicateName: "importFromCurrentDir",
+      predicateName: "importValuesFromCurrentDir",
       group: "currentDir",
       importKind: "value",
       context: createMockContext({ path: "src/index.ts" }),
@@ -35,7 +35,7 @@ describe("checkImportSource", () => {
   it("rejects forbidden imports from the current directory", () => {
     const result = checkImportSource({
       expected: false,
-      predicateName: "importFromCurrentDir",
+      predicateName: "importValuesFromCurrentDir",
       group: "currentDir",
       importKind: "value",
       context: createMockContext({ path: "src/index.ts" }),
@@ -51,7 +51,7 @@ describe("checkImportSource", () => {
   it("matches imports from parents", () => {
     const result = checkImportSource({
       expected: true,
-      predicateName: "importFromParents",
+      predicateName: "importValuesFromParents",
       group: "parents",
       importKind: "value",
       context: createMockContext({ path: "src/index.ts" }),
@@ -65,7 +65,7 @@ describe("checkImportSource", () => {
   it("ignores type imports for value import source predicates", () => {
     const result = checkImportSource({
       expected: true,
-      predicateName: "importFromParents",
+      predicateName: "importValuesFromParents",
       group: "parents",
       importKind: "value",
       context: createMockContext({ path: "src/index.ts" }),
@@ -131,7 +131,7 @@ describe("checkImportSource", () => {
     });
     const valueResult = checkImportSource({
       expected: true,
-      predicateName: "importFromCurrentDir",
+      predicateName: "importValuesFromCurrentDir",
       group: "currentDir",
       importKind: "value",
       context: createMockContext({ path: "src/index.ts" }),
@@ -152,7 +152,7 @@ describe("checkImportSource", () => {
   it("reports missing parent imports", () => {
     const result = checkImportSource({
       expected: true,
-      predicateName: "importFromParents",
+      predicateName: "importValuesFromParents",
       group: "parents",
       importKind: "value",
       context: createMockContext({ path: "src/index.ts" }),
@@ -175,7 +175,7 @@ describe("checkImportSource", () => {
     });
     const result = checkImportSource({
       expected: true,
-      predicateName: "importFromExternals",
+      predicateName: "importValuesFromExternals",
       group: "externals",
       importKind: "value",
       context: createMockContext({ path: "src/index.ts" }),
@@ -187,7 +187,7 @@ describe("checkImportSource", () => {
   it("rejects forbidden external imports", () => {
     const result = checkImportSource({
       expected: false,
-      predicateName: "importFromExternals",
+      predicateName: "importValuesFromExternals",
       group: "externals",
       importKind: "value",
       context: createMockContext({ path: "src/index.ts" }),

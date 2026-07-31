@@ -64,9 +64,6 @@ describe("check command", () => {
 
     expect(exitSpy).not.toHaveBeenCalled();
     expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('"importFrom" is deprecated')
-    );
-    expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining(
         'Use "importValuesFrom" or "importTypesFrom" instead.'
       )

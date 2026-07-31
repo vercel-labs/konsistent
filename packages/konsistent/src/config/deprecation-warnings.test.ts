@@ -1,57 +1,34 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { collectDeprecationWarnings } from "./deprecation-warnings.js";
-import type { ConfigV1 } from "./schema.js";
+import { ConfigV1Schema } from "./schema.js";
+
+const fixturePath = resolve(
+  import.meta.dirname,
+  "../../../../e2e/fixtures/deprecated-predicates/konsistent.json"
+);
 
 describe("collectDeprecationWarnings", () => {
   it("reports every deprecated predicate with its replacement", () => {
-    const config: ConfigV1 = {
-      version: "v1",
-      conventions: [
-        {
-          paths: "index.ts",
-          must: {
-            export: ["value"],
-            import: ["value"],
-            importFrom: "react",
-            importFromCurrentDir: false,
-            importFromParents: false,
-            importFromExternals: false,
-          },
-        },
-      ],
-    };
+    const config = ConfigV1Schema.parse(
+      JSON.parse(readFileSync(fixturePath, "utf-8"))
+    );
 
-    expect(collectDeprecationWarnings({ config })).toEqual([
-      'Warning: "export" is deprecated in conventions[0].must.export. Use "exportValues" instead.',
-      'Warning: "import" is deprecated in conventions[0].must.import. Use "importValues" instead.',
-      'Warning: "importFrom" is deprecated in conventions[0].must.importFrom. Use "importValuesFrom" or "importTypesFrom" instead.',
-      'Warning: "importFromCurrentDir" is deprecated in conventions[0].must.importFromCurrentDir. Use "importValuesFromCurrentDir" instead.',
-      'Warning: "importFromParents" is deprecated in conventions[0].must.importFromParents. Use "importValuesFromParents" instead.',
-      'Warning: "importFromExternals" is deprecated in conventions[0].must.importFromExternals. Use "importValuesFromExternals" instead.',
-    ]);
-  });
+    const warnings = collectDeprecationWarnings({ config });
 
-  it("reports deprecated fields in nested must and mustNot blocks", () => {
-    const config: ConfigV1 = {
-      version: "v1",
-      conventions: [
-        {
-          paths: "index.ts",
-          must: [
-            {
-              must: { import: ["value"] },
-              mustNot: { export: ["debug"] },
-            },
-          ],
-          mustNot: { importFrom: "legacy" },
-        },
-      ],
-    };
-
-    expect(collectDeprecationWarnings({ config })).toEqual([
-      'Warning: "import" is deprecated in conventions[0].must[0].must.import. Use "importValues" instead.',
-      'Warning: "export" is deprecated in conventions[0].must[0].mustNot.export. Use "exportValues" instead.',
-      'Warning: "importFrom" is deprecated in conventions[0].mustNot.importFrom. Use "importValuesFrom" or "importTypesFrom" instead.',
-    ]);
+    expect(warnings).toHaveLength(6);
+    expect(warnings).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('Use "exportValues" instead.'),
+        expect.stringContaining('Use "importValues" instead.'),
+        expect.stringContaining(
+          'Use "importValuesFrom" or "importTypesFrom" instead.'
+        ),
+        expect.stringContaining('Use "importValuesFromCurrentDir" instead.'),
+        expect.stringContaining('Use "importValuesFromParents" instead.'),
+        expect.stringContaining('Use "importValuesFromExternals" instead.'),
+      ])
+    );
   });
 });

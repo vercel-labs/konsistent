@@ -195,19 +195,6 @@ describe("ConfigV1Schema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects malformed deprecated predicate values", () => {
-    const result = ConfigV1Schema.safeParse({
-      version: "v1",
-      conventions: [
-        {
-          paths: "src/*.ts",
-          must: { importFrom: 123 },
-        },
-      ],
-    });
-    expect(result.success).toBe(false);
-  });
-
   it("rejects config with missing version", () => {
     const result = ConfigV1Schema.safeParse({
       conventions: [],

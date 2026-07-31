@@ -55,7 +55,10 @@ const ExportValuesPredicateV1Schema = z.array(
 const ImportValuesPredicateV1Schema = z.array(
   z.union([z.string(), ImportDefinitionV1Schema])
 );
-const ImportFromPredicateV1Schema = z.union([z.string(), z.array(z.string())]);
+const ExactImportSourcePredicateV1Schema = z.union([
+  z.string(),
+  z.array(z.string()),
+]);
 
 export const MustPredicatesV1Schema = z.strictObject({
   haveType: z.enum(["file", "directory"]).optional(),
@@ -106,12 +109,12 @@ export const MustPredicatesV1Schema = z.strictObject({
     deprecated: true,
     description: "Use importValues instead.",
   }),
-  importValuesFrom: ImportFromPredicateV1Schema.optional(),
-  importTypesFrom: ImportFromPredicateV1Schema.optional(),
+  importValuesFrom: ExactImportSourcePredicateV1Schema.optional(),
+  importTypesFrom: ExactImportSourcePredicateV1Schema.optional(),
   /**
    * @deprecated Use importValuesFrom or importTypesFrom instead.
    */
-  importFrom: ImportFromPredicateV1Schema.optional().meta({
+  importFrom: ExactImportSourcePredicateV1Schema.optional().meta({
     deprecated: true,
     description: "Use importValuesFrom or importTypesFrom instead.",
   }),

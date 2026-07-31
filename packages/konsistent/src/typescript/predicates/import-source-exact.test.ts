@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { PredicateContext } from "../../core/context.js";
 import { parseFileStructure } from "../parser.js";
-import { checkImportFrom } from "./import-from.js";
+import { checkExactImportSource } from "./import-source-exact.js";
 
 function createMockContext(opts: {
   path: string;
@@ -26,9 +26,9 @@ function parseSource(opts: { source: string }) {
   return parseFileStructure({ source: opts.source, filePath: "src/index.ts" });
 }
 
-describe("checkImportFrom", () => {
+describe("checkExactImportSource", () => {
   it("matches exact relative import sources", () => {
-    const result = checkImportFrom({
+    const result = checkExactImportSource({
       expected: "./helper",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({ source: "import './helper';" }),
@@ -37,19 +37,19 @@ describe("checkImportFrom", () => {
   });
 
   it("returns a diagnostic when the import source is missing", () => {
-    const result = checkImportFrom({
+    const result = checkExactImportSource({
       expected: "./helper",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({ source: "import './setup';" }),
     });
     expect(result).toHaveLength(1);
     expect(result[0].message).toBe('Missing import from "./helper"');
-    expect(result[0].predicateName).toBe("importFrom");
+    expect(result[0].predicateName).toBe("importValuesFrom");
     expect(result[0].filePath).toBe("src/index.ts");
   });
 
   it("matches exact package import sources", () => {
-    const result = checkImportFrom({
+    const result = checkExactImportSource({
       expected: "react",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
@@ -60,7 +60,7 @@ describe("checkImportFrom", () => {
   });
 
   it("does not match package subpaths without a wildcard", () => {
-    const result = checkImportFrom({
+    const result = checkExactImportSource({
       expected: "package",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
@@ -72,7 +72,7 @@ describe("checkImportFrom", () => {
   });
 
   it("matches package subpaths with a trailing wildcard", () => {
-    const result = checkImportFrom({
+    const result = checkExactImportSource({
       expected: "package/*",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
@@ -83,7 +83,7 @@ describe("checkImportFrom", () => {
   });
 
   it("matches scoped package subpaths with a trailing wildcard", () => {
-    const result = checkImportFrom({
+    const result = checkExactImportSource({
       expected: "@scope/pkg/*",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
@@ -94,7 +94,7 @@ describe("checkImportFrom", () => {
   });
 
   it("does not match package roots with a trailing wildcard", () => {
-    const result = checkImportFrom({
+    const result = checkExactImportSource({
       expected: "package/*",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
@@ -106,7 +106,7 @@ describe("checkImportFrom", () => {
   });
 
   it("does not match similarly named packages with a trailing wildcard", () => {
-    const result = checkImportFrom({
+    const result = checkExactImportSource({
       expected: "react/*",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
@@ -117,8 +117,10 @@ describe("checkImportFrom", () => {
   });
 
   it("matches type-only import statements", () => {
-    const result = checkImportFrom({
+    const result = checkExactImportSource({
       expected: "@scope/pkg",
+      importKind: "type",
+      predicateName: "importTypesFrom",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
         source: "import type { Tool } from '@scope/pkg';",
@@ -128,7 +130,7 @@ describe("checkImportFrom", () => {
   });
 
   it("importValuesFrom ignores type-only imports", () => {
-    const result = checkImportFrom({
+    const result = checkExactImportSource({
       expected: "@scope/pkg",
       importKind: "value",
       predicateName: "importValuesFrom",
@@ -143,7 +145,7 @@ describe("checkImportFrom", () => {
   });
 
   it("importTypesFrom ignores value imports", () => {
-    const result = checkImportFrom({
+    const result = checkExactImportSource({
       expected: "@scope/pkg",
       importKind: "type",
       predicateName: "importTypesFrom",
@@ -164,7 +166,7 @@ describe("checkImportFrom", () => {
     const context = createMockContext({ path: "src/index.ts" });
 
     expect(
-      checkImportFrom({
+      checkExactImportSource({
         expected: "@scope/pkg",
         importKind: "value",
         predicateName: "importValuesFrom",
@@ -173,7 +175,7 @@ describe("checkImportFrom", () => {
       })
     ).toEqual([]);
     expect(
-      checkImportFrom({
+      checkExactImportSource({
         expected: "@scope/pkg",
         importKind: "type",
         predicateName: "importTypesFrom",
@@ -188,7 +190,7 @@ describe("checkImportFrom", () => {
     const context = createMockContext({ path: "src/index.ts" });
 
     expect(
-      checkImportFrom({
+      checkExactImportSource({
         expected: "./setup",
         importKind: "value",
         predicateName: "importValuesFrom",
@@ -197,7 +199,7 @@ describe("checkImportFrom", () => {
       })
     ).toEqual([]);
     expect(
-      checkImportFrom({
+      checkExactImportSource({
         expected: "./setup",
         importKind: "type",
         predicateName: "importTypesFrom",
@@ -208,7 +210,7 @@ describe("checkImportFrom", () => {
   });
 
   it("resolves template placeholders in the source", () => {
-    const result = checkImportFrom({
+    const result = checkExactImportSource({
       expected: "@scope/${packageName}/*",
       context: createMockContext({
         path: "src/index.ts",
@@ -222,7 +224,7 @@ describe("checkImportFrom", () => {
   });
 
   it("requires every import source in an array", () => {
-    const result = checkImportFrom({
+    const result = checkExactImportSource({
       expected: ["react", "package/*"],
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
@@ -236,7 +238,7 @@ describe("checkImportFrom", () => {
   });
 
   it("returns diagnostics for missing import sources in an array", () => {
-    const result = checkImportFrom({
+    const result = checkExactImportSource({
       expected: ["react", "package"],
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
@@ -251,7 +253,7 @@ describe("checkImportFrom", () => {
   });
 
   it("includes conventionName when provided", () => {
-    const result = checkImportFrom({
+    const result = checkExactImportSource({
       expected: "react",
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({ source: "" }),

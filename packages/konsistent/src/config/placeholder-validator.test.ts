@@ -378,7 +378,7 @@ describe("validatePlaceholders", () => {
     }
   });
 
-  it("detects placeholders inside importFrom", () => {
+  it("detects placeholders inside exact import source predicates", () => {
     const conventions: ConventionV1[] = [
       {
         name: "imports",

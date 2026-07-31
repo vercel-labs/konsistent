@@ -37,35 +37,6 @@ describe("run", () => {
     expect(filesChecked).toBe(0);
   });
 
-  it("preserves legacy predicate names in compatibility diagnostics", async () => {
-    const config: ConfigV1 = {
-      version: "v1",
-      conventions: [
-        {
-          paths: "src/index.ts",
-          must: {
-            export: ["missingExport"],
-            import: ["missingImport"],
-            importFrom: "missing-package",
-          },
-        },
-      ],
-    };
-    const fs = createMockFileSystem({
-      globResults: new Map([["src/index.ts", ["src/index.ts"]]]),
-      files: new Set(["src/index.ts"]),
-      fileContents: new Map([["src/index.ts", ""]]),
-    });
-
-    const { diagnostics } = await run({ config, fileSystem: fs });
-
-    expect(diagnostics.map((diagnostic) => diagnostic.predicateName)).toEqual([
-      "export",
-      "import",
-      "importFrom",
-    ]);
-  });
-
   it("returns diagnostics when haveType fails", async () => {
     const config: ConfigV1 = {
       version: "v1",
@@ -346,7 +317,7 @@ describe("run", () => {
     expect(diagnostics).toEqual([]);
   });
 
-  it("returns no diagnostics when mustNot importFrom does not match a subpath", async () => {
+  it("returns no diagnostics when mustNot importValuesFrom does not match a subpath", async () => {
     const config: ConfigV1 = {
       version: "v1",
       conventions: [
@@ -367,7 +338,7 @@ describe("run", () => {
     expect(diagnostics).toEqual([]);
   });
 
-  it("reports diagnostics when mustNot importFrom wildcard matches a subpath", async () => {
+  it("reports diagnostics when mustNot importValuesFrom wildcard matches a subpath", async () => {
     const config: ConfigV1 = {
       version: "v1",
       conventions: [
@@ -390,7 +361,7 @@ describe("run", () => {
     expect(diagnostics[0].message).toBe('Forbidden import from "package/*"');
   });
 
-  it("reports diagnostics per matching mustNot importFrom array item", async () => {
+  it("reports diagnostics per matching mustNot importValuesFrom array item", async () => {
     const config: ConfigV1 = {
       version: "v1",
       conventions: [

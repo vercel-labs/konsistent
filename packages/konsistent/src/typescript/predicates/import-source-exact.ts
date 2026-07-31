@@ -3,7 +3,7 @@ import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
 import { createDiagnostic } from "../../core/diagnostics.js";
 import type { FileStructure } from "../types.js";
 
-export type ImportFromKind = "either" | "type" | "value";
+export type ExactImportSourceKind = "either" | "type" | "value";
 
 function doesImportSourceMatch(opts: {
   from: string;
@@ -17,10 +17,10 @@ function doesImportSourceMatch(opts: {
   return from === expected;
 }
 
-export function checkImportFrom(opts: {
+export function checkExactImportSource(opts: {
   expected: string | string[];
-  importKind?: ImportFromKind;
-  predicateName?: "importFrom" | "importTypesFrom" | "importValuesFrom";
+  importKind?: ExactImportSourceKind;
+  predicateName?: string;
   context: PredicateContext;
   fileStructure: FileStructure;
   conventionName?: string;
@@ -28,8 +28,8 @@ export function checkImportFrom(opts: {
 }): Diagnostic[] {
   const {
     expected,
-    importKind = "either",
-    predicateName = "importFrom",
+    importKind = "value",
+    predicateName = "importValuesFrom",
     context,
     fileStructure,
     conventionName,
