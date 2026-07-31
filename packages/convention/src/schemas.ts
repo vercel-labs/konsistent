@@ -49,6 +49,14 @@ export const ClassDefinitionV1Schema = z.strictObject({
   implement: z.array(ExtendDefinitionV1Schema).optional(),
 });
 
+const ExportValuesPredicateV1Schema = z.array(
+  z.union([z.string(), ExportDefinitionV1Schema])
+);
+const ImportValuesPredicateV1Schema = z.array(
+  z.union([z.string(), ImportDefinitionV1Schema])
+);
+const ImportFromPredicateV1Schema = z.union([z.string(), z.array(z.string())]);
+
 export const MustPredicatesV1Schema = z.strictObject({
   haveType: z.enum(["file", "directory"]).optional(),
   haveFiles: z.array(z.string()).optional(),
@@ -67,7 +75,14 @@ export const MustPredicatesV1Schema = z.strictObject({
   declareClasses: z
     .array(z.union([z.string(), ClassDefinitionV1Schema]))
     .optional(),
-  export: z.array(z.union([z.string(), ExportDefinitionV1Schema])).optional(),
+  exportValues: ExportValuesPredicateV1Schema.optional(),
+  /**
+   * @deprecated Use exportValues instead.
+   */
+  export: ExportValuesPredicateV1Schema.optional().meta({
+    deprecated: true,
+    description: "Use exportValues instead.",
+  }),
   exportTypes: z
     .array(z.union([z.string(), ExportTypeDefinitionV1Schema]))
     .optional(),
@@ -83,14 +98,50 @@ export const MustPredicatesV1Schema = z.strictObject({
   exportClasses: z
     .array(z.union([z.string(), ClassDefinitionV1Schema]))
     .optional(),
-  import: z.array(z.union([z.string(), ImportDefinitionV1Schema])).optional(),
-  importFrom: z.union([z.string(), z.array(z.string())]).optional(),
+  importValues: ImportValuesPredicateV1Schema.optional(),
+  /**
+   * @deprecated Use importValues instead.
+   */
+  import: ImportValuesPredicateV1Schema.optional().meta({
+    deprecated: true,
+    description: "Use importValues instead.",
+  }),
+  importValuesFrom: ImportFromPredicateV1Schema.optional(),
+  importTypesFrom: ImportFromPredicateV1Schema.optional(),
+  /**
+   * @deprecated Use importValuesFrom or importTypesFrom instead.
+   */
+  importFrom: ImportFromPredicateV1Schema.optional().meta({
+    deprecated: true,
+    description: "Use importValuesFrom or importTypesFrom instead.",
+  }),
   importTypes: z
     .array(z.union([z.string(), ImportDefinitionV1Schema]))
     .optional(),
-  importFromCurrentDir: z.boolean().optional(),
-  importFromParents: z.boolean().optional(),
-  importFromExternals: z.boolean().optional(),
+  importValuesFromCurrentDir: z.boolean().optional(),
+  /**
+   * @deprecated Use importValuesFromCurrentDir instead.
+   */
+  importFromCurrentDir: z.boolean().optional().meta({
+    deprecated: true,
+    description: "Use importValuesFromCurrentDir instead.",
+  }),
+  importValuesFromParents: z.boolean().optional(),
+  /**
+   * @deprecated Use importValuesFromParents instead.
+   */
+  importFromParents: z.boolean().optional().meta({
+    deprecated: true,
+    description: "Use importValuesFromParents instead.",
+  }),
+  importValuesFromExternals: z.boolean().optional(),
+  /**
+   * @deprecated Use importValuesFromExternals instead.
+   */
+  importFromExternals: z.boolean().optional().meta({
+    deprecated: true,
+    description: "Use importValuesFromExternals instead.",
+  }),
   importTypesFromCurrentDir: z.boolean().optional(),
   importTypesFromParents: z.boolean().optional(),
   importTypesFromExternals: z.boolean().optional(),

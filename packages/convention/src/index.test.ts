@@ -25,7 +25,7 @@ describe("ReusableConventionV1Schema", () => {
       severity: "warning",
       if: { hasFile: "${name}.ts" },
       for: { files: "${name}.ts" },
-      must: { export: ["default"] },
+      must: { exportValues: ["default"] },
     });
     expect(result.success).toBe(true);
   });
@@ -55,7 +55,6 @@ describe("ReusableConventionV1Schema", () => {
         declareFunctions: [
           {
             name: "createLocal",
-            receiveParamOfType: "LocalConfig",
             receiveParamsOfTypes: ["LocalConfig"],
             returnValueOfType: "Local",
           },
@@ -69,10 +68,11 @@ describe("ReusableConventionV1Schema", () => {
           },
         ],
         useDeclarationOrder: ["localValue", "createLocal"],
-        importFrom: ["react", "zod/*"],
-        importFromCurrentDir: true,
-        importFromParents: false,
-        importFromExternals: true,
+        importValuesFrom: ["react", "zod/*"],
+        importTypesFrom: ["react", "zod/*"],
+        importValuesFromCurrentDir: true,
+        importValuesFromParents: false,
+        importValuesFromExternals: true,
         importTypesFromCurrentDir: true,
         importTypesFromParents: false,
         importTypesFromExternals: true,
@@ -83,6 +83,22 @@ describe("ReusableConventionV1Schema", () => {
             schema: { type: "object", properties: {} },
           },
         ],
+      },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("continues to accept deprecated value predicate names", () => {
+    const result = ReusableConventionV1Schema.safeParse({
+      name: "legacy",
+      description: "Legacy predicate compatibility.",
+      must: {
+        export: ["value"],
+        import: ["value"],
+        importFrom: "react",
+        importFromCurrentDir: false,
+        importFromParents: false,
+        importFromExternals: false,
       },
     });
     expect(result.success).toBe(true);
@@ -147,7 +163,11 @@ describe("ReusableConventionsPackageV1Schema", () => {
     const result = ReusableConventionsPackageV1Schema.safeParse({
       conventionSpecVersion: "v1",
       conventions: [
-        { name: "a", description: "d", mustNot: { export: ["debug"] } },
+        {
+          name: "a",
+          description: "d",
+          mustNot: { exportValues: ["debug"] },
+        },
       ],
     });
     expect(result.success).toBe(true);

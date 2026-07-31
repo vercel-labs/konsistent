@@ -644,7 +644,34 @@
                       ]
                     }
                   },
+                  "exportValues": {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "from": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "name"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  },
                   "export": {
+                    "deprecated": true,
+                    "description": "Use exportValues instead.",
                     "type": "array",
                     "items": {
                       "anyOf": [
@@ -1181,7 +1208,7 @@
                       ]
                     }
                   },
-                  "import": {
+                  "importValues": {
                     "type": "array",
                     "items": {
                       "anyOf": [
@@ -1206,7 +1233,62 @@
                       ]
                     }
                   },
+                  "import": {
+                    "deprecated": true,
+                    "description": "Use importValues instead.",
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "from": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "name"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  },
+                  "importValuesFrom": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  },
+                  "importTypesFrom": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  },
                   "importFrom": {
+                    "deprecated": true,
+                    "description": "Use importValuesFrom or importTypesFrom instead.",
                     "anyOf": [
                       {
                         "type": "string"
@@ -1244,13 +1326,28 @@
                       ]
                     }
                   },
+                  "importValuesFromCurrentDir": {
+                    "type": "boolean"
+                  },
                   "importFromCurrentDir": {
+                    "deprecated": true,
+                    "description": "Use importValuesFromCurrentDir instead.",
+                    "type": "boolean"
+                  },
+                  "importValuesFromParents": {
                     "type": "boolean"
                   },
                   "importFromParents": {
+                    "deprecated": true,
+                    "description": "Use importValuesFromParents instead.",
+                    "type": "boolean"
+                  },
+                  "importValuesFromExternals": {
                     "type": "boolean"
                   },
                   "importFromExternals": {
+                    "deprecated": true,
+                    "description": "Use importValuesFromExternals instead.",
                     "type": "boolean"
                   },
                   "importTypesFromCurrentDir": {
@@ -1779,7 +1876,34 @@
                       ]
                     }
                   },
+                  "exportValues": {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "from": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "name"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  },
                   "export": {
+                    "deprecated": true,
+                    "description": "Use exportValues instead.",
                     "type": "array",
                     "items": {
                       "anyOf": [
@@ -2316,7 +2440,7 @@
                       ]
                     }
                   },
-                  "import": {
+                  "importValues": {
                     "type": "array",
                     "items": {
                       "anyOf": [
@@ -2341,7 +2465,62 @@
                       ]
                     }
                   },
+                  "import": {
+                    "deprecated": true,
+                    "description": "Use importValues instead.",
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "from": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "name"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  },
+                  "importValuesFrom": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  },
+                  "importTypesFrom": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  },
                   "importFrom": {
+                    "deprecated": true,
+                    "description": "Use importValuesFrom or importTypesFrom instead.",
                     "anyOf": [
                       {
                         "type": "string"
@@ -2379,13 +2558,28 @@
                       ]
                     }
                   },
+                  "importValuesFromCurrentDir": {
+                    "type": "boolean"
+                  },
                   "importFromCurrentDir": {
+                    "deprecated": true,
+                    "description": "Use importValuesFromCurrentDir instead.",
+                    "type": "boolean"
+                  },
+                  "importValuesFromParents": {
                     "type": "boolean"
                   },
                   "importFromParents": {
+                    "deprecated": true,
+                    "description": "Use importValuesFromParents instead.",
+                    "type": "boolean"
+                  },
+                  "importValuesFromExternals": {
                     "type": "boolean"
                   },
                   "importFromExternals": {
+                    "deprecated": true,
+                    "description": "Use importValuesFromExternals instead.",
                     "type": "boolean"
                   },
                   "importTypesFromCurrentDir": {
@@ -2972,7 +3166,34 @@
                               ]
                             }
                           },
+                          "exportValues": {
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "from": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "name"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
+                            }
+                          },
                           "export": {
+                            "deprecated": true,
+                            "description": "Use exportValues instead.",
                             "type": "array",
                             "items": {
                               "anyOf": [
@@ -3509,7 +3730,7 @@
                               ]
                             }
                           },
-                          "import": {
+                          "importValues": {
                             "type": "array",
                             "items": {
                               "anyOf": [
@@ -3534,7 +3755,62 @@
                               ]
                             }
                           },
+                          "import": {
+                            "deprecated": true,
+                            "description": "Use importValues instead.",
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "from": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "name"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
+                            }
+                          },
+                          "importValuesFrom": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            ]
+                          },
+                          "importTypesFrom": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            ]
+                          },
                           "importFrom": {
+                            "deprecated": true,
+                            "description": "Use importValuesFrom or importTypesFrom instead.",
                             "anyOf": [
                               {
                                 "type": "string"
@@ -3572,13 +3848,28 @@
                               ]
                             }
                           },
+                          "importValuesFromCurrentDir": {
+                            "type": "boolean"
+                          },
                           "importFromCurrentDir": {
+                            "deprecated": true,
+                            "description": "Use importValuesFromCurrentDir instead.",
+                            "type": "boolean"
+                          },
+                          "importValuesFromParents": {
                             "type": "boolean"
                           },
                           "importFromParents": {
+                            "deprecated": true,
+                            "description": "Use importValuesFromParents instead.",
+                            "type": "boolean"
+                          },
+                          "importValuesFromExternals": {
                             "type": "boolean"
                           },
                           "importFromExternals": {
+                            "deprecated": true,
+                            "description": "Use importValuesFromExternals instead.",
                             "type": "boolean"
                           },
                           "importTypesFromCurrentDir": {
@@ -4183,7 +4474,34 @@
                                             ]
                                           }
                                         },
+                                        "exportValues": {
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "name": {
+                                                    "type": "string"
+                                                  },
+                                                  "from": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "name"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
                                         "export": {
+                                          "deprecated": true,
+                                          "description": "Use exportValues instead.",
                                           "type": "array",
                                           "items": {
                                             "anyOf": [
@@ -4720,7 +5038,7 @@
                                             ]
                                           }
                                         },
-                                        "import": {
+                                        "importValues": {
                                           "type": "array",
                                           "items": {
                                             "anyOf": [
@@ -4745,7 +5063,62 @@
                                             ]
                                           }
                                         },
+                                        "import": {
+                                          "deprecated": true,
+                                          "description": "Use importValues instead.",
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "name": {
+                                                    "type": "string"
+                                                  },
+                                                  "from": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "name"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "importValuesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "importTypesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
                                         "importFrom": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFrom or importTypesFrom instead.",
                                           "anyOf": [
                                             {
                                               "type": "string"
@@ -4783,13 +5156,28 @@
                                             ]
                                           }
                                         },
+                                        "importValuesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
                                         "importFromCurrentDir": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromCurrentDir instead.",
+                                          "type": "boolean"
+                                        },
+                                        "importValuesFromParents": {
                                           "type": "boolean"
                                         },
                                         "importFromParents": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromParents instead.",
+                                          "type": "boolean"
+                                        },
+                                        "importValuesFromExternals": {
                                           "type": "boolean"
                                         },
                                         "importFromExternals": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromExternals instead.",
                                           "type": "boolean"
                                         },
                                         "importTypesFromCurrentDir": {
@@ -5318,7 +5706,34 @@
                                             ]
                                           }
                                         },
+                                        "exportValues": {
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "name": {
+                                                    "type": "string"
+                                                  },
+                                                  "from": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "name"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
                                         "export": {
+                                          "deprecated": true,
+                                          "description": "Use exportValues instead.",
                                           "type": "array",
                                           "items": {
                                             "anyOf": [
@@ -5855,7 +6270,7 @@
                                             ]
                                           }
                                         },
-                                        "import": {
+                                        "importValues": {
                                           "type": "array",
                                           "items": {
                                             "anyOf": [
@@ -5880,7 +6295,62 @@
                                             ]
                                           }
                                         },
+                                        "import": {
+                                          "deprecated": true,
+                                          "description": "Use importValues instead.",
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "name": {
+                                                    "type": "string"
+                                                  },
+                                                  "from": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "name"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "importValuesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "importTypesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
                                         "importFrom": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFrom or importTypesFrom instead.",
                                           "anyOf": [
                                             {
                                               "type": "string"
@@ -5918,13 +6388,28 @@
                                             ]
                                           }
                                         },
+                                        "importValuesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
                                         "importFromCurrentDir": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromCurrentDir instead.",
+                                          "type": "boolean"
+                                        },
+                                        "importValuesFromParents": {
                                           "type": "boolean"
                                         },
                                         "importFromParents": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromParents instead.",
+                                          "type": "boolean"
+                                        },
+                                        "importValuesFromExternals": {
                                           "type": "boolean"
                                         },
                                         "importFromExternals": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromExternals instead.",
                                           "type": "boolean"
                                         },
                                         "importTypesFromCurrentDir": {
@@ -6525,7 +7010,34 @@
                                             ]
                                           }
                                         },
+                                        "exportValues": {
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "name": {
+                                                    "type": "string"
+                                                  },
+                                                  "from": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "name"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
                                         "export": {
+                                          "deprecated": true,
+                                          "description": "Use exportValues instead.",
                                           "type": "array",
                                           "items": {
                                             "anyOf": [
@@ -7062,7 +7574,7 @@
                                             ]
                                           }
                                         },
-                                        "import": {
+                                        "importValues": {
                                           "type": "array",
                                           "items": {
                                             "anyOf": [
@@ -7087,7 +7599,62 @@
                                             ]
                                           }
                                         },
+                                        "import": {
+                                          "deprecated": true,
+                                          "description": "Use importValues instead.",
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "name": {
+                                                    "type": "string"
+                                                  },
+                                                  "from": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "name"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "importValuesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "importTypesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
                                         "importFrom": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFrom or importTypesFrom instead.",
                                           "anyOf": [
                                             {
                                               "type": "string"
@@ -7125,13 +7692,28 @@
                                             ]
                                           }
                                         },
+                                        "importValuesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
                                         "importFromCurrentDir": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromCurrentDir instead.",
+                                          "type": "boolean"
+                                        },
+                                        "importValuesFromParents": {
                                           "type": "boolean"
                                         },
                                         "importFromParents": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromParents instead.",
+                                          "type": "boolean"
+                                        },
+                                        "importValuesFromExternals": {
                                           "type": "boolean"
                                         },
                                         "importFromExternals": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromExternals instead.",
                                           "type": "boolean"
                                         },
                                         "importTypesFromCurrentDir": {
@@ -7660,7 +8242,34 @@
                                             ]
                                           }
                                         },
+                                        "exportValues": {
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "name": {
+                                                    "type": "string"
+                                                  },
+                                                  "from": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "name"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
                                         "export": {
+                                          "deprecated": true,
+                                          "description": "Use exportValues instead.",
                                           "type": "array",
                                           "items": {
                                             "anyOf": [
@@ -8197,7 +8806,7 @@
                                             ]
                                           }
                                         },
-                                        "import": {
+                                        "importValues": {
                                           "type": "array",
                                           "items": {
                                             "anyOf": [
@@ -8222,7 +8831,62 @@
                                             ]
                                           }
                                         },
+                                        "import": {
+                                          "deprecated": true,
+                                          "description": "Use importValues instead.",
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "name": {
+                                                    "type": "string"
+                                                  },
+                                                  "from": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "name"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "importValuesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "importTypesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
                                         "importFrom": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFrom or importTypesFrom instead.",
                                           "anyOf": [
                                             {
                                               "type": "string"
@@ -8260,13 +8924,28 @@
                                             ]
                                           }
                                         },
+                                        "importValuesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
                                         "importFromCurrentDir": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromCurrentDir instead.",
+                                          "type": "boolean"
+                                        },
+                                        "importValuesFromParents": {
                                           "type": "boolean"
                                         },
                                         "importFromParents": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromParents instead.",
+                                          "type": "boolean"
+                                        },
+                                        "importValuesFromExternals": {
                                           "type": "boolean"
                                         },
                                         "importFromExternals": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromExternals instead.",
                                           "type": "boolean"
                                         },
                                         "importTypesFromCurrentDir": {
@@ -8873,7 +9552,34 @@
                                         ]
                                       }
                                     },
+                                    "exportValues": {
+                                      "type": "array",
+                                      "items": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "object",
+                                            "properties": {
+                                              "name": {
+                                                "type": "string"
+                                              },
+                                              "from": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "name"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        ]
+                                      }
+                                    },
                                     "export": {
+                                      "deprecated": true,
+                                      "description": "Use exportValues instead.",
                                       "type": "array",
                                       "items": {
                                         "anyOf": [
@@ -9410,7 +10116,7 @@
                                         ]
                                       }
                                     },
-                                    "import": {
+                                    "importValues": {
                                       "type": "array",
                                       "items": {
                                         "anyOf": [
@@ -9435,7 +10141,62 @@
                                         ]
                                       }
                                     },
+                                    "import": {
+                                      "deprecated": true,
+                                      "description": "Use importValues instead.",
+                                      "type": "array",
+                                      "items": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "object",
+                                            "properties": {
+                                              "name": {
+                                                "type": "string"
+                                              },
+                                              "from": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "name"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "importValuesFrom": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "importTypesFrom": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
+                                    },
                                     "importFrom": {
+                                      "deprecated": true,
+                                      "description": "Use importValuesFrom or importTypesFrom instead.",
                                       "anyOf": [
                                         {
                                           "type": "string"
@@ -9473,13 +10234,28 @@
                                         ]
                                       }
                                     },
+                                    "importValuesFromCurrentDir": {
+                                      "type": "boolean"
+                                    },
                                     "importFromCurrentDir": {
+                                      "deprecated": true,
+                                      "description": "Use importValuesFromCurrentDir instead.",
+                                      "type": "boolean"
+                                    },
+                                    "importValuesFromParents": {
                                       "type": "boolean"
                                     },
                                     "importFromParents": {
+                                      "deprecated": true,
+                                      "description": "Use importValuesFromParents instead.",
+                                      "type": "boolean"
+                                    },
+                                    "importValuesFromExternals": {
                                       "type": "boolean"
                                     },
                                     "importFromExternals": {
+                                      "deprecated": true,
+                                      "description": "Use importValuesFromExternals instead.",
                                       "type": "boolean"
                                     },
                                     "importTypesFromCurrentDir": {
@@ -10008,7 +10784,34 @@
                                         ]
                                       }
                                     },
+                                    "exportValues": {
+                                      "type": "array",
+                                      "items": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "object",
+                                            "properties": {
+                                              "name": {
+                                                "type": "string"
+                                              },
+                                              "from": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "name"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        ]
+                                      }
+                                    },
                                     "export": {
+                                      "deprecated": true,
+                                      "description": "Use exportValues instead.",
                                       "type": "array",
                                       "items": {
                                         "anyOf": [
@@ -10545,7 +11348,7 @@
                                         ]
                                       }
                                     },
-                                    "import": {
+                                    "importValues": {
                                       "type": "array",
                                       "items": {
                                         "anyOf": [
@@ -10570,7 +11373,62 @@
                                         ]
                                       }
                                     },
+                                    "import": {
+                                      "deprecated": true,
+                                      "description": "Use importValues instead.",
+                                      "type": "array",
+                                      "items": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "object",
+                                            "properties": {
+                                              "name": {
+                                                "type": "string"
+                                              },
+                                              "from": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "name"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "importValuesFrom": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "importTypesFrom": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
+                                    },
                                     "importFrom": {
+                                      "deprecated": true,
+                                      "description": "Use importValuesFrom or importTypesFrom instead.",
                                       "anyOf": [
                                         {
                                           "type": "string"
@@ -10608,13 +11466,28 @@
                                         ]
                                       }
                                     },
+                                    "importValuesFromCurrentDir": {
+                                      "type": "boolean"
+                                    },
                                     "importFromCurrentDir": {
+                                      "deprecated": true,
+                                      "description": "Use importValuesFromCurrentDir instead.",
+                                      "type": "boolean"
+                                    },
+                                    "importValuesFromParents": {
                                       "type": "boolean"
                                     },
                                     "importFromParents": {
+                                      "deprecated": true,
+                                      "description": "Use importValuesFromParents instead.",
+                                      "type": "boolean"
+                                    },
+                                    "importValuesFromExternals": {
                                       "type": "boolean"
                                     },
                                     "importFromExternals": {
+                                      "deprecated": true,
+                                      "description": "Use importValuesFromExternals instead.",
                                       "type": "boolean"
                                     },
                                     "importTypesFromCurrentDir": {
@@ -11154,7 +12027,34 @@
                           ]
                         }
                       },
+                      "exportValues": {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "from": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "name"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
                       "export": {
+                        "deprecated": true,
+                        "description": "Use exportValues instead.",
                         "type": "array",
                         "items": {
                           "anyOf": [
@@ -11691,7 +12591,7 @@
                           ]
                         }
                       },
-                      "import": {
+                      "importValues": {
                         "type": "array",
                         "items": {
                           "anyOf": [
@@ -11716,7 +12616,62 @@
                           ]
                         }
                       },
+                      "import": {
+                        "deprecated": true,
+                        "description": "Use importValues instead.",
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "from": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "name"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "importValuesFrom": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ]
+                      },
+                      "importTypesFrom": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ]
+                      },
                       "importFrom": {
+                        "deprecated": true,
+                        "description": "Use importValuesFrom or importTypesFrom instead.",
                         "anyOf": [
                           {
                             "type": "string"
@@ -11754,13 +12709,28 @@
                           ]
                         }
                       },
+                      "importValuesFromCurrentDir": {
+                        "type": "boolean"
+                      },
                       "importFromCurrentDir": {
+                        "deprecated": true,
+                        "description": "Use importValuesFromCurrentDir instead.",
+                        "type": "boolean"
+                      },
+                      "importValuesFromParents": {
                         "type": "boolean"
                       },
                       "importFromParents": {
+                        "deprecated": true,
+                        "description": "Use importValuesFromParents instead.",
+                        "type": "boolean"
+                      },
+                      "importValuesFromExternals": {
                         "type": "boolean"
                       },
                       "importFromExternals": {
+                        "deprecated": true,
+                        "description": "Use importValuesFromExternals instead.",
                         "type": "boolean"
                       },
                       "importTypesFromCurrentDir": {
@@ -12346,7 +13316,34 @@
                               ]
                             }
                           },
+                          "exportValues": {
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "from": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "name"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
+                            }
+                          },
                           "export": {
+                            "deprecated": true,
+                            "description": "Use exportValues instead.",
                             "type": "array",
                             "items": {
                               "anyOf": [
@@ -12883,7 +13880,7 @@
                               ]
                             }
                           },
-                          "import": {
+                          "importValues": {
                             "type": "array",
                             "items": {
                               "anyOf": [
@@ -12908,7 +13905,62 @@
                               ]
                             }
                           },
+                          "import": {
+                            "deprecated": true,
+                            "description": "Use importValues instead.",
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "from": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "name"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
+                            }
+                          },
+                          "importValuesFrom": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            ]
+                          },
+                          "importTypesFrom": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            ]
+                          },
                           "importFrom": {
+                            "deprecated": true,
+                            "description": "Use importValuesFrom or importTypesFrom instead.",
                             "anyOf": [
                               {
                                 "type": "string"
@@ -12946,13 +13998,28 @@
                               ]
                             }
                           },
+                          "importValuesFromCurrentDir": {
+                            "type": "boolean"
+                          },
                           "importFromCurrentDir": {
+                            "deprecated": true,
+                            "description": "Use importValuesFromCurrentDir instead.",
+                            "type": "boolean"
+                          },
+                          "importValuesFromParents": {
                             "type": "boolean"
                           },
                           "importFromParents": {
+                            "deprecated": true,
+                            "description": "Use importValuesFromParents instead.",
+                            "type": "boolean"
+                          },
+                          "importValuesFromExternals": {
                             "type": "boolean"
                           },
                           "importFromExternals": {
+                            "deprecated": true,
+                            "description": "Use importValuesFromExternals instead.",
                             "type": "boolean"
                           },
                           "importTypesFromCurrentDir": {
@@ -13557,7 +14624,34 @@
                                             ]
                                           }
                                         },
+                                        "exportValues": {
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "name": {
+                                                    "type": "string"
+                                                  },
+                                                  "from": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "name"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
                                         "export": {
+                                          "deprecated": true,
+                                          "description": "Use exportValues instead.",
                                           "type": "array",
                                           "items": {
                                             "anyOf": [
@@ -14094,7 +15188,7 @@
                                             ]
                                           }
                                         },
-                                        "import": {
+                                        "importValues": {
                                           "type": "array",
                                           "items": {
                                             "anyOf": [
@@ -14119,7 +15213,62 @@
                                             ]
                                           }
                                         },
+                                        "import": {
+                                          "deprecated": true,
+                                          "description": "Use importValues instead.",
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "name": {
+                                                    "type": "string"
+                                                  },
+                                                  "from": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "name"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "importValuesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "importTypesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
                                         "importFrom": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFrom or importTypesFrom instead.",
                                           "anyOf": [
                                             {
                                               "type": "string"
@@ -14157,13 +15306,28 @@
                                             ]
                                           }
                                         },
+                                        "importValuesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
                                         "importFromCurrentDir": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromCurrentDir instead.",
+                                          "type": "boolean"
+                                        },
+                                        "importValuesFromParents": {
                                           "type": "boolean"
                                         },
                                         "importFromParents": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromParents instead.",
+                                          "type": "boolean"
+                                        },
+                                        "importValuesFromExternals": {
                                           "type": "boolean"
                                         },
                                         "importFromExternals": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromExternals instead.",
                                           "type": "boolean"
                                         },
                                         "importTypesFromCurrentDir": {
@@ -14692,7 +15856,34 @@
                                             ]
                                           }
                                         },
+                                        "exportValues": {
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "name": {
+                                                    "type": "string"
+                                                  },
+                                                  "from": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "name"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
                                         "export": {
+                                          "deprecated": true,
+                                          "description": "Use exportValues instead.",
                                           "type": "array",
                                           "items": {
                                             "anyOf": [
@@ -15229,7 +16420,7 @@
                                             ]
                                           }
                                         },
-                                        "import": {
+                                        "importValues": {
                                           "type": "array",
                                           "items": {
                                             "anyOf": [
@@ -15254,7 +16445,62 @@
                                             ]
                                           }
                                         },
+                                        "import": {
+                                          "deprecated": true,
+                                          "description": "Use importValues instead.",
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "name": {
+                                                    "type": "string"
+                                                  },
+                                                  "from": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "name"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "importValuesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "importTypesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
                                         "importFrom": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFrom or importTypesFrom instead.",
                                           "anyOf": [
                                             {
                                               "type": "string"
@@ -15292,13 +16538,28 @@
                                             ]
                                           }
                                         },
+                                        "importValuesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
                                         "importFromCurrentDir": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromCurrentDir instead.",
+                                          "type": "boolean"
+                                        },
+                                        "importValuesFromParents": {
                                           "type": "boolean"
                                         },
                                         "importFromParents": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromParents instead.",
+                                          "type": "boolean"
+                                        },
+                                        "importValuesFromExternals": {
                                           "type": "boolean"
                                         },
                                         "importFromExternals": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromExternals instead.",
                                           "type": "boolean"
                                         },
                                         "importTypesFromCurrentDir": {
@@ -15899,7 +17160,34 @@
                                             ]
                                           }
                                         },
+                                        "exportValues": {
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "name": {
+                                                    "type": "string"
+                                                  },
+                                                  "from": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "name"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
                                         "export": {
+                                          "deprecated": true,
+                                          "description": "Use exportValues instead.",
                                           "type": "array",
                                           "items": {
                                             "anyOf": [
@@ -16436,7 +17724,7 @@
                                             ]
                                           }
                                         },
-                                        "import": {
+                                        "importValues": {
                                           "type": "array",
                                           "items": {
                                             "anyOf": [
@@ -16461,7 +17749,62 @@
                                             ]
                                           }
                                         },
+                                        "import": {
+                                          "deprecated": true,
+                                          "description": "Use importValues instead.",
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "name": {
+                                                    "type": "string"
+                                                  },
+                                                  "from": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "name"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "importValuesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "importTypesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
                                         "importFrom": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFrom or importTypesFrom instead.",
                                           "anyOf": [
                                             {
                                               "type": "string"
@@ -16499,13 +17842,28 @@
                                             ]
                                           }
                                         },
+                                        "importValuesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
                                         "importFromCurrentDir": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromCurrentDir instead.",
+                                          "type": "boolean"
+                                        },
+                                        "importValuesFromParents": {
                                           "type": "boolean"
                                         },
                                         "importFromParents": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromParents instead.",
+                                          "type": "boolean"
+                                        },
+                                        "importValuesFromExternals": {
                                           "type": "boolean"
                                         },
                                         "importFromExternals": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromExternals instead.",
                                           "type": "boolean"
                                         },
                                         "importTypesFromCurrentDir": {
@@ -17034,7 +18392,34 @@
                                             ]
                                           }
                                         },
+                                        "exportValues": {
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "name": {
+                                                    "type": "string"
+                                                  },
+                                                  "from": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "name"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
                                         "export": {
+                                          "deprecated": true,
+                                          "description": "Use exportValues instead.",
                                           "type": "array",
                                           "items": {
                                             "anyOf": [
@@ -17571,7 +18956,7 @@
                                             ]
                                           }
                                         },
-                                        "import": {
+                                        "importValues": {
                                           "type": "array",
                                           "items": {
                                             "anyOf": [
@@ -17596,7 +18981,62 @@
                                             ]
                                           }
                                         },
+                                        "import": {
+                                          "deprecated": true,
+                                          "description": "Use importValues instead.",
+                                          "type": "array",
+                                          "items": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "name": {
+                                                    "type": "string"
+                                                  },
+                                                  "from": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "name"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "importValuesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "importTypesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
                                         "importFrom": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFrom or importTypesFrom instead.",
                                           "anyOf": [
                                             {
                                               "type": "string"
@@ -17634,13 +19074,28 @@
                                             ]
                                           }
                                         },
+                                        "importValuesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
                                         "importFromCurrentDir": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromCurrentDir instead.",
+                                          "type": "boolean"
+                                        },
+                                        "importValuesFromParents": {
                                           "type": "boolean"
                                         },
                                         "importFromParents": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromParents instead.",
+                                          "type": "boolean"
+                                        },
+                                        "importValuesFromExternals": {
                                           "type": "boolean"
                                         },
                                         "importFromExternals": {
+                                          "deprecated": true,
+                                          "description": "Use importValuesFromExternals instead.",
                                           "type": "boolean"
                                         },
                                         "importTypesFromCurrentDir": {
@@ -18247,7 +19702,34 @@
                                         ]
                                       }
                                     },
+                                    "exportValues": {
+                                      "type": "array",
+                                      "items": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "object",
+                                            "properties": {
+                                              "name": {
+                                                "type": "string"
+                                              },
+                                              "from": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "name"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        ]
+                                      }
+                                    },
                                     "export": {
+                                      "deprecated": true,
+                                      "description": "Use exportValues instead.",
                                       "type": "array",
                                       "items": {
                                         "anyOf": [
@@ -18784,7 +20266,7 @@
                                         ]
                                       }
                                     },
-                                    "import": {
+                                    "importValues": {
                                       "type": "array",
                                       "items": {
                                         "anyOf": [
@@ -18809,7 +20291,62 @@
                                         ]
                                       }
                                     },
+                                    "import": {
+                                      "deprecated": true,
+                                      "description": "Use importValues instead.",
+                                      "type": "array",
+                                      "items": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "object",
+                                            "properties": {
+                                              "name": {
+                                                "type": "string"
+                                              },
+                                              "from": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "name"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "importValuesFrom": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "importTypesFrom": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
+                                    },
                                     "importFrom": {
+                                      "deprecated": true,
+                                      "description": "Use importValuesFrom or importTypesFrom instead.",
                                       "anyOf": [
                                         {
                                           "type": "string"
@@ -18847,13 +20384,28 @@
                                         ]
                                       }
                                     },
+                                    "importValuesFromCurrentDir": {
+                                      "type": "boolean"
+                                    },
                                     "importFromCurrentDir": {
+                                      "deprecated": true,
+                                      "description": "Use importValuesFromCurrentDir instead.",
+                                      "type": "boolean"
+                                    },
+                                    "importValuesFromParents": {
                                       "type": "boolean"
                                     },
                                     "importFromParents": {
+                                      "deprecated": true,
+                                      "description": "Use importValuesFromParents instead.",
+                                      "type": "boolean"
+                                    },
+                                    "importValuesFromExternals": {
                                       "type": "boolean"
                                     },
                                     "importFromExternals": {
+                                      "deprecated": true,
+                                      "description": "Use importValuesFromExternals instead.",
                                       "type": "boolean"
                                     },
                                     "importTypesFromCurrentDir": {
@@ -19382,7 +20934,34 @@
                                         ]
                                       }
                                     },
+                                    "exportValues": {
+                                      "type": "array",
+                                      "items": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "object",
+                                            "properties": {
+                                              "name": {
+                                                "type": "string"
+                                              },
+                                              "from": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "name"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        ]
+                                      }
+                                    },
                                     "export": {
+                                      "deprecated": true,
+                                      "description": "Use exportValues instead.",
                                       "type": "array",
                                       "items": {
                                         "anyOf": [
@@ -19919,7 +21498,7 @@
                                         ]
                                       }
                                     },
-                                    "import": {
+                                    "importValues": {
                                       "type": "array",
                                       "items": {
                                         "anyOf": [
@@ -19944,7 +21523,62 @@
                                         ]
                                       }
                                     },
+                                    "import": {
+                                      "deprecated": true,
+                                      "description": "Use importValues instead.",
+                                      "type": "array",
+                                      "items": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "object",
+                                            "properties": {
+                                              "name": {
+                                                "type": "string"
+                                              },
+                                              "from": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "name"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "importValuesFrom": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "importTypesFrom": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
+                                    },
                                     "importFrom": {
+                                      "deprecated": true,
+                                      "description": "Use importValuesFrom or importTypesFrom instead.",
                                       "anyOf": [
                                         {
                                           "type": "string"
@@ -19982,13 +21616,28 @@
                                         ]
                                       }
                                     },
+                                    "importValuesFromCurrentDir": {
+                                      "type": "boolean"
+                                    },
                                     "importFromCurrentDir": {
+                                      "deprecated": true,
+                                      "description": "Use importValuesFromCurrentDir instead.",
+                                      "type": "boolean"
+                                    },
+                                    "importValuesFromParents": {
                                       "type": "boolean"
                                     },
                                     "importFromParents": {
+                                      "deprecated": true,
+                                      "description": "Use importValuesFromParents instead.",
+                                      "type": "boolean"
+                                    },
+                                    "importValuesFromExternals": {
                                       "type": "boolean"
                                     },
                                     "importFromExternals": {
+                                      "deprecated": true,
+                                      "description": "Use importValuesFromExternals instead.",
                                       "type": "boolean"
                                     },
                                     "importTypesFromCurrentDir": {
@@ -20528,7 +22177,34 @@
                           ]
                         }
                       },
+                      "exportValues": {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "from": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "name"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
                       "export": {
+                        "deprecated": true,
+                        "description": "Use exportValues instead.",
                         "type": "array",
                         "items": {
                           "anyOf": [
@@ -21065,7 +22741,7 @@
                           ]
                         }
                       },
-                      "import": {
+                      "importValues": {
                         "type": "array",
                         "items": {
                           "anyOf": [
@@ -21090,7 +22766,62 @@
                           ]
                         }
                       },
+                      "import": {
+                        "deprecated": true,
+                        "description": "Use importValues instead.",
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "from": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "name"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "importValuesFrom": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ]
+                      },
+                      "importTypesFrom": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ]
+                      },
                       "importFrom": {
+                        "deprecated": true,
+                        "description": "Use importValuesFrom or importTypesFrom instead.",
                         "anyOf": [
                           {
                             "type": "string"
@@ -21128,13 +22859,28 @@
                           ]
                         }
                       },
+                      "importValuesFromCurrentDir": {
+                        "type": "boolean"
+                      },
                       "importFromCurrentDir": {
+                        "deprecated": true,
+                        "description": "Use importValuesFromCurrentDir instead.",
+                        "type": "boolean"
+                      },
+                      "importValuesFromParents": {
                         "type": "boolean"
                       },
                       "importFromParents": {
+                        "deprecated": true,
+                        "description": "Use importValuesFromParents instead.",
+                        "type": "boolean"
+                      },
+                      "importValuesFromExternals": {
                         "type": "boolean"
                       },
                       "importFromExternals": {
+                        "deprecated": true,
+                        "description": "Use importValuesFromExternals instead.",
                         "type": "boolean"
                       },
                       "importTypesFromCurrentDir": {

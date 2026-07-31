@@ -37,6 +37,35 @@ describe("run", () => {
     expect(filesChecked).toBe(0);
   });
 
+  it("preserves legacy predicate names in compatibility diagnostics", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/index.ts",
+          must: {
+            export: ["missingExport"],
+            import: ["missingImport"],
+            importFrom: "missing-package",
+          },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/index.ts", ["src/index.ts"]]]),
+      files: new Set(["src/index.ts"]),
+      fileContents: new Map([["src/index.ts", ""]]),
+    });
+
+    const { diagnostics } = await run({ config, fileSystem: fs });
+
+    expect(diagnostics.map((diagnostic) => diagnostic.predicateName)).toEqual([
+      "export",
+      "import",
+      "importFrom",
+    ]);
+  });
+
   it("returns diagnostics when haveType fails", async () => {
     const config: ConfigV1 = {
       version: "v1",
@@ -323,7 +352,7 @@ describe("run", () => {
       conventions: [
         {
           paths: "src/module.ts",
-          mustNot: { importFrom: "package" },
+          mustNot: { importValuesFrom: "package" },
         },
       ],
     };
@@ -344,7 +373,7 @@ describe("run", () => {
       conventions: [
         {
           paths: "src/module.ts",
-          mustNot: { importFrom: "package/*" },
+          mustNot: { importValuesFrom: "package/*" },
         },
       ],
     };
@@ -357,7 +386,7 @@ describe("run", () => {
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
-    expect(diagnostics[0].predicateName).toBe("mustNot.importFrom");
+    expect(diagnostics[0].predicateName).toBe("mustNot.importValuesFrom");
     expect(diagnostics[0].message).toBe('Forbidden import from "package/*"');
   });
 
@@ -367,7 +396,7 @@ describe("run", () => {
       conventions: [
         {
           paths: "src/module.ts",
-          mustNot: { importFrom: ["react", "package/*", "never"] },
+          mustNot: { importValuesFrom: ["react", "package/*", "never"] },
         },
       ],
     };
@@ -1426,12 +1455,12 @@ describe("caching behavior", () => {
         {
           name: "convention-a",
           paths: "src/shared.ts",
-          must: { export: [{ name: "x" }] },
+          must: { exportValues: [{ name: "x" }] },
         },
         {
           name: "convention-b",
           paths: "src/shared.ts",
-          must: { export: [{ name: "x" }] },
+          must: { exportValues: [{ name: "x" }] },
         },
       ],
     };
@@ -1466,11 +1495,11 @@ describe("caching behavior", () => {
           must: [
             {
               for: { files: "*.ts" },
-              must: { export: [{ name: "x" }] },
+              must: { exportValues: [{ name: "x" }] },
             },
             {
               for: { files: "*.ts" },
-              must: { export: [{ name: "x" }] },
+              must: { exportValues: [{ name: "x" }] },
             },
           ],
         },

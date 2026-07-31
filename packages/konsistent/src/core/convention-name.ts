@@ -80,6 +80,11 @@ const PREDICATE_RULES: Record<
     const prefix = negated ? "must-not-declare" : "must-declare";
     return kebab ? `${prefix}-${kebab}-interface` : `${prefix}-interface`;
   },
+  exportValues: ({ items, negated }) => {
+    const kebab = deriveKebabFromName(getItemName(items[0] as string));
+    const prefix = negated ? "must-not-export" : "must-export";
+    return kebab ? `${prefix}-${kebab}` : prefix;
+  },
   export: ({ items, negated }) => {
     const kebab = deriveKebabFromName(getItemName(items[0] as string));
     const prefix = negated ? "must-not-export" : "must-export";
@@ -120,11 +125,30 @@ const PREDICATE_RULES: Record<
     const prefix = negated ? "must-not-export" : "must-export";
     return kebab ? `${prefix}-${kebab}-interface` : `${prefix}-interface`;
   },
+  importValues: ({ items, negated }) => {
+    const kebab = deriveKebabFromName(
+      getItemName(items[0] as string | { name: string })
+    );
+    const prefix = negated ? "must-not-import" : "must-import";
+    return kebab ? `${prefix}-${kebab}` : prefix;
+  },
   import: ({ items, negated }) => {
     const kebab = deriveKebabFromName(
       getItemName(items[0] as string | { name: string })
     );
     const prefix = negated ? "must-not-import" : "must-import";
+    return kebab ? `${prefix}-${kebab}` : prefix;
+  },
+  importValuesFrom: ({ items, negated }) => {
+    const kebab = sourceToKebab(items[0] as string);
+    const prefix = negated ? "must-not-import-from" : "must-import-from";
+    return kebab ? `${prefix}-${kebab}` : prefix;
+  },
+  importTypesFrom: ({ items, negated }) => {
+    const kebab = sourceToKebab(items[0] as string);
+    const prefix = negated
+      ? "must-not-import-type-from"
+      : "must-import-type-from";
     return kebab ? `${prefix}-${kebab}` : prefix;
   },
   importFrom: ({ items, negated }) => {
@@ -139,14 +163,26 @@ const PREDICATE_RULES: Record<
     const prefix = negated ? "must-not-import" : "must-import";
     return kebab ? `${prefix}-${kebab}-type` : `${prefix}-type`;
   },
+  importValuesFromCurrentDir: ({ items, negated }) =>
+    (items[0] === false) === negated
+      ? "must-import-from-current-dir"
+      : "must-not-import-from-current-dir",
   importFromCurrentDir: ({ items, negated }) =>
     (items[0] === false) === negated
       ? "must-import-from-current-dir"
       : "must-not-import-from-current-dir",
+  importValuesFromParents: ({ items, negated }) =>
+    (items[0] === false) === negated
+      ? "must-import-from-parents"
+      : "must-not-import-from-parents",
   importFromParents: ({ items, negated }) =>
     (items[0] === false) === negated
       ? "must-import-from-parents"
       : "must-not-import-from-parents",
+  importValuesFromExternals: ({ items, negated }) =>
+    (items[0] === false) === negated
+      ? "must-import-from-externals"
+      : "must-not-import-from-externals",
   importFromExternals: ({ items, negated }) =>
     (items[0] === false) === negated
       ? "must-import-from-externals"

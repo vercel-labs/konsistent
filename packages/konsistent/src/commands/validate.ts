@@ -1,11 +1,11 @@
 import { defineCommand } from "citty";
 import pc from "picocolors";
-import { collectDeprecationWarnings } from "../config/deprecation-warnings.js";
 import {
   loadConfig,
   normalizePlaceholderArg,
   parseCliPlaceholders,
 } from "../config/index.js";
+import { printDeprecationWarnings } from "./print-deprecation-warnings.js";
 
 const validateArgs = {
   "config-path": {
@@ -49,11 +49,7 @@ export default defineCommand({
       process.exit(1);
       return;
     }
-    for (const warning of collectDeprecationWarnings({
-      config: result.config,
-    })) {
-      console.warn(pc.yellow(warning));
-    }
+    printDeprecationWarnings({ config: result.config });
     console.log(pc.green("Configuration is valid."));
   },
 });

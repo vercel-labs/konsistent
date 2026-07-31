@@ -154,10 +154,11 @@ describe("ConfigV1Schema", () => {
           paths: "src/*.ts",
           must: {
             useDeclarationOrder: ["alpha", "beta"],
-            importFrom: ["react", "zod/*"],
-            importFromCurrentDir: true,
-            importFromParents: false,
-            importFromExternals: true,
+            importValuesFrom: ["react", "zod/*"],
+            importTypesFrom: ["react", "zod/*"],
+            importValuesFromCurrentDir: true,
+            importValuesFromParents: false,
+            importValuesFromExternals: true,
             importTypesFromCurrentDir: true,
             importTypesFromParents: false,
             importTypesFromExternals: true,
@@ -168,26 +169,39 @@ describe("ConfigV1Schema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects importFrom when it is neither a string nor a string array", () => {
+  it("rejects importValuesFrom when it is neither a string nor a string array", () => {
     const result = ConfigV1Schema.safeParse({
       version: "v1",
       conventions: [
         {
           paths: "src/*.ts",
-          must: { importFrom: 123 },
+          must: { importValuesFrom: 123 },
         },
       ],
     });
     expect(result.success).toBe(false);
   });
 
-  it("rejects importFrom arrays with non-string items", () => {
+  it("rejects importTypesFrom arrays with non-string items", () => {
     const result = ConfigV1Schema.safeParse({
       version: "v1",
       conventions: [
         {
           paths: "src/*.ts",
-          must: { importFrom: ["react", 123] },
+          must: { importTypesFrom: ["react", 123] },
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects malformed deprecated predicate values", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          must: { importFrom: 123 },
         },
       ],
     });
@@ -364,7 +378,7 @@ describe("ConfigV1Schema", () => {
             {
               if: { hasFile: "${name}.test.tsx" },
               for: { files: "${name}.test.tsx" },
-              must: { export: ["describe"] },
+              must: { exportValues: ["describe"] },
             },
           ],
         },
@@ -463,7 +477,10 @@ describe("ConfigV1Schema", () => {
         {
           paths: "src/*.ts",
           must: [
-            { if: { hasFile: "index.ts" }, mustNot: { export: ["debug"] } },
+            {
+              if: { hasFile: "index.ts" },
+              mustNot: { exportValues: ["debug"] },
+            },
           ],
         },
       ],

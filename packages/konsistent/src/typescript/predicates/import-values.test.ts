@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { PredicateContext } from "../../core/context.js";
 import type { FileStructure } from "../types.js";
-import { checkImport } from "./import.js";
+import { checkImportValues } from "./import-values.js";
 
 function createMockContext(opts: {
   path: string;
@@ -41,9 +41,9 @@ function createMockFileStructure(opts: {
   };
 }
 
-describe("checkImport", () => {
+describe("checkImportValues", () => {
   it("returns no diagnostics when import is found", () => {
-    const result = checkImport({
+    const result = checkImportValues({
       expected: ["useState"],
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({
@@ -61,19 +61,19 @@ describe("checkImport", () => {
   });
 
   it("returns diagnostic when import is missing", () => {
-    const result = checkImport({
+    const result = checkImportValues({
       expected: ["useState"],
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({ imports: [] }),
     });
     expect(result).toHaveLength(1);
     expect(result[0].message).toBe('Missing import "useState"');
-    expect(result[0].predicateName).toBe("import");
+    expect(result[0].predicateName).toBe("importValues");
     expect(result[0].filePath).toBe("src/index.ts");
   });
 
   it("ignores type imports", () => {
-    const result = checkImport({
+    const result = checkImportValues({
       expected: ["MyType"],
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({
@@ -92,7 +92,7 @@ describe("checkImport", () => {
   });
 
   it("returns diagnostic when from does not match", () => {
-    const result = checkImport({
+    const result = checkImportValues({
       expected: [{ name: "useState", from: "react" }],
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({
@@ -111,7 +111,7 @@ describe("checkImport", () => {
   });
 
   it("checks from constraint when specified", () => {
-    const result = checkImport({
+    const result = checkImportValues({
       expected: [{ name: "useState", from: "react" }],
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({
@@ -129,7 +129,7 @@ describe("checkImport", () => {
   });
 
   it("resolves template placeholders in name", () => {
-    const result = checkImport({
+    const result = checkImportValues({
       expected: ["use${name}"],
       context: createMockContext({
         path: "src/index.ts",
@@ -150,7 +150,7 @@ describe("checkImport", () => {
   });
 
   it("resolves template placeholders in from", () => {
-    const result = checkImport({
+    const result = checkImportValues({
       expected: [{ name: "helper", from: "./${name}" }],
       context: createMockContext({
         path: "src/index.ts",
@@ -171,7 +171,7 @@ describe("checkImport", () => {
   });
 
   it("accepts string shorthand without from constraint", () => {
-    const result = checkImport({
+    const result = checkImportValues({
       expected: ["useState"],
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({
@@ -189,7 +189,7 @@ describe("checkImport", () => {
   });
 
   it("includes conventionName when provided", () => {
-    const result = checkImport({
+    const result = checkImportValues({
       expected: ["Missing"],
       context: createMockContext({ path: "src/index.ts" }),
       fileStructure: createMockFileStructure({ imports: [] }),

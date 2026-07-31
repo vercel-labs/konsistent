@@ -127,6 +127,86 @@ describe("checkImportFrom", () => {
     expect(result).toEqual([]);
   });
 
+  it("importValuesFrom ignores type-only imports", () => {
+    const result = checkImportFrom({
+      expected: "@scope/pkg",
+      importKind: "value",
+      predicateName: "importValuesFrom",
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({
+        source: "import type { Tool } from '@scope/pkg';",
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].predicateName).toBe("importValuesFrom");
+    expect(result[0].message).toBe('Missing import from "@scope/pkg"');
+  });
+
+  it("importTypesFrom ignores value imports", () => {
+    const result = checkImportFrom({
+      expected: "@scope/pkg",
+      importKind: "type",
+      predicateName: "importTypesFrom",
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({
+        source: "import { tool } from '@scope/pkg';",
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].predicateName).toBe("importTypesFrom");
+    expect(result[0].message).toBe('Missing type import from "@scope/pkg"');
+  });
+
+  it("mixed imports satisfy both value and type source predicates", () => {
+    const fileStructure = parseSource({
+      source: "import { type Tool, tool } from '@scope/pkg';",
+    });
+    const context = createMockContext({ path: "src/index.ts" });
+
+    expect(
+      checkImportFrom({
+        expected: "@scope/pkg",
+        importKind: "value",
+        predicateName: "importValuesFrom",
+        context,
+        fileStructure,
+      })
+    ).toEqual([]);
+    expect(
+      checkImportFrom({
+        expected: "@scope/pkg",
+        importKind: "type",
+        predicateName: "importTypesFrom",
+        context,
+        fileStructure,
+      })
+    ).toEqual([]);
+  });
+
+  it("side-effect imports satisfy importValuesFrom only", () => {
+    const fileStructure = parseSource({ source: "import './setup';" });
+    const context = createMockContext({ path: "src/index.ts" });
+
+    expect(
+      checkImportFrom({
+        expected: "./setup",
+        importKind: "value",
+        predicateName: "importValuesFrom",
+        context,
+        fileStructure,
+      })
+    ).toEqual([]);
+    expect(
+      checkImportFrom({
+        expected: "./setup",
+        importKind: "type",
+        predicateName: "importTypesFrom",
+        context,
+        fileStructure,
+      })
+    ).toHaveLength(1);
+  });
+
   it("resolves template placeholders in the source", () => {
     const result = checkImportFrom({
       expected: "@scope/${packageName}/*",

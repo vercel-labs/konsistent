@@ -91,7 +91,7 @@ describe("validatePlaceholders", () => {
         name: "object-export",
         paths: ["src/{x}"],
         must: {
-          export: [{ name: "${X}", from: "${Y}" }],
+          exportValues: [{ name: "${X}", from: "${Y}" }],
         },
       },
     ];
@@ -104,7 +104,7 @@ describe("validatePlaceholders", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error).toContain('"${X}"');
-      expect(result.error).toContain("must.export");
+      expect(result.error).toContain("must.exportValues");
     }
   });
 
@@ -383,7 +383,9 @@ describe("validatePlaceholders", () => {
       {
         name: "imports",
         paths: ["src/{x}"],
-        must: { importFrom: ["@scope/pkg", "@scope/${missingPackage}/*"] },
+        must: {
+          importValuesFrom: ["@scope/pkg", "@scope/${missingPackage}/*"],
+        },
       },
     ];
 
@@ -395,7 +397,7 @@ describe("validatePlaceholders", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error).toContain('"${missingPackage}"');
-      expect(result.error).toContain("must.importFrom");
+      expect(result.error).toContain("must.importValuesFrom");
     }
   });
 
@@ -446,7 +448,7 @@ describe("validatePlaceholders", () => {
         name: "static-providers",
         paths: "packages/openai/src/index.ts",
         placeholders: { providerId: "openai" },
-        must: { export: ["${providerId}"] },
+        must: { exportValues: ["${providerId}"] },
       },
     ];
 
@@ -464,7 +466,7 @@ describe("validatePlaceholders", () => {
         name: "double-declared",
         paths: "packages/{providerId}/src/index.ts",
         placeholders: { providerId: "openai" },
-        must: { export: ["${providerId}"] },
+        must: { exportValues: ["${providerId}"] },
       },
     ];
 

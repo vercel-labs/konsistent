@@ -1,5 +1,29 @@
 import type { ConfigV1, MustBlockV1, MustPredicatesV1 } from "./schema.js";
 
+const DEPRECATED_PREDICATES = [
+  { name: "export", replacement: 'Use "exportValues" instead.' },
+  { name: "import", replacement: 'Use "importValues" instead.' },
+  {
+    name: "importFrom",
+    replacement: 'Use "importValuesFrom" or "importTypesFrom" instead.',
+  },
+  {
+    name: "importFromCurrentDir",
+    replacement: 'Use "importValuesFromCurrentDir" instead.',
+  },
+  {
+    name: "importFromParents",
+    replacement: 'Use "importValuesFromParents" instead.',
+  },
+  {
+    name: "importFromExternals",
+    replacement: 'Use "importValuesFromExternals" instead.',
+  },
+] as const satisfies ReadonlyArray<{
+  name: keyof MustPredicatesV1;
+  replacement: string;
+}>;
+
 export function collectDeprecationWarnings(opts: {
   config: ConfigV1;
 }): string[] {
@@ -56,6 +80,13 @@ function collectPredicateWarnings(opts: {
   const { predicates, path, warnings } = opts;
   if (!predicates) {
     return;
+  }
+  for (const deprecated of DEPRECATED_PREDICATES) {
+    if (Object.hasOwn(predicates, deprecated.name)) {
+      warnings.push(
+        `Warning: "${deprecated.name}" is deprecated in ${path}.${deprecated.name}. ${deprecated.replacement}`
+      );
+    }
   }
   collectFunctionWarnings({
     list: predicates.declareFunctions,

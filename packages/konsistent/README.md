@@ -76,7 +76,7 @@ The `konsistent.json` file lives in your project root by default. Here is an exa
     {
       "paths": "packages/{providerId}/src/index.ts",
       "must": {
-        "export": ["${providerId.toFlatCase()}"],
+        "exportValues": ["${providerId.toFlatCase()}"],
         "exportTypes": [
           "${providerId.toPascalCase()}Provider",
           "${providerId.toPascalCase()}ProviderSettings"

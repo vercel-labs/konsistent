@@ -18,6 +18,7 @@ import {
   formatTruncationMessage,
   truncateDiagnostics,
 } from "../core/truncate-diagnostics.js";
+import { printDeprecationWarnings } from "./print-deprecation-warnings.js";
 
 const checkArgs = {
   "config-path": {
@@ -115,6 +116,8 @@ export default defineCommand({
       process.exit(1);
       return;
     }
+
+    printDeprecationWarnings({ config: result.config });
 
     const diagnosticLevel =
       args["diagnostic-level"] === "error" ? "error" : "warning";
