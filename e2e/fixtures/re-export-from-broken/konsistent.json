@@ -6,7 +6,7 @@
       "description": "Barrel files must re-export from the correct source modules",
       "paths": "packages/{providerId}/src/index.ts",
       "must": {
-        "export": [{ "name": "${providerId}", "from": "./${providerId}-core" }],
+        "exportValues": [{ "name": "${providerId}", "from": "./${providerId}-core" }],
         "exportTypes": [
           {
             "name": "${providerId.toPascalCase()}Provider",

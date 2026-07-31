@@ -5,7 +5,7 @@
       "name": "no-current-dir-imports",
       "paths": "src/current.ts",
       "mustNot": {
-        "importFromCurrentDir": true,
+        "importValuesFromCurrentDir": true,
         "importTypesFromCurrentDir": true
       }
     },
@@ -13,7 +13,7 @@
       "name": "no-parent-imports",
       "paths": "src/parent.ts",
       "mustNot": {
-        "importFromParents": true,
+        "importValuesFromParents": true,
         "importTypesFromParents": true
       }
     },
@@ -21,7 +21,7 @@
       "name": "no-external-imports",
       "paths": "src/external.ts",
       "mustNot": {
-        "importFromExternals": true,
+        "importValuesFromExternals": true,
         "importTypesFromExternals": true
       }
     }

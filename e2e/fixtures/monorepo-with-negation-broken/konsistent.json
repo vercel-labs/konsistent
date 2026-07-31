@@ -9,7 +9,7 @@
         "!packages/test-utils/src/index.ts"
       ],
       "must": {
-        "export": ["${packageName}"]
+        "exportValues": ["${packageName}"]
       }
     }
   ]

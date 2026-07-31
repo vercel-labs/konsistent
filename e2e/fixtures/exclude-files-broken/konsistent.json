@@ -5,7 +5,7 @@
       "name": "plugin-exports",
       "paths": "plugins/{pluginName}/index.ts",
       "must": {
-        "export": ["activate"],
+        "exportValues": ["activate"],
         "exportConstants": ["pluginId"]
       }
     },
@@ -16,7 +16,7 @@
         {
           "for": { "files": "{testFile}.spec.ts" },
           "must": {
-            "export": ["describe"]
+            "exportValues": ["describe"]
           }
         }
       ]

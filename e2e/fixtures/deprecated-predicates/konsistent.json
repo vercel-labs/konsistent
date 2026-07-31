@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "paths": "index.ts",
+      "must": {
+        "export": ["value"],
+        "import": [{ "name": "helper", "from": "./helper" }],
+        "importFrom": ["react", "./types"],
+        "importFromCurrentDir": true,
+        "importFromParents": true,
+        "importFromExternals": true
+      }
+    }
+  ]
+}

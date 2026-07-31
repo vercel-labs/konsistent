@@ -10,7 +10,7 @@
           "name": "test-exports",
           "if": { "hasFile": "${componentName}.test.tsx" },
           "for": { "files": "${componentName}.test.tsx" },
-          "must": { "export": ["describe"] }
+          "must": { "exportValues": ["describe"] }
         },
         {
           "name": "story-meta",

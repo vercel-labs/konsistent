@@ -179,18 +179,18 @@ describe("import-source-groups-broken fixture", () => {
   });
 });
 
-describe("import-from fixture", () => {
-  const cwd = resolve(fixturesDir, "import-from");
+describe("import-values-and-types-from fixture", () => {
+  const cwd = resolve(fixturesDir, "import-values-and-types-from");
 
-  it("konsistent check exits 0 when importFrom predicates pass", async () => {
+  it("passes importValuesFrom and importTypesFrom in must and mustNot", async () => {
     await expect(runCli({ cwd })).resolves.not.toThrow();
   });
 });
 
-describe("import-from-broken fixture", () => {
-  const cwd = resolve(fixturesDir, "import-from-broken");
+describe("import-values-and-types-from-broken fixture", () => {
+  const cwd = resolve(fixturesDir, "import-values-and-types-from-broken");
 
-  it("konsistent check exits 1 with importFrom violations", async () => {
+  it("fails importValuesFrom and importTypesFrom in must and mustNot", async () => {
     try {
       await runCli({ cwd });
       expect.fail("Expected check to exit with code 1");
@@ -198,10 +198,13 @@ describe("import-from-broken fixture", () => {
       const error = err as { stdout: string; code: number; status: number };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain('Missing import from "./helper"');
-      expect(error.stdout).toContain('Missing import from "@scope/pkg/*"');
+      expect(error.stdout).toContain('Missing type import from "@scope/pkg/*"');
       expect(error.stdout).toContain('Missing import from "react"');
       expect(error.stdout).toContain('Forbidden import from "react"');
       expect(error.stdout).toContain('Forbidden import from "package/*"');
+      expect(error.stdout).toContain(
+        'Forbidden type import from "types-package/*"'
+      );
     }
   });
 });
