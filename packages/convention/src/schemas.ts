@@ -8,6 +8,7 @@ import {
 import { compileImportSourceConstraints } from "./import-source-selector.js";
 
 export const ExportDefinitionV1Schema = z.strictObject({
+  alias: z.string().optional(),
   name: z.string(),
   from: z.string().optional(),
 });
@@ -17,6 +18,17 @@ export const DeclarationDefinitionV1Schema = z.strictObject({
 });
 
 export const ImportDefinitionV1Schema = z.strictObject({
+  alias: z.string().optional(),
+  name: z.string(),
+  from: z.string().optional(),
+});
+
+const LegacyExportDefinitionV1Schema = z.strictObject({
+  name: z.string(),
+  from: z.string().optional(),
+});
+
+const LegacyImportDefinitionV1Schema = z.strictObject({
   name: z.string(),
   from: z.string().optional(),
 });
@@ -55,6 +67,12 @@ const ExportValuesPredicateV1Schema = z.array(
 );
 const ImportValuesPredicateV1Schema = z.array(
   z.union([z.string(), ImportDefinitionV1Schema])
+);
+const LegacyExportPredicateV1Schema = z.array(
+  z.union([z.string(), LegacyExportDefinitionV1Schema])
+);
+const LegacyImportPredicateV1Schema = z.array(
+  z.union([z.string(), LegacyImportDefinitionV1Schema])
 );
 const ExactImportSourcePredicateV1Schema = z.union([
   z.string(),
@@ -95,7 +113,7 @@ export const MustPredicatesV1Schema = z.strictObject({
   /**
    * @deprecated Use exportValues instead.
    */
-  export: ExportValuesPredicateV1Schema.optional().meta({
+  export: LegacyExportPredicateV1Schema.optional().meta({
     deprecated: true,
     description: "Use exportValues instead.",
   }),
@@ -118,7 +136,7 @@ export const MustPredicatesV1Schema = z.strictObject({
   /**
    * @deprecated Use importValues instead.
    */
-  import: ImportValuesPredicateV1Schema.optional().meta({
+  import: LegacyImportPredicateV1Schema.optional().meta({
     deprecated: true,
     description: "Use importValues instead.",
   }),

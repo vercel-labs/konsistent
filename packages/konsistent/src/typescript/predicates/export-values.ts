@@ -4,7 +4,7 @@ import { createDiagnostic } from "../../core/diagnostics.js";
 import type { FileStructure } from "../types.js";
 
 export function checkExportValues(opts: {
-  expected: (string | { name: string; from?: string })[];
+  expected: (string | { alias?: string; name: string; from?: string })[];
   predicateName?: "export" | "exportValues";
   context: PredicateContext;
   fileStructure: FileStructure;
@@ -22,27 +22,44 @@ export function checkExportValues(opts: {
   const diagnostics: Diagnostic[] = [];
 
   for (const entry of expected) {
-    const definition = typeof entry === "string" ? { name: entry } : entry;
+    const definition: { alias?: string; name: string; from?: string } =
+      typeof entry === "string" ? { name: entry } : entry;
     const resolvedName = context.resolveTemplate(definition.name);
     const resolvedFrom = definition.from
       ? context.resolveTemplate(definition.from)
       : undefined;
+    const resolvedAlias =
+      definition.alias === undefined
+        ? undefined
+        : context.resolveTemplate(definition.alias);
 
-    const found = fileStructure.exports.some(
-      (e) =>
-        e.name === resolvedName &&
-        !e.isType &&
-        (resolvedFrom === undefined || e.from === resolvedFrom)
-    );
+    const found =
+      resolvedAlias === undefined || predicateName === "export"
+        ? fileStructure.exports.some(
+            (e) =>
+              e.name === resolvedName &&
+              !e.isType &&
+              (resolvedFrom === undefined || e.from === resolvedFrom)
+          )
+        : fileStructure.namedExportSymbols.some(
+            (e) =>
+              e.sourceName !== "default" &&
+              e.sourceName === resolvedName &&
+              e.name === resolvedAlias &&
+              !e.isType &&
+              (resolvedFrom === undefined || e.from === resolvedFrom)
+          );
 
     if (!found) {
       diagnostics.push(
         createDiagnostic({
           filePath: context.path,
           predicateName,
-          message: resolvedFrom
-            ? `Missing export "${resolvedName}" from "${resolvedFrom}"`
-            : `Missing export "${resolvedName}"`,
+          message: formatMissingExportMessage({
+            name: resolvedName,
+            alias: resolvedAlias,
+            from: resolvedFrom,
+          }),
           conventionName,
           severity,
         })
@@ -51,4 +68,14 @@ export function checkExportValues(opts: {
   }
 
   return diagnostics;
+}
+
+function formatMissingExportMessage(opts: {
+  name: string;
+  alias?: string;
+  from?: string;
+}): string {
+  const alias = opts.alias === undefined ? "" : ` as "${opts.alias}"`;
+  const from = opts.from === undefined ? "" : ` from "${opts.from}"`;
+  return `Missing export "${opts.name}"${alias}${from}`;
 }

@@ -14,8 +14,10 @@ export interface ExportInfo {
 export interface ImportInfo {
   from: string;
   isType: boolean;
+  kind: "default" | "named" | "namespace";
   name: string;
   pos: SourcePosition;
+  sourceName?: string;
 }
 
 export type DeclarationSymbolKind =

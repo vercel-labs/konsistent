@@ -247,3 +247,55 @@ describe("import-source-selectors-invalid fixture", () => {
     }
   });
 });
+
+describe("symbol-aliases fixture", () => {
+  const cwd = resolve(fixturesDir, "symbol-aliases");
+
+  it("passes aliases and alias-insensitive checks in must and mustNot", async () => {
+    await expect(runCli({ cwd })).resolves.not.toThrow();
+  });
+});
+
+describe("symbol-aliases-broken fixture", () => {
+  const cwd = resolve(fixturesDir, "symbol-aliases-broken");
+
+  it("fails incorrect and forbidden value and type aliases", async () => {
+    try {
+      await runCli({ cwd });
+      expect.fail("Expected check to exit with code 1");
+    } catch (err: unknown) {
+      const error = err as { stdout: string; code: number; status: number };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain(
+        'Missing import "createClient" as "createApiClient"'
+      );
+      expect(error.stdout).toContain(
+        'Missing import type "ClientConfig" as "ApiClientConfig"'
+      );
+      expect(error.stdout).toContain(
+        'Missing export "createProvider" as "createApiProvider"'
+      );
+      expect(error.stdout).toContain(
+        'Missing export type "LocalSettings" as "PublicSettings"'
+      );
+      expect(error.stdout).toContain(
+        'Forbidden import "blockedImport" as "forbiddenLocalImport"'
+      );
+      expect(error.stdout).toContain('Forbidden import "anyAliasImport"');
+      expect(error.stdout).toContain(
+        'Forbidden type import "BlockedType" as "ForbiddenLocalType"'
+      );
+      expect(error.stdout).toContain('Forbidden type import "AnyAliasType"');
+      expect(error.stdout).toContain(
+        'Forbidden export "blockedExport" as "forbiddenPublicExport"'
+      );
+      expect(error.stdout).toContain('Forbidden export "anyAliasExport"');
+      expect(error.stdout).toContain(
+        'Forbidden type export "BlockedExportType" as "ForbiddenPublicType"'
+      );
+      expect(error.stdout).toContain(
+        'Forbidden type export "AnyAliasExportType"'
+      );
+    }
+  });
+});

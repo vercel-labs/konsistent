@@ -112,8 +112,13 @@ export const TypeDefinitionV1Schema = z.strictObject({
 });
 
 export const ExportTypeDefinitionV1Schema = z.union([
-  TypeDefinitionV1Schema,
   z.strictObject({
+    alias: z.string().optional(),
+    name: z.string(),
+    schema: ConstantValueSchemaV1Schema.optional(),
+  }),
+  z.strictObject({
+    alias: z.string().optional(),
     name: z.string(),
     from: z.string(),
   }),

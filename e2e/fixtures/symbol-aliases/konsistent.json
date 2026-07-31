@@ -1,0 +1,50 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "symbol-aliases",
+      "paths": "src/index.ts",
+      "must": {
+        "importValues": [
+          { "name": "createClient", "alias": "createApiClient", "from": "client-package" },
+          { "name": "parseInput", "from": "client-package" }
+        ],
+        "importTypes": [
+          { "name": "ClientConfig", "alias": "ApiClientConfig", "from": "client-types" },
+          { "name": "LooseType", "from": "client-types" }
+        ],
+        "exportValues": [
+          { "name": "createProvider", "alias": "createApiProvider" },
+          { "name": "remoteValue", "alias": "publicRemoteValue", "from": "./remote-values" },
+          { "name": "looseValue", "from": "./remote-values" }
+        ],
+        "exportTypes": [
+          {
+            "name": "LocalSettings",
+            "alias": "PublicSettings",
+            "schema": {
+              "type": "object",
+              "properties": { "enabled": { "type": "boolean" } }
+            }
+          },
+          { "name": "RemoteType", "alias": "PublicRemoteType", "from": "./remote-types" },
+          { "name": "LooseRemoteType", "from": "./remote-types" }
+        ]
+      },
+      "mustNot": {
+        "importValues": [
+          { "name": "blockedImport", "alias": "forbiddenLocalImport" }
+        ],
+        "importTypes": [
+          { "name": "BlockedType", "alias": "ForbiddenLocalType" }
+        ],
+        "exportValues": [
+          { "name": "blockedExport", "alias": "forbiddenPublicExport" }
+        ],
+        "exportTypes": [
+          { "name": "BlockedExportType", "alias": "ForbiddenPublicType" }
+        ]
+      }
+    }
+  ]
+}

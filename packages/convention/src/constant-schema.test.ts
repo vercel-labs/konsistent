@@ -69,8 +69,15 @@ describe("type definition schemas", () => {
 
   it.each([
     { name: "Settings" },
+    { name: "Settings", alias: "PublicSettings" },
     { name: "Settings", from: "./settings" },
+    { name: "Settings", alias: "PublicSettings", from: "./settings" },
     { name: "Settings", schema: { type: "object", properties: {} } },
+    {
+      name: "Settings",
+      alias: "PublicSettings",
+      schema: { type: "object", properties: {} },
+    },
   ])("accepts exported type definition %#", (definition) => {
     expect(ExportTypeDefinitionV1Schema.safeParse(definition).success).toBe(
       true
@@ -81,6 +88,7 @@ describe("type definition schemas", () => {
     expect(
       ExportTypeDefinitionV1Schema.safeParse({
         name: "Settings",
+        alias: "PublicSettings",
         from: "./settings",
         schema: { type: "object", properties: {} },
       }).success

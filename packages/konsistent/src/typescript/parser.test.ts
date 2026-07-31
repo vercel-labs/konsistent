@@ -168,15 +168,40 @@ describe("parseFileStructure", () => {
       });
       expect(result.imports).toHaveLength(2);
       expect(result.imports[0]).toMatchObject({
+        kind: "named",
         name: "foo",
+        sourceName: "foo",
         from: "module",
         isType: false,
       });
       expect(result.imports[1]).toMatchObject({
+        kind: "named",
         name: "bar",
+        sourceName: "bar",
         from: "module",
         isType: false,
       });
+    });
+
+    it("extracts original and local names from aliased named imports", () => {
+      const result = parseFileStructure({
+        source:
+          "import { sourceName as localName, type SourceType as LocalType } from 'module';",
+      });
+      expect(result.imports).toMatchObject([
+        {
+          kind: "named",
+          name: "localName",
+          sourceName: "sourceName",
+          isType: false,
+        },
+        {
+          kind: "named",
+          name: "LocalType",
+          sourceName: "SourceType",
+          isType: true,
+        },
+      ]);
     });
 
     it("extracts type imports", () => {
@@ -212,6 +237,7 @@ describe("parseFileStructure", () => {
       });
       expect(result.imports).toHaveLength(1);
       expect(result.imports[0]).toMatchObject({
+        kind: "namespace",
         name: "ns",
         from: "module",
         isType: false,
@@ -224,6 +250,7 @@ describe("parseFileStructure", () => {
       });
       expect(result.imports).toHaveLength(1);
       expect(result.imports[0]).toMatchObject({
+        kind: "default",
         name: "DefaultExport",
         from: "module",
         isType: false,

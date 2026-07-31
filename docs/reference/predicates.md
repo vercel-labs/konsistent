@@ -193,17 +193,33 @@ Assert named value exports — anything that is not syntactically type-only. Fun
 ```json
 "must": {
   "exportValues": [
-    { "name": "${providerId}", "from": "./${providerId}-provider" }
+    {
+      "name": "createProvider",
+      "alias": "create${providerId.toPascalCase()}Provider",
+      "from": "./${providerId}-provider"
+    }
   ]
 }
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `name` | string | The export name. Templates allowed. |
+| `name` | string | The original local or re-exported name. Templates allowed. |
+| `alias` | string | Optional. Require a named export to expose the symbol under this name. Templates allowed. |
 | `from` | string | Optional. If set, the export must come from a re-export pointing at this module specifier. |
 
-When `from` is omitted, only the export's existence is checked. When `from` is set, the export must be a re-export from that source — useful for enforcing barrel-file structure.
+When `alias` is omitted, the public export name is ignored. For example,
+`{ "name": "createProvider" }` matches both `export { createProvider }` and
+`export { createProvider as createOpenAIProvider }`. When `from` is omitted,
+only the export's existence is checked. When `from` is set, the export must be
+a re-export from that source — useful for enforcing barrel-file structure.
+
+Aliases apply only to non-default named export specifiers. Direct export
+declarations, default exports, namespace exports, and star exports cannot
+satisfy an entry containing `alias`.
+
+In `mustNot`, an entry with `alias` forbids only that exact original/public-name
+pair. Omitting `alias` forbids the original name under every named export alias.
 
 ### `exportTypes`
 
@@ -222,6 +238,7 @@ exported type.
   "exportTypes": [
     {
       "name": "${providerId.toPascalCase()}Provider",
+      "alias": "Provider",
       "from": "./${providerId}-provider"
     }
   ]
@@ -247,13 +264,17 @@ exported type.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `name` | string | The type name. Templates allowed. |
+| `name` | string | The original local or re-exported type name. Templates allowed. |
+| `alias` | string | Optional. Require a named type export to expose the type under this name. Templates allowed. |
 | `from` | string | Optional. Require a type re-export from this module specifier. |
 | `schema` | object | Optional. Validate a locally declared type definition. |
 
 `from` and `schema` are mutually exclusive. Schema validation never resolves a
 type definition from another file. The `schema` field supports the same forms
 and declaration semantics documented under [`exportConstants`](#exportconstants).
+When `alias` is combined with `schema`, the schema validates the original local
+type definition. Alias omission and unsupported export forms behave as
+documented for `exportValues`.
 
 ### `exportConstants`
 
@@ -401,17 +422,28 @@ Assert named value imports.
 ```json
 "must": {
   "importValues": [
-    { "name": "useState", "from": "react" }
+    { "name": "createClient", "alias": "createApiClient", "from": "api" }
   ]
 }
 ```
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `name` | string | The imported binding. Templates allowed. |
+| `name` | string | The original imported name. Templates allowed. |
+| `alias` | string | Optional. Require the named import to use this local binding. Templates allowed. |
 | `from` | string | Optional. Module specifier the import must come from. |
 
-Bare-string form (`"importValues": ["useState"]`) checks the binding regardless of source.
+When `alias` is omitted, the local binding is ignored. For example,
+`{ "name": "createClient" }` matches both `import { createClient }` and
+`import { createClient as createApiClient }`. The bare-string form is the same
+alias-insensitive check without a source constraint.
+
+Aliases apply only to non-default named import specifiers. Default and namespace
+imports cannot satisfy an entry containing `alias`; without `alias`, their
+existing local-binding behavior is unchanged.
+
+In `mustNot`, an entry with `alias` forbids only that exact original/local-name
+pair. Omitting `alias` forbids the original name under every named import alias.
 
 ### `importValuesFrom`
 

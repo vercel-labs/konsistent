@@ -108,6 +108,34 @@ describe("validatePlaceholders", () => {
     }
   });
 
+  it("detects placeholders inside import and export aliases", () => {
+    const conventions: ConventionV1[] = [
+      {
+        name: "aliases",
+        paths: ["src/{x}"],
+        must: {
+          importValues: [{ name: "sourceValue", alias: "${missingImport}" }],
+          importTypes: [{ name: "SourceType", alias: "${missingTypeImport}" }],
+          exportValues: [{ name: "sourceValue", alias: "${missingExport}" }],
+          exportTypes: [{ name: "SourceType", alias: "${missingTypeExport}" }],
+        },
+      },
+    ];
+
+    const result = validatePlaceholders({
+      conventions,
+      identifiers: ["aliases"],
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain('"${missingImport}"');
+      expect(result.error).toContain('"${missingTypeImport}"');
+      expect(result.error).toContain('"${missingExport}"');
+      expect(result.error).toContain('"${missingTypeExport}"');
+    }
+  });
+
   it("detects a placeholder inside a nested MustBlock predicate", () => {
     const conventions: ConventionV1[] = [
       {

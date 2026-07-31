@@ -553,6 +553,9 @@
                         {
                           "type": "object",
                           "properties": {
+                            "alias": {
+                              "type": "string"
+                            },
                             "name": {
                               "type": "string"
                             },
@@ -603,6 +606,9 @@
                             {
                               "type": "object",
                               "properties": {
+                                "alias": {
+                                  "type": "string"
+                                },
                                 "name": {
                                   "type": "string"
                                 },
@@ -747,6 +753,9 @@
                             {
                               "type": "object",
                               "properties": {
+                                "alias": {
+                                  "type": "string"
+                                },
                                 "name": {
                                   "type": "string"
                                 },
@@ -1064,6 +1073,9 @@
                         {
                           "type": "object",
                           "properties": {
+                            "alias": {
+                              "type": "string"
+                            },
                             "name": {
                               "type": "string"
                             },
@@ -1153,6 +1165,9 @@
                         {
                           "type": "object",
                           "properties": {
+                            "alias": {
+                              "type": "string"
+                            },
                             "name": {
                               "type": "string"
                             },
@@ -1677,6 +1692,9 @@
                         {
                           "type": "object",
                           "properties": {
+                            "alias": {
+                              "type": "string"
+                            },
                             "name": {
                               "type": "string"
                             },
@@ -1727,6 +1745,9 @@
                             {
                               "type": "object",
                               "properties": {
+                                "alias": {
+                                  "type": "string"
+                                },
                                 "name": {
                                   "type": "string"
                                 },
@@ -1871,6 +1892,9 @@
                             {
                               "type": "object",
                               "properties": {
+                                "alias": {
+                                  "type": "string"
+                                },
                                 "name": {
                                   "type": "string"
                                 },
@@ -2188,6 +2212,9 @@
                         {
                           "type": "object",
                           "properties": {
+                            "alias": {
+                              "type": "string"
+                            },
                             "name": {
                               "type": "string"
                             },
@@ -2277,6 +2304,9 @@
                         {
                           "type": "object",
                           "properties": {
+                            "alias": {
+                              "type": "string"
+                            },
                             "name": {
                               "type": "string"
                             },
@@ -2882,6 +2912,9 @@
                         {
                           "type": "object",
                           "properties": {
+                            "alias": {
+                              "type": "string"
+                            },
                             "name": {
                               "type": "string"
                             },
@@ -2932,6 +2965,9 @@
                             {
                               "type": "object",
                               "properties": {
+                                "alias": {
+                                  "type": "string"
+                                },
                                 "name": {
                                   "type": "string"
                                 },
@@ -3076,6 +3112,9 @@
                             {
                               "type": "object",
                               "properties": {
+                                "alias": {
+                                  "type": "string"
+                                },
                                 "name": {
                                   "type": "string"
                                 },
@@ -3393,6 +3432,9 @@
                         {
                           "type": "object",
                           "properties": {
+                            "alias": {
+                              "type": "string"
+                            },
                             "name": {
                               "type": "string"
                             },
@@ -3482,6 +3524,9 @@
                         {
                           "type": "object",
                           "properties": {
+                            "alias": {
+                              "type": "string"
+                            },
                             "name": {
                               "type": "string"
                             },
@@ -4006,6 +4051,9 @@
                         {
                           "type": "object",
                           "properties": {
+                            "alias": {
+                              "type": "string"
+                            },
                             "name": {
                               "type": "string"
                             },
@@ -4056,6 +4104,9 @@
                             {
                               "type": "object",
                               "properties": {
+                                "alias": {
+                                  "type": "string"
+                                },
                                 "name": {
                                   "type": "string"
                                 },
@@ -4200,6 +4251,9 @@
                             {
                               "type": "object",
                               "properties": {
+                                "alias": {
+                                  "type": "string"
+                                },
                                 "name": {
                                   "type": "string"
                                 },
@@ -4517,6 +4571,9 @@
                         {
                           "type": "object",
                           "properties": {
+                            "alias": {
+                              "type": "string"
+                            },
                             "name": {
                               "type": "string"
                             },
@@ -4606,6 +4663,9 @@
                         {
                           "type": "object",
                           "properties": {
+                            "alias": {
+                              "type": "string"
+                            },
                             "name": {
                               "type": "string"
                             },
