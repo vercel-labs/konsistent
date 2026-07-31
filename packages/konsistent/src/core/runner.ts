@@ -787,6 +787,22 @@ function resolveEntryName(opts: {
   return "unknown";
 }
 
+function resolveEntryAlias(opts: {
+  value: unknown;
+  context: PredicateContext;
+}): string | undefined {
+  const { value, context } = opts;
+  if (
+    value &&
+    typeof value === "object" &&
+    Object.hasOwn(value, "alias") &&
+    typeof (value as { alias: unknown }).alias === "string"
+  ) {
+    return context.resolveTemplate((value as { alias: string }).alias);
+  }
+  return;
+}
+
 function formatForbiddenMessage(opts: {
   key: string;
   value: unknown;
@@ -794,6 +810,8 @@ function formatForbiddenMessage(opts: {
 }): string {
   const { key, value, context } = opts;
   const name = resolveEntryName({ value, context });
+  const alias = resolveEntryAlias({ value, context });
+  const aliasSuffix = alias === undefined ? "" : ` as "${alias}"`;
 
   switch (key) {
     case "haveType":
@@ -812,9 +830,9 @@ function formatForbiddenMessage(opts: {
       return `Forbidden class declaration "${name}"`;
     case "exportValues":
     case "export":
-      return `Forbidden export "${name}"`;
+      return `Forbidden export "${name}"${aliasSuffix}`;
     case "exportTypes":
-      return `Forbidden type export "${name}"`;
+      return `Forbidden type export "${name}"${aliasSuffix}`;
     case "exportConstants":
       return `Forbidden constant export "${name}"`;
     case "exportFunctions":
@@ -825,14 +843,14 @@ function formatForbiddenMessage(opts: {
       return `Forbidden class export "${name}"`;
     case "importValues":
     case "import":
-      return `Forbidden import "${name}"`;
+      return `Forbidden import "${name}"${aliasSuffix}`;
     case "importValuesFrom":
     case "importFrom":
       return `Forbidden import from "${context.resolveTemplate(String(value))}"`;
     case "importTypesFrom":
       return `Forbidden type import from "${context.resolveTemplate(String(value))}"`;
     case "importTypes":
-      return `Forbidden type import "${name}"`;
+      return `Forbidden type import "${name}"${aliasSuffix}`;
     case "importValuesFromCurrentDir":
     case "importFromCurrentDir":
       return value === false

@@ -4,7 +4,7 @@ import { createDiagnostic } from "../../core/diagnostics.js";
 import type { FileStructure } from "../types.js";
 
 export function checkImportValues(opts: {
-  expected: (string | { name: string; from?: string })[];
+  expected: (string | { alias?: string; name: string; from?: string })[];
   predicateName?: "import" | "importValues";
   context: PredicateContext;
   fileStructure: FileStructure;
@@ -22,17 +22,28 @@ export function checkImportValues(opts: {
   const diagnostics: Diagnostic[] = [];
 
   for (const entry of expected) {
-    const definition = typeof entry === "string" ? { name: entry } : entry;
+    const definition: { alias?: string; name: string; from?: string } =
+      typeof entry === "string" ? { name: entry } : entry;
     const resolvedName = context.resolveTemplate(definition.name);
     const resolvedFrom = definition.from
       ? context.resolveTemplate(definition.from)
       : undefined;
+    const resolvedAlias =
+      definition.alias === undefined
+        ? undefined
+        : context.resolveTemplate(definition.alias);
 
     const found = fileStructure.imports.some(
       (i) =>
-        i.name === resolvedName &&
         !i.isType &&
-        (resolvedFrom === undefined || i.from === resolvedFrom)
+        (resolvedFrom === undefined || i.from === resolvedFrom) &&
+        (predicateName === "import"
+          ? i.name === resolvedName
+          : matchesImportName({
+              importInfo: i,
+              name: resolvedName,
+              alias: resolvedAlias,
+            }))
     );
 
     if (!found) {
@@ -40,7 +51,10 @@ export function checkImportValues(opts: {
         createDiagnostic({
           filePath: context.path,
           predicateName,
-          message: `Missing import "${resolvedName}"`,
+          message:
+            resolvedAlias === undefined
+              ? `Missing import "${resolvedName}"`
+              : `Missing import "${resolvedName}" as "${resolvedAlias}"`,
           conventionName,
           severity,
         })
@@ -49,4 +63,24 @@ export function checkImportValues(opts: {
   }
 
   return diagnostics;
+}
+
+function matchesImportName(opts: {
+  importInfo: FileStructure["imports"][number];
+  name: string;
+  alias?: string;
+}): boolean {
+  const { importInfo, name, alias } = opts;
+  if (alias !== undefined) {
+    return (
+      importInfo.kind === "named" &&
+      importInfo.sourceName !== "default" &&
+      importInfo.sourceName === name &&
+      importInfo.name === alias
+    );
+  }
+  if (importInfo.kind === "named" && importInfo.sourceName !== "default") {
+    return importInfo.sourceName === name;
+  }
+  return importInfo.name === name;
 }

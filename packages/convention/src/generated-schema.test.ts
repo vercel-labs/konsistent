@@ -82,6 +82,44 @@ describe("reusable-convention-package.schema.json", () => {
     expect(valid).toBe(true);
   });
 
+  it("accepts aliases for current value and type symbol predicates", () => {
+    const valid = validate({
+      conventionSpecVersion: "v1",
+      conventions: [
+        {
+          name: "aliases",
+          description: "Symbol aliases.",
+          must: {
+            importValues: [{ name: "sourceValue", alias: "localValue" }],
+            importTypes: [{ name: "SourceType", alias: "LocalType" }],
+            exportValues: [{ name: "localValue", alias: "publicValue" }],
+            exportTypes: [{ name: "LocalType", alias: "PublicType" }],
+          },
+        },
+      ],
+    });
+    expect(valid).toBe(true);
+  });
+
+  it.each([
+    "import",
+    "export",
+  ])("rejects aliases for the deprecated %s predicate", (predicate) => {
+    const valid = validate({
+      conventionSpecVersion: "v1",
+      conventions: [
+        {
+          name: "legacy",
+          description: "Legacy predicate.",
+          must: {
+            [predicate]: [{ name: "source", alias: "publicName" }],
+          },
+        },
+      ],
+    });
+    expect(valid).toBe(false);
+  });
+
   it("rejects exportTypes entries with both from and schema", () => {
     const valid = validate({
       conventionSpecVersion: "v1",

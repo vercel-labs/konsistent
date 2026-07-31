@@ -259,7 +259,7 @@ function collectUsagesInPredicates(opts: {
   collectUsagesInDefinitionList({
     list: predicates.exportValues,
     key: `${prefix}.exportValues`,
-    objectFields: ["name", "from"],
+    objectFields: ["name", "alias", "from"],
     declared,
     usages,
   });
@@ -273,7 +273,7 @@ function collectUsagesInPredicates(opts: {
   collectUsagesInDefinitionList({
     list: predicates.exportTypes,
     key: `${prefix}.exportTypes`,
-    objectFields: ["name", "from"],
+    objectFields: ["name", "alias", "from"],
     declared,
     usages,
   });
@@ -312,7 +312,7 @@ function collectUsagesInPredicates(opts: {
   collectUsagesInDefinitionList({
     list: predicates.importValues,
     key: `${prefix}.importValues`,
-    objectFields: ["name", "from"],
+    objectFields: ["name", "alias", "from"],
     declared,
     usages,
   });
@@ -344,7 +344,7 @@ function collectUsagesInPredicates(opts: {
   collectUsagesInDefinitionList({
     list: predicates.importTypes,
     key: `${prefix}.importTypes`,
-    objectFields: ["name", "from"],
+    objectFields: ["name", "alias", "from"],
     declared,
     usages,
   });

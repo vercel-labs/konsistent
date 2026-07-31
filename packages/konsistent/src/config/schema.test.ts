@@ -146,6 +146,68 @@ describe("ConfigV1Schema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("accepts aliases for value and type import and export predicates", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          must: {
+            importValues: [{ name: "sourceValue", alias: "localValue" }],
+            importTypes: [{ name: "SourceType", alias: "LocalType" }],
+            exportValues: [{ name: "localValue", alias: "publicValue" }],
+            exportTypes: [
+              {
+                name: "LocalType",
+                alias: "PublicType",
+                schema: { type: "object", properties: {} },
+              },
+              {
+                name: "RemoteType",
+                alias: "PublicRemoteType",
+                from: "./types",
+              },
+            ],
+          },
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it.each([
+    "import",
+    "export",
+  ])("rejects aliases for the deprecated %s predicate", (predicate) => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          must: {
+            [predicate]: [{ name: "source", alias: "publicName" }],
+          },
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects aliases for specialized export predicates", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          must: {
+            exportConstants: [{ name: "source", alias: "publicName" }],
+          },
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("accepts conventions with declaration order and import source predicates", () => {
     const result = ConfigV1Schema.safeParse({
       version: "v1",

@@ -1,0 +1,41 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "broken-symbol-aliases",
+      "paths": "src/index.ts",
+      "must": {
+        "importValues": [
+          { "name": "createClient", "alias": "createApiClient", "from": "client-package" }
+        ],
+        "importTypes": [
+          { "name": "ClientConfig", "alias": "ApiClientConfig", "from": "client-types" }
+        ],
+        "exportValues": [
+          { "name": "createProvider", "alias": "createApiProvider" }
+        ],
+        "exportTypes": [
+          { "name": "LocalSettings", "alias": "PublicSettings" }
+        ]
+      },
+      "mustNot": {
+        "importValues": [
+          { "name": "blockedImport", "alias": "forbiddenLocalImport" },
+          "anyAliasImport"
+        ],
+        "importTypes": [
+          { "name": "BlockedType", "alias": "ForbiddenLocalType" },
+          "AnyAliasType"
+        ],
+        "exportValues": [
+          { "name": "blockedExport", "alias": "forbiddenPublicExport" },
+          "anyAliasExport"
+        ],
+        "exportTypes": [
+          { "name": "BlockedExportType", "alias": "ForbiddenPublicType" },
+          "AnyAliasExportType"
+        ]
+      }
+    }
+  ]
+}

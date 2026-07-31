@@ -4,7 +4,7 @@ import { createDiagnostic } from "../../core/diagnostics.js";
 import type { FileStructure } from "../types.js";
 
 export function checkImportTypes(opts: {
-  expected: (string | { name: string; from?: string })[];
+  expected: (string | { alias?: string; name: string; from?: string })[];
   context: PredicateContext;
   fileStructure: FileStructure;
   conventionName?: string;
@@ -14,17 +14,26 @@ export function checkImportTypes(opts: {
   const diagnostics: Diagnostic[] = [];
 
   for (const entry of expected) {
-    const definition = typeof entry === "string" ? { name: entry } : entry;
+    const definition: { alias?: string; name: string; from?: string } =
+      typeof entry === "string" ? { name: entry } : entry;
     const resolvedName = context.resolveTemplate(definition.name);
     const resolvedFrom = definition.from
       ? context.resolveTemplate(definition.from)
       : undefined;
+    const resolvedAlias =
+      definition.alias === undefined
+        ? undefined
+        : context.resolveTemplate(definition.alias);
 
     const found = fileStructure.imports.some(
       (i) =>
-        i.name === resolvedName &&
         i.isType &&
-        (resolvedFrom === undefined || i.from === resolvedFrom)
+        (resolvedFrom === undefined || i.from === resolvedFrom) &&
+        matchesImportName({
+          importInfo: i,
+          name: resolvedName,
+          alias: resolvedAlias,
+        })
     );
 
     if (!found) {
@@ -32,7 +41,10 @@ export function checkImportTypes(opts: {
         createDiagnostic({
           filePath: context.path,
           predicateName: "importTypes",
-          message: `Missing import type "${resolvedName}"`,
+          message:
+            resolvedAlias === undefined
+              ? `Missing import type "${resolvedName}"`
+              : `Missing import type "${resolvedName}" as "${resolvedAlias}"`,
           conventionName,
           severity,
         })
@@ -41,4 +53,24 @@ export function checkImportTypes(opts: {
   }
 
   return diagnostics;
+}
+
+function matchesImportName(opts: {
+  importInfo: FileStructure["imports"][number];
+  name: string;
+  alias?: string;
+}): boolean {
+  const { importInfo, name, alias } = opts;
+  if (alias !== undefined) {
+    return (
+      importInfo.kind === "named" &&
+      importInfo.sourceName !== "default" &&
+      importInfo.sourceName === name &&
+      importInfo.name === alias
+    );
+  }
+  if (importInfo.kind === "named" && importInfo.sourceName !== "default") {
+    return importInfo.sourceName === name;
+  }
+  return importInfo.name === name;
 }

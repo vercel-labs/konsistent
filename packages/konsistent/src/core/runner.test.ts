@@ -203,6 +203,126 @@ describe("run", () => {
     expect(diagnostics[0].message).toBe('Forbidden constant export "debug"');
   });
 
+  it("forbids exact import and export alias pairs", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/module.ts",
+          mustNot: {
+            importValues: [{ name: "sourceValue", alias: "localValue" }],
+            importTypes: [{ name: "SourceType", alias: "LocalType" }],
+            exportValues: [{ name: "sourceExport", alias: "publicValue" }],
+            exportTypes: [{ name: "SourceExportType", alias: "PublicType" }],
+          },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
+      files: new Set(["src/module.ts"]),
+      fileContents: new Map([
+        [
+          "src/module.ts",
+          [
+            'import { sourceValue as localValue } from "pkg";',
+            'import type { SourceType as LocalType } from "types";',
+            "const sourceExport = 1;",
+            "type SourceExportType = string;",
+            "export { sourceExport as publicValue };",
+            "export type { SourceExportType as PublicType };",
+          ].join("\n"),
+        ],
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics.map((diagnostic) => diagnostic.message)).toEqual([
+      'Forbidden import "sourceValue" as "localValue"',
+      'Forbidden type import "SourceType" as "LocalType"',
+      'Forbidden export "sourceExport" as "publicValue"',
+      'Forbidden type export "SourceExportType" as "PublicType"',
+    ]);
+  });
+
+  it("allows a different alias when mustNot configures an exact pair", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/module.ts",
+          mustNot: {
+            importValues: [{ name: "sourceValue", alias: "blockedValue" }],
+            importTypes: [{ name: "SourceType", alias: "BlockedType" }],
+            exportValues: [{ name: "sourceExport", alias: "blockedExport" }],
+            exportTypes: [
+              { name: "SourceExportType", alias: "BlockedExportType" },
+            ],
+          },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
+      files: new Set(["src/module.ts"]),
+      fileContents: new Map([
+        [
+          "src/module.ts",
+          [
+            'import { sourceValue as allowedValue } from "pkg";',
+            'import type { SourceType as AllowedType } from "types";',
+            "const sourceExport = 1;",
+            "type SourceExportType = string;",
+            "export { sourceExport as allowedExport };",
+            "export type { SourceExportType as AllowedExportType };",
+          ].join("\n"),
+        ],
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
+  });
+
+  it("forbids original names under any named alias when alias is omitted", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/module.ts",
+          mustNot: {
+            importValues: ["sourceValue"],
+            importTypes: ["SourceType"],
+            exportValues: ["sourceExport"],
+            exportTypes: ["SourceExportType"],
+          },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
+      files: new Set(["src/module.ts"]),
+      fileContents: new Map([
+        [
+          "src/module.ts",
+          [
+            'import { sourceValue as localValue } from "pkg";',
+            'import type { SourceType as LocalType } from "types";',
+            "const sourceExport = 1;",
+            "type SourceExportType = string;",
+            "export { sourceExport as publicValue };",
+            "export type { SourceExportType as PublicType };",
+          ].join("\n"),
+        ],
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics.map((diagnostic) => diagnostic.message)).toEqual([
+      'Forbidden import "sourceValue"',
+      'Forbidden type import "SourceType"',
+      'Forbidden export "sourceExport"',
+      'Forbidden type export "SourceExportType"',
+    ]);
+  });
+
   it("forbids a constant matching a mustNot schema", async () => {
     const config: ConfigV1 = {
       version: "v1",

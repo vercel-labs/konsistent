@@ -226,6 +226,100 @@ describe("checkExportTypes", () => {
     expect(result).toEqual([]);
   });
 
+  it("matches an aliased named type export by its original name", () => {
+    const result = checkExportTypes({
+      expected: ["LocalType"],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source:
+          "type LocalType = string; export type { LocalType as PublicType };",
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("requires an exact alias when configured", () => {
+    const source =
+      "type LocalType = string; export type { LocalType as PublicType };";
+    const context = createMockContext({ path: "src/index.ts" });
+
+    expect(
+      checkExportTypes({
+        expected: [{ name: "LocalType", alias: "PublicType" }],
+        context,
+        fileStructure: parseFileStructure({ source }),
+      })
+    ).toEqual([]);
+    expect(
+      checkExportTypes({
+        expected: [{ name: "LocalType", alias: "OtherType" }],
+        context,
+        fileStructure: parseFileStructure({ source }),
+      })[0].message
+    ).toBe('Missing export type "LocalType" as "OtherType"');
+  });
+
+  it("matches an aliased type re-export with a from constraint", () => {
+    const result = checkExportTypes({
+      expected: [{ name: "SourceType", alias: "PublicType", from: "./source" }],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source: 'export type { SourceType as PublicType } from "./source";',
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("resolves template placeholders in aliases", () => {
+    const result = checkExportTypes({
+      expected: [{ name: "LocalType", alias: "Public${name}" }],
+      context: createMockContext({
+        path: "src/index.ts",
+        placeholders: { name: { toString: () => "Type" } },
+      }),
+      fileStructure: parseFileStructure({
+        source:
+          "type LocalType = string; export type { LocalType as PublicType };",
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("allows an alias equal to the source name for a named type export", () => {
+    const result = checkExportTypes({
+      expected: [{ name: "LocalType", alias: "LocalType" }],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source: "type LocalType = string; export type { LocalType };",
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("does not apply aliases to direct or default type exports", () => {
+    const context = createMockContext({ path: "src/index.ts" });
+    const cases = [
+      {
+        source: "export type LocalType = string;",
+        expected: { name: "LocalType", alias: "LocalType" },
+      },
+      {
+        source: 'export type { default as PublicType } from "./source";',
+        expected: { name: "default", alias: "PublicType" },
+      },
+    ];
+
+    for (const entry of cases) {
+      expect(
+        checkExportTypes({
+          expected: [entry.expected],
+          context,
+          fileStructure: parseFileStructure({ source: entry.source }),
+        })
+      ).toHaveLength(1);
+    }
+  });
+
   it("includes conventionName when provided", () => {
     const result = checkExportTypes({
       expected: ["Missing"],
@@ -258,6 +352,29 @@ describe("checkExportTypes", () => {
             timeout?: number;
             reasoning?: "low" | "medium" | "high";
           };
+        `,
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("validates the original local type definition through an export alias", () => {
+    const result = checkExportTypes({
+      expected: [
+        {
+          name: "ModuleSettings",
+          alias: "PublicSettings",
+          schema: {
+            type: "object",
+            properties: { model: { type: "string" } },
+          },
+        },
+      ],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source: `
+          type ModuleSettings = { model?: string };
+          export type { ModuleSettings as PublicSettings };
         `,
       }),
     });

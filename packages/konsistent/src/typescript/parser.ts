@@ -301,7 +301,11 @@ function processImportDeclaration(opts: {
     if (ts.isNamedImports(node.importClause.namedBindings)) {
       for (const element of node.importClause.namedBindings.elements) {
         collector.imports.push({
+          kind: "named",
           name: element.name.getText(sourceFile),
+          sourceName: (element.propertyName ?? element.name).getText(
+            sourceFile
+          ),
           from: moduleSpecifier,
           isType: isTypeOnly || element.isTypeOnly,
           pos,
@@ -309,6 +313,7 @@ function processImportDeclaration(opts: {
       }
     } else if (ts.isNamespaceImport(node.importClause.namedBindings)) {
       collector.imports.push({
+        kind: "namespace",
         name: node.importClause.namedBindings.name.getText(sourceFile),
         from: moduleSpecifier,
         isType: isTypeOnly,
@@ -319,6 +324,7 @@ function processImportDeclaration(opts: {
 
   if (node.importClause?.name) {
     collector.imports.push({
+      kind: "default",
       name: node.importClause.name.getText(sourceFile),
       from: moduleSpecifier,
       isType: isTypeOnly,

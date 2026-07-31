@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PredicateContext } from "../../core/context.js";
+import { parseFileStructure } from "../parser.js";
 import type { FileStructure } from "../types.js";
 import { checkImportTypes } from "./import-types.js";
 
@@ -186,6 +187,101 @@ describe("checkImportTypes", () => {
       }),
     });
     expect(result).toEqual([]);
+  });
+
+  it("matches an aliased named type import by its original name", () => {
+    const result = checkImportTypes({
+      expected: ["SourceType"],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source: 'import type { SourceType as LocalType } from "pkg";',
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("does not match an aliased named type import by only its local name", () => {
+    const result = checkImportTypes({
+      expected: ["LocalType"],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source: 'import type { SourceType as LocalType } from "pkg";',
+      }),
+    });
+    expect(result[0].message).toBe('Missing import type "LocalType"');
+  });
+
+  it("requires an exact alias when configured", () => {
+    const source =
+      'import { type SourceType as LocalType } from "type-package";';
+    const context = createMockContext({ path: "src/index.ts" });
+
+    expect(
+      checkImportTypes({
+        expected: [
+          { name: "SourceType", alias: "LocalType", from: "type-package" },
+        ],
+        context,
+        fileStructure: parseFileStructure({ source }),
+      })
+    ).toEqual([]);
+    expect(
+      checkImportTypes({
+        expected: [{ name: "SourceType", alias: "OtherType" }],
+        context,
+        fileStructure: parseFileStructure({ source }),
+      })[0].message
+    ).toBe('Missing import type "SourceType" as "OtherType"');
+  });
+
+  it("allows an alias equal to the source name for a named type import", () => {
+    const result = checkImportTypes({
+      expected: [{ name: "SourceType", alias: "SourceType" }],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source: 'import type { SourceType } from "pkg";',
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("resolves template placeholders in aliases", () => {
+    const result = checkImportTypes({
+      expected: [{ name: "SourceType", alias: "${name}Type" }],
+      context: createMockContext({
+        path: "src/index.ts",
+        placeholders: { name: { toString: () => "Local" } },
+      }),
+      fileStructure: parseFileStructure({
+        source: 'import type { SourceType as LocalType } from "pkg";',
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it.each([
+    {
+      source: 'import type DefaultType from "pkg";',
+      expected: { name: "default", alias: "DefaultType" },
+    },
+    {
+      source: 'import type * as NamespaceType from "pkg";',
+      expected: { name: "*", alias: "NamespaceType" },
+    },
+    {
+      source: 'import type { default as DefaultType } from "pkg";',
+      expected: { name: "default", alias: "DefaultType" },
+    },
+  ])("does not apply aliases to default or namespace type imports: $source", ({
+    source,
+    expected,
+  }) => {
+    const result = checkImportTypes({
+      expected: [expected],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({ source }),
+    });
+    expect(result).toHaveLength(1);
   });
 
   it("includes conventionName when provided", () => {

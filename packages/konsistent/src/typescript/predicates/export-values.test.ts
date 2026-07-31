@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PredicateContext } from "../../core/context.js";
+import { parseFileStructure } from "../parser.js";
 import type { FileStructure } from "../types.js";
 import { checkExportValues } from "./export-values.js";
 
@@ -223,6 +224,104 @@ describe("checkExportValues", () => {
       }),
     });
     expect(result).toEqual([]);
+  });
+
+  it("matches an aliased named export by its original name", () => {
+    const result = checkExportValues({
+      expected: ["localValue"],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source: "const localValue = 1; export { localValue as publicValue };",
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("requires an exact alias when configured", () => {
+    const source =
+      "const localValue = 1; export { localValue as publicValue };";
+    const context = createMockContext({ path: "src/index.ts" });
+
+    expect(
+      checkExportValues({
+        expected: [{ name: "localValue", alias: "publicValue" }],
+        context,
+        fileStructure: parseFileStructure({ source }),
+      })
+    ).toEqual([]);
+    expect(
+      checkExportValues({
+        expected: [{ name: "localValue", alias: "otherValue" }],
+        context,
+        fileStructure: parseFileStructure({ source }),
+      })[0].message
+    ).toBe('Missing export "localValue" as "otherValue"');
+  });
+
+  it("matches an aliased re-export with a from constraint", () => {
+    const result = checkExportValues({
+      expected: [
+        { name: "sourceValue", alias: "publicValue", from: "./source" },
+      ],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source: 'export { sourceValue as publicValue } from "./source";',
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("resolves template placeholders in aliases", () => {
+    const result = checkExportValues({
+      expected: [{ name: "localValue", alias: "public${name}" }],
+      context: createMockContext({
+        path: "src/index.ts",
+        placeholders: { name: { toString: () => "Value" } },
+      }),
+      fileStructure: parseFileStructure({
+        source: "const localValue = 1; export { localValue as publicValue };",
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("allows an alias equal to the source name for a named export", () => {
+    const result = checkExportValues({
+      expected: [{ name: "localValue", alias: "localValue" }],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source: "const localValue = 1; export { localValue };",
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("does not apply aliases to direct, default, or namespace exports", () => {
+    const context = createMockContext({ path: "src/index.ts" });
+    const cases = [
+      {
+        source: "export const localValue = 1;",
+        expected: { name: "localValue", alias: "localValue" },
+      },
+      {
+        source: 'export { default as PublicValue } from "./source";',
+        expected: { name: "default", alias: "PublicValue" },
+      },
+      {
+        source: 'export * as PublicNamespace from "./source";',
+        expected: { name: "*", alias: "PublicNamespace" },
+      },
+    ];
+
+    for (const entry of cases) {
+      expect(
+        checkExportValues({
+          expected: [entry.expected],
+          context,
+          fileStructure: parseFileStructure({ source: entry.source }),
+        })
+      ).toHaveLength(1);
+    }
   });
 
   it("includes conventionName when provided", () => {
