@@ -83,7 +83,19 @@ For custom reports, gating, or agent workflows, use [`--format=json`](../referen
 
 ## Pre-commit / pre-push
 
-For a local guard before pushing, add a husky or lefthook hook that runs `pnpm konsistent`. Since `konsistent` checks the whole codebase rather than individual files, prefer running it in CI and reserving local hooks for the fastest checks. If you do run it pre-push, use `--diagnostic-level error` to keep it snappy.
+For a fast local guard, check only files staged for the next commit:
+
+```bash
+pnpm konsistent --staged
+```
+
+For a broader pre-push check that includes staged changes, unstaged changes, and untracked files that are not ignored by Git, use:
+
+```bash
+pnpm konsistent --modified
+```
+
+Both commands restrict path discovery before conventions run. If Git selects no files, Konsistent prints a warning and exits successfully. A full `pnpm konsistent` remains the authoritative whole-codebase check for CI.
 
 ## Combining with other checks
 
