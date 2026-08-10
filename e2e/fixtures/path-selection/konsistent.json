@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "component-structure",
+      "paths": "components/{componentName}",
+      "must": [
+        { "must": { "haveFiles": ["${componentName}.tsx"] } },
+        {
+          "for": { "files": "${componentName}.test.tsx" },
+          "must": { "exportValues": ["describe"] }
+        }
+      ]
+    }
+  ]
+}
