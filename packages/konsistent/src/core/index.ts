@@ -3,8 +3,16 @@ export type { Diagnostic, DiagnosticSeverity } from "./diagnostics.js";
 export { createDiagnostic } from "./diagnostics.js";
 export type { FileSystem } from "./filesystem.js";
 export { createRealFileSystem } from "./filesystem.js";
+export type { GitClient } from "./git-client.js";
+export { createGitClient, parseNullDelimitedPaths } from "./git-client.js";
 export type { MatchedPath } from "./path-matcher.js";
 export { hasPlaceholders, matchPaths, patternToGlob } from "./path-matcher.js";
+export type { PathSelection } from "./path-selection.js";
+export {
+  allPathSelection,
+  createTargetedPathSelection,
+  resolvePathSelectors,
+} from "./path-selection.js";
 export { PlaceholderValue } from "./placeholder.js";
 export type { Reporter } from "./reporter.js";
 export {

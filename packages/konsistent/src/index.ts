@@ -20,18 +20,15 @@ const main = defineCommand({
 });
 
 const rawArgs = process.argv.slice(2);
-const hasSubCommand = rawArgs.some(
-  (arg) => !arg.startsWith("-") && SUBCOMMANDS.has(arg)
-);
+const explicitCommand =
+  rawArgs[0] && SUBCOMMANDS.has(rawArgs[0]) ? rawArgs[0] : undefined;
+const hasSubCommand = explicitCommand !== undefined;
 const hasHelpFlag = rawArgs.includes("--help") || rawArgs.includes("-h");
 const hasVersionFlag = rawArgs.length === 1 && rawArgs[0] === "--version";
 
 function getCommandName(): string {
-  const explicit = rawArgs.find(
-    (arg) => !arg.startsWith("-") && SUBCOMMANDS.has(arg)
-  );
-  if (explicit) {
-    return explicit;
+  if (explicitCommand) {
+    return explicitCommand;
   }
   if (hasHelpFlag) {
     return "help";

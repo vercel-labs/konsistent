@@ -22,6 +22,9 @@ Check options:
   --no-colors                Disable colored output (only for default format)
   --error-on-warnings        Treat warnings as errors for exit code purposes
   --diagnostic-level <level> Minimum severity to evaluate: warning (default) or error
+  --paths <path-or-glob>      Path or glob to check (repeatable)
+  --staged                    Check files currently staged in Git
+  --modified                  Check staged, unstaged, and untracked non-ignored files
 
 Validate options:
   --config-path <path>    Path to konsistent.json config file
