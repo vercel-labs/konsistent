@@ -1,0 +1,27 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "plugin-exports",
+      "paths": "plugins/{pluginName}/index.ts",
+      "excludeFiles": ["plugins/{storage,cache}/index.ts"],
+      "must": {
+        "export": ["activate"],
+        "exportConstants": ["pluginId"]
+      }
+    },
+    {
+      "name": "plugin-tests",
+      "paths": "plugins/{pluginName}",
+      "must": [
+        {
+          "for": { "files": "{testFile}.spec.ts" },
+          "excludeFiles": ["plugins/auth/[hm]*.spec.ts"],
+          "must": {
+            "export": ["describe"]
+          }
+        }
+      ]
+    }
+  ]
+}

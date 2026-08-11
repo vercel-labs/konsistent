@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "widget-helpers",
+      "paths": "widgets/{widgetName}/helper.ts",
+      "excludeFiles": ["widgets/{widgetName}/helper.ts"],
+      "must": {
+        "export": ["render"]
+      }
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import picomatch from "picomatch";
 import type { FileSystem } from "./filesystem.js";
 import { PlaceholderValue } from "./placeholder.js";
 import {
@@ -281,27 +282,27 @@ function tryExtractPlaceholders(opts: {
 }
 
 /*
- * Tests whether a single file path matches a path pattern, supporting the
- * same glob syntax as `paths` (`*`, `?`, and variable-depth `**`), without
- * extracting placeholder values. Used for `excludeFiles` patterns, which are
- * plain glob patterns rather than placeholder patterns.
+ * Tests whether a single file path matches a path pattern, using real glob
+ * semantics (`*`, `?`, `[...]` character classes, `{a,b}` brace expansion,
+ * extglobs, and variable-depth `**`) via picomatch, the same matcher backing
+ * `fileSystem.glob` (through tinyglobby) for `paths`. Used for `excludeFiles`
+ * patterns.
+ *
+ * `posix: true` mirrors tinyglobby's own hardcoded picomatch option, so a
+ * bang-negated character class like `[!ab]` matches the POSIX/shell sense
+ * (not "a", not "b") here too, instead of picomatch's non-posix default of
+ * treating `!` as a literal member of the class.
+ *
+ * Does not extract or treat `{name}` as a placeholder: a picomatch brace
+ * group only expands when it contains a comma or range, so a bare `{name}`
+ * is matched literally rather than acting as a wildcard.
  */
 export function matchesPathPattern(opts: {
   pattern: string;
   filePath: string;
 }): boolean {
   const { pattern, filePath } = opts;
-  const patternSegments = pattern.split("/");
-  const pathSegments = filePath.split("/");
-  return (
-    matchPatternSegments({
-      patternSegments,
-      pathSegments,
-      patternIndex: 0,
-      pathIndex: 0,
-      values: {},
-    }) !== null
-  );
+  return picomatch.isMatch(filePath, pattern, { posix: true });
 }
 
 function toPlaceholderMap(opts: {

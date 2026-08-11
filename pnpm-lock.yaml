@@ -208,6 +208,9 @@ importers:
       picocolors:
         specifier: ^1
         version: 1.1.1
+      picomatch:
+        specifier: ^4
+        version: 4.0.4
       resolve.exports:
         specifier: ^2
         version: 2.0.3
@@ -224,6 +227,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 24.12.2
+      '@types/picomatch':
+        specifier: ^4
+        version: 4.0.3
       ajv:
         specifier: 'catalog:'
         version: 8.18.0
@@ -893,6 +899,9 @@ packages:
 
   '@types/node@24.12.2':
     resolution: {integrity: sha512-A1sre26ke7HDIuY/M23nd9gfB+nrmhtYyMINbjI1zHJxYteKR6qSMX56FsmjMcDb3SMcjJg5BiRRgOCC/yBD0g==}
+
+  '@types/picomatch@4.0.3':
+    resolution: {integrity: sha512-iG0T6+nYJ9FAPmx9SsUlnwcq1ZVRuCXcVEvWnntoPlrOpwtSTKNDC9uVAxTsC3PUvJ+99n4RpAcNgBbHX3JSnQ==}
 
   '@vitest/expect@4.1.8':
     resolution: {integrity: sha512-h3nDO677RDLEGlBxyQ5CW8RlMThSKSRLUePLOx09gNIWRL40edgA1GCZSZgf1W55MFAG6/Sw14KeaAnqv0NKdQ==}
@@ -2281,6 +2290,8 @@ snapshots:
   '@types/node@24.12.2':
     dependencies:
       undici-types: 7.16.0
+
+  '@types/picomatch@4.0.3': {}
 
   '@vitest/expect@4.1.8':
     dependencies:

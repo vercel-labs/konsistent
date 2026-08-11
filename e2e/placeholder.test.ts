@@ -1098,6 +1098,31 @@ describe("exclude-files fixture", () => {
   });
 });
 
+describe("exclude-files-glob-syntax fixture", () => {
+  const cwd = resolve(fixturesDir, "exclude-files-glob-syntax");
+
+  it("konsistent check exits 0 when excludeFiles uses brace alternation and a character class", async () => {
+    await expect(runCli({ args: ["check"], cwd })).resolves.not.toThrow();
+  });
+
+  it("does not let a bare {name} excludeFiles entry suppress an unrelated violation", async () => {
+    const configPath = resolve(cwd, "konsistent-token-guard.json");
+    try {
+      await runCli({ args: ["check", "--config-path", configPath], cwd });
+      expect.fail("Expected check to exit with code 1");
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        stderr: string;
+        code: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain('Missing export "render"');
+    }
+  });
+});
+
 describe("exclude-files-broken fixture", () => {
   const cwd = resolve(fixturesDir, "exclude-files-broken");
 

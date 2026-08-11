@@ -501,4 +501,81 @@ describe("matchesPathPattern", () => {
       })
     ).toBe(true);
   });
+
+  it("matches brace alternation against each listed branch", () => {
+    expect(
+      matchesPathPattern({
+        pattern: "src/{test,spec}.ts",
+        filePath: "src/test.ts",
+      })
+    ).toBe(true);
+    expect(
+      matchesPathPattern({
+        pattern: "src/{test,spec}.ts",
+        filePath: "src/spec.ts",
+      })
+    ).toBe(true);
+  });
+
+  it("does not match brace alternation against a branch not listed", () => {
+    expect(
+      matchesPathPattern({
+        pattern: "src/{test,spec}.ts",
+        filePath: "src/other.ts",
+      })
+    ).toBe(false);
+  });
+
+  it("matches a character class against members of the class", () => {
+    expect(
+      matchesPathPattern({
+        pattern: "src/[ab]*.ts",
+        filePath: "src/afile.ts",
+      })
+    ).toBe(true);
+    expect(
+      matchesPathPattern({
+        pattern: "src/[ab]*.ts",
+        filePath: "src/bfile.ts",
+      })
+    ).toBe(true);
+  });
+
+  it("rejects a character class match outside the class", () => {
+    expect(
+      matchesPathPattern({
+        pattern: "src/[ab]*.ts",
+        filePath: "src/cfile.ts",
+      })
+    ).toBe(false);
+  });
+
+  it("does not treat a bare {name} segment as a capturing placeholder", () => {
+    // A brace group with no comma is not an alternation and must not act as
+    // a wildcard, so this must not match a differing literal value.
+    expect(
+      matchesPathPattern({
+        pattern: "src/{file}.ts",
+        filePath: "src/runner.ts",
+      })
+    ).toBe(false);
+  });
+
+  it("negates a bang-prefixed character class in the POSIX/shell sense", () => {
+    // [!ab] means "not a, not b", matching `paths`/tinyglobby's posix:true
+    // behavior, not picomatch's non-posix default of treating `!` as a
+    // literal member of the class.
+    expect(
+      matchesPathPattern({
+        pattern: "src/[!ab]*.ts",
+        filePath: "src/cfile.ts",
+      })
+    ).toBe(true);
+    expect(
+      matchesPathPattern({
+        pattern: "src/[!ab]*.ts",
+        filePath: "src/afile.ts",
+      })
+    ).toBe(false);
+  });
 });
