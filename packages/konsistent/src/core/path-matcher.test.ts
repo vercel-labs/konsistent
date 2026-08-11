@@ -87,6 +87,35 @@ describe("matchPaths", () => {
     expect(globSpy).not.toHaveBeenCalled();
   });
 
+  it("matches POSIX character classes consistently for bounded candidates", async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        [
+          "components/[!B]*/**",
+          ["components/Input/Input.tsx", "components/Input/Input.test.tsx"],
+        ],
+      ]),
+    });
+    const candidatePaths = [
+      "components/Button/Button.tsx",
+      "components/Button/Button.test.tsx",
+      "components/Input/Input.tsx",
+      "components/Input/Input.test.tsx",
+    ];
+
+    const fullResults = await matchPaths({
+      patterns: ["components/[!B]*/**"],
+      fileSystem: fs,
+    });
+    const boundedResults = await matchPaths({
+      patterns: ["components/[!B]*/**"],
+      fileSystem: fs,
+      candidatePaths,
+    });
+
+    expect(boundedResults).toEqual(fullResults);
+  });
+
   it("extracts placeholders from bounded candidates", async () => {
     const fs = createMockFileSystem({});
     const globSpy = vi.spyOn(fs, "glob");
@@ -120,6 +149,22 @@ describe("matchPaths", () => {
       "packages/core/index.ts",
     ]);
     expect(globSpy).not.toHaveBeenCalled();
+  });
+
+  it("applies POSIX character classes in bounded negative patterns", async () => {
+    const fs = createMockFileSystem({});
+    const results = await matchPaths({
+      patterns: ["components/**", "!components/[!B]*"],
+      fileSystem: fs,
+      candidatePaths: [
+        "components/Button/Button.tsx",
+        "components/Input/Input.tsx",
+      ],
+    });
+
+    expect(results.map((result) => result.path)).toEqual([
+      "components/Button/Button.tsx",
+    ]);
   });
 
   it("does not fall back to globbing for an empty candidate set", async () => {

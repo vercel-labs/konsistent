@@ -11,6 +11,11 @@
           "must": { "exportValues": ["describe"] }
         }
       ]
+    },
+    {
+      "name": "non-button-component",
+      "paths": "components/[!B]*/**/*.tsx",
+      "must": { "exportValues": ["nonButtonComponent"] }
     }
   ]
 }

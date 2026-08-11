@@ -157,7 +157,7 @@ export async function resolvePathSelectors(opts: {
     )
   );
   const negativeMatchers = [...negativeSelectors].map((pattern) => {
-    const matcher = picomatch(pattern);
+    const matcher = picomatch(pattern, { posix: true });
     return (path: string) => matcher(path);
   });
   const selectedPaths = new Set(

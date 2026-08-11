@@ -309,7 +309,7 @@ function matchCandidatePaths(opts: {
   patterns: string[];
   candidatePaths: readonly string[];
 }): string[] {
-  const isMatch = picomatch(opts.patterns);
+  const isMatch = picomatch(opts.patterns, { posix: true });
   return opts.candidatePaths.filter((path) => isMatch(path));
 }
 
@@ -482,7 +482,7 @@ export async function matchPaths(opts: {
 
   const negativeGlobs = negativePatterns.map(patternToGlob);
   if (candidatePaths !== undefined) {
-    const isNegativeMatch = picomatch(negativeGlobs);
+    const isNegativeMatch = picomatch(negativeGlobs, { posix: true });
     return positiveResults.filter((result) => {
       const pathAndAncestors = [result.path];
       let current = result.path;

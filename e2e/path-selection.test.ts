@@ -87,6 +87,53 @@ describe("--paths", () => {
     });
   });
 
+  it("matches bounded conventions with POSIX character classes", async () => {
+    const buttonResult = await runCli({
+      cwd: fixturePath,
+      args: ["check", "--paths", "components/Button/Button.tsx"],
+    });
+
+    expect(buttonResult.stdout).toContain("No violations found");
+    await expect(
+      runCli({
+        cwd: fixturePath,
+        args: ["check", "--paths", "components/Input/Input.tsx"],
+      })
+    ).rejects.toMatchObject({
+      stdout: expect.stringContaining("[non-button-component]"),
+    });
+  });
+
+  it("applies POSIX character classes in negative selectors", async () => {
+    try {
+      await runCli({
+        cwd: fixturePath,
+        args: [
+          "check",
+          "--paths",
+          "components/**/*.tsx",
+          "--paths",
+          "!components/[!B]*/**",
+        ],
+      });
+      expect.fail(
+        "Expected the selected Button test file to report violations"
+      );
+    } catch (error: unknown) {
+      const result = error as { stdout: string };
+      expect(result.stdout).toContain("components/Button/Button.test.tsx");
+      expect(result.stdout).not.toContain("components/Input/Input.test.tsx");
+    }
+  });
+
+  it("rejects a separately supplied empty path", async () => {
+    await expect(
+      runCli({ cwd: fixturePath, args: ["check", "--paths", ""] })
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("--paths requires a non-empty value"),
+    });
+  });
+
   it("warns without failing when no paths match", async () => {
     const result = await runCli({
       cwd: fixturePath,

@@ -42,5 +42,14 @@ describe("parseRepeatedStringOption", () => {
       success: false,
       error: "--paths requires a non-empty value",
     });
+    expect(
+      parseRepeatedStringOption({
+        rawArgs: ["--paths", ""],
+        name: "--paths",
+      })
+    ).toEqual({
+      success: false,
+      error: "--paths requires a non-empty value",
+    });
   });
 });

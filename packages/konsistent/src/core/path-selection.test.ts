@@ -124,6 +124,28 @@ describe("resolvePathSelectors", () => {
     });
   });
 
+  it("applies POSIX character classes in negative selectors", async () => {
+    const fileSystem = createMockFileSystem({
+      files: ["components/Button/Button.tsx", "components/Input/Input.tsx"],
+      globResults: {
+        "components/**/*.tsx": [
+          "components/Button/Button.tsx",
+          "components/Input/Input.tsx",
+        ],
+      },
+    });
+    const selection = await resolvePathSelectors({
+      selectors: ["components/**/*.tsx", "!components/[!B]*/**"],
+      cwd: "/repo",
+      fileSystem,
+    });
+
+    expect(selection).toMatchObject({
+      mode: "targeted",
+      selectedPaths: ["components/Button/Button.tsx"],
+    });
+  });
+
   it("returns an explicit empty targeted selection", async () => {
     const selection = await resolvePathSelectors({
       selectors: ["missing/**/*.ts"],

@@ -28,7 +28,7 @@ export function parseRepeatedStringOption(opts: {
     }
 
     const value = opts.rawArgs[index + 1];
-    if (value === undefined || value.startsWith("-")) {
+    if (value === undefined || value.length === 0 || value.startsWith("-")) {
       return {
         success: false,
         error: `${opts.name} requires a non-empty value`,
