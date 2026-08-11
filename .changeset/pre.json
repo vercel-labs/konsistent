@@ -16,7 +16,9 @@
     "konsistent-fixture-reusable-convention-unknown-source": "0.0.0"
   },
   "changesets": [
+    "fix-double-star-placeholder-matching",
     "four-wings-brake",
+    "long-kids-yell",
     "lucky-bees-fly",
     "ripe-places-rhyme",
     "salty-stamps-cover",
