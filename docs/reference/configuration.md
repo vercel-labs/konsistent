@@ -134,7 +134,7 @@ Skip specific files from a convention without changing the path pattern:
 }
 ```
 
-`excludeFiles` accepts the same glob syntax as `paths` (without placeholder extraction). Path negation in `paths` (`"!path"`) is the inverse — see [path-patterns.md](./path-patterns.md#negation).
+`excludeFiles` accepts the same glob syntax as `paths`, including `{a,b}` alternation and `[ab]` character classes, but without placeholder extraction: a `{name}` segment is matched literally rather than treated as a capturing wildcard. Path negation in `paths` (`"!path"`) is the inverse; see [path-patterns.md](./path-patterns.md#negation).
 
 ## Validation
 

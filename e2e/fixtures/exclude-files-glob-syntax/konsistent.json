@@ -4,9 +4,9 @@
     {
       "name": "plugin-exports",
       "paths": "plugins/{pluginName}/index.ts",
-      "excludeFiles": ["plugins/storage/index.ts"],
+      "excludeFiles": ["plugins/{storage,cache}/index.ts"],
       "must": {
-        "exportValues": ["activate"],
+        "export": ["activate"],
         "exportConstants": ["pluginId"]
       }
     },
@@ -16,9 +16,9 @@
       "must": [
         {
           "for": { "files": "{testFile}.spec.ts" },
-          "excludeFiles": ["**/helpers.spec.ts"],
+          "excludeFiles": ["plugins/auth/[hm]*.spec.ts"],
           "must": {
-            "exportValues": ["describe"]
+            "export": ["describe"]
           }
         }
       ]
