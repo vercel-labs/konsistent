@@ -305,6 +305,14 @@ export function matchesPathPattern(opts: {
   return picomatch.isMatch(filePath, pattern, { posix: true });
 }
 
+function matchCandidatePaths(opts: {
+  patterns: string[];
+  candidatePaths: readonly string[];
+}): string[] {
+  const isMatch = picomatch(opts.patterns, { posix: true });
+  return opts.candidatePaths.filter((path) => isMatch(path));
+}
+
 function toPlaceholderMap(opts: {
   raw: Record<string, string>;
   kebabToPascalMap?: Record<string, string>;
@@ -341,6 +349,7 @@ function toPlaceholderMap(opts: {
 async function resolvePositivePatterns(opts: {
   patterns: string[];
   fileSystem: FileSystem;
+  candidatePaths?: readonly string[];
   kebabToPascalMap?: Record<string, string>;
   kebabToCamelMap?: Record<string, string>;
   pascalToKebabMap?: Record<string, string>;
@@ -351,6 +360,7 @@ async function resolvePositivePatterns(opts: {
   const {
     patterns,
     fileSystem,
+    candidatePaths,
     kebabToPascalMap,
     kebabToCamelMap,
     pascalToKebabMap,
@@ -365,7 +375,10 @@ async function resolvePositivePatterns(opts: {
 
   const anyPlaceholders = patterns.some((p) => hasPlaceholders(p));
   if (!anyPlaceholders) {
-    const paths = await fileSystem.glob(patterns);
+    const paths =
+      candidatePaths === undefined
+        ? await fileSystem.glob(patterns)
+        : matchCandidatePaths({ patterns, candidatePaths });
     return paths.map((p) => ({
       path: p.endsWith("/") ? p.slice(0, -1) : p,
       placeholders: {},
@@ -373,7 +386,13 @@ async function resolvePositivePatterns(opts: {
   }
 
   const globPatterns = patterns.map(patternToGlob);
-  const matchedPaths = await fileSystem.glob(globPatterns);
+  const matchedPaths =
+    candidatePaths === undefined
+      ? await fileSystem.glob(globPatterns)
+      : matchCandidatePaths({
+          patterns: globPatterns,
+          candidatePaths,
+        });
   const results: MatchedPath[] = [];
 
   for (const rawPath of matchedPaths) {
@@ -409,6 +428,7 @@ async function resolvePositivePatterns(opts: {
 export async function matchPaths(opts: {
   patterns: string[];
   fileSystem: FileSystem;
+  candidatePaths?: readonly string[];
   kebabToPascalMap?: Record<string, string>;
   kebabToCamelMap?: Record<string, string>;
   pascalToKebabMap?: Record<string, string>;
@@ -419,6 +439,7 @@ export async function matchPaths(opts: {
   const {
     patterns: rawPatterns,
     fileSystem,
+    candidatePaths,
     kebabToPascalMap,
     kebabToCamelMap,
     pascalToKebabMap,
@@ -426,6 +447,10 @@ export async function matchPaths(opts: {
     camelToPascalMap,
     pascalToCamelMap,
   } = opts;
+
+  if (candidatePaths?.length === 0) {
+    return [];
+  }
 
   const positivePatterns: string[] = [];
   const negativePatterns: string[] = [];
@@ -442,6 +467,7 @@ export async function matchPaths(opts: {
   const positiveResults = await resolvePositivePatterns({
     patterns: positivePatterns,
     fileSystem,
+    candidatePaths,
     kebabToPascalMap,
     kebabToCamelMap,
     pascalToKebabMap,
@@ -455,6 +481,19 @@ export async function matchPaths(opts: {
   }
 
   const negativeGlobs = negativePatterns.map(patternToGlob);
+  if (candidatePaths !== undefined) {
+    const isNegativeMatch = picomatch(negativeGlobs, { posix: true });
+    return positiveResults.filter((result) => {
+      const pathAndAncestors = [result.path];
+      let current = result.path;
+      while (current.includes("/")) {
+        current = current.slice(0, current.lastIndexOf("/"));
+        pathAndAncestors.push(current);
+      }
+      return !pathAndAncestors.some((path) => isNegativeMatch(path));
+    });
+  }
+
   const negatedPaths = await fileSystem.glob(negativeGlobs);
   const excludePaths = negatedPaths.map((p) =>
     p.endsWith("/") ? p.slice(0, -1) : p

@@ -37,6 +37,7 @@ import { createDiagnostic } from "./diagnostics.js";
 import type { FileSystem } from "./filesystem.js";
 import type { MatchedPath } from "./path-matcher.js";
 import { matchesPathPattern, matchPaths } from "./path-matcher.js";
+import type { PathSelection } from "./path-selection.js";
 import { PlaceholderValue } from "./placeholder.js";
 import {
   parsePlaceholderConstraint,
@@ -1112,6 +1113,7 @@ async function evaluateForBlock(opts: {
   fileStructureCache: Map<string, FileStructure>;
   severity?: DiagnosticSeverity;
   checkedPaths: Set<string>;
+  pathSelection?: PathSelection;
   kebabToPascalMap?: Record<string, string>;
   kebabToCamelMap?: Record<string, string>;
   pascalToKebabMap?: Record<string, string>;
@@ -1127,6 +1129,7 @@ async function evaluateForBlock(opts: {
     fileStructureCache,
     severity,
     checkedPaths,
+    pathSelection,
     kebabToPascalMap,
     kebabToCamelMap,
     pascalToKebabMap,
@@ -1170,6 +1173,10 @@ async function evaluateForBlock(opts: {
   const matched = await matchPaths({
     patterns: fullPatterns,
     fileSystem,
+    candidatePaths:
+      pathSelection?.mode === "targeted"
+        ? pathSelection.selectedPaths
+        : undefined,
     kebabToPascalMap,
     kebabToCamelMap,
     pascalToKebabMap,
@@ -1233,9 +1240,10 @@ export interface RunResult {
 export async function run(opts: {
   config: ConfigV1;
   fileSystem: FileSystem;
+  pathSelection?: PathSelection;
 }): Promise<RunResult> {
   const startTime = performance.now();
-  const { config, fileSystem } = opts;
+  const { config, fileSystem, pathSelection } = opts;
   const fileStructureCache = new Map<string, FileStructure>();
 
   const { kebabToPascalMap, kebabToCamelMap } = config;
@@ -1255,6 +1263,10 @@ export async function run(opts: {
       return matchPaths({
         patterns,
         fileSystem,
+        candidatePaths:
+          pathSelection?.mode === "targeted"
+            ? pathSelection.structuralPaths
+            : undefined,
         kebabToPascalMap,
         kebabToCamelMap,
         pascalToKebabMap,
@@ -1330,6 +1342,7 @@ export async function run(opts: {
             fileStructureCache,
             severity,
             checkedPaths,
+            pathSelection,
             kebabToPascalMap,
             kebabToCamelMap,
             pascalToKebabMap,

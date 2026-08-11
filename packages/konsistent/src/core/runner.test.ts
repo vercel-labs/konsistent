@@ -27,6 +27,57 @@ function createMockFileSystem(opts: {
 }
 
 describe("run", () => {
+  it("bounds ancestor conventions and nested file blocks to selected paths", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "components/{componentName}",
+          must: [
+            {
+              for: { files: "${componentName}.test.tsx" },
+              must: { exportValues: ["describe"] },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      directories: new Set(["components/Button", "components/Input"]),
+      files: new Set([
+        "components/Button/Button.test.tsx",
+        "components/Input/Input.test.tsx",
+      ]),
+      fileContents: new Map([
+        ["components/Button/Button.test.tsx", "export const describe = true;"],
+        ["components/Input/Input.test.tsx", "export const invalid = true;"],
+      ]),
+    });
+    const globSpy = vi.spyOn(fs, "glob");
+    const readSpy = vi.spyOn(fs, "readFile");
+
+    const result = await run({
+      config,
+      fileSystem: fs,
+      pathSelection: {
+        mode: "targeted",
+        selectedPaths: ["components/Button/Button.test.tsx"],
+        structuralPaths: [
+          ".",
+          "components",
+          "components/Button",
+          "components/Button/Button.test.tsx",
+        ],
+      },
+    });
+
+    expect(result.diagnostics).toEqual([]);
+    expect(result.filesChecked).toBe(2);
+    expect(globSpy).not.toHaveBeenCalled();
+    expect(readSpy).toHaveBeenCalledTimes(1);
+    expect(readSpy).toHaveBeenCalledWith("components/Button/Button.test.tsx");
+  });
+
   it("returns empty diagnostics for empty conventions", async () => {
     const config: ConfigV1 = { version: "v1", conventions: [] };
     const { diagnostics, filesChecked } = await run({
