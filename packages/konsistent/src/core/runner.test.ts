@@ -1265,6 +1265,29 @@ describe("excludeFiles", () => {
     expect(diagnostics).toEqual([]);
   });
 
+  it("convention-level excludeFiles with a **/ prefixed pattern skips matching file (#57 regression)", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          name: "source-files",
+          paths: "foo/**/*.ts",
+          excludeFiles: ["**/__test-env-tdd-state.ts"],
+          must: { haveType: "file" },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ["foo/**/*.ts", ["foo/__test-env-tdd-state.ts", "foo/utils.ts"]],
+      ]),
+      directories: new Set(["foo/__test-env-tdd-state.ts"]),
+      files: new Set(["foo/utils.ts"]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
+  });
+
   it("convention-level excludeFiles does not skip non-matching file", async () => {
     const config: ConfigV1 = {
       version: "v1",

@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "globstar-placeholder-backtracking",
+      "paths": "{name}/**/{name}/**/*.ts",
+      "must": {
+        "export": ["${name}"]
+      }
+    }
+  ]
+}

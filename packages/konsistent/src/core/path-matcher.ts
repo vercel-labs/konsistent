@@ -1,3 +1,4 @@
+import picomatch from "picomatch";
 import type { FileSystem } from "./filesystem.js";
 import { PlaceholderValue } from "./placeholder.js";
 import {
@@ -179,41 +180,129 @@ function mergeExtracted(opts: {
   return true;
 }
 
+/*
+ * Matches pattern segments against path segments, extracting placeholder
+ * values along the way. Unlike a simple index-by-index walk, this supports a
+ * `**` pattern segment consuming a variable number of path segments (zero or
+ * more), backtracking through candidate consumption counts until the rest of
+ * the pattern also matches. This is what lets `**` coexist with `{placeholder}`
+ * segments elsewhere in the same pattern — e.g. `deep/**\/{name}.ts` matching
+ * `deep/top.ts`, `deep/a/mid.ts`, and `deep/a/b/leaf.ts` alike.
+ *
+ * Placeholder consistency and constraints are validated as soon as a segment
+ * is bound (via the `values` accumulator threaded through the recursion),
+ * not after the fact. That's what lets a `**` above still backtrack to a
+ * later split when an earlier structurally-valid one turns out to violate a
+ * constraint or conflict with a previously bound placeholder value — e.g.
+ * `{name}/**\/{name}/**\/*.ts` matching `foo/bar/foo/nested/baz.ts` by having
+ * the first `**` consume `bar` so the second `{name}` lands on `foo`.
+ */
+function matchPatternSegments(opts: {
+  patternSegments: string[];
+  pathSegments: string[];
+  patternIndex: number;
+  pathIndex: number;
+  values: Record<string, string>;
+}): Record<string, string> | null {
+  const { patternSegments, pathSegments, patternIndex, pathIndex, values } =
+    opts;
+
+  if (patternIndex === patternSegments.length) {
+    return pathIndex === pathSegments.length ? values : null;
+  }
+
+  const segment = patternSegments[patternIndex];
+
+  if (segment === "**") {
+    for (
+      let consumedUpTo = pathIndex;
+      consumedUpTo <= pathSegments.length;
+      consumedUpTo++
+    ) {
+      const rest = matchPatternSegments({
+        patternSegments,
+        pathSegments,
+        patternIndex: patternIndex + 1,
+        pathIndex: consumedUpTo,
+        values,
+      });
+      if (rest !== null) {
+        return rest;
+      }
+    }
+    return null;
+  }
+
+  if (pathIndex >= pathSegments.length) {
+    return null;
+  }
+
+  const segmentResult = extractValueFromSegment({
+    patternSegment: segment,
+    pathSegment: pathSegments[pathIndex],
+  });
+  if (segmentResult === null) {
+    return null;
+  }
+
+  if (!satisfiesConstraints(segmentResult)) {
+    return null;
+  }
+
+  const mergedValues = { ...values };
+  if (
+    !mergeExtracted({ existing: mergedValues, incoming: segmentResult.values })
+  ) {
+    return null;
+  }
+
+  return matchPatternSegments({
+    patternSegments,
+    pathSegments,
+    patternIndex: patternIndex + 1,
+    pathIndex: pathIndex + 1,
+    values: mergedValues,
+  });
+}
+
 function tryExtractPlaceholders(opts: {
   pattern: string;
   pathSegments: string[];
 }): Record<string, string> | null {
   const { pattern, pathSegments } = opts;
   const patternSegments = pattern.split("/");
-  if (patternSegments.length !== pathSegments.length) {
-    return null;
-  }
 
-  const extracted: Record<string, string> = {};
-  const allConstraints: Record<string, string> = {};
-  for (let i = 0; i < patternSegments.length; i++) {
-    const segmentResult = extractValueFromSegment({
-      patternSegment: patternSegments[i],
-      pathSegment: pathSegments[i],
-    });
-    if (segmentResult === null) {
-      return null;
-    }
-    if (
-      !mergeExtracted({ existing: extracted, incoming: segmentResult.values })
-    ) {
-      return null;
-    }
-    Object.assign(allConstraints, segmentResult.constraints);
-  }
+  return matchPatternSegments({
+    patternSegments,
+    pathSegments,
+    patternIndex: 0,
+    pathIndex: 0,
+    values: {},
+  });
+}
 
-  if (
-    !satisfiesConstraints({ values: extracted, constraints: allConstraints })
-  ) {
-    return null;
-  }
-
-  return extracted;
+/*
+ * Tests whether a single file path matches a path pattern, using real glob
+ * semantics (`*`, `?`, `[...]` character classes, `{a,b}` brace expansion,
+ * extglobs, and variable-depth `**`) via picomatch, the same matcher backing
+ * `fileSystem.glob` (through tinyglobby) for `paths`. Used for `excludeFiles`
+ * patterns.
+ *
+ * `posix: true` mirrors tinyglobby's own hardcoded picomatch option, so a
+ * bang-negated character class like `[!ab]` matches the POSIX/shell sense
+ * (not "a", not "b") here too, instead of picomatch's non-posix default of
+ * treating `!` as a literal member of the class.
+ *
+ * Does not extract or treat `{name}` as a placeholder: a picomatch brace
+ * group only expands when it contains a comma or range, so a bare `{name}`
+ * is matched literally rather than acting as a wildcard.
+ */
+export function matchesPathPattern(opts: {
+  pattern: string;
+  filePath: string;
+}): boolean {
+  const { pattern, filePath } = opts;
+  return picomatch.isMatch(filePath, pattern, { posix: true });
 }
 
 function toPlaceholderMap(opts: {

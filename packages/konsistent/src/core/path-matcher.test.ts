@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { FileSystem } from "./filesystem.js";
-import { hasPlaceholders, matchPaths, patternToGlob } from "./path-matcher.js";
+import {
+  hasPlaceholders,
+  matchesPathPattern,
+  matchPaths,
+  patternToGlob,
+} from "./path-matcher.js";
 
 function createMockFileSystem(opts: {
   globResults?: Map<string, string[]>;
@@ -375,5 +380,202 @@ describe("matchPaths", () => {
       fileSystem: fs,
     });
     expect(results).toHaveLength(2);
+  });
+
+  it("plain ** without a placeholder matches every depth (baseline, no regression)", async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ["deep/**/*.ts", ["deep/top.ts", "deep/a/mid.ts", "deep/a/b/leaf.ts"]],
+      ]),
+    });
+    const results = await matchPaths({
+      patterns: ["deep/**/*.ts"],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(3);
+    expect(results.every((r) => Object.keys(r.placeholders).length === 0)).toBe(
+      true
+    );
+  });
+
+  it("`**` adjacent to a `{placeholder}` matches every depth (#56 regression)", async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ["deep/**/*.ts", ["deep/top.ts", "deep/a/mid.ts", "deep/a/b/leaf.ts"]],
+      ]),
+    });
+    const results = await matchPaths({
+      patterns: ["deep/**/{name}.ts"],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(3);
+
+    const byPath = new Map(
+      results.map((r) => [r.path, r.placeholders.name.toString()])
+    );
+    expect(byPath.get("deep/top.ts")).toBe("top");
+    expect(byPath.get("deep/a/mid.ts")).toBe("mid");
+    expect(byPath.get("deep/a/b/leaf.ts")).toBe("leaf");
+  });
+
+  it("`**` before a placeholder still enforces multi-placeholder consistency", async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ["deep/**/*/*.ts", ["deep/a/b/auth/auth.ts", "deep/a/b/auth/other.ts"]],
+      ]),
+    });
+    const results = await matchPaths({
+      patterns: ["deep/**/{name}/{name}.ts"],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(1);
+    expect(results[0].path).toBe("deep/a/b/auth/auth.ts");
+    expect(results[0].placeholders.name.toString()).toBe("auth");
+  });
+
+  it("a `**` backtracks past a placeholder conflict to reach a later valid split", async () => {
+    const fs = createMockFileSystem({
+      globResults: new Map([["*/**/*/**/*.ts", ["foo/bar/foo/nested/baz.ts"]]]),
+    });
+    const results = await matchPaths({
+      patterns: ["{name}/**/{name}/**/*.ts"],
+      fileSystem: fs,
+    });
+    expect(results).toHaveLength(1);
+    expect(results[0].path).toBe("foo/bar/foo/nested/baz.ts");
+    expect(results[0].placeholders.name.toString()).toBe("foo");
+  });
+});
+
+describe("matchesPathPattern", () => {
+  it("matches a **/ prefixed pattern against a nested file", () => {
+    expect(
+      matchesPathPattern({
+        pattern: "**/__test-env-tdd-state.ts",
+        filePath: "foo/__test-env-tdd-state.ts",
+      })
+    ).toBe(true);
+  });
+
+  it("matches a **/ prefixed pattern regardless of nesting depth", () => {
+    expect(
+      matchesPathPattern({
+        pattern: "**/__test-env-tdd-state.ts",
+        filePath: "foo/bar/baz/__test-env-tdd-state.ts",
+      })
+    ).toBe(true);
+  });
+
+  it("matches a **/ prefixed pattern at the root (zero intermediate segments)", () => {
+    expect(
+      matchesPathPattern({
+        pattern: "**/*.test.ts",
+        filePath: "foo.test.ts",
+      })
+    ).toBe(true);
+  });
+
+  it("matches a trailing ** pattern against any nested file", () => {
+    expect(
+      matchesPathPattern({
+        pattern: "src/internal/**",
+        filePath: "src/internal/deep/file.ts",
+      })
+    ).toBe(true);
+  });
+
+  it("does not match unrelated paths", () => {
+    expect(
+      matchesPathPattern({
+        pattern: "**/__test-env-tdd-state.ts",
+        filePath: "foo/other.ts",
+      })
+    ).toBe(false);
+  });
+
+  it("still matches exact literal paths without wildcards", () => {
+    expect(
+      matchesPathPattern({
+        pattern: "src/internal.ts",
+        filePath: "src/internal.ts",
+      })
+    ).toBe(true);
+  });
+
+  it("matches brace alternation against each listed branch", () => {
+    expect(
+      matchesPathPattern({
+        pattern: "src/{test,spec}.ts",
+        filePath: "src/test.ts",
+      })
+    ).toBe(true);
+    expect(
+      matchesPathPattern({
+        pattern: "src/{test,spec}.ts",
+        filePath: "src/spec.ts",
+      })
+    ).toBe(true);
+  });
+
+  it("does not match brace alternation against a branch not listed", () => {
+    expect(
+      matchesPathPattern({
+        pattern: "src/{test,spec}.ts",
+        filePath: "src/other.ts",
+      })
+    ).toBe(false);
+  });
+
+  it("matches a character class against members of the class", () => {
+    expect(
+      matchesPathPattern({
+        pattern: "src/[ab]*.ts",
+        filePath: "src/afile.ts",
+      })
+    ).toBe(true);
+    expect(
+      matchesPathPattern({
+        pattern: "src/[ab]*.ts",
+        filePath: "src/bfile.ts",
+      })
+    ).toBe(true);
+  });
+
+  it("rejects a character class match outside the class", () => {
+    expect(
+      matchesPathPattern({
+        pattern: "src/[ab]*.ts",
+        filePath: "src/cfile.ts",
+      })
+    ).toBe(false);
+  });
+
+  it("does not treat a bare {name} segment as a capturing placeholder", () => {
+    // A brace group with no comma is not an alternation and must not act as
+    // a wildcard, so this must not match a differing literal value.
+    expect(
+      matchesPathPattern({
+        pattern: "src/{file}.ts",
+        filePath: "src/runner.ts",
+      })
+    ).toBe(false);
+  });
+
+  it("negates a bang-prefixed character class in the POSIX/shell sense", () => {
+    // [!ab] means "not a, not b", matching `paths`/tinyglobby's posix:true
+    // behavior, not picomatch's non-posix default of treating `!` as a
+    // literal member of the class.
+    expect(
+      matchesPathPattern({
+        pattern: "src/[!ab]*.ts",
+        filePath: "src/cfile.ts",
+      })
+    ).toBe(true);
+    expect(
+      matchesPathPattern({
+        pattern: "src/[!ab]*.ts",
+        filePath: "src/afile.ts",
+      })
+    ).toBe(false);
   });
 });

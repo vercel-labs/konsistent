@@ -4,7 +4,7 @@ A convention's `paths` field declares which files or directories it applies to. 
 
 ## Glob basics
 
-`paths` accepts a single string or an array of strings. Globs use the standard `*` (single segment), `**` (any depth), `?` (single char), and `{a,b}` (alternation) syntax.
+`paths` accepts a single string or an array of strings. Globs use the standard `*` (single segment), `**` (any depth), `?` (single char), `{a,b}` (alternation), and `[ab]` (character class) syntax.
 
 ```json
 "paths": "src/**/*.ts"
