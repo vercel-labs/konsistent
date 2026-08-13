@@ -110,6 +110,35 @@ describe("constant type schemas", () => {
     ).toBe(false);
   });
 
+  it.each([
+    { annotation: "MyType[]", itemType: "MyType" },
+    { annotation: "Array<Namespace.MyType>", itemType: "Namespace.MyType" },
+    {
+      annotation: "readonly Readonly<MyType>[]",
+      itemType: "Readonly<MyType>",
+    },
+    {
+      annotation: "ReadonlyArray<ReadonlyMap<Key, Value>>",
+      itemType: "ReadonlyMap<Key, Value>",
+    },
+  ])("matches an array containing type references for $annotation", (entry) => {
+    expect(
+      matches({
+        type: entry.annotation,
+        schema: { type: "array", items: { type: entry.itemType } },
+      })
+    ).toBe(true);
+  });
+
+  it("compares array item type references exactly", () => {
+    expect(
+      matches({
+        type: "Array<Readonly< MyType >>",
+        schema: { type: "array", items: { type: "Readonly<MyType>" } },
+      })
+    ).toBe(false);
+  });
+
   it("matches required, optional, typed, and unconstrained properties", () => {
     expect(
       matches({
@@ -126,6 +155,53 @@ describe("constant type schemas", () => {
         },
       })
     ).toBe(true);
+  });
+
+  it("matches exact type references on object properties", () => {
+    expect(
+      matches({
+        type: "{ auth: Readonly<MyAuth>; modelId: string }",
+        schema: {
+          type: "object",
+          properties: {
+            auth: { type: "Readonly<MyAuth>" },
+            modelId: { type: "string" },
+          },
+          required: ["auth", "modelId"],
+        },
+      })
+    ).toBe(true);
+  });
+
+  it("compares object property type references exactly", () => {
+    expect(
+      matches({
+        type: "{ auth: Readonly< MyAuth > }",
+        schema: {
+          type: "object",
+          properties: { auth: { type: "Readonly<MyAuth>" } },
+          required: ["auth"],
+        },
+      })
+    ).toBe(false);
+  });
+
+  it.each([
+    "object",
+    "MyAuth | null",
+    "[MyAuth]",
+    "{ id: string }",
+  ])("rejects unsupported object property type %s", (type) => {
+    expect(
+      matches({
+        type: `{ auth: ${type} }`,
+        schema: {
+          type: "object",
+          properties: { auth: { type: "MyAuth" } },
+          required: ["auth"],
+        },
+      })
+    ).toBe(false);
   });
 
   it("matches quoted empty property names", () => {
@@ -271,6 +347,19 @@ describe("type definition schemas", () => {
         properties: { enabled: { type: "boolean" } },
       },
       source: "interface Settings { enabled?: boolean }",
+    });
+    expect(result).toEqual({ matches: true });
+  });
+
+  it("matches type references in a type definition", () => {
+    const result = matchDefinition({
+      name: "Settings",
+      schema: {
+        type: "object",
+        properties: { auth: { type: "Readonly<MyAuth>" } },
+        required: ["auth"],
+      },
+      source: "type Settings = { auth: Readonly<MyAuth> }",
     });
     expect(result).toEqual({ matches: true });
   });

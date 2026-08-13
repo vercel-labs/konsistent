@@ -221,12 +221,7 @@
                                       "properties": {
                                         "type": {
                                           "type": "string",
-                                          "enum": [
-                                            "string",
-                                            "number",
-                                            "boolean",
-                                            "null"
-                                          ]
+                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                         }
                                       },
                                       "required": [
@@ -265,12 +260,7 @@
                                             "properties": {
                                               "type": {
                                                 "type": "string",
-                                                "enum": [
-                                                  "string",
-                                                  "number",
-                                                  "boolean",
-                                                  "null"
-                                                ]
+                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                               }
                                             },
                                             "required": [
@@ -392,12 +382,7 @@
                                       "properties": {
                                         "type": {
                                           "type": "string",
-                                          "enum": [
-                                            "string",
-                                            "number",
-                                            "boolean",
-                                            "null"
-                                          ]
+                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                         }
                                       },
                                       "required": [
@@ -436,12 +421,7 @@
                                             "properties": {
                                               "type": {
                                                 "type": "string",
-                                                "enum": [
-                                                  "string",
-                                                  "number",
-                                                  "boolean",
-                                                  "null"
-                                                ]
+                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                               }
                                             },
                                             "required": [
@@ -770,12 +750,7 @@
                                           "properties": {
                                             "type": {
                                               "type": "string",
-                                              "enum": [
-                                                "string",
-                                                "number",
-                                                "boolean",
-                                                "null"
-                                              ]
+                                              "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                             }
                                           },
                                           "required": [
@@ -814,12 +789,7 @@
                                                 "properties": {
                                                   "type": {
                                                     "type": "string",
-                                                    "enum": [
-                                                      "string",
-                                                      "number",
-                                                      "boolean",
-                                                      "null"
-                                                    ]
+                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                   }
                                                 },
                                                 "required": [
@@ -965,12 +935,7 @@
                                       "properties": {
                                         "type": {
                                           "type": "string",
-                                          "enum": [
-                                            "string",
-                                            "number",
-                                            "boolean",
-                                            "null"
-                                          ]
+                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                         }
                                       },
                                       "required": [
@@ -1009,12 +974,7 @@
                                             "properties": {
                                               "type": {
                                                 "type": "string",
-                                                "enum": [
-                                                  "string",
-                                                  "number",
-                                                  "boolean",
-                                                  "null"
-                                                ]
+                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                               }
                                             },
                                             "required": [
@@ -1468,12 +1428,7 @@
                                       "properties": {
                                         "type": {
                                           "type": "string",
-                                          "enum": [
-                                            "string",
-                                            "number",
-                                            "boolean",
-                                            "null"
-                                          ]
+                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                         }
                                       },
                                       "required": [
@@ -1512,12 +1467,7 @@
                                             "properties": {
                                               "type": {
                                                 "type": "string",
-                                                "enum": [
-                                                  "string",
-                                                  "number",
-                                                  "boolean",
-                                                  "null"
-                                                ]
+                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                               }
                                             },
                                             "required": [
@@ -1639,12 +1589,7 @@
                                       "properties": {
                                         "type": {
                                           "type": "string",
-                                          "enum": [
-                                            "string",
-                                            "number",
-                                            "boolean",
-                                            "null"
-                                          ]
+                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                         }
                                       },
                                       "required": [
@@ -1683,12 +1628,7 @@
                                             "properties": {
                                               "type": {
                                                 "type": "string",
-                                                "enum": [
-                                                  "string",
-                                                  "number",
-                                                  "boolean",
-                                                  "null"
-                                                ]
+                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                               }
                                             },
                                             "required": [
@@ -2017,12 +1957,7 @@
                                           "properties": {
                                             "type": {
                                               "type": "string",
-                                              "enum": [
-                                                "string",
-                                                "number",
-                                                "boolean",
-                                                "null"
-                                              ]
+                                              "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                             }
                                           },
                                           "required": [
@@ -2061,12 +1996,7 @@
                                                 "properties": {
                                                   "type": {
                                                     "type": "string",
-                                                    "enum": [
-                                                      "string",
-                                                      "number",
-                                                      "boolean",
-                                                      "null"
-                                                    ]
+                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                   }
                                                 },
                                                 "required": [
@@ -2212,12 +2142,7 @@
                                       "properties": {
                                         "type": {
                                           "type": "string",
-                                          "enum": [
-                                            "string",
-                                            "number",
-                                            "boolean",
-                                            "null"
-                                          ]
+                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                         }
                                       },
                                       "required": [
@@ -2256,12 +2181,7 @@
                                             "properties": {
                                               "type": {
                                                 "type": "string",
-                                                "enum": [
-                                                  "string",
-                                                  "number",
-                                                  "boolean",
-                                                  "null"
-                                                ]
+                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                               }
                                             },
                                             "required": [
@@ -2773,12 +2693,7 @@
                                               "properties": {
                                                 "type": {
                                                   "type": "string",
-                                                  "enum": [
-                                                    "string",
-                                                    "number",
-                                                    "boolean",
-                                                    "null"
-                                                  ]
+                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                 }
                                               },
                                               "required": [
@@ -2817,12 +2732,7 @@
                                                     "properties": {
                                                       "type": {
                                                         "type": "string",
-                                                        "enum": [
-                                                          "string",
-                                                          "number",
-                                                          "boolean",
-                                                          "null"
-                                                        ]
+                                                        "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                       }
                                                     },
                                                     "required": [
@@ -2944,12 +2854,7 @@
                                               "properties": {
                                                 "type": {
                                                   "type": "string",
-                                                  "enum": [
-                                                    "string",
-                                                    "number",
-                                                    "boolean",
-                                                    "null"
-                                                  ]
+                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                 }
                                               },
                                               "required": [
@@ -2988,12 +2893,7 @@
                                                     "properties": {
                                                       "type": {
                                                         "type": "string",
-                                                        "enum": [
-                                                          "string",
-                                                          "number",
-                                                          "boolean",
-                                                          "null"
-                                                        ]
+                                                        "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                       }
                                                     },
                                                     "required": [
@@ -3322,12 +3222,7 @@
                                                   "properties": {
                                                     "type": {
                                                       "type": "string",
-                                                      "enum": [
-                                                        "string",
-                                                        "number",
-                                                        "boolean",
-                                                        "null"
-                                                      ]
+                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                     }
                                                   },
                                                   "required": [
@@ -3366,12 +3261,7 @@
                                                         "properties": {
                                                           "type": {
                                                             "type": "string",
-                                                            "enum": [
-                                                              "string",
-                                                              "number",
-                                                              "boolean",
-                                                              "null"
-                                                            ]
+                                                            "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                           }
                                                         },
                                                         "required": [
@@ -3517,12 +3407,7 @@
                                               "properties": {
                                                 "type": {
                                                   "type": "string",
-                                                  "enum": [
-                                                    "string",
-                                                    "number",
-                                                    "boolean",
-                                                    "null"
-                                                  ]
+                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                 }
                                               },
                                               "required": [
@@ -3561,12 +3446,7 @@
                                                     "properties": {
                                                       "type": {
                                                         "type": "string",
-                                                        "enum": [
-                                                          "string",
-                                                          "number",
-                                                          "boolean",
-                                                          "null"
-                                                        ]
+                                                        "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                       }
                                                     },
                                                     "required": [
@@ -4096,12 +3976,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -4140,12 +4015,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -4267,12 +4137,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -4311,12 +4176,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -4645,12 +4505,7 @@
                                                                 "properties": {
                                                                   "type": {
                                                                     "type": "string",
-                                                                    "enum": [
-                                                                      "string",
-                                                                      "number",
-                                                                      "boolean",
-                                                                      "null"
-                                                                    ]
+                                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                   }
                                                                 },
                                                                 "required": [
@@ -4689,12 +4544,7 @@
                                                                       "properties": {
                                                                         "type": {
                                                                           "type": "string",
-                                                                          "enum": [
-                                                                            "string",
-                                                                            "number",
-                                                                            "boolean",
-                                                                            "null"
-                                                                          ]
+                                                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                         }
                                                                       },
                                                                       "required": [
@@ -4840,12 +4690,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -4884,12 +4729,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -5343,12 +5183,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -5387,12 +5222,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -5514,12 +5344,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -5558,12 +5383,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -5892,12 +5712,7 @@
                                                                 "properties": {
                                                                   "type": {
                                                                     "type": "string",
-                                                                    "enum": [
-                                                                      "string",
-                                                                      "number",
-                                                                      "boolean",
-                                                                      "null"
-                                                                    ]
+                                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                   }
                                                                 },
                                                                 "required": [
@@ -5936,12 +5751,7 @@
                                                                       "properties": {
                                                                         "type": {
                                                                           "type": "string",
-                                                                          "enum": [
-                                                                            "string",
-                                                                            "number",
-                                                                            "boolean",
-                                                                            "null"
-                                                                          ]
+                                                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                         }
                                                                       },
                                                                       "required": [
@@ -6087,12 +5897,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -6131,12 +5936,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -6662,12 +6462,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -6706,12 +6501,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -6833,12 +6623,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -6877,12 +6662,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -7211,12 +6991,7 @@
                                                                 "properties": {
                                                                   "type": {
                                                                     "type": "string",
-                                                                    "enum": [
-                                                                      "string",
-                                                                      "number",
-                                                                      "boolean",
-                                                                      "null"
-                                                                    ]
+                                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                   }
                                                                 },
                                                                 "required": [
@@ -7255,12 +7030,7 @@
                                                                       "properties": {
                                                                         "type": {
                                                                           "type": "string",
-                                                                          "enum": [
-                                                                            "string",
-                                                                            "number",
-                                                                            "boolean",
-                                                                            "null"
-                                                                          ]
+                                                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                         }
                                                                       },
                                                                       "required": [
@@ -7406,12 +7176,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -7450,12 +7215,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -7909,12 +7669,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -7953,12 +7708,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -8080,12 +7830,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -8124,12 +7869,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -8458,12 +8198,7 @@
                                                                 "properties": {
                                                                   "type": {
                                                                     "type": "string",
-                                                                    "enum": [
-                                                                      "string",
-                                                                      "number",
-                                                                      "boolean",
-                                                                      "null"
-                                                                    ]
+                                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                   }
                                                                 },
                                                                 "required": [
@@ -8502,12 +8237,7 @@
                                                                       "properties": {
                                                                         "type": {
                                                                           "type": "string",
-                                                                          "enum": [
-                                                                            "string",
-                                                                            "number",
-                                                                            "boolean",
-                                                                            "null"
-                                                                          ]
+                                                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                         }
                                                                       },
                                                                       "required": [
@@ -8653,12 +8383,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -8697,12 +8422,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -9234,12 +8954,7 @@
                                                         "properties": {
                                                           "type": {
                                                             "type": "string",
-                                                            "enum": [
-                                                              "string",
-                                                              "number",
-                                                              "boolean",
-                                                              "null"
-                                                            ]
+                                                            "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                           }
                                                         },
                                                         "required": [
@@ -9278,12 +8993,7 @@
                                                               "properties": {
                                                                 "type": {
                                                                   "type": "string",
-                                                                  "enum": [
-                                                                    "string",
-                                                                    "number",
-                                                                    "boolean",
-                                                                    "null"
-                                                                  ]
+                                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                 }
                                                               },
                                                               "required": [
@@ -9405,12 +9115,7 @@
                                                         "properties": {
                                                           "type": {
                                                             "type": "string",
-                                                            "enum": [
-                                                              "string",
-                                                              "number",
-                                                              "boolean",
-                                                              "null"
-                                                            ]
+                                                            "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                           }
                                                         },
                                                         "required": [
@@ -9449,12 +9154,7 @@
                                                               "properties": {
                                                                 "type": {
                                                                   "type": "string",
-                                                                  "enum": [
-                                                                    "string",
-                                                                    "number",
-                                                                    "boolean",
-                                                                    "null"
-                                                                  ]
+                                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                 }
                                                               },
                                                               "required": [
@@ -9783,12 +9483,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -9827,12 +9522,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -9978,12 +9668,7 @@
                                                         "properties": {
                                                           "type": {
                                                             "type": "string",
-                                                            "enum": [
-                                                              "string",
-                                                              "number",
-                                                              "boolean",
-                                                              "null"
-                                                            ]
+                                                            "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                           }
                                                         },
                                                         "required": [
@@ -10022,12 +9707,7 @@
                                                               "properties": {
                                                                 "type": {
                                                                   "type": "string",
-                                                                  "enum": [
-                                                                    "string",
-                                                                    "number",
-                                                                    "boolean",
-                                                                    "null"
-                                                                  ]
+                                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                 }
                                                               },
                                                               "required": [
@@ -10481,12 +10161,7 @@
                                                         "properties": {
                                                           "type": {
                                                             "type": "string",
-                                                            "enum": [
-                                                              "string",
-                                                              "number",
-                                                              "boolean",
-                                                              "null"
-                                                            ]
+                                                            "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                           }
                                                         },
                                                         "required": [
@@ -10525,12 +10200,7 @@
                                                               "properties": {
                                                                 "type": {
                                                                   "type": "string",
-                                                                  "enum": [
-                                                                    "string",
-                                                                    "number",
-                                                                    "boolean",
-                                                                    "null"
-                                                                  ]
+                                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                 }
                                                               },
                                                               "required": [
@@ -10652,12 +10322,7 @@
                                                         "properties": {
                                                           "type": {
                                                             "type": "string",
-                                                            "enum": [
-                                                              "string",
-                                                              "number",
-                                                              "boolean",
-                                                              "null"
-                                                            ]
+                                                            "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                           }
                                                         },
                                                         "required": [
@@ -10696,12 +10361,7 @@
                                                               "properties": {
                                                                 "type": {
                                                                   "type": "string",
-                                                                  "enum": [
-                                                                    "string",
-                                                                    "number",
-                                                                    "boolean",
-                                                                    "null"
-                                                                  ]
+                                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                 }
                                                               },
                                                               "required": [
@@ -11030,12 +10690,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -11074,12 +10729,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -11225,12 +10875,7 @@
                                                         "properties": {
                                                           "type": {
                                                             "type": "string",
-                                                            "enum": [
-                                                              "string",
-                                                              "number",
-                                                              "boolean",
-                                                              "null"
-                                                            ]
+                                                            "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                           }
                                                         },
                                                         "required": [
@@ -11269,12 +10914,7 @@
                                                               "properties": {
                                                                 "type": {
                                                                   "type": "string",
-                                                                  "enum": [
-                                                                    "string",
-                                                                    "number",
-                                                                    "boolean",
-                                                                    "null"
-                                                                  ]
+                                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                 }
                                                               },
                                                               "required": [
@@ -11739,12 +11379,7 @@
                                           "properties": {
                                             "type": {
                                               "type": "string",
-                                              "enum": [
-                                                "string",
-                                                "number",
-                                                "boolean",
-                                                "null"
-                                              ]
+                                              "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                             }
                                           },
                                           "required": [
@@ -11783,12 +11418,7 @@
                                                 "properties": {
                                                   "type": {
                                                     "type": "string",
-                                                    "enum": [
-                                                      "string",
-                                                      "number",
-                                                      "boolean",
-                                                      "null"
-                                                    ]
+                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                   }
                                                 },
                                                 "required": [
@@ -11910,12 +11540,7 @@
                                           "properties": {
                                             "type": {
                                               "type": "string",
-                                              "enum": [
-                                                "string",
-                                                "number",
-                                                "boolean",
-                                                "null"
-                                              ]
+                                              "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                             }
                                           },
                                           "required": [
@@ -11954,12 +11579,7 @@
                                                 "properties": {
                                                   "type": {
                                                     "type": "string",
-                                                    "enum": [
-                                                      "string",
-                                                      "number",
-                                                      "boolean",
-                                                      "null"
-                                                    ]
+                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                   }
                                                 },
                                                 "required": [
@@ -12288,12 +11908,7 @@
                                               "properties": {
                                                 "type": {
                                                   "type": "string",
-                                                  "enum": [
-                                                    "string",
-                                                    "number",
-                                                    "boolean",
-                                                    "null"
-                                                  ]
+                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                 }
                                               },
                                               "required": [
@@ -12332,12 +11947,7 @@
                                                     "properties": {
                                                       "type": {
                                                         "type": "string",
-                                                        "enum": [
-                                                          "string",
-                                                          "number",
-                                                          "boolean",
-                                                          "null"
-                                                        ]
+                                                        "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                       }
                                                     },
                                                     "required": [
@@ -12483,12 +12093,7 @@
                                           "properties": {
                                             "type": {
                                               "type": "string",
-                                              "enum": [
-                                                "string",
-                                                "number",
-                                                "boolean",
-                                                "null"
-                                              ]
+                                              "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                             }
                                           },
                                           "required": [
@@ -12527,12 +12132,7 @@
                                                 "properties": {
                                                   "type": {
                                                     "type": "string",
-                                                    "enum": [
-                                                      "string",
-                                                      "number",
-                                                      "boolean",
-                                                      "null"
-                                                    ]
+                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                   }
                                                 },
                                                 "required": [
@@ -13043,12 +12643,7 @@
                                               "properties": {
                                                 "type": {
                                                   "type": "string",
-                                                  "enum": [
-                                                    "string",
-                                                    "number",
-                                                    "boolean",
-                                                    "null"
-                                                  ]
+                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                 }
                                               },
                                               "required": [
@@ -13087,12 +12682,7 @@
                                                     "properties": {
                                                       "type": {
                                                         "type": "string",
-                                                        "enum": [
-                                                          "string",
-                                                          "number",
-                                                          "boolean",
-                                                          "null"
-                                                        ]
+                                                        "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                       }
                                                     },
                                                     "required": [
@@ -13214,12 +12804,7 @@
                                               "properties": {
                                                 "type": {
                                                   "type": "string",
-                                                  "enum": [
-                                                    "string",
-                                                    "number",
-                                                    "boolean",
-                                                    "null"
-                                                  ]
+                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                 }
                                               },
                                               "required": [
@@ -13258,12 +12843,7 @@
                                                     "properties": {
                                                       "type": {
                                                         "type": "string",
-                                                        "enum": [
-                                                          "string",
-                                                          "number",
-                                                          "boolean",
-                                                          "null"
-                                                        ]
+                                                        "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                       }
                                                     },
                                                     "required": [
@@ -13592,12 +13172,7 @@
                                                   "properties": {
                                                     "type": {
                                                       "type": "string",
-                                                      "enum": [
-                                                        "string",
-                                                        "number",
-                                                        "boolean",
-                                                        "null"
-                                                      ]
+                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                     }
                                                   },
                                                   "required": [
@@ -13636,12 +13211,7 @@
                                                         "properties": {
                                                           "type": {
                                                             "type": "string",
-                                                            "enum": [
-                                                              "string",
-                                                              "number",
-                                                              "boolean",
-                                                              "null"
-                                                            ]
+                                                            "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                           }
                                                         },
                                                         "required": [
@@ -13787,12 +13357,7 @@
                                               "properties": {
                                                 "type": {
                                                   "type": "string",
-                                                  "enum": [
-                                                    "string",
-                                                    "number",
-                                                    "boolean",
-                                                    "null"
-                                                  ]
+                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                 }
                                               },
                                               "required": [
@@ -13831,12 +13396,7 @@
                                                     "properties": {
                                                       "type": {
                                                         "type": "string",
-                                                        "enum": [
-                                                          "string",
-                                                          "number",
-                                                          "boolean",
-                                                          "null"
-                                                        ]
+                                                        "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                       }
                                                     },
                                                     "required": [
@@ -14366,12 +13926,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -14410,12 +13965,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -14537,12 +14087,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -14581,12 +14126,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -14915,12 +14455,7 @@
                                                                 "properties": {
                                                                   "type": {
                                                                     "type": "string",
-                                                                    "enum": [
-                                                                      "string",
-                                                                      "number",
-                                                                      "boolean",
-                                                                      "null"
-                                                                    ]
+                                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                   }
                                                                 },
                                                                 "required": [
@@ -14959,12 +14494,7 @@
                                                                       "properties": {
                                                                         "type": {
                                                                           "type": "string",
-                                                                          "enum": [
-                                                                            "string",
-                                                                            "number",
-                                                                            "boolean",
-                                                                            "null"
-                                                                          ]
+                                                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                         }
                                                                       },
                                                                       "required": [
@@ -15110,12 +14640,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -15154,12 +14679,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -15613,12 +15133,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -15657,12 +15172,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -15784,12 +15294,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -15828,12 +15333,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -16162,12 +15662,7 @@
                                                                 "properties": {
                                                                   "type": {
                                                                     "type": "string",
-                                                                    "enum": [
-                                                                      "string",
-                                                                      "number",
-                                                                      "boolean",
-                                                                      "null"
-                                                                    ]
+                                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                   }
                                                                 },
                                                                 "required": [
@@ -16206,12 +15701,7 @@
                                                                       "properties": {
                                                                         "type": {
                                                                           "type": "string",
-                                                                          "enum": [
-                                                                            "string",
-                                                                            "number",
-                                                                            "boolean",
-                                                                            "null"
-                                                                          ]
+                                                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                         }
                                                                       },
                                                                       "required": [
@@ -16357,12 +15847,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -16401,12 +15886,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -16932,12 +16412,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -16976,12 +16451,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -17103,12 +16573,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -17147,12 +16612,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -17481,12 +16941,7 @@
                                                                 "properties": {
                                                                   "type": {
                                                                     "type": "string",
-                                                                    "enum": [
-                                                                      "string",
-                                                                      "number",
-                                                                      "boolean",
-                                                                      "null"
-                                                                    ]
+                                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                   }
                                                                 },
                                                                 "required": [
@@ -17525,12 +16980,7 @@
                                                                       "properties": {
                                                                         "type": {
                                                                           "type": "string",
-                                                                          "enum": [
-                                                                            "string",
-                                                                            "number",
-                                                                            "boolean",
-                                                                            "null"
-                                                                          ]
+                                                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                         }
                                                                       },
                                                                       "required": [
@@ -17676,12 +17126,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -17720,12 +17165,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -18179,12 +17619,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -18223,12 +17658,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -18350,12 +17780,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -18394,12 +17819,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -18728,12 +18148,7 @@
                                                                 "properties": {
                                                                   "type": {
                                                                     "type": "string",
-                                                                    "enum": [
-                                                                      "string",
-                                                                      "number",
-                                                                      "boolean",
-                                                                      "null"
-                                                                    ]
+                                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                   }
                                                                 },
                                                                 "required": [
@@ -18772,12 +18187,7 @@
                                                                       "properties": {
                                                                         "type": {
                                                                           "type": "string",
-                                                                          "enum": [
-                                                                            "string",
-                                                                            "number",
-                                                                            "boolean",
-                                                                            "null"
-                                                                          ]
+                                                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                         }
                                                                       },
                                                                       "required": [
@@ -18923,12 +18333,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -18967,12 +18372,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -19504,12 +18904,7 @@
                                                         "properties": {
                                                           "type": {
                                                             "type": "string",
-                                                            "enum": [
-                                                              "string",
-                                                              "number",
-                                                              "boolean",
-                                                              "null"
-                                                            ]
+                                                            "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                           }
                                                         },
                                                         "required": [
@@ -19548,12 +18943,7 @@
                                                               "properties": {
                                                                 "type": {
                                                                   "type": "string",
-                                                                  "enum": [
-                                                                    "string",
-                                                                    "number",
-                                                                    "boolean",
-                                                                    "null"
-                                                                  ]
+                                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                 }
                                                               },
                                                               "required": [
@@ -19675,12 +19065,7 @@
                                                         "properties": {
                                                           "type": {
                                                             "type": "string",
-                                                            "enum": [
-                                                              "string",
-                                                              "number",
-                                                              "boolean",
-                                                              "null"
-                                                            ]
+                                                            "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                           }
                                                         },
                                                         "required": [
@@ -19719,12 +19104,7 @@
                                                               "properties": {
                                                                 "type": {
                                                                   "type": "string",
-                                                                  "enum": [
-                                                                    "string",
-                                                                    "number",
-                                                                    "boolean",
-                                                                    "null"
-                                                                  ]
+                                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                 }
                                                               },
                                                               "required": [
@@ -20053,12 +19433,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -20097,12 +19472,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -20248,12 +19618,7 @@
                                                         "properties": {
                                                           "type": {
                                                             "type": "string",
-                                                            "enum": [
-                                                              "string",
-                                                              "number",
-                                                              "boolean",
-                                                              "null"
-                                                            ]
+                                                            "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                           }
                                                         },
                                                         "required": [
@@ -20292,12 +19657,7 @@
                                                               "properties": {
                                                                 "type": {
                                                                   "type": "string",
-                                                                  "enum": [
-                                                                    "string",
-                                                                    "number",
-                                                                    "boolean",
-                                                                    "null"
-                                                                  ]
+                                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                 }
                                                               },
                                                               "required": [
@@ -20751,12 +20111,7 @@
                                                         "properties": {
                                                           "type": {
                                                             "type": "string",
-                                                            "enum": [
-                                                              "string",
-                                                              "number",
-                                                              "boolean",
-                                                              "null"
-                                                            ]
+                                                            "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                           }
                                                         },
                                                         "required": [
@@ -20795,12 +20150,7 @@
                                                               "properties": {
                                                                 "type": {
                                                                   "type": "string",
-                                                                  "enum": [
-                                                                    "string",
-                                                                    "number",
-                                                                    "boolean",
-                                                                    "null"
-                                                                  ]
+                                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                 }
                                                               },
                                                               "required": [
@@ -20922,12 +20272,7 @@
                                                         "properties": {
                                                           "type": {
                                                             "type": "string",
-                                                            "enum": [
-                                                              "string",
-                                                              "number",
-                                                              "boolean",
-                                                              "null"
-                                                            ]
+                                                            "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                           }
                                                         },
                                                         "required": [
@@ -20966,12 +20311,7 @@
                                                               "properties": {
                                                                 "type": {
                                                                   "type": "string",
-                                                                  "enum": [
-                                                                    "string",
-                                                                    "number",
-                                                                    "boolean",
-                                                                    "null"
-                                                                  ]
+                                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                 }
                                                               },
                                                               "required": [
@@ -21300,12 +20640,7 @@
                                                             "properties": {
                                                               "type": {
                                                                 "type": "string",
-                                                                "enum": [
-                                                                  "string",
-                                                                  "number",
-                                                                  "boolean",
-                                                                  "null"
-                                                                ]
+                                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                               }
                                                             },
                                                             "required": [
@@ -21344,12 +20679,7 @@
                                                                   "properties": {
                                                                     "type": {
                                                                       "type": "string",
-                                                                      "enum": [
-                                                                        "string",
-                                                                        "number",
-                                                                        "boolean",
-                                                                        "null"
-                                                                      ]
+                                                                      "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                     }
                                                                   },
                                                                   "required": [
@@ -21495,12 +20825,7 @@
                                                         "properties": {
                                                           "type": {
                                                             "type": "string",
-                                                            "enum": [
-                                                              "string",
-                                                              "number",
-                                                              "boolean",
-                                                              "null"
-                                                            ]
+                                                            "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                           }
                                                         },
                                                         "required": [
@@ -21539,12 +20864,7 @@
                                                               "properties": {
                                                                 "type": {
                                                                   "type": "string",
-                                                                  "enum": [
-                                                                    "string",
-                                                                    "number",
-                                                                    "boolean",
-                                                                    "null"
-                                                                  ]
+                                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                                 }
                                                               },
                                                               "required": [
@@ -22009,12 +21329,7 @@
                                           "properties": {
                                             "type": {
                                               "type": "string",
-                                              "enum": [
-                                                "string",
-                                                "number",
-                                                "boolean",
-                                                "null"
-                                              ]
+                                              "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                             }
                                           },
                                           "required": [
@@ -22053,12 +21368,7 @@
                                                 "properties": {
                                                   "type": {
                                                     "type": "string",
-                                                    "enum": [
-                                                      "string",
-                                                      "number",
-                                                      "boolean",
-                                                      "null"
-                                                    ]
+                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                   }
                                                 },
                                                 "required": [
@@ -22180,12 +21490,7 @@
                                           "properties": {
                                             "type": {
                                               "type": "string",
-                                              "enum": [
-                                                "string",
-                                                "number",
-                                                "boolean",
-                                                "null"
-                                              ]
+                                              "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                             }
                                           },
                                           "required": [
@@ -22224,12 +21529,7 @@
                                                 "properties": {
                                                   "type": {
                                                     "type": "string",
-                                                    "enum": [
-                                                      "string",
-                                                      "number",
-                                                      "boolean",
-                                                      "null"
-                                                    ]
+                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                   }
                                                 },
                                                 "required": [
@@ -22558,12 +21858,7 @@
                                               "properties": {
                                                 "type": {
                                                   "type": "string",
-                                                  "enum": [
-                                                    "string",
-                                                    "number",
-                                                    "boolean",
-                                                    "null"
-                                                  ]
+                                                  "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                 }
                                               },
                                               "required": [
@@ -22602,12 +21897,7 @@
                                                     "properties": {
                                                       "type": {
                                                         "type": "string",
-                                                        "enum": [
-                                                          "string",
-                                                          "number",
-                                                          "boolean",
-                                                          "null"
-                                                        ]
+                                                        "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                       }
                                                     },
                                                     "required": [
@@ -22753,12 +22043,7 @@
                                           "properties": {
                                             "type": {
                                               "type": "string",
-                                              "enum": [
-                                                "string",
-                                                "number",
-                                                "boolean",
-                                                "null"
-                                              ]
+                                              "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                             }
                                           },
                                           "required": [
@@ -22797,12 +22082,7 @@
                                                 "properties": {
                                                   "type": {
                                                     "type": "string",
-                                                    "enum": [
-                                                      "string",
-                                                      "number",
-                                                      "boolean",
-                                                      "null"
-                                                    ]
+                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
                                                   }
                                                 },
                                                 "required": [

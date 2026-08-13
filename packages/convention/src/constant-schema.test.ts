@@ -10,10 +10,12 @@ describe("ConstantValueSchemaV1Schema", () => {
     { type: "string" },
     { type: "number", enum: [1, 2] },
     { type: "array", items: { type: "boolean" } },
+    { type: "array", items: { type: "ReadonlyArray<MyType>" } },
     {
       type: "object",
       properties: {
         name: { type: "string" },
+        auth: { type: "Readonly<MyAuth>" },
         metadata: {},
       },
       required: ["name"],
@@ -29,12 +31,17 @@ describe("ConstantValueSchemaV1Schema", () => {
     { type: "string", enum: ["a", "a"] },
     { type: "string", enum: ["a", 1] },
     { type: "array" },
-    { type: "array", items: { type: "object" } },
     { type: "array", items: { type: "string", enum: ["a"] } },
     { type: "array", items: { type: "string" }, minItems: 1 },
+    { type: "array", items: { type: "" } },
+    { type: "array", items: { type: " MyType" } },
+    { type: "array", items: { type: "MyType " } },
+    { type: "array", items: { type: "MyType\t" } },
+    { type: "array", items: { type: "MyType | null" } },
+    { type: "array", items: { type: "MyType[]" } },
     {
       type: "object",
-      properties: { child: { type: "object" } },
+      properties: { child: { type: "MyType & OtherType" } },
     },
     {
       type: "object",
@@ -52,6 +59,7 @@ describe("ConstantValueSchemaV1Schema", () => {
       additionalProperties: { type: "string" },
     },
     { type: "string", oneOf: [{ type: "string" }] },
+    { type: "MyType" },
   ])("rejects unsupported schema %#", (schema) => {
     expect(ConstantValueSchemaV1Schema.safeParse(schema).success).toBe(false);
   });

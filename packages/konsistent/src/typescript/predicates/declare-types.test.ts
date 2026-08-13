@@ -68,7 +68,10 @@ describe("checkDeclareTypes", () => {
           name: "Options",
           schema: {
             type: "object",
-            properties: { enabled: { type: "boolean" } },
+            properties: {
+              enabled: { type: "boolean" },
+              auth: { type: "Namespace.MyAuth" },
+            },
           },
         },
       ],
@@ -76,7 +79,7 @@ describe("checkDeclareTypes", () => {
       fileStructure: parseSource({
         source: [
           "type Settings = { model?: string; extra?: number };",
-          "interface Options { enabled?: boolean }",
+          "interface Options { enabled?: boolean; auth?: Namespace.MyAuth }",
         ].join("\n"),
       }),
     });

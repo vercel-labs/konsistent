@@ -155,7 +155,7 @@ Search first: grep for `X`, case variants, stripped variants (`createX` ↔ `X`,
 
 For `exportConstants`, the value must be a `const`. If a `let` or `function` exists under the right name, conversion to `const` is safe only if there are no reassignments — verify by grepping.
 
-When a constant entry includes `schema`, the constant must also have a matching explicit type annotation. Add or adjust the annotation only after confirming the initializer and all assignments satisfy it. Schema checks support scalar, literal-union enum, homogeneous scalar array, and inline object annotations; they do not infer initializer types or resolve named types. For object schemas, every configured property must be declared. Names in `required` must be non-optional, while other configured names must include `?`.
+When a constant entry includes `schema`, the constant must also have a matching explicit type annotation. Add or adjust the annotation only after confirming the initializer and all assignments satisfy it. Schema checks support scalar, literal-union enum, homogeneous array, and inline object annotations; array items and object properties may require an exact type reference. They do not infer initializer types or resolve referenced types. For object schemas, every configured property must be declared. Names in `required` must be non-optional, while other configured names must include `?`.
 
 #### `exportTypes`
 
@@ -170,7 +170,7 @@ Search first: grep for `X`, case variants, stripped suffixes (`XConfig` ↔ `X` 
   - Type is trivially derivable (e.g., `type FooConfig = Parameters<typeof createFoo>[0]`) and the consumer pattern is obvious from siblings → write the alias.
 - **Non-trivial**: no candidate after search, and the type would require designing a new shape. Defer.
 
-When an entry includes `schema`, inspect the local type alias or interface rather than searching for a re-export. Every configured object property must exist with the exact required/optional status expressed by `required`; unconfigured properties are allowed unless `additionalProperties` is `false`. Do not replace a local schema-constrained type with a cross-file re-export, because `schema` and `from` are mutually exclusive.
+When an entry includes `schema`, inspect the local type alias or interface rather than searching for a re-export. Every configured object property must exist with the exact required/optional status expressed by `required`; configured scalar types and type references must match the annotation exactly. Unconfigured properties are allowed unless `additionalProperties` is `false`. Do not replace a local schema-constrained type with a cross-file re-export, because `schema` and `from` are mutually exclusive.
 
 #### `exportFunctions`
 

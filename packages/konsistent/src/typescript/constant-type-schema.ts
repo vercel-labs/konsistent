@@ -18,14 +18,14 @@ interface ConstantEnumTypeInfo {
 }
 
 interface ConstantArrayTypeInfo {
-  itemType: ConstantScalarTypeV1;
+  itemType: string;
   kind: "array";
 }
 
 interface ConstantObjectPropertyTypeInfo {
   name: string;
   optional: boolean;
-  scalarType?: ConstantScalarTypeV1;
+  type?: string;
 }
 
 interface ConstantObjectTypeInfo {
@@ -130,7 +130,7 @@ function parseEnumType(node: ts.TypeNode): ConstantEnumTypeInfo | undefined {
 
 function parseArrayType(node: ts.TypeNode): ConstantArrayTypeInfo | undefined {
   if (ts.isArrayTypeNode(node)) {
-    const itemType = parseScalarType(node.elementType);
+    const itemType = parseInnerType(node.elementType);
     return itemType ? { kind: "array", itemType } : undefined;
   }
 
@@ -139,7 +139,7 @@ function parseArrayType(node: ts.TypeNode): ConstantArrayTypeInfo | undefined {
     node.operator === ts.SyntaxKind.ReadonlyKeyword &&
     ts.isArrayTypeNode(node.type)
   ) {
-    const itemType = parseScalarType(node.type.elementType);
+    const itemType = parseInnerType(node.type.elementType);
     return itemType ? { kind: "array", itemType } : undefined;
   }
 
@@ -149,12 +149,19 @@ function parseArrayType(node: ts.TypeNode): ConstantArrayTypeInfo | undefined {
       (name === "Array" || name === "ReadonlyArray") &&
       node.typeArguments?.length === 1
     ) {
-      const itemType = parseScalarType(node.typeArguments[0]);
+      const itemType = parseInnerType(node.typeArguments[0]);
       return itemType ? { kind: "array", itemType } : undefined;
     }
   }
 
   return;
+}
+
+function parseInnerType(node: ts.TypeNode | undefined): string | undefined {
+  if (!(node && (parseScalarType(node) || ts.isTypeReferenceNode(node)))) {
+    return;
+  }
+  return node.getText();
 }
 
 function getPropertyName(name: ts.PropertyName): string | undefined {
@@ -180,11 +187,11 @@ function parseObjectType(opts: {
       return;
     }
     names.add(name);
-    const scalarType = parseScalarType(member.type);
+    const type = parseInnerType(member.type);
     properties.push({
       name,
       optional: Boolean(member.questionToken),
-      ...(scalarType ? { scalarType } : {}),
+      ...(type ? { type } : {}),
     });
   }
 
@@ -310,7 +317,7 @@ function matchObjectSchema(opts: {
     }
     if (
       Object.hasOwn(propertySchema, "type") &&
-      property.scalarType !== propertySchema.type
+      property.type !== propertySchema.type
     ) {
       return {
         matches: false,

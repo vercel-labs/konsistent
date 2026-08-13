@@ -63,6 +63,25 @@ describe("checkDeclareConstants", () => {
     expect(result).toEqual([]);
   });
 
+  it("validates type references in a configured array schema", () => {
+    const result = checkDeclareConstants({
+      expected: [
+        {
+          name: "authProviders",
+          schema: {
+            type: "array",
+            items: { type: "Readonly<MyAuth>" },
+          },
+        },
+      ],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({
+        source: "const authProviders: ReadonlyArray<Readonly<MyAuth>> = [];",
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
   it("reports a mismatched constant schema", () => {
     const result = checkDeclareConstants({
       expected: [{ name: "port", schema: { type: "number" } }],

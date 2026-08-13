@@ -70,6 +70,9 @@ describe("constant-schemas-broken fixture", () => {
         'Constant "localPort" must have an explicit type annotation'
       );
       expect(error.stdout).toContain(
+        'Constant "localAuths" must be an array with items of type "Readonly<MyAuth>"'
+      );
+      expect(error.stdout).toContain(
         'Constant "mode" must have exactly the configured enum values'
       );
       expect(error.stdout).toContain(
@@ -80,6 +83,9 @@ describe("constant-schemas-broken fixture", () => {
       );
       expect(error.stdout).toContain(
         'Constant "optionalOptions" property "metadata" must be optional'
+      );
+      expect(error.stdout).toContain(
+        'Constant "authSettings" property "auth" must be of type "Readonly<MyAuth>"'
       );
     }
   });
@@ -105,6 +111,9 @@ describe("type-schemas-broken fixture", () => {
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain(
         'Type "ModuleSettings" must define property "timeout"'
+      );
+      expect(error.stdout).toContain(
+        'Type "InternalSettings" property "auth" must be of type "Readonly<MyAuth>"'
       );
       expect(error.stdout).toContain("type-schemas");
     }

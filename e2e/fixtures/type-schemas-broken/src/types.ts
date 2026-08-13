@@ -1,5 +1,8 @@
+type OtherAuth = { token: string };
+
 type InternalSettings = {
   enabled?: boolean;
+  auth?: Readonly<OtherAuth>;
 };
 
 export type ModuleSettings = {
