@@ -426,7 +426,7 @@ describe("parseFileStructure", () => {
         extends: [],
         typeInfo: {
           kind: "object",
-          properties: [{ name: "bar", optional: false, scalarType: "string" }],
+          properties: [{ name: "bar", optional: false, type: "string" }],
         },
       });
     });
@@ -650,8 +650,8 @@ describe("parseFileStructure", () => {
         typeInfo: {
           kind: "object",
           properties: [
-            { name: "model", optional: true, scalarType: "string" },
-            { name: "timeout", optional: false, scalarType: "number" },
+            { name: "model", optional: true, type: "string" },
+            { name: "timeout", optional: false, type: "number" },
           ],
         },
       });

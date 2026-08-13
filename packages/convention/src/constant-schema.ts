@@ -18,6 +18,14 @@ export const ConstantScalarSchemaV1Schema = z.strictObject({
   type: ConstantScalarTypeV1Schema,
 });
 
+const ConstantInnerTypeV1Schema = z
+  .string()
+  .regex(/^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$/);
+
+const ConstantInnerTypeSchemaV1Schema = z.strictObject({
+  type: ConstantInnerTypeV1Schema,
+});
+
 export const ConstantEnumSchemaV1Schema = z
   .strictObject({
     type: ConstantScalarTypeV1Schema,
@@ -50,12 +58,12 @@ export const ConstantEnumSchemaV1Schema = z
 
 const ConstantObjectPropertySchemaV1Schema = z.union([
   z.strictObject({}),
-  ConstantScalarSchemaV1Schema,
+  ConstantInnerTypeSchemaV1Schema,
 ]);
 
 export const ConstantArraySchemaV1Schema = z.strictObject({
   type: z.literal("array"),
-  items: ConstantScalarSchemaV1Schema,
+  items: ConstantInnerTypeSchemaV1Schema,
 });
 
 export const ConstantObjectSchemaV1Schema = z

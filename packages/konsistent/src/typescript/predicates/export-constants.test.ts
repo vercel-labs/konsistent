@@ -193,6 +193,27 @@ describe("checkExportConstants", () => {
     expect(result).toEqual([]);
   });
 
+  it("validates type references in an object schema", () => {
+    const result = checkExportConstants({
+      expected: [
+        {
+          name: "settings",
+          schema: {
+            type: "object",
+            properties: { auth: { type: "Readonly<MyAuth>" } },
+            required: ["auth"],
+          },
+        },
+      ],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source:
+          "export const settings: { auth: Readonly<MyAuth> } = { auth: {} };",
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
   it("reports an object schema mismatch", () => {
     const result = checkExportConstants({
       expected: [

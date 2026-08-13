@@ -155,4 +155,27 @@ describe("konsistent.schema.json", () => {
     });
     expect(valid).toBe(false);
   });
+
+  it("rejects invalid characters in inner type references", () => {
+    const valid = validate({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/settings.ts",
+          must: {
+            exportTypes: [
+              {
+                name: "Settings",
+                schema: {
+                  type: "object",
+                  properties: { auth: { type: "MyAuth | null" } },
+                },
+              },
+            ],
+          },
+        },
+      ],
+    });
+    expect(valid).toBe(false);
+  });
 });

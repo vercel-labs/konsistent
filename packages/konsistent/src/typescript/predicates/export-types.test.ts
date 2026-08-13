@@ -340,6 +340,7 @@ describe("checkExportTypes", () => {
             properties: {
               model: { type: "string" },
               timeout: { type: "number" },
+              providers: { type: "ReadonlyArray<ModelProvider>" },
             },
           },
         },
@@ -350,6 +351,7 @@ describe("checkExportTypes", () => {
           export type ModuleSettings = {
             model?: string;
             timeout?: number;
+            providers?: ReadonlyArray<ModelProvider>;
             reasoning?: "low" | "medium" | "high";
           };
         `,

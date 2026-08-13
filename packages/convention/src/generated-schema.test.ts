@@ -71,7 +71,12 @@ describe("reusable-convention-package.schema.json", () => {
             exportTypes: [
               {
                 name: "LocalSettings",
-                schema: { type: "object", properties: {} },
+                schema: {
+                  type: "object",
+                  properties: {
+                    auth: { type: "Readonly<MyAuth>" },
+                  },
+                },
               },
               { name: "SharedSettings", from: "./settings" },
             ],
@@ -80,6 +85,30 @@ describe("reusable-convention-package.schema.json", () => {
       ],
     });
     expect(valid).toBe(true);
+  });
+
+  it("rejects invalid characters in inner type references", () => {
+    const valid = validate({
+      conventionSpecVersion: "v1",
+      conventions: [
+        {
+          name: "settings",
+          description: "Settings exports.",
+          must: {
+            exportTypes: [
+              {
+                name: "Settings",
+                schema: {
+                  type: "object",
+                  properties: { auth: { type: "MyAuth | null" } },
+                },
+              },
+            ],
+          },
+        },
+      ],
+    });
+    expect(valid).toBe(false);
   });
 
   it("accepts aliases for current value and type symbol predicates", () => {

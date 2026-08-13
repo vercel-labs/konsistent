@@ -6,7 +6,14 @@
       "paths": "src/constants.ts",
       "must": {
         "declareConstants": [
-          { "name": "localPort", "schema": { "type": "number" } }
+          { "name": "localPort", "schema": { "type": "number" } },
+          {
+            "name": "localAuths",
+            "schema": {
+              "type": "array",
+              "items": { "type": "Readonly<MyAuth>" }
+            }
+          }
         ],
         "exportConstants": [
           {
@@ -42,6 +49,17 @@
               "properties": {
                 "metadata": {}
               }
+            }
+          },
+          {
+            "name": "authSettings",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "auth": { "type": "Readonly<MyAuth>" },
+                "modelId": { "type": "string" }
+              },
+              "required": ["auth", "modelId"]
             }
           }
         ]
