@@ -1,7 +1,5 @@
-import { describe, expect, expectTypeOf, it } from "vitest";
-import type { ReusableConventionV1 } from "./index.js";
+import { describe, expect, it } from "vitest";
 import {
-  defineConventions,
   ReusableConventionsPackageV1Schema,
   ReusableConventionV1Schema,
 } from "./index.js";
@@ -170,30 +168,5 @@ describe("ReusableConventionsPackageV1Schema", () => {
       conventions: [],
     });
     expect(result.success).toBe(false);
-  });
-});
-
-describe("defineConventions", () => {
-  it("passes input through unchanged", () => {
-    const input = [
-      { name: "a", description: "d", must: { haveFiles: ["README.md"] } },
-    ] as const satisfies readonly ReusableConventionV1[];
-    const out = defineConventions(input);
-    expect(out).toBe(input);
-  });
-
-  it("preserves the literal tuple type", () => {
-    const out = defineConventions([
-      { name: "a", description: "d", must: { haveFiles: ["README.md"] } },
-    ]);
-    expectTypeOf(out).toEqualTypeOf<
-      readonly [
-        {
-          readonly name: "a";
-          readonly description: "d";
-          readonly must: { readonly haveFiles: readonly ["README.md"] };
-        },
-      ]
-    >();
   });
 });

@@ -5,6 +5,8 @@ import {
   normalizePlaceholderArg,
   parseCliPlaceholders,
 } from "../config/index.js";
+import { printDeprecationWarnings } from "../core/command-utils/print-deprecation-warnings.js";
+import { parseRepeatedStringOption } from "../core/command-utils/repeated-string-option.js";
 import type { FileSystem, PathSelection, Reporter } from "../core/index.js";
 import {
   allPathSelection,
@@ -22,8 +24,6 @@ import {
   formatTruncationMessage,
   truncateDiagnostics,
 } from "../core/truncate-diagnostics.js";
-import { printDeprecationWarnings } from "./print-deprecation-warnings.js";
-import { parseRepeatedStringOption } from "./repeated-string-option.js";
 
 const checkArgs = {
   "config-path": {

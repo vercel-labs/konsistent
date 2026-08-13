@@ -21,7 +21,7 @@ function doesImportSourceMatch(opts: {
   return from === expected;
 }
 
-export function checkExactImportSource(opts: {
+export function checkImportSourceExact(opts: {
   expected: string | string[];
   importKind?: ExactImportSourceKind;
   predicateName?: string;

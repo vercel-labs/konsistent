@@ -24,7 +24,7 @@ import { checkExportInterfaces } from "../typescript/predicates/export-interface
 import { checkExportTypes } from "../typescript/predicates/export-types.js";
 import { checkExportValues } from "../typescript/predicates/export-values.js";
 import { checkImportSource } from "../typescript/predicates/import-source.js";
-import { checkExactImportSource } from "../typescript/predicates/import-source-exact.js";
+import { checkImportSourceExact } from "../typescript/predicates/import-source-exact.js";
 import { checkImportTypes } from "../typescript/predicates/import-types.js";
 import { checkImportValues } from "../typescript/predicates/import-values.js";
 import { checkUseDeclarationOrder } from "../typescript/predicates/use-declaration-order.js";
@@ -464,7 +464,7 @@ const TS_PREDICATE_HANDLERS: Record<
   }) =>
     must.importValuesFrom === undefined
       ? []
-      : checkExactImportSource({
+      : checkImportSourceExact({
           expected: must.importValuesFrom,
           importKind: "value",
           predicateName: "importValuesFrom",
@@ -482,7 +482,7 @@ const TS_PREDICATE_HANDLERS: Record<
   }) =>
     must.importTypesFrom === undefined
       ? []
-      : checkExactImportSource({
+      : checkImportSourceExact({
           expected: must.importTypesFrom,
           importKind: "type",
           predicateName: "importTypesFrom",
@@ -494,7 +494,7 @@ const TS_PREDICATE_HANDLERS: Record<
   importFrom: ({ must, context, fileStructure, conventionName, severity }) =>
     must.importFrom === undefined
       ? []
-      : checkExactImportSource({
+      : checkImportSourceExact({
           expected: must.importFrom,
           importKind: "either",
           predicateName: "importFrom",

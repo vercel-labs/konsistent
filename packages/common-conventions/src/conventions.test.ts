@@ -3,7 +3,7 @@ import {
   ReusableConventionV1Schema,
 } from "@konsistent/convention";
 import { describe, expect, it } from "vitest";
-import { conventions } from "./index.js";
+import { conventions } from "./conventions.js";
 
 describe("common-conventions in-source data", () => {
   it("each convention parses against ReusableConventionV1Schema", () => {

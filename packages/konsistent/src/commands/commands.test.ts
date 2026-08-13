@@ -8,6 +8,7 @@ const pkg = require("../../package.json") as { version: string };
 
 import checkCommand, { resolveFormat } from "./check.js";
 import helpCommand from "./help.js";
+import updateCommand from "./update.js";
 import validateCommand from "./validate.js";
 import versionCommand from "./version.js";
 
@@ -38,6 +39,22 @@ const deprecatedPredicatesPath = resolve(
 
 afterEach(() => {
   vi.restoreAllMocks();
+});
+
+describe("command definitions", () => {
+  it("defines metadata and arguments for every command", () => {
+    expect(checkCommand).toMatchObject({ meta: { name: "check" }, args: {} });
+    expect(helpCommand).toMatchObject({ meta: { name: "help" }, args: {} });
+    expect(updateCommand).toMatchObject({ meta: { name: "update" }, args: {} });
+    expect(validateCommand).toMatchObject({
+      meta: { name: "validate" },
+      args: {},
+    });
+    expect(versionCommand).toMatchObject({
+      meta: { name: "version" },
+      args: {},
+    });
+  });
 });
 
 describe("check command", () => {

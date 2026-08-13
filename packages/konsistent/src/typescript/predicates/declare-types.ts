@@ -1,9 +1,5 @@
 import type { TypeDefinitionV1 } from "@konsistent/convention";
 import type { PredicateContext } from "../../core/context.js";
-import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
-import { createDiagnostic } from "../../core/diagnostics.js";
-import { matchTypeDefinitionSchema } from "../constant-type-schema.js";
-import type { FileStructure } from "../types.js";
 import {
   createExportedDeclarationDiagnostic,
   createMissingDeclarationDiagnostic,
@@ -12,7 +8,11 @@ import {
   findTypeDefinition,
   isDeclarationSymbolExported,
   resolveDefinitionName,
-} from "./declaration-utils.js";
+} from "../../core/declaration-utils.js";
+import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
+import { createDiagnostic } from "../../core/diagnostics.js";
+import { matchTypeDefinitionSchema } from "../constant-type-schema.js";
+import type { FileStructure } from "../types.js";
 
 export function checkDeclareTypes(opts: {
   expected: (string | TypeDefinitionV1)[];

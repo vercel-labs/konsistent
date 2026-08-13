@@ -13,7 +13,7 @@
     "doc": "./docs"
   },
   "bin": {
-    "konsistent": "./dist/index.js"
+    "konsistent": "./dist/cli.js"
   },
   "engines": {
     "node": ">=22.11.0"

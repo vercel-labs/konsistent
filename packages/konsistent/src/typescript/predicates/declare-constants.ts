@@ -1,9 +1,5 @@
 import type { ConstantDefinitionV1 } from "@konsistent/convention";
 import type { PredicateContext } from "../../core/context.js";
-import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
-import { createDiagnostic } from "../../core/diagnostics.js";
-import { matchConstantTypeSchema } from "../constant-type-schema.js";
-import type { FileStructure } from "../types.js";
 import {
   createExportedDeclarationDiagnostic,
   createMissingDeclarationDiagnostic,
@@ -11,7 +7,11 @@ import {
   findDeclarationSymbol,
   isDeclarationSymbolExported,
   resolveDefinitionName,
-} from "./declaration-utils.js";
+} from "../../core/declaration-utils.js";
+import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
+import { createDiagnostic } from "../../core/diagnostics.js";
+import { matchConstantTypeSchema } from "../constant-type-schema.js";
+import type { FileStructure } from "../types.js";
 
 export function checkDeclareConstants(opts: {
   expected: (string | ConstantDefinitionV1)[];
