@@ -65,7 +65,6 @@
       "paths": [
         "packages/*/src/**/{moduleName}.ts",
         "!packages/*/src/cli.ts",
-        "!packages/*/src/commands/*.ts",
         "!**/index.ts",
         "!**/types.ts"
       ],
@@ -93,12 +92,32 @@
       ]
     },
     {
-      "name": "command-module-contract",
-      "description": "Command modules must use citty, declare conventionally named arguments, default-export the command, and be imported by the aggregate command test.",
-      "paths": "packages/*/src/commands/{commandName}.ts",
+      "name": "cli-command-orchestration",
+      "paths": "packages/*/src/cli.ts",
       "must": [
         {
-          "name": "command-definition",
+          "name": "cli-module-contract",
+          "description": "CLI entrypoint must define the outer command and include the run function",
+          "must": {
+            "declareConstants": ["main"],
+            "importValues": [
+              {
+                "name": "defineCommand",
+                "from": "citty"
+              },
+              {
+                "name": "runMain",
+                "from": "citty"
+              }
+            ]
+          }
+        },
+        {
+          "name": "command-module-contract",
+          "description": "Command modules must use citty, declare conventionally named arguments, default-export the command, and be imported by the aggregate command test.",
+          "for": {
+            "files": "commands/{commandName}.ts"
+          },
           "must": {
             "declareConstants": ["${commandName.toCamelCase()}Args"],
             "exportValues": ["default"],
@@ -106,20 +125,6 @@
               {
                 "name": "defineCommand",
                 "from": "citty"
-              }
-            ]
-          }
-        },
-        {
-          "name": "aggregate-command-test",
-          "for": {
-            "files": "commands.test.ts"
-          },
-          "must": {
-            "importValues": [
-              {
-                "name": "${commandName.toCamelCase()}Command",
-                "from": "./${commandName}.js"
               }
             ]
           }
