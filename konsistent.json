@@ -132,9 +132,12 @@
       ]
     },
     {
-      "name": "typescript-predicate-function-names",
-      "description": "TypeScript predicate modules must export a check function derived from the module name.",
-      "paths": "packages/konsistent/src/typescript/predicates/{predicateName}.ts",
+      "name": "predicate-function-names",
+      "description": "konsistent predicate modules must export a check function derived from the module name.",
+      "paths": [
+        "packages/konsistent/src/predicates/{predicateName}.ts",
+        "packages/konsistent/src/typescript/predicates/{predicateName}.ts"
+      ],
       "must": {
         "exportFunctions": ["check${predicateName.toPascalCase()}"]
       }
