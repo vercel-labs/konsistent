@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it } from "vitest";
 const execFile = promisify(execFileCallback);
 const cliBinary = resolve(
   import.meta.dirname,
-  "../packages/konsistent/dist/index.js"
+  "../packages/konsistent/dist/cli.js"
 );
 const fixturePath = resolve(import.meta.dirname, "fixtures/path-selection");
 const temporaryDirectories = new Set<string>();

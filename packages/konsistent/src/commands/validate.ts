@@ -5,7 +5,7 @@ import {
   normalizePlaceholderArg,
   parseCliPlaceholders,
 } from "../config/index.js";
-import { printDeprecationWarnings } from "./print-deprecation-warnings.js";
+import { printDeprecationWarnings } from "../core/command-utils/print-deprecation-warnings.js";
 
 const validateArgs = {
   "config-path": {

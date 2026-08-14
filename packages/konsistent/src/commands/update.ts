@@ -6,11 +6,14 @@ import { runUpdate } from "../update/run-update.js";
 import { isNewerVersion } from "../update/semver.js";
 import { getVersion } from "../version.js";
 
+const updateArgs = {};
+
 export default defineCommand({
   meta: {
     name: "update",
     description: "Update konsistent to the latest version",
   },
+  args: updateArgs,
   async run() {
     const currentVersion = getVersion();
 

@@ -1,15 +1,7 @@
-import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import { runCommand } from "citty";
 import { afterEach, describe, expect, it, vi } from "vitest";
-
-const require = createRequire(import.meta.url);
-const pkg = require("../../package.json") as { version: string };
-
 import checkCommand, { resolveFormat } from "./check.js";
-import helpCommand from "./help.js";
-import validateCommand from "./validate.js";
-import versionCommand from "./version.js";
 
 const emptyConfigPath = resolve(
   import.meta.dirname,
@@ -26,11 +18,6 @@ const mixedSeverityPath = resolve(
   "../../../../e2e/fixtures/mixed-severity"
 );
 
-const deprecatedFunctionParamPath = resolve(
-  import.meta.dirname,
-  "../../../../e2e/fixtures/deprecated-function-param"
-);
-
 const deprecatedPredicatesPath = resolve(
   import.meta.dirname,
   "../../../../e2e/fixtures/deprecated-predicates"
@@ -41,6 +28,10 @@ afterEach(() => {
 });
 
 describe("check command", () => {
+  it("defines metadata and arguments", () => {
+    expect(checkCommand).toMatchObject({ meta: { name: "check" }, args: {} });
+  });
+
   it("runs without error on valid config", async () => {
     vi.spyOn(process, "cwd").mockReturnValue(emptyConfigPath);
     await expect(
@@ -210,61 +201,8 @@ describe("check command --diagnostic-level", () => {
   });
 });
 
-describe("validate command", () => {
-  it("runs without error on valid config", async () => {
-    vi.spyOn(process, "cwd").mockReturnValue(emptyConfigPath);
-    const logSpy = vi.spyOn(console, "log").mockImplementation(vi.fn());
-    await runCommand(validateCommand, { rawArgs: [] });
-    expect(logSpy).toHaveBeenCalled();
-  });
-
-  it("warns without exiting when receiveParamOfType is used", async () => {
-    vi.spyOn(process, "cwd").mockReturnValue(deprecatedFunctionParamPath);
-    const exitSpy = vi
-      .spyOn(process, "exit")
-      .mockImplementation(() => undefined as never);
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(vi.fn());
-    const logSpy = vi.spyOn(console, "log").mockImplementation(vi.fn());
-    await runCommand(validateCommand, { rawArgs: [] });
-    expect(exitSpy).not.toHaveBeenCalled();
-    expect(logSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Configuration is valid")
-    );
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('"receiveParamOfType" is deprecated')
-    );
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining(
-        "conventions[0].must.exportFunctions[0].receiveParamOfType"
-      )
-    );
-  });
-
-  it("warns without exiting for every deprecated predicate", async () => {
-    vi.spyOn(process, "cwd").mockReturnValue(deprecatedPredicatesPath);
-    const exitSpy = vi
-      .spyOn(process, "exit")
-      .mockImplementation(() => undefined as never);
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(vi.fn());
-    const logSpy = vi.spyOn(console, "log").mockImplementation(vi.fn());
-
-    await runCommand(validateCommand, { rawArgs: [] });
-
-    expect(exitSpy).not.toHaveBeenCalled();
-    expect(logSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Configuration is valid")
-    );
-    expect(warnSpy).toHaveBeenCalledTimes(6);
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining(
-        'Use "importValuesFrom" or "importTypesFrom" instead.'
-      )
-    );
-  });
-});
-
-describe("--config-package CLI guards", () => {
-  it("check exits 1 when both --config-path and --config-package are passed", async () => {
+describe("check command --config-package guards", () => {
+  it("exits 1 when both --config-path and --config-package are passed", async () => {
     vi.spyOn(process, "cwd").mockReturnValue(emptyConfigPath);
     const exitSpy = vi
       .spyOn(process, "exit")
@@ -279,7 +217,7 @@ describe("--config-package CLI guards", () => {
     expect(message).toContain("--config-package");
   });
 
-  it("check exits 1 when --config-package is path-form", async () => {
+  it("exits 1 when --config-package is path-form", async () => {
     vi.spyOn(process, "cwd").mockReturnValue(emptyConfigPath);
     const exitSpy = vi
       .spyOn(process, "exit")
@@ -287,20 +225,6 @@ describe("--config-package CLI guards", () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
     await runCommand(checkCommand, {
       rawArgs: ["--config-package", "./some/local/path"],
-    });
-    expect(exitSpy).toHaveBeenCalledWith(1);
-    const message = errorSpy.mock.calls.map((c) => String(c[0])).join("\n");
-    expect(message).toContain("looks like a filesystem path");
-  });
-
-  it("validate exits 1 when --config-package is path-form", async () => {
-    vi.spyOn(process, "cwd").mockReturnValue(emptyConfigPath);
-    const exitSpy = vi
-      .spyOn(process, "exit")
-      .mockImplementation(() => undefined as never);
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
-    await runCommand(validateCommand, {
-      rawArgs: ["--config-package", "/abs/path"],
     });
     expect(exitSpy).toHaveBeenCalledWith(1);
     const message = errorSpy.mock.calls.map((c) => String(c[0])).join("\n");
@@ -324,27 +248,5 @@ describe("resolveFormat", () => {
   it("returns default when GITHUB_ACTIONS is not set", () => {
     process.env.GITHUB_ACTIONS = undefined;
     expect(resolveFormat({ format: "default" })).toBe("default");
-  });
-});
-
-describe("help command", () => {
-  it("prints help text to stdout", async () => {
-    const logSpy = vi.spyOn(console, "log").mockImplementation(vi.fn());
-    await runCommand(helpCommand, { rawArgs: [] });
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Usage:"));
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("check"));
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("validate"));
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("version"));
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("--paths"));
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("--staged"));
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("--modified"));
-  });
-});
-
-describe("version command", () => {
-  it("prints the version to stdout", async () => {
-    const logSpy = vi.spyOn(console, "log").mockImplementation(vi.fn());
-    await runCommand(versionCommand, { rawArgs: [] });
-    expect(logSpy).toHaveBeenCalledWith(pkg.version);
   });
 });

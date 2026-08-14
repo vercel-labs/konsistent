@@ -1,6 +1,8 @@
 import { defineCommand } from "citty";
 import { getVersion } from "../version.js";
 
+const helpArgs = {};
+
 const HELP_TEXT = `konsistent v${getVersion()} — Enforce structural conventions in TypeScript codebases
 
 Usage:
@@ -39,6 +41,7 @@ export default defineCommand({
     name: "help",
     description: "Show help message",
   },
+  args: helpArgs,
   run() {
     console.log(HELP_TEXT);
   },

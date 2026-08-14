@@ -1,0 +1,146 @@
+{
+  "$schema": "node_modules/konsistent/konsistent.schema.json",
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "package-structure",
+      "description": "Every production package must provide the shared package metadata, source entrypoint, and test configuration.",
+      "paths": "packages/{packageName}",
+      "must": [
+        {
+          "name": "package-must-have-devops-files",
+          "must": {
+            "haveType": "directory",
+            "haveFiles": ["package.json", "tsconfig.json", "vitest.config.ts"]
+          }
+        },
+        {
+          "name": "package-must-have-changelog",
+          "must": {
+            "haveFiles": ["CHANGELOG.md"]
+          }
+        },
+        {
+          "name": "package-must-have-readme",
+          "must": {
+            "haveFiles": ["README.md"]
+          },
+          "excludeFiles": ["packages/common-conventions", "packages/convention"]
+        },
+        {
+          "name": "package-must-have-tsup-config",
+          "must": {
+            "haveFiles": ["tsup.config.ts"]
+          },
+          "excludeFiles": ["packages/common-conventions"]
+        },
+        {
+          "name": "package-must-have-index-entrypoint",
+          "must": {
+            "haveFiles": ["src/index.ts"]
+          },
+          "excludeFiles": ["packages/konsistent"]
+        },
+        {
+          "name": "package-must-have-cli-entrypoint",
+          "must": {
+            "haveFiles": ["src/cli.ts"]
+          },
+          "excludeFiles": ["packages/common-conventions"]
+        },
+        {
+          "name": "module-indexes-are-barrels",
+          "for": {
+            "files": ["src/**/index.ts"]
+          },
+          "must": {
+            "areBarrelFiles": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "test-coverage",
+      "description": "Every module must have appropriate test coverage.",
+      "paths": [
+        "packages/*/src/**/{moduleName}.ts",
+        "!packages/*/src/cli.ts",
+        "!**/index.ts",
+        "!**/types.ts"
+      ],
+      "must": [
+        {
+          "name": "source-modules-have-tests",
+          "description": "Runtime source modules must have a same-named adjacent unit test.",
+          "excludeFiles": [
+            "packages/konsistent/src/core/context.ts",
+            "packages/konsistent/src/update/package-name.ts"
+          ],
+          "must": {
+            "haveFiles": ["${moduleName}.test.ts"]
+          }
+        },
+        {
+          "name": "unit-tests-import-source-module",
+          "for": {
+            "files": ["${moduleName}.test.ts"]
+          },
+          "must": {
+            "importValuesFrom": "./${moduleName}.js"
+          }
+        }
+      ]
+    },
+    {
+      "name": "cli-command-orchestration",
+      "paths": "packages/*/src/cli.ts",
+      "must": [
+        {
+          "name": "cli-module-contract",
+          "description": "CLI entrypoint must define the outer command and include the run function",
+          "must": {
+            "declareConstants": ["main"],
+            "importValues": [
+              {
+                "name": "defineCommand",
+                "from": "citty"
+              },
+              {
+                "name": "runMain",
+                "from": "citty"
+              }
+            ]
+          }
+        },
+        {
+          "name": "command-module-contract",
+          "description": "Command modules must use citty, declare conventionally named arguments, default-export the command, and be imported by the aggregate command test.",
+          "for": {
+            "files": "commands/{commandName}.ts"
+          },
+          "must": {
+            "declareConstants": ["${commandName.toCamelCase()}Args"],
+            "exportValues": ["default"],
+            "importValues": [
+              {
+                "name": "defineCommand",
+                "from": "citty"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "predicate-function-names",
+      "description": "konsistent predicate modules must export a check function derived from the module name.",
+      "paths": [
+        "packages/konsistent/src/predicates/{predicateName}.ts",
+        "packages/konsistent/src/typescript/predicates/{predicateName}.ts"
+      ],
+      "must": {
+        "exportFunctions": ["check${predicateName.toPascalCase()}"]
+      }
+    }
+  ]
+}

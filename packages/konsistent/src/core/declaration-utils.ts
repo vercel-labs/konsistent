@@ -1,11 +1,11 @@
-import type { PredicateContext } from "../../core/context.js";
-import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
-import { createDiagnostic } from "../../core/diagnostics.js";
 import type {
   DeclarationSymbolInfo,
   DeclarationSymbolKind,
   FileStructure,
-} from "../types.js";
+} from "../typescript/types.js";
+import type { PredicateContext } from "./context.js";
+import type { Diagnostic, DiagnosticSeverity } from "./diagnostics.js";
+import { createDiagnostic } from "./diagnostics.js";
 
 export interface DeclarationCheckContext {
   context: PredicateContext;

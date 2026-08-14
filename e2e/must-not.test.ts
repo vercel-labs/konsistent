@@ -7,7 +7,7 @@ const execFile = promisify(execFileCb);
 
 const cliBinary = resolve(
   import.meta.dirname,
-  "../packages/konsistent/dist/index.js"
+  "../packages/konsistent/dist/cli.js"
 );
 
 const fixturesDir = resolve(import.meta.dirname, "fixtures");

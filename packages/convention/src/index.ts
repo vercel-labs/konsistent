@@ -1,5 +1,3 @@
-import type { ReusableConventionV1 } from "./schemas.js";
-
 export type {
   ConstantArraySchemaV1,
   ConstantDefinitionV1,
@@ -24,6 +22,7 @@ export {
   ExportTypeDefinitionV1Schema,
   TypeDefinitionV1Schema,
 } from "./constant-schema.js";
+export { defineConventions } from "./define-conventions.js";
 export type {
   CompileImportSourceConstraintsResult,
   ExactImportSourceConstraint,
@@ -61,9 +60,3 @@ export {
   ReusableConventionsPackageV1Schema,
   ReusableConventionV1Schema,
 } from "./schemas.js";
-
-export function defineConventions<
-  const T extends readonly ReusableConventionV1[],
->(conventions: T): T {
-  return conventions;
-}

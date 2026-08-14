@@ -1,14 +1,14 @@
 import type { PredicateContext } from "../../core/context.js";
-import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
-import { createDiagnostic } from "../../core/diagnostics.js";
-import type { ExtendsClauseInfo, FileStructure } from "../types.js";
 import {
   createExportedDeclarationDiagnostic,
   createMissingDeclarationDiagnostic,
   type DeclarationCheckContext,
   findDeclarationSymbol,
   isDeclarationSymbolExported,
-} from "./declaration-utils.js";
+} from "../../core/declaration-utils.js";
+import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
+import { createDiagnostic } from "../../core/diagnostics.js";
+import type { ExtendsClauseInfo, FileStructure } from "../types.js";
 
 type ExtendConfig =
   | string

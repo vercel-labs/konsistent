@@ -3,11 +3,11 @@ import type {
   TypeDefinitionV1,
 } from "@konsistent/convention";
 import type { PredicateContext } from "../../core/context.js";
+import { findTypeDefinition } from "../../core/declaration-utils.js";
 import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
 import { createDiagnostic } from "../../core/diagnostics.js";
 import { matchTypeDefinitionSchema } from "../constant-type-schema.js";
 import type { FileStructure } from "../types.js";
-import { findTypeDefinition } from "./declaration-utils.js";
 
 export function checkExportTypes(opts: {
   expected: (string | ExportTypeDefinitionV1)[];

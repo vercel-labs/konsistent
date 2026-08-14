@@ -1,4 +1,11 @@
 import type { PredicateContext } from "../../core/context.js";
+import {
+  createExportedDeclarationDiagnostic,
+  createMissingDeclarationDiagnostic,
+  type DeclarationCheckContext,
+  findDeclarationSymbol,
+  isDeclarationSymbolExported,
+} from "../../core/declaration-utils.js";
 import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
 import { createDiagnostic } from "../../core/diagnostics.js";
 import type {
@@ -6,13 +13,6 @@ import type {
   FunctionInfo,
   TypeAnnotationInfo,
 } from "../types.js";
-import {
-  createExportedDeclarationDiagnostic,
-  createMissingDeclarationDiagnostic,
-  type DeclarationCheckContext,
-  findDeclarationSymbol,
-  isDeclarationSymbolExported,
-} from "./declaration-utils.js";
 
 interface FunctionDef {
   name: string;
