@@ -53,6 +53,14 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
+      # A clean workspace install cannot link the local `konsistent` binary
+      # until its dist/cli.js target exists. Build that target and its runtime
+      # dependency, then reinstall from a clean node_modules tree so pnpm
+      # creates the skipped bin links before exercising the package script.
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -F @konsistent/convention build
+      - run: pnpm -F konsistent build
+      - run: rm -rf node_modules packages/*/node_modules e2e/fixtures/*/node_modules
       - run: pnpm install --frozen-lockfile
       - run: pnpm konsistent
 
