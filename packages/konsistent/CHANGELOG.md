@@ -1,5 +1,15 @@
 # konsistent
 
+## 1.0.0-beta.7
+
+### Patch Changes
+
+- b24deb6: feat(konsistent): allow object properties and array items in constant and type definition schemas to enforce exact TypeScript type references
+- 5b5deea: chore(konsistent): restructure packages following konsistent enforcement
+- Updated dependencies [b24deb6]
+- Updated dependencies [5b5deea]
+  - @konsistent/convention@1.0.0-beta.7
+
 ## 1.0.0-beta.6
 
 ### Patch Changes

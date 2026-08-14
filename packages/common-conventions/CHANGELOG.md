@@ -1,5 +1,14 @@
 # @konsistent/common-conventions
 
+## 1.0.0-beta.7
+
+### Patch Changes
+
+- 5b5deea: chore(konsistent): restructure packages following konsistent enforcement
+- Updated dependencies [b24deb6]
+- Updated dependencies [5b5deea]
+  - @konsistent/convention@1.0.0-beta.7
+
 ## 1.0.0-beta.6
 
 ### Patch Changes
