@@ -16,6 +16,7 @@
     "konsistent-fixture-reusable-convention-unknown-source": "0.0.0"
   },
   "changesets": [
+    "eight-corners-bet",
     "fix-double-star-placeholder-matching",
     "four-wings-brake",
     "long-kids-yell",
@@ -24,6 +25,7 @@
     "salty-stamps-cover",
     "sunny-lights-obey",
     "tame-buttons-rush",
+    "thick-canyons-move",
     "twenty-cameras-tan",
     "whole-ideas-punch"
   ]
