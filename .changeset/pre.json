@@ -1,35 +1,4 @@
 {
   "mode": "pre",
-  "tag": "beta",
-  "initialVersions": {
-    "konsistent": "0.0.0",
-    "@konsistent/convention": "0.0.0",
-    "@konsistent/common-conventions": "0.0.0",
-    "konsistent-fixture-config-package-consumer": "0.0.0",
-    "@konsistent-test/config-package-source": "0.0.0",
-    "konsistent-fixture-reusable-convention-merge-overrides-pkg": "0.0.0",
-    "konsistent-fixture-reusable-convention-merge-overrides-pkg-broken": "0.0.0",
-    "konsistent-fixture-reusable-convention-object-ref-pkg": "0.0.0",
-    "konsistent-fixture-reusable-convention-object-ref-pkg-broken": "0.0.0",
-    "konsistent-fixture-reusable-convention-string-ref-pkg": "0.0.0",
-    "konsistent-fixture-reusable-convention-string-ref-pkg-broken": "0.0.0",
-    "konsistent-fixture-reusable-convention-unknown-source": "0.0.0"
-  },
-  "changesets": [
-    "bright-ravens-check",
-    "eight-corners-bet",
-    "fix-double-star-placeholder-matching",
-    "four-wings-brake",
-    "fuzzy-hounds-rule",
-    "long-kids-yell",
-    "lucky-bees-fly",
-    "quick-snails-import",
-    "ripe-places-rhyme",
-    "salty-stamps-cover",
-    "sunny-lights-obey",
-    "tame-buttons-rush",
-    "thick-canyons-move",
-    "twenty-cameras-tan",
-    "whole-ideas-punch"
-  ]
+  "tag": "beta"
 }
