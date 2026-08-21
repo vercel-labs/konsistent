@@ -61,6 +61,8 @@ A convention is a rule that says "files matching `paths` must satisfy `must` and
 
 The configuration is `strict` — unknown fields cause a validation error. Run `konsistent validate` to catch typos.
 
+Hand-written conventions do not accept a top-level `if`. Top-level `if` is available on reusable-convention string and object references: an inherited or use-site condition gates the entire expanded convention for each matched path. See [Top-level conditions on reusable references](./conditional-rules.md#top-level-conditions-on-reusable-references).
+
 ## `must`: predicates or blocks
 
 `must` accepts two shapes.

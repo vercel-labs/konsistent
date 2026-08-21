@@ -1,6 +1,22 @@
 # Conditional rules
 
-When a convention's `must` is an **array** of blocks instead of a single object, each block can have its own conditions, scope, and predicates. This unlocks rules like "story files must export `meta`" or "test files must import the project's custom render helper" — structural conventions that linters and the type checker won't catch on their own.
+An `if` condition can gate either a block inside a convention's `must` array or an entire reusable convention referenced at the top level. This unlocks rules like "story files must export `meta`" or "test files must import the project's custom render helper" — structural conventions that linters and the type checker won't catch on their own.
+
+## Top-level conditions on reusable references
+
+A reusable convention can declare `if`, and a top-level object reference can override it:
+
+```json
+{
+  "use": "common/conditionally-require-tests",
+  "paths": "packages/{packageName}",
+  "if": { "hasFile": "${packageName}.test.ts" }
+}
+```
+
+For each path matched by `paths`, the condition is resolved with that path's placeholders and evaluated independently. A non-match skips every `must` and `mustNot` predicate or block for that path. A match continues with normal predicate execution, including each block's own `if` and `for` behavior. The use-site `if` replaces an inherited condition as one complete object rather than merging condition properties.
+
+This top-level form is specific to reusable-convention references; hand-written conventions continue to put conditions inside `must` blocks. See [Reusable conventions](./reusable-conventions.md).
 
 ## Object form vs. array form
 
@@ -68,7 +84,7 @@ Switch from object to array form when you need:
 
 ## `if.hasFile`
 
-Block applies only when the named file exists at (or relative to) the matched path. Templates are resolved using the parent placeholders.
+The condition matches only when the named file exists at (or relative to) the matched path. Templates are resolved using the matched path's placeholders.
 
 ```json
 {
@@ -87,11 +103,11 @@ For `components/Button`, the block runs only if `components/Button/index.test.ts
 
 ## `if.placeholderSatisfies`
 
-Block applies only when the named placeholder satisfies a constraint. Syntax, constraint catalog, and examples in [constraints.md](./constraints.md#ifplaceholdersatisfies).
+The condition matches only when the named placeholder satisfies a constraint. Syntax, constraint catalog, and examples are in [constraints.md](./constraints.md#ifplaceholdersatisfies).
 
 ## Import conditions
 
-Import conditions inspect the file at the matched `paths` entry. They return false when the matched path is a directory. Conditions run before `for.files`, so they always inspect the parent matched path rather than files selected by `for`.
+Import conditions inspect the file at the matched `paths` entry. They return false when the matched path is a directory. A block-level condition runs before `for.files`, so it always inspects the parent matched path rather than files selected by `for`. Parsing is shared with block conditions and TypeScript predicates for the same file.
 
 | Condition | Value | Applies when |
 | --- | --- | --- |
@@ -133,7 +149,7 @@ Value and type imports remain separate:
 
 Only static ES import declarations count. Re-exports, dynamic `import()`, `require()`, and TypeScript import-equals do not.
 
-An `if` block has exactly **one** condition property — not multiple and not an empty object.
+An `if` condition has exactly **one** condition property — not multiple and not an empty object.
 
 ## `for.files`
 
