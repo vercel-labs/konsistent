@@ -257,6 +257,33 @@ describe("import-source-selectors-invalid fixture", () => {
   });
 });
 
+describe("import-conditions fixture", () => {
+  const cwd = resolve(fixturesDir, "import-conditions");
+
+  it("passes value and type import conditions", async () => {
+    await expect(runCli({ cwd })).resolves.not.toThrow();
+  });
+});
+
+describe("import-conditions-broken fixture", () => {
+  const cwd = resolve(fixturesDir, "import-conditions-broken");
+
+  it("reports predicates gated by matching import conditions", async () => {
+    try {
+      await runCli({ cwd });
+      expect.fail("Expected check to exit with code 1");
+    } catch (err: unknown) {
+      const error = err as { stdout: string; code: number; status: number };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain("value-import-condition");
+      expect(error.stdout).toContain("type-import-condition");
+      expect(error.stdout).toContain("value-import-from-condition");
+      expect(error.stdout).toContain("type-import-from-condition");
+      expect(error.stdout).toContain("Found 4 errors.");
+    }
+  });
+});
+
 describe("symbol-aliases fixture", () => {
   const cwd = resolve(fixturesDir, "symbol-aliases");
 
