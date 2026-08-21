@@ -1,4 +1,5 @@
 import {
+  IfConditionV1Schema,
   MustBlockV1Schema,
   MustPredicatesV1Schema,
 } from "@konsistent/convention";
@@ -18,6 +19,7 @@ export type {
   ExportDefinitionV1,
   ExportTypeDefinitionV1,
   FunctionDefinitionV1,
+  IfConditionV1,
   ImportDefinitionV1,
   InterfaceDefinitionV1,
   MustBlockV1,
@@ -40,6 +42,7 @@ export {
   ExportDefinitionV1Schema,
   ExportTypeDefinitionV1Schema,
   FunctionDefinitionV1Schema,
+  IfConditionV1Schema,
   ImportDefinitionV1Schema,
   InterfaceDefinitionV1Schema,
   MustBlockV1Schema,
@@ -60,11 +63,6 @@ const PlaceholdersMapSchema = z.record(
     .string()
     .regex(/^[a-zA-Z0-9_-]+$/, "Placeholder value must match [a-zA-Z0-9_-]+")
 );
-
-const ConditionSchema = z.union([
-  z.strictObject({ hasFile: z.string() }),
-  z.strictObject({ placeholderSatisfies: z.string() }),
-]);
 
 const ForSchema = z.strictObject({
   files: z.union([z.string(), z.array(z.string())]),
@@ -112,7 +110,7 @@ export const MustBlockUseRefSchema = z.strictObject({
     .regex(/^[a-z0-9-]+$/, "Must block name must match [a-z0-9-]+")
     .optional(),
   description: z.string().optional(),
-  if: ConditionSchema.optional(),
+  if: IfConditionV1Schema.optional(),
   for: ForSchema.optional(),
   excludeFiles: z.array(z.string()).optional(),
   must: MustPredicatesV1Schema.optional(),
@@ -173,7 +171,7 @@ export const ConventionUseRefSchema = z.strictObject({
   paths: z.union([z.string(), z.array(z.string())]).optional(),
   placeholders: PlaceholdersMapSchema.optional(),
   excludeFiles: z.array(z.string()).optional(),
-  if: ConditionSchema.optional(),
+  if: IfConditionV1Schema.optional(),
   for: ForSchema.optional(),
   must: MustPredicatesV1Schema.optional(),
   mustNot: MustPredicatesV1Schema.optional(),

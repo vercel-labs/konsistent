@@ -290,6 +290,51 @@ describe("validatePlaceholders", () => {
     }
   });
 
+  it("reports placeholders inside import conditions", () => {
+    const conventions: ConventionV1[] = [
+      {
+        name: "import-conditions",
+        paths: ["packages/{packageName}/index.ts"],
+        must: [
+          {
+            if: { hasValueImport: "${missingValue}" },
+            must: { haveType: "file" },
+          },
+          {
+            if: {
+              hasTypeImport: {
+                name: "${missingType}",
+                from: "${missingTypeSource}",
+              },
+            },
+            must: { haveType: "file" },
+          },
+          {
+            if: { hasValueImportFrom: "${missingValueSource}" },
+            must: { haveType: "file" },
+          },
+          {
+            if: { hasTypeImportFrom: "${missingTypeFromSource}" },
+            must: { haveType: "file" },
+          },
+        ],
+      },
+    ];
+
+    const result = validatePlaceholders({
+      conventions,
+      identifiers: ["import-conditions"],
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain("must.if.hasValueImport");
+      expect(result.error).toContain("must.if.hasTypeImport");
+      expect(result.error).toContain("must.if.hasValueImportFrom");
+      expect(result.error).toContain("must.if.hasTypeImportFrom");
+    }
+  });
+
   it("reports placeholders inside for.files (string and array form)", () => {
     const stringForm: ConventionV1[] = [
       {

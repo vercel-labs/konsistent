@@ -130,6 +130,50 @@ describe("reusable-convention-package.schema.json", () => {
     expect(valid).toBe(true);
   });
 
+  it("accepts value and type import conditions", () => {
+    const conditions = [
+      { hasValueImport: { name: "createClient", from: "./client" } },
+      { hasValueImportFrom: "./client" },
+      { hasTypeImport: { name: "Client", from: "./client" } },
+      { hasTypeImportFrom: "./client" },
+    ];
+
+    for (const [index, condition] of conditions.entries()) {
+      const valid = validate({
+        conventionSpecVersion: "v1",
+        conventions: [
+          {
+            name: `import-condition-${index}`,
+            description: "Import condition.",
+            if: condition,
+            must: { haveType: "file" },
+          },
+        ],
+      });
+      expect(valid).toBe(true);
+    }
+  });
+
+  it("rejects aliases in import conditions", () => {
+    const valid = validate({
+      conventionSpecVersion: "v1",
+      conventions: [
+        {
+          name: "import-condition",
+          description: "Import condition.",
+          if: {
+            hasValueImport: {
+              name: "createClient",
+              alias: "createApiClient",
+            },
+          },
+          must: { haveType: "file" },
+        },
+      ],
+    });
+    expect(valid).toBe(false);
+  });
+
   it.each([
     "import",
     "export",
