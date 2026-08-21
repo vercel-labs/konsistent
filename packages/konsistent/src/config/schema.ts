@@ -83,6 +83,7 @@ const ConventionV1Shape = {
   excludeFiles: z.array(z.string()).optional(),
   paths: z.union([z.string(), z.array(z.string())]),
   placeholders: PlaceholdersMapSchema.optional(),
+  if: IfConditionV1Schema.optional(),
 };
 
 export const ConventionV1Schema = z.union([

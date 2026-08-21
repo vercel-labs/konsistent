@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ConfigV1 } from "../config/schema.js";
+import type { ConfigV1, IfConditionV1 } from "../config/schema.js";
 import type { FileSystem } from "./filesystem.js";
 import { run } from "./runner.js";
 
@@ -743,6 +743,58 @@ describe("run", () => {
     expect(diagnostics[0].conventionName).toBe("conditional-rule");
   });
 
+  it("evaluates a top-level condition per matched path and gates every block", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          name: "conditional-convention",
+          paths: "packages/{packageName}",
+          if: { hasFile: "gate.ts" },
+          must: [
+            {
+              name: "matching-block-condition",
+              if: { hasFile: "block-gate.ts" },
+              must: { haveFiles: ["required.ts"] },
+            },
+            {
+              name: "non-matching-block-condition",
+              if: { hasFile: "absent.ts" },
+              must: { haveFiles: ["also-required.ts"] },
+            },
+            {
+              name: "gated-must-not",
+              mustNot: { haveType: "directory" },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([
+        ["packages/*", ["packages/matching", "packages/non-matching"]],
+      ]),
+      directories: new Set(["packages/matching", "packages/non-matching"]),
+      files: new Set([
+        "packages/matching/gate.ts",
+        "packages/matching/block-gate.ts",
+        "packages/non-matching/block-gate.ts",
+      ]),
+    });
+
+    const { diagnostics } = await run({ config, fileSystem: fs });
+
+    expect(diagnostics).toHaveLength(2);
+    expect(diagnostics.map((diagnostic) => diagnostic.filePath)).toEqual([
+      "packages/matching",
+      "packages/matching",
+    ]);
+    expect(diagnostics.map((diagnostic) => diagnostic.conventionName)).toEqual([
+      "matching-block-condition",
+      "gated-must-not",
+    ]);
+  });
+
   it("skips must block when if.hasFile condition is not met", async () => {
     const config: ConfigV1 = {
       version: "v1",
@@ -1067,6 +1119,47 @@ describe("run", () => {
     const { diagnostics } = await run({ config, fileSystem: fs });
 
     expect(diagnostics).toHaveLength(2);
+    expect(readSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("supports every condition at the top level and reuses parsed files", async () => {
+    const conditions: IfConditionV1[] = [
+      { hasFile: "marker.ts" },
+      { placeholderSatisfies: "moduleName:matches(^client$)" },
+      {
+        hasValueImport: {
+          name: "create${moduleName.toPascalCase()}",
+          from: "./${moduleName}",
+        },
+      },
+      { hasValueImportFrom: "./${moduleName}" },
+      { hasTypeImport: { name: "${moduleName.toPascalCase()}" } },
+      { hasTypeImportFrom: "./${moduleName}" },
+    ];
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: conditions.map((condition, index) => ({
+        name: `top-level-condition-${index}`,
+        paths: "src/{moduleName}.ts",
+        if: condition,
+        must: { exportConstants: [`missing${index}`] },
+      })),
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/*.ts", ["src/client.ts"]]]),
+      files: new Set(["src/client.ts", "src/marker.ts"]),
+      fileContents: new Map([
+        [
+          "src/client.ts",
+          'import { createClient, type Client } from "./client";',
+        ],
+      ]),
+    });
+    const readSpy = vi.spyOn(fs, "readFile");
+
+    const { diagnostics } = await run({ config, fileSystem: fs });
+
+    expect(diagnostics).toHaveLength(conditions.length);
     expect(readSpy).toHaveBeenCalledTimes(1);
   });
 

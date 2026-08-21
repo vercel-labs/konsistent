@@ -5,6 +5,7 @@ import {
 } from "@konsistent/convention";
 import type {
   ConfigV1,
+  IfConditionV1,
   ImportDefinitionV1,
   MustBlockV1,
   MustPredicatesV1,
@@ -238,24 +239,24 @@ function evaluatePlaceholderSatisfies(opts: {
 }
 
 function evaluateCondition(opts: {
-  block: MustBlockV1;
+  condition: IfConditionV1 | undefined;
   context: PredicateContext;
   fileSystem: FileSystem;
   fileStructureCache: Map<string, FileStructure>;
 }): boolean {
-  const { block, context, fileSystem, fileStructureCache } = opts;
-  if (!block.if) {
+  const { condition, context, fileSystem, fileStructureCache } = opts;
+  if (!condition) {
     return true;
   }
-  if (Object.hasOwn(block.if, "hasFile")) {
+  if (Object.hasOwn(condition, "hasFile")) {
     const resolvedPath = context.resolveTemplate(
-      (block.if as { hasFile: string }).hasFile
+      (condition as { hasFile: string }).hasFile
     );
     return context.fileExists(resolvedPath);
   }
-  if (Object.hasOwn(block.if, "placeholderSatisfies")) {
+  if (Object.hasOwn(condition, "placeholderSatisfies")) {
     return evaluatePlaceholderSatisfies({
-      raw: (block.if as { placeholderSatisfies: string }).placeholderSatisfies,
+      raw: (condition as { placeholderSatisfies: string }).placeholderSatisfies,
       context,
     });
   }
@@ -269,34 +270,35 @@ function evaluateCondition(opts: {
     cache: fileStructureCache,
   });
 
-  if (Object.hasOwn(block.if, "hasValueImport")) {
+  if (Object.hasOwn(condition, "hasValueImport")) {
     return hasImport({
-      expected: (block.if as { hasValueImport: string | ImportDefinitionV1 })
+      expected: (condition as { hasValueImport: string | ImportDefinitionV1 })
         .hasValueImport,
       importKind: "value",
       context,
       fileStructure,
     });
   }
-  if (Object.hasOwn(block.if, "hasTypeImport")) {
+  if (Object.hasOwn(condition, "hasTypeImport")) {
     return hasImport({
-      expected: (block.if as { hasTypeImport: string | ImportDefinitionV1 })
+      expected: (condition as { hasTypeImport: string | ImportDefinitionV1 })
         .hasTypeImport,
       importKind: "type",
       context,
       fileStructure,
     });
   }
-  if (Object.hasOwn(block.if, "hasValueImportFrom")) {
+  if (Object.hasOwn(condition, "hasValueImportFrom")) {
     return hasImportFrom({
-      expected: (block.if as { hasValueImportFrom: string }).hasValueImportFrom,
+      expected: (condition as { hasValueImportFrom: string })
+        .hasValueImportFrom,
       importKind: "value",
       context,
       fileStructure,
     });
   }
   return hasImportFrom({
-    expected: (block.if as { hasTypeImportFrom: string }).hasTypeImportFrom,
+    expected: (condition as { hasTypeImportFrom: string }).hasTypeImportFrom,
     importKind: "type",
     context,
     fileStructure,
@@ -1376,10 +1378,21 @@ export async function run(opts: {
         continue;
       }
 
+      if (
+        !evaluateCondition({
+          condition: convention.if,
+          context,
+          fileSystem,
+          fileStructureCache,
+        })
+      ) {
+        continue;
+      }
+
       for (const block of blocks) {
         if (
           !evaluateCondition({
-            block,
+            condition: block.if,
             context,
             fileSystem,
             fileStructureCache,
