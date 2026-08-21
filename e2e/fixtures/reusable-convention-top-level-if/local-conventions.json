@@ -1,0 +1,14 @@
+{
+  "conventionSpecVersion": "v1",
+  "conventions": [
+    {
+      "name": "conditionally-require-file",
+      "description": "Matching directories must contain required.ts.",
+      "paths": "src/{caseName}",
+      "if": { "hasFile": "inherited-gate.ts" },
+      "must": {
+        "haveFiles": ["required.ts"]
+      }
+    }
+  ]
+}

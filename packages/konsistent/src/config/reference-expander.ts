@@ -200,7 +200,7 @@ function expandMustBlockReference(opts: {
     base.excludeFiles = reusable.excludeFiles;
   }
 
-  const merged = deepMerge({ base, override: overrides });
+  const merged = mergeReferenceOverrides({ base, overrides });
 
   const validated = MustBlockV1Schema.safeParse(merged);
   if (!validated.success) {
@@ -301,6 +301,9 @@ function expandStringReference(opts: {
   if (reusable.excludeFiles !== undefined) {
     candidate.excludeFiles = reusable.excludeFiles;
   }
+  if (reusable.if !== undefined) {
+    candidate.if = reusable.if;
+  }
 
   const validated = ConventionV1Schema.safeParse(candidate);
   if (!validated.success) {
@@ -362,8 +365,11 @@ function expandUseReference(opts: {
   if (reusable.excludeFiles !== undefined) {
     base.excludeFiles = reusable.excludeFiles;
   }
+  if (reusable.if !== undefined) {
+    base.if = reusable.if;
+  }
 
-  const merged = deepMerge({ base, override: overrides });
+  const merged = mergeReferenceOverrides({ base, overrides });
 
   const validated = ConventionV1Schema.safeParse(merged);
   if (!validated.success) {
@@ -389,6 +395,18 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
     !Array.isArray(value) &&
     Object.getPrototypeOf(value) === Object.prototype
   );
+}
+
+function mergeReferenceOverrides(opts: {
+  base: Record<string, unknown>;
+  overrides: Record<string, unknown>;
+}): Record<string, unknown> {
+  const { base, overrides } = opts;
+  const merged = deepMerge({ base, override: overrides });
+  if (Object.hasOwn(overrides, "if")) {
+    merged.if = overrides.if;
+  }
+  return merged;
 }
 
 function deepMerge(opts: {

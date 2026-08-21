@@ -1,5 +1,6 @@
 import type { ReusableConventionV1 } from "@konsistent/convention";
 import { describe, expect, it } from "vitest";
+import { validatePlaceholders } from "./placeholder-validator.js";
 import { expandReferences } from "./reference-expander.js";
 import type { ConventionV1 } from "./schema.js";
 import type { SourceMap } from "./source-resolver.js";
@@ -67,6 +68,32 @@ describe("expandReferences", () => {
     if (result.success) {
       expect(result.conventions[0]?.mustNot).toEqual({
         exportConstants: ["debug"],
+      });
+    }
+  });
+
+  it("preserves an inherited condition on a string reference", () => {
+    const sourceMap = buildSourceMap({
+      common: [
+        {
+          name: "conditional-string",
+          description: "Runs only for matching packages.",
+          paths: "packages/{packageName}",
+          if: { hasFile: "${packageName}.test.ts" },
+          must: { haveFiles: ["index.ts"] },
+        },
+      ],
+    });
+
+    const result = expandReferences({
+      conventions: ["common/conditional-string"],
+      sourceMap,
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.conventions[0]?.if).toEqual({
+        hasFile: "${packageName}.test.ts",
       });
     }
   });
@@ -274,6 +301,110 @@ describe("expandReferences", () => {
       expect(result.conventions[0]?.placeholders).toEqual({
         providerId: "openai",
       });
+    }
+  });
+
+  it("preserves an inherited condition on an object reference", () => {
+    const sourceMap = buildSourceMap({
+      common: [
+        {
+          name: "conditional-object",
+          description: "Runs only when a marker exists.",
+          if: { hasFile: "marker.ts" },
+          must: { haveFiles: ["index.ts"] },
+        },
+      ],
+    });
+
+    const result = expandReferences({
+      conventions: [
+        {
+          use: "common/conditional-object",
+          paths: "packages/*",
+        },
+      ],
+      sourceMap,
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.conventions[0]?.if).toEqual({ hasFile: "marker.ts" });
+    }
+  });
+
+  it("replaces an inherited condition with the complete use-site condition", () => {
+    const sourceMap = buildSourceMap({
+      common: [
+        {
+          name: "conditional-override",
+          description: "Uses a consumer-specific gate.",
+          paths: "packages/{packageName}",
+          if: { hasFile: "inherited-marker.ts" },
+          must: { haveFiles: ["index.ts"] },
+        },
+      ],
+    });
+
+    const result = expandReferences({
+      conventions: [
+        {
+          use: "common/conditional-override",
+          if: {
+            placeholderSatisfies: "packageName:matches(^public-)",
+          },
+        },
+      ],
+      sourceMap,
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.conventions[0]?.if).toEqual({
+        placeholderSatisfies: "packageName:matches(^public-)",
+      });
+    }
+  });
+
+  it("validates placeholders in inherited and overridden conditions", () => {
+    const sourceMap = buildSourceMap({
+      common: [
+        {
+          name: "conditional-placeholders",
+          description: "Uses condition placeholders.",
+          paths: "packages/*",
+          if: { hasFile: "${missingInherited}.ts" },
+          must: { haveFiles: ["index.ts"] },
+        },
+      ],
+    });
+
+    const expansionResult = expandReferences({
+      conventions: [
+        "common/conditional-placeholders",
+        {
+          use: "common/conditional-placeholders",
+          if: { hasValueImportFrom: "${missingOverride}" },
+        },
+      ],
+      sourceMap,
+    });
+
+    expect(expansionResult.success).toBe(true);
+    if (expansionResult.success) {
+      const validationResult = validatePlaceholders({
+        conventions: expansionResult.conventions,
+        identifiers: expansionResult.identifiers,
+      });
+
+      expect(validationResult.ok).toBe(false);
+      if (!validationResult.ok) {
+        expect(validationResult.error).toContain(
+          'references "${missingInherited}" in if.hasFile'
+        );
+        expect(validationResult.error).toContain(
+          'references "${missingOverride}" in if.hasValueImportFrom'
+        );
+      }
     }
   });
 
@@ -691,6 +822,46 @@ describe("expandReferences", () => {
           name: "needs-readme",
           description: "Block requiring a README.md.",
           must: { haveFiles: ["README.md"] },
+        });
+      }
+    }
+  });
+
+  it("preserves and atomically overrides conditions for a nested use ref", () => {
+    const sourceMap = buildSourceMap({
+      common: [
+        {
+          name: "conditional-block",
+          description: "Conditionally requires an index.",
+          if: { hasFile: "inherited-marker.ts" },
+          must: { haveFiles: ["index.ts"] },
+        },
+      ],
+    });
+
+    const handWritten = {
+      paths: "packages/{packageName}",
+      must: [
+        "common/conditional-block",
+        {
+          use: "common/conditional-block",
+          if: { placeholderSatisfies: "packageName:segments(1)" },
+        },
+      ],
+    } as Parameters<typeof expandReferences>[0]["conventions"][number];
+
+    const result = expandReferences({
+      conventions: [handWritten],
+      sourceMap,
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      const must = result.conventions[0]?.must;
+      if (Array.isArray(must)) {
+        expect(must[0]?.if).toEqual({ hasFile: "inherited-marker.ts" });
+        expect(must[1]?.if).toEqual({
+          placeholderSatisfies: "packageName:segments(1)",
         });
       }
     }

@@ -128,6 +128,22 @@ describe("konsistent.schema.json", () => {
     expect(valid).toBe(true);
   });
 
+  it("accepts a condition on a top-level use reference", () => {
+    const valid = validate({
+      version: "v1",
+      conventionSources: { common: "./conventions.json" },
+      conventions: [
+        {
+          use: "common/conditional-rule",
+          paths: "src/*.ts",
+          if: { hasFile: "test.ts" },
+        },
+      ],
+    });
+
+    expect(valid).toBe(true);
+  });
+
   it("rejects aliases in import conditions", () => {
     const valid = validate({
       version: "v1",

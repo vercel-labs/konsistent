@@ -1,4 +1,9 @@
-import type { ConventionV1, MustBlockV1, MustPredicatesV1 } from "./schema.js";
+import type {
+  ConventionV1,
+  IfConditionV1,
+  MustBlockV1,
+  MustPredicatesV1,
+} from "./schema.js";
 
 const USAGE_REGEX = /\$\{([a-zA-Z][a-zA-Z0-9]*)/g;
 const DECLARATION_REGEX =
@@ -36,11 +41,7 @@ export function validatePlaceholders(opts: {
       }
     }
 
-    const usages = collectUsagesInAssertions({
-      must: convention.must,
-      mustNot: convention.mustNot,
-      declaredOuter: declared,
-    });
+    const usages = collectUsagesInConvention({ convention, declared });
 
     const reported = new Set<string>();
     for (const usage of usages) {
@@ -87,16 +88,42 @@ interface Usage {
   name: string;
 }
 
+function collectUsagesInConvention(opts: {
+  convention: ConventionV1;
+  declared: Set<string>;
+}): Usage[] {
+  const { convention, declared } = opts;
+  const usages: Usage[] = [];
+  if (convention.if) {
+    collectUsagesInCondition({
+      condition: convention.if,
+      prefix: "",
+      declared,
+      usages,
+    });
+  }
+  usages.push(
+    ...collectUsagesInAssertions({
+      must: convention.must,
+      mustNot: convention.mustNot,
+      declaredOuter: declared,
+    })
+  );
+  return usages;
+}
+
 function collectUsagesInCondition(opts: {
-  condition: NonNullable<MustBlockV1["if"]>;
+  condition: IfConditionV1;
+  prefix: string;
   declared: Set<string>;
   usages: Usage[];
 }): void {
-  const { condition, declared, usages } = opts;
+  const { condition, prefix, declared, usages } = opts;
+  const keyPrefix = prefix ? `${prefix}.if` : "if";
   if (Object.hasOwn(condition, "hasFile")) {
     pushStringUsages({
       value: (condition as { hasFile: string }).hasFile,
-      key: "must.if.hasFile",
+      key: `${keyPrefix}.hasFile`,
       declared,
       usages,
     });
@@ -104,7 +131,7 @@ function collectUsagesInCondition(opts: {
     pushStringUsages({
       value: (condition as { placeholderSatisfies: string })
         .placeholderSatisfies,
-      key: "must.if.placeholderSatisfies",
+      key: `${keyPrefix}.placeholderSatisfies`,
       declared,
       usages,
     });
@@ -117,7 +144,7 @@ function collectUsagesInCondition(opts: {
           }
         ).hasValueImport,
       ],
-      key: "must.if.hasValueImport",
+      key: `${keyPrefix}.hasValueImport`,
       objectFields: ["name", "from"],
       declared,
       usages,
@@ -131,7 +158,7 @@ function collectUsagesInCondition(opts: {
           }
         ).hasTypeImport,
       ],
-      key: "must.if.hasTypeImport",
+      key: `${keyPrefix}.hasTypeImport`,
       objectFields: ["name", "from"],
       declared,
       usages,
@@ -139,14 +166,14 @@ function collectUsagesInCondition(opts: {
   } else if (Object.hasOwn(condition, "hasValueImportFrom")) {
     pushStringUsages({
       value: (condition as { hasValueImportFrom: string }).hasValueImportFrom,
-      key: "must.if.hasValueImportFrom",
+      key: `${keyPrefix}.hasValueImportFrom`,
       declared,
       usages,
     });
   } else if (Object.hasOwn(condition, "hasTypeImportFrom")) {
     pushStringUsages({
       value: (condition as { hasTypeImportFrom: string }).hasTypeImportFrom,
-      key: "must.if.hasTypeImportFrom",
+      key: `${keyPrefix}.hasTypeImportFrom`,
       declared,
       usages,
     });
@@ -208,6 +235,7 @@ function collectUsagesInBlock(opts: {
   if (block.if) {
     collectUsagesInCondition({
       condition: block.if,
+      prefix: "must",
       declared: declaredHere,
       usages,
     });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ConfigV1Schema } from "./schema.js";
+import { ConfigV1Schema, ConventionV1Schema } from "./schema.js";
 
 describe("ConfigV1Schema", () => {
   it("accepts a minimal valid config with empty conventions", () => {
@@ -16,6 +16,46 @@ describe("ConfigV1Schema", () => {
       version: "v1",
       conventions: [],
     });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a condition on a top-level use reference", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          use: "common/conditional-rule",
+          paths: "src/*.ts",
+          if: { hasFile: "test.ts" },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("keeps top-level conditions unavailable to hand-written conventions", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          if: { hasFile: "test.ts" },
+          must: { haveType: "file" },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts a top-level condition in the resolved convention schema", () => {
+    const result = ConventionV1Schema.safeParse({
+      paths: "src/*.ts",
+      if: { hasFile: "test.ts" },
+      must: { haveType: "file" },
+    });
+
     expect(result.success).toBe(true);
   });
 
