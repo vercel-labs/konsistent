@@ -224,6 +224,30 @@ Each `components/<Name>/` folder must have an `index.tsx`. Test files are option
 
 Both rules enforce structural conventions that linters and the type checker won't catch: a missing `meta` makes Storybook silently misbehave, and a test that bypasses `@/test-utils`'s `render` skips the project's provider setup. See [conditional-rules.md](../reference/conditional-rules.md).
 
+## Conditional rules on imports
+
+Apply predicates only when the matched file imports a particular value, type, or module source:
+
+```json
+{
+  "paths": "src/{moduleName}.ts",
+  "must": [
+    {
+      "if": {
+        "hasValueImport": { "name": "defineConfig", "from": "toolkit" }
+      },
+      "must": { "exportConstants": ["config"] }
+    },
+    {
+      "if": { "hasTypeImportFrom": "@/shared-types" },
+      "must": { "exportTypes": ["PublicOptions"] }
+    }
+  ]
+}
+```
+
+Use `hasValueImport` or `hasTypeImport` to check one imported symbol. Use `hasValueImportFrom` or `hasTypeImportFrom` to check whether any import of that kind comes from an exact module source. See [conditional-rules.md](../reference/conditional-rules.md#import-conditions).
+
 ## Iterating over file patterns
 
 Every test file in a module must import the project's shared test context helper:

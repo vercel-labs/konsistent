@@ -40,6 +40,7 @@ Switch from object to array form when you need:
 - Different predicates for different files inside the same directory.
 - Predicates that apply only when an optional file exists.
 - Predicates that apply only to a subset of placeholder values.
+- Predicates that apply only when a file imports a specific symbol or source.
 
 ## `MustBlock` shape
 
@@ -59,7 +60,7 @@ Switch from object to array form when you need:
 | --- | --- | --- | --- |
 | `must` | `MustPredicates` | yes, unless `mustNot` is present | The predicates this block enforces. See [predicates.md](./predicates.md). |
 | `mustNot` | `MustPredicates` | yes, unless `must` is present | The predicates this block forbids. |
-| `if` | `{ hasFile }` or `{ placeholderSatisfies }` | no | Gate. Block runs only if the condition holds. |
+| `if` | condition object | no | Gate. Block runs only if one supported condition holds. |
 | `for` | `{ files: string \| string[] }` | no | Scope. Predicates apply to files matching this pattern within the parent path. |
 | `excludeFiles` | `string[]` | no | Glob patterns to exclude from the block. |
 | `name` | string matching `[a-z0-9-]+` | no | Identifier shown in violation reports. |
@@ -88,7 +89,51 @@ For `components/Button`, the block runs only if `components/Button/index.test.ts
 
 Block applies only when the named placeholder satisfies a constraint. Syntax, constraint catalog, and examples in [constraints.md](./constraints.md#ifplaceholdersatisfies).
 
-An `if` block has exactly **one** of `hasFile` or `placeholderSatisfies` — not both, not neither.
+## Import conditions
+
+Import conditions inspect the file at the matched `paths` entry. They return false when the matched path is a directory. Conditions run before `for.files`, so they always inspect the parent matched path rather than files selected by `for`.
+
+| Condition | Value | Applies when |
+| --- | --- | --- |
+| `hasValueImport` | string or `{ name, from? }` | The file imports the named value, optionally from an exact source. |
+| `hasValueImportFrom` | string | The file has a value import from the exact source. |
+| `hasTypeImport` | string or `{ name, from? }` | The file imports the named type, optionally from an exact source. |
+| `hasTypeImportFrom` | string | The file has a type import from the exact source. |
+
+```json
+{
+  "paths": "src/{moduleName}.ts",
+  "must": [
+    {
+      "if": {
+        "hasValueImport": { "name": "createClient", "from": "./client" }
+      },
+      "must": { "exportConstants": ["client"] }
+    },
+    {
+      "if": { "hasTypeImportFrom": "./types" },
+      "must": { "exportTypes": ["ClientOptions"] }
+    }
+  ]
+}
+```
+
+The string form of `hasValueImport` and `hasTypeImport` checks the imported name without constraining its source. For named imports, `name` is the original imported name and local aliases are ignored: `hasValueImport: "createClient"` matches both `import { createClient }` and `import { createClient as createApiClient }`. The condition schema does not accept `alias`.
+
+`from`, `hasValueImportFrom`, and `hasTypeImportFrom` resolve templates, then compare the complete module specifier exactly. Unlike `importValuesFrom` and `importTypesFrom`, condition sources do not support arrays, trailing `/*` selectors, exclusions, or re-inclusions.
+
+Value and type imports remain separate:
+
+| Import declaration | Value condition | Type condition |
+| --- | --- | --- |
+| `import { value } from "pkg"` | Symbol and source conditions match. | No match. |
+| `import type { Type } from "pkg"` | No match. | Symbol and source conditions match. |
+| `import { value, type Type } from "pkg"` | Matching value symbol and source conditions match. | Matching type symbol and source conditions match. |
+| `import "./setup"` | `hasValueImportFrom` matches. | No match. |
+
+Only static ES import declarations count. Re-exports, dynamic `import()`, `require()`, and TypeScript import-equals do not.
+
+An `if` block has exactly **one** condition property — not multiple and not an empty object.
 
 ## `for.files`
 

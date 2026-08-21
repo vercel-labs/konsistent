@@ -95,6 +95,8 @@ Some files exist only in some entries (test files, story files). When they exist
 - If `.stories.tsx` files exist, do they always export a `meta` constant? (Storybook needs it; the type checker doesn't enforce.)
 - If a `.test.tsx` file exists, does it import the project's custom render or test-context helper? (Project convention; lint rules don't know about it.)
 - If a route file exists, does it export the expected HTTP method handlers (`GET`, `POST`, …)?
+- If a source file imports a particular value or type, does that imply another structural requirement?
+- If a source file imports values or types from a particular module, must it expose a related API?
 
 Avoid encoding rules that the test framework, bundler, or type checker would already reject — those are wasted CPU. Konsistent is for the structural conventions that nothing else catches.
 
@@ -151,5 +153,6 @@ For every pattern you identify:
 - Imports → `importValues`, `importTypes`, `importValuesFrom`, `importTypesFrom`, `importValuesFromCurrentDir`, `importValuesFromParents`, `importValuesFromExternals`, `importTypesFromCurrentDir`, `importTypesFromParents`, `importTypesFromExternals`.
 - Optional file conditions → `if.hasFile` blocks.
 - Subset-only rules → `if.placeholderSatisfies` with a `matches` or `segments` constraint.
+- Import-dependent rules → `if.hasValueImport`, `if.hasValueImportFrom`, `if.hasTypeImport`, or `if.hasTypeImportFrom` blocks.
 
 See [examples.md](./examples.md) for ready-made templates of each shape, and [predicates.md](../reference/predicates.md) for the full predicate catalog.
