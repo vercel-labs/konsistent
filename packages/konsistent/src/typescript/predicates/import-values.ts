@@ -1,6 +1,7 @@
 import type { PredicateContext } from "../../core/context.js";
 import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
 import { createDiagnostic } from "../../core/diagnostics.js";
+import { hasImport } from "../import-matcher.js";
 import type { FileStructure } from "../types.js";
 
 export function checkImportValues(opts: {
@@ -25,26 +26,18 @@ export function checkImportValues(opts: {
     const definition: { alias?: string; name: string; from?: string } =
       typeof entry === "string" ? { name: entry } : entry;
     const resolvedName = context.resolveTemplate(definition.name);
-    const resolvedFrom = definition.from
-      ? context.resolveTemplate(definition.from)
-      : undefined;
     const resolvedAlias =
       definition.alias === undefined
         ? undefined
         : context.resolveTemplate(definition.alias);
 
-    const found = fileStructure.imports.some(
-      (i) =>
-        !i.isType &&
-        (resolvedFrom === undefined || i.from === resolvedFrom) &&
-        (predicateName === "import"
-          ? i.name === resolvedName
-          : matchesImportName({
-              importInfo: i,
-              name: resolvedName,
-              alias: resolvedAlias,
-            }))
-    );
+    const found = hasImport({
+      expected: entry,
+      importKind: "value",
+      matchLocalName: predicateName === "import",
+      context,
+      fileStructure,
+    });
 
     if (!found) {
       diagnostics.push(
@@ -63,24 +56,4 @@ export function checkImportValues(opts: {
   }
 
   return diagnostics;
-}
-
-function matchesImportName(opts: {
-  importInfo: FileStructure["imports"][number];
-  name: string;
-  alias?: string;
-}): boolean {
-  const { importInfo, name, alias } = opts;
-  if (alias !== undefined) {
-    return (
-      importInfo.kind === "named" &&
-      importInfo.sourceName !== "default" &&
-      importInfo.sourceName === name &&
-      importInfo.name === alias
-    );
-  }
-  if (importInfo.kind === "named" && importInfo.sourceName !== "default") {
-    return importInfo.sourceName === name;
-  }
-  return importInfo.name === name;
 }

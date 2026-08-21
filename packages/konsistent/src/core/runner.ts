@@ -5,11 +5,13 @@ import {
 } from "@konsistent/convention";
 import type {
   ConfigV1,
+  ImportDefinitionV1,
   MustBlockV1,
   MustPredicatesV1,
 } from "../config/schema.js";
 import { checkHaveFiles } from "../predicates/have-files.js";
 import { checkHaveType } from "../predicates/have-type.js";
+import { hasImport, hasImportFrom } from "../typescript/import-matcher.js";
 import { parseFileStructure } from "../typescript/parser.js";
 import { checkAreBarrelFiles } from "../typescript/predicates/are-barrel-files.js";
 import { checkDeclareClasses } from "../typescript/predicates/declare-classes.js";
@@ -238,18 +240,66 @@ function evaluatePlaceholderSatisfies(opts: {
 function evaluateCondition(opts: {
   block: MustBlockV1;
   context: PredicateContext;
+  fileSystem: FileSystem;
+  fileStructureCache: Map<string, FileStructure>;
 }): boolean {
-  const { block, context } = opts;
+  const { block, context, fileSystem, fileStructureCache } = opts;
   if (!block.if) {
     return true;
   }
   if (Object.hasOwn(block.if, "hasFile")) {
-    const resolvedPath = context.resolveTemplate(block.if.hasFile);
+    const resolvedPath = context.resolveTemplate(
+      (block.if as { hasFile: string }).hasFile
+    );
     return context.fileExists(resolvedPath);
   }
-  return evaluatePlaceholderSatisfies({
-    raw: block.if.placeholderSatisfies,
+  if (Object.hasOwn(block.if, "placeholderSatisfies")) {
+    return evaluatePlaceholderSatisfies({
+      raw: (block.if as { placeholderSatisfies: string }).placeholderSatisfies,
+      context,
+    });
+  }
+  if (!fileSystem.isFile(context.path)) {
+    return false;
+  }
+
+  const fileStructure = getOrParseFileStructure({
+    filePath: context.path,
+    fileSystem,
+    cache: fileStructureCache,
+  });
+
+  if (Object.hasOwn(block.if, "hasValueImport")) {
+    return hasImport({
+      expected: (block.if as { hasValueImport: string | ImportDefinitionV1 })
+        .hasValueImport,
+      importKind: "value",
+      context,
+      fileStructure,
+    });
+  }
+  if (Object.hasOwn(block.if, "hasTypeImport")) {
+    return hasImport({
+      expected: (block.if as { hasTypeImport: string | ImportDefinitionV1 })
+        .hasTypeImport,
+      importKind: "type",
+      context,
+      fileStructure,
+    });
+  }
+  if (Object.hasOwn(block.if, "hasValueImportFrom")) {
+    return hasImportFrom({
+      expected: (block.if as { hasValueImportFrom: string }).hasValueImportFrom,
+      importKind: "value",
+      context,
+      fileStructure,
+    });
+  }
+  return hasImportFrom({
+    expected: (block.if as { hasTypeImportFrom: string }).hasTypeImportFrom,
+    importKind: "type",
     context,
+    fileStructure,
   });
 }
 
@@ -1327,7 +1377,14 @@ export async function run(opts: {
       }
 
       for (const block of blocks) {
-        if (!evaluateCondition({ block, context })) {
+        if (
+          !evaluateCondition({
+            block,
+            context,
+            fileSystem,
+            fileStructureCache,
+          })
+        ) {
           continue;
         }
         diagnostics.push(

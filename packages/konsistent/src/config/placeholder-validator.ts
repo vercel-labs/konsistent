@@ -87,6 +87,72 @@ interface Usage {
   name: string;
 }
 
+function collectUsagesInCondition(opts: {
+  condition: NonNullable<MustBlockV1["if"]>;
+  declared: Set<string>;
+  usages: Usage[];
+}): void {
+  const { condition, declared, usages } = opts;
+  if (Object.hasOwn(condition, "hasFile")) {
+    pushStringUsages({
+      value: (condition as { hasFile: string }).hasFile,
+      key: "must.if.hasFile",
+      declared,
+      usages,
+    });
+  } else if (Object.hasOwn(condition, "placeholderSatisfies")) {
+    pushStringUsages({
+      value: (condition as { placeholderSatisfies: string })
+        .placeholderSatisfies,
+      key: "must.if.placeholderSatisfies",
+      declared,
+      usages,
+    });
+  } else if (Object.hasOwn(condition, "hasValueImport")) {
+    collectUsagesInDefinitionList({
+      list: [
+        (
+          condition as {
+            hasValueImport: string | { name: string; from?: string };
+          }
+        ).hasValueImport,
+      ],
+      key: "must.if.hasValueImport",
+      objectFields: ["name", "from"],
+      declared,
+      usages,
+    });
+  } else if (Object.hasOwn(condition, "hasTypeImport")) {
+    collectUsagesInDefinitionList({
+      list: [
+        (
+          condition as {
+            hasTypeImport: string | { name: string; from?: string };
+          }
+        ).hasTypeImport,
+      ],
+      key: "must.if.hasTypeImport",
+      objectFields: ["name", "from"],
+      declared,
+      usages,
+    });
+  } else if (Object.hasOwn(condition, "hasValueImportFrom")) {
+    pushStringUsages({
+      value: (condition as { hasValueImportFrom: string }).hasValueImportFrom,
+      key: "must.if.hasValueImportFrom",
+      declared,
+      usages,
+    });
+  } else if (Object.hasOwn(condition, "hasTypeImportFrom")) {
+    pushStringUsages({
+      value: (condition as { hasTypeImportFrom: string }).hasTypeImportFrom,
+      key: "must.if.hasTypeImportFrom",
+      declared,
+      usages,
+    });
+  }
+}
+
 function collectUsagesInAssertions(opts: {
   must?: MustPredicatesV1 | MustBlockV1[];
   mustNot?: MustPredicatesV1;
@@ -140,22 +206,11 @@ function collectUsagesInBlock(opts: {
   }
 
   if (block.if) {
-    if (Object.hasOwn(block.if, "hasFile")) {
-      pushStringUsages({
-        value: (block.if as { hasFile: string }).hasFile,
-        key: "must.if.hasFile",
-        declared: declaredHere,
-        usages,
-      });
-    } else if (Object.hasOwn(block.if, "placeholderSatisfies")) {
-      pushStringUsages({
-        value: (block.if as { placeholderSatisfies: string })
-          .placeholderSatisfies,
-        key: "must.if.placeholderSatisfies",
-        declared: declaredHere,
-        usages,
-      });
-    }
+    collectUsagesInCondition({
+      condition: block.if,
+      declared: declaredHere,
+      usages,
+    });
   }
 
   if (block.excludeFiles) {

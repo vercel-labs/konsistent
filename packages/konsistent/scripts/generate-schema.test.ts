@@ -106,6 +106,51 @@ describe("konsistent.schema.json", () => {
     expect(mustNotSchema.type).toBe("object");
   });
 
+  it("accepts value and type import conditions", () => {
+    const conditions = [
+      { hasValueImport: { name: "createClient", from: "./client" } },
+      { hasValueImportFrom: "./client" },
+      { hasTypeImport: { name: "Client", from: "./client" } },
+      { hasTypeImportFrom: "./client" },
+    ];
+    const valid = validate({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/index.ts",
+          must: conditions.map((condition) => ({
+            if: condition,
+            must: { haveType: "file" },
+          })),
+        },
+      ],
+    });
+    expect(valid).toBe(true);
+  });
+
+  it("rejects aliases in import conditions", () => {
+    const valid = validate({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/index.ts",
+          must: [
+            {
+              if: {
+                hasTypeImport: {
+                  name: "Client",
+                  alias: "ApiClient",
+                },
+              },
+              must: { haveType: "file" },
+            },
+          ],
+        },
+      ],
+    });
+    expect(valid).toBe(false);
+  });
+
   const passingFixtures = readdirSync(fixturesDir).filter((name) => {
     if (name === "invalid-config") {
       return false;

@@ -914,6 +914,190 @@ describe("run", () => {
     expect(diagnostics[0].conventionName).toBe("template-rule");
   });
 
+  it("evaluates value and type import conditions by original names", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          name: "import-name-conditions",
+          paths: "src/index.ts",
+          must: [
+            {
+              name: "value-import-match",
+              if: {
+                hasValueImport: { name: "sourceValue", from: "pkg" },
+              },
+              must: { haveType: "directory" },
+            },
+            {
+              name: "type-import-match",
+              if: { hasTypeImport: { name: "SourceType", from: "pkg" } },
+              must: { haveType: "directory" },
+            },
+            {
+              name: "local-alias-does-not-match",
+              if: { hasValueImport: "localValue" },
+              must: { haveType: "directory" },
+            },
+            {
+              name: "wrong-import-kind-does-not-match",
+              if: { hasValueImport: "SourceType" },
+              must: { haveType: "directory" },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/index.ts", ["src/index.ts"]]]),
+      files: new Set(["src/index.ts"]),
+      fileContents: new Map([
+        [
+          "src/index.ts",
+          'import { sourceValue as localValue, type SourceType as LocalType } from "pkg";',
+        ],
+      ]),
+    });
+
+    const { diagnostics } = await run({ config, fileSystem: fs });
+
+    expect(diagnostics.map((diagnostic) => diagnostic.conventionName)).toEqual([
+      "value-import-match",
+      "type-import-match",
+    ]);
+  });
+
+  it("evaluates exact value and type import source conditions", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          name: "import-source-conditions",
+          paths: "src/index.ts",
+          must: [
+            {
+              name: "value-source-match",
+              if: { hasValueImportFrom: "pkg" },
+              must: { haveType: "directory" },
+            },
+            {
+              name: "type-source-match",
+              if: { hasTypeImportFrom: "pkg" },
+              must: { haveType: "directory" },
+            },
+            {
+              name: "side-effect-value-source-match",
+              if: { hasValueImportFrom: "./setup" },
+              must: { haveType: "directory" },
+            },
+            {
+              name: "side-effect-type-source-does-not-match",
+              if: { hasTypeImportFrom: "./setup" },
+              must: { haveType: "directory" },
+            },
+            {
+              name: "wildcard-is-not-a-selector",
+              if: { hasValueImportFrom: "pkg/*" },
+              must: { haveType: "directory" },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/index.ts", ["src/index.ts"]]]),
+      files: new Set(["src/index.ts"]),
+      fileContents: new Map([
+        [
+          "src/index.ts",
+          [
+            'import { value, type ValueType } from "pkg";',
+            'import "./setup";',
+          ].join("\n"),
+        ],
+      ]),
+    });
+
+    const { diagnostics } = await run({ config, fileSystem: fs });
+
+    expect(diagnostics.map((diagnostic) => diagnostic.conventionName)).toEqual([
+      "value-source-match",
+      "type-source-match",
+      "side-effect-value-source-match",
+    ]);
+  });
+
+  it("expands import condition templates and reuses the parsed file", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          name: "templated-import-conditions",
+          paths: "src/{moduleName}.ts",
+          must: [
+            {
+              if: {
+                hasValueImport: {
+                  name: "create${moduleName.toPascalCase()}",
+                  from: "./${moduleName}",
+                },
+              },
+              must: { exportConstants: ["missingValue"] },
+            },
+            {
+              if: { hasTypeImportFrom: "./${moduleName}" },
+              must: { exportConstants: ["missingType"] },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/*.ts", ["src/client.ts"]]]),
+      files: new Set(["src/client.ts"]),
+      fileContents: new Map([
+        [
+          "src/client.ts",
+          'import { createClient as createApiClient, type Client } from "./client";',
+        ],
+      ]),
+    });
+    const readSpy = vi.spyOn(fs, "readFile");
+
+    const { diagnostics } = await run({ config, fileSystem: fs });
+
+    expect(diagnostics).toHaveLength(2);
+    expect(readSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("skips import conditions when the matched path is a directory", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          name: "directory-import-condition",
+          paths: "src/module",
+          must: [
+            {
+              if: { hasValueImportFrom: "pkg" },
+              must: { haveType: "file" },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module", ["src/module"]]]),
+      directories: new Set(["src/module"]),
+    });
+    const readSpy = vi.spyOn(fs, "readFile");
+
+    const { diagnostics } = await run({ config, fileSystem: fs });
+
+    expect(diagnostics).toEqual([]);
+    expect(readSpy).not.toHaveBeenCalled();
+  });
+
   it("injects static placeholders into the predicate context", async () => {
     const config: ConfigV1 = {
       version: "v1",

@@ -514,6 +514,49 @@ describe("ConfigV1Schema", () => {
     expect(result.success).toBe(true);
   });
 
+  it.each([
+    { hasValueImport: "createClient" },
+    { hasValueImport: { name: "createClient", from: "./client" } },
+    { hasValueImportFrom: "./client" },
+    { hasTypeImport: "Client" },
+    { hasTypeImport: { name: "Client", from: "./client" } },
+    { hasTypeImportFrom: "./client" },
+  ])("accepts a MustBlock with an import condition", (condition) => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          must: [{ if: condition, must: { haveType: "file" } }],
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects alias configuration in an import condition", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          must: [
+            {
+              if: {
+                hasValueImport: {
+                  name: "createClient",
+                  alias: "createApiClient",
+                },
+              },
+              must: { haveType: "file" },
+            },
+          ],
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("rejects a MustBlock with if containing both hasFile and placeholderSatisfies", () => {
     const result = ConfigV1Schema.safeParse({
       version: "v1",

@@ -106,7 +106,7 @@ The first block matches files like `chat-language-model.ts` (2-segment `modelKin
 - The argument inside `(...)` is taken **verbatim** — no quotes around regexes or numbers.
 - The argument may **not contain `}`**. If you need a regex quantifier, use repetition: `\d\d?` instead of `\d{1,2}`.
 - Constraints apply to placeholder **values** (`{...}`) and to `placeholderSatisfies` arguments. They do not apply to template substitutions (`${...}`).
-- An `if` block has exactly one of `hasFile` or `placeholderSatisfies` (see [conditional-rules.md](./conditional-rules.md)).
+- An `if` block has exactly one condition property (see [conditional-rules.md](./conditional-rules.md)).
 
 ## Difference from path negation
 

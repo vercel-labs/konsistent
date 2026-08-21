@@ -3,6 +3,7 @@ import {
   ClassDefinitionV1Schema,
   ExportDefinitionV1Schema,
   FunctionDefinitionV1Schema,
+  IfConditionV1Schema,
   ImportDefinitionV1Schema,
   InterfaceDefinitionV1Schema,
   MustBlockV1Schema,
@@ -61,6 +62,50 @@ describe("symbol definition schemas", () => {
 });
 
 describe("predicate and block schemas", () => {
+  it.each([
+    {
+      name: "value import string",
+      condition: { hasValueImport: "createClient" },
+    },
+    {
+      name: "value import object",
+      condition: {
+        hasValueImport: { name: "createClient", from: "./client" },
+      },
+    },
+    {
+      name: "value import source",
+      condition: { hasValueImportFrom: "./client" },
+    },
+    { name: "type import string", condition: { hasTypeImport: "Client" } },
+    {
+      name: "type import object",
+      condition: { hasTypeImport: { name: "Client", from: "./client" } },
+    },
+    {
+      name: "type import source",
+      condition: { hasTypeImportFrom: "./client" },
+    },
+  ])("accepts $name condition", ({ condition }) => {
+    expect(IfConditionV1Schema.safeParse(condition).success).toBe(true);
+  });
+
+  it("rejects aliases and arrays in import conditions", () => {
+    expect(
+      IfConditionV1Schema.safeParse({
+        hasValueImport: {
+          name: "createClient",
+          alias: "createApiClient",
+        },
+      }).success
+    ).toBe(false);
+    expect(
+      IfConditionV1Schema.safeParse({
+        hasTypeImport: ["Client"],
+      }).success
+    ).toBe(false);
+  });
+
   it("accepts current predicates and valid import source selectors", () => {
     const result = MustPredicatesV1Schema.safeParse({
       haveType: "file",

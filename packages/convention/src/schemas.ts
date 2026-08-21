@@ -23,6 +23,24 @@ export const ImportDefinitionV1Schema = z.strictObject({
   from: z.string().optional(),
 });
 
+const ImportConditionDefinitionV1Schema = ImportDefinitionV1Schema.omit({
+  alias: true,
+});
+
+const ImportConditionEntryV1Schema = z.union([
+  z.string(),
+  ImportConditionDefinitionV1Schema,
+]);
+
+export const IfConditionV1Schema = z.union([
+  z.strictObject({ hasFile: z.string() }),
+  z.strictObject({ placeholderSatisfies: z.string() }),
+  z.strictObject({ hasValueImport: ImportConditionEntryV1Schema }),
+  z.strictObject({ hasValueImportFrom: z.string() }),
+  z.strictObject({ hasTypeImport: ImportConditionEntryV1Schema }),
+  z.strictObject({ hasTypeImportFrom: z.string() }),
+]);
+
 const LegacyExportDefinitionV1Schema = z.strictObject({
   name: z.string(),
   from: z.string().optional(),
@@ -189,12 +207,7 @@ const MustBlockV1Shape = {
     .regex(/^[a-z0-9-]+$/, "Must block name must match [a-z0-9-]+")
     .optional(),
   description: z.string().optional(),
-  if: z
-    .union([
-      z.strictObject({ hasFile: z.string() }),
-      z.strictObject({ placeholderSatisfies: z.string() }),
-    ])
-    .optional(),
+  if: IfConditionV1Schema.optional(),
   for: z
     .strictObject({ files: z.union([z.string(), z.array(z.string())]) })
     .optional(),
@@ -222,12 +235,7 @@ const ReusableConventionV1Shape = {
   severity: z.enum(["error", "warning"]).optional(),
   paths: z.union([z.string(), z.array(z.string())]).optional(),
   excludeFiles: z.array(z.string()).optional(),
-  if: z
-    .union([
-      z.strictObject({ hasFile: z.string() }),
-      z.strictObject({ placeholderSatisfies: z.string() }),
-    ])
-    .optional(),
+  if: IfConditionV1Schema.optional(),
   for: z
     .strictObject({ files: z.union([z.string(), z.array(z.string())]) })
     .optional(),
@@ -256,6 +264,7 @@ export type DeclarationDefinitionV1 = z.infer<
   typeof DeclarationDefinitionV1Schema
 >;
 export type ImportDefinitionV1 = z.infer<typeof ImportDefinitionV1Schema>;
+export type IfConditionV1 = z.infer<typeof IfConditionV1Schema>;
 export type FunctionDefinitionV1 = z.infer<typeof FunctionDefinitionV1Schema>;
 export type InterfaceDefinitionV1 = z.infer<typeof InterfaceDefinitionV1Schema>;
 export type ClassDefinitionV1 = z.infer<typeof ClassDefinitionV1Schema>;
