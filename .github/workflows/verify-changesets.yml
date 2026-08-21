@@ -37,14 +37,14 @@ jobs:
           } >> "$GITHUB_OUTPUT"
           {
             echo "added-changesets<<__EOF__"
-            git diff --name-only --diff-filter=A "$BASE_SHA" -- '.changeset/*.md' \
+            git diff --name-only --diff-filter=A "$BASE_SHA" -- ':(glob).changeset/*.md' \
               | grep -v -E '^\.changeset/README\.md$' \
               || true
             echo "__EOF__"
           } >> "$GITHUB_OUTPUT"
           {
             echo "all-changesets<<__EOF__"
-            git diff --name-only --diff-filter=ACMRT "$BASE_SHA" -- '.changeset/*.md' \
+            git diff --name-only --diff-filter=ACMRT "$BASE_SHA" -- ':(glob).changeset/*.md' \
               | grep -v -E '^\.changeset/README\.md$' \
               || true
             echo "__EOF__"
