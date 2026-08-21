@@ -9,6 +9,12 @@
         {
           "if": { "placeholderSatisfies": "providerId:matches(^[a-z]+ai$)" },
           "must": { "haveFiles": ["src/${providerId}-stem.ts"] }
+        },
+        {
+          "ifNot": {
+            "placeholderSatisfies": "providerId:matches(^[a-z]+ai$)"
+          },
+          "must": { "haveFiles": ["src/non-ai.ts"] }
         }
       ]
     }

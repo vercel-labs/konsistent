@@ -97,7 +97,7 @@ describe("reusable-convention-object-ref-broken fixture", () => {
 describe("reusable-convention-top-level-if fixture", () => {
   const cwd = resolve(fixturesDir, "reusable-convention-top-level-if");
 
-  it("runs a matching top-level use condition and skips non-matching paths", async () => {
+  it("combines inherited and overridden top-level if and ifNot conditions", async () => {
     try {
       await runCli({ args: ["check"], cwd });
       expect.fail("Expected check to exit with code 1");
@@ -112,12 +112,14 @@ describe("reusable-convention-top-level-if fixture", () => {
       expect(error.stdout).toContain("Missing required file");
       expect(error.stdout).toContain("required.ts");
       expect(error.stdout).toContain("src/matching");
-      expect(error.stdout).not.toContain("src/skipped");
-      expect(error.stdout).toContain("Found 1 error.");
+      expect(error.stdout).toContain("src/skipped");
+      expect(error.stdout).not.toContain("src/negated");
+      expect(error.stdout).not.toContain("src/inherited-negated");
+      expect(error.stdout).toContain("Found 2 errors.");
     }
   });
 
-  it("validates the top-level condition override", async () => {
+  it("validates top-level condition overrides", async () => {
     const { stdout } = await runCli({ args: ["validate"], cwd });
     expect(stdout).toContain("Configuration is valid");
   });

@@ -6,7 +6,9 @@
   "conventions": [
     {
       "use": "common/conditionally-require-file",
-      "if": { "hasFile": "gate.ts" }
-    }
+      "if": { "hasFile": "gate.ts" },
+      "ifNot": { "hasFile": "skip.ts" }
+    },
+    "common/conditionally-require-file"
   ]
 }

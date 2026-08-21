@@ -36,6 +36,38 @@
           "must": { "exportConstants": ["typeImportFromConditionPassed"] }
         }
       ]
+    },
+    {
+      "name": "negative-import-conditions",
+      "paths": "src/matching.ts",
+      "must": [
+        {
+          "ifNot": {
+            "hasValueImport": {
+              "name": "createClient",
+              "from": "./dependencies"
+            }
+          },
+          "must": { "exportConstants": ["unexpectedValueCondition"] }
+        },
+        {
+          "ifNot": {
+            "hasTypeImport": {
+              "name": "Client",
+              "from": "./dependencies"
+            }
+          },
+          "must": { "exportConstants": ["unexpectedTypeCondition"] }
+        },
+        {
+          "ifNot": { "hasValueImportFrom": "./side-effect" },
+          "must": { "exportConstants": ["unexpectedValueSourceCondition"] }
+        },
+        {
+          "ifNot": { "hasTypeImportFrom": "./dependencies" },
+          "must": { "exportConstants": ["unexpectedTypeSourceCondition"] }
+        }
+      ]
     }
   ]
 }
