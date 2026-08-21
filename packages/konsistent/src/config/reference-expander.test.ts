@@ -80,6 +80,7 @@ describe("expandReferences", () => {
           description: "Runs only for matching packages.",
           paths: "packages/{packageName}",
           if: { hasFile: "${packageName}.test.ts" },
+          ifNot: { hasFile: "${packageName}.skip.ts" },
           must: { haveFiles: ["index.ts"] },
         },
       ],
@@ -94,6 +95,9 @@ describe("expandReferences", () => {
     if (result.success) {
       expect(result.conventions[0]?.if).toEqual({
         hasFile: "${packageName}.test.ts",
+      });
+      expect(result.conventions[0]?.ifNot).toEqual({
+        hasFile: "${packageName}.skip.ts",
       });
     }
   });
@@ -311,6 +315,7 @@ describe("expandReferences", () => {
           name: "conditional-object",
           description: "Runs only when a marker exists.",
           if: { hasFile: "marker.ts" },
+          ifNot: { hasFile: "skip.ts" },
           must: { haveFiles: ["index.ts"] },
         },
       ],
@@ -329,6 +334,7 @@ describe("expandReferences", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.conventions[0]?.if).toEqual({ hasFile: "marker.ts" });
+      expect(result.conventions[0]?.ifNot).toEqual({ hasFile: "skip.ts" });
     }
   });
 
@@ -340,6 +346,7 @@ describe("expandReferences", () => {
           description: "Uses a consumer-specific gate.",
           paths: "packages/{packageName}",
           if: { hasFile: "inherited-marker.ts" },
+          ifNot: { hasFile: "inherited-skip.ts" },
           must: { haveFiles: ["index.ts"] },
         },
       ],
@@ -362,6 +369,46 @@ describe("expandReferences", () => {
       expect(result.conventions[0]?.if).toEqual({
         placeholderSatisfies: "packageName:matches(^public-)",
       });
+      expect(result.conventions[0]?.ifNot).toEqual({
+        hasFile: "inherited-skip.ts",
+      });
+    }
+  });
+
+  it("replaces an inherited ifNot condition independently", () => {
+    const sourceMap = buildSourceMap({
+      common: [
+        {
+          name: "negative-condition-override",
+          description: "Uses a consumer-specific negative gate.",
+          paths: "packages/{packageName}",
+          if: { hasFile: "required-marker.ts" },
+          ifNot: { hasFile: "inherited-skip.ts" },
+          must: { haveFiles: ["index.ts"] },
+        },
+      ],
+    });
+
+    const result = expandReferences({
+      conventions: [
+        {
+          use: "common/negative-condition-override",
+          ifNot: {
+            placeholderSatisfies: "packageName:matches(^internal-)",
+          },
+        },
+      ],
+      sourceMap,
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.conventions[0]?.if).toEqual({
+        hasFile: "required-marker.ts",
+      });
+      expect(result.conventions[0]?.ifNot).toEqual({
+        placeholderSatisfies: "packageName:matches(^internal-)",
+      });
     }
   });
 
@@ -373,6 +420,7 @@ describe("expandReferences", () => {
           description: "Uses condition placeholders.",
           paths: "packages/*",
           if: { hasFile: "${missingInherited}.ts" },
+          ifNot: { hasFile: "${missingInheritedNegative}.ts" },
           must: { haveFiles: ["index.ts"] },
         },
       ],
@@ -384,6 +432,7 @@ describe("expandReferences", () => {
         {
           use: "common/conditional-placeholders",
           if: { hasValueImportFrom: "${missingOverride}" },
+          ifNot: { hasTypeImportFrom: "${missingOverrideNegative}" },
         },
       ],
       sourceMap,
@@ -403,6 +452,12 @@ describe("expandReferences", () => {
         );
         expect(validationResult.error).toContain(
           'references "${missingOverride}" in if.hasValueImportFrom'
+        );
+        expect(validationResult.error).toContain(
+          'references "${missingInheritedNegative}" in ifNot.hasFile'
+        );
+        expect(validationResult.error).toContain(
+          'references "${missingOverrideNegative}" in ifNot.hasTypeImportFrom'
         );
       }
     }
@@ -834,6 +889,7 @@ describe("expandReferences", () => {
           name: "conditional-block",
           description: "Conditionally requires an index.",
           if: { hasFile: "inherited-marker.ts" },
+          ifNot: { hasFile: "inherited-skip.ts" },
           must: { haveFiles: ["index.ts"] },
         },
       ],
@@ -860,9 +916,11 @@ describe("expandReferences", () => {
       const must = result.conventions[0]?.must;
       if (Array.isArray(must)) {
         expect(must[0]?.if).toEqual({ hasFile: "inherited-marker.ts" });
+        expect(must[0]?.ifNot).toEqual({ hasFile: "inherited-skip.ts" });
         expect(must[1]?.if).toEqual({
           placeholderSatisfies: "packageName:segments(1)",
         });
+        expect(must[1]?.ifNot).toEqual({ hasFile: "inherited-skip.ts" });
       }
     }
   });

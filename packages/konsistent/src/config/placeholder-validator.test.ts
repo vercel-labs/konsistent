@@ -335,6 +335,33 @@ describe("validatePlaceholders", () => {
     }
   });
 
+  it("reports placeholders inside top-level and block ifNot conditions", () => {
+    const conventions: ConventionV1[] = [
+      {
+        name: "negative-conditions",
+        paths: ["packages/{packageName}/index.ts"],
+        ifNot: { hasFile: "${missingTopLevel}.ts" },
+        must: [
+          {
+            ifNot: { hasValueImportFrom: "${missingBlockSource}" },
+            must: { haveType: "file" },
+          },
+        ],
+      },
+    ];
+
+    const result = validatePlaceholders({
+      conventions,
+      identifiers: ["negative-conditions"],
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain("ifNot.hasFile");
+      expect(result.error).toContain("must.ifNot.hasValueImportFrom");
+    }
+  });
+
   it("reports placeholders inside for.files (string and array form)", () => {
     const stringForm: ConventionV1[] = [
       {

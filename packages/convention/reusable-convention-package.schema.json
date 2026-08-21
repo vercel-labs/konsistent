@@ -141,6 +141,104 @@
                   }
                 ]
               },
+              "ifNot": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "hasFile": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["hasFile"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "placeholderSatisfies": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["placeholderSatisfies"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "hasValueImport": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "from": {
+                                "type": "string"
+                              }
+                            },
+                            "required": ["name"],
+                            "additionalProperties": false
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["hasValueImport"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "hasValueImportFrom": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["hasValueImportFrom"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "hasTypeImport": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "from": {
+                                "type": "string"
+                              }
+                            },
+                            "required": ["name"],
+                            "additionalProperties": false
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["hasTypeImport"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "hasTypeImportFrom": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["hasTypeImportFrom"],
+                    "additionalProperties": false
+                  }
+                ]
+              },
               "for": {
                 "type": "object",
                 "properties": {
@@ -2397,6 +2495,104 @@
                 }
               },
               "if": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "hasFile": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["hasFile"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "placeholderSatisfies": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["placeholderSatisfies"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "hasValueImport": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "from": {
+                                "type": "string"
+                              }
+                            },
+                            "required": ["name"],
+                            "additionalProperties": false
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["hasValueImport"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "hasValueImportFrom": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["hasValueImportFrom"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "hasTypeImport": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "from": {
+                                "type": "string"
+                              }
+                            },
+                            "required": ["name"],
+                            "additionalProperties": false
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["hasTypeImport"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "hasTypeImportFrom": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["hasTypeImportFrom"],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "ifNot": {
                 "anyOf": [
                   {
                     "type": "object",

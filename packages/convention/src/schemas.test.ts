@@ -132,6 +132,7 @@ describe("predicate and block schemas", () => {
       MustBlockV1Schema.safeParse({
         name: "required-export",
         if: { hasFile: "index.ts" },
+        ifNot: { placeholderSatisfies: "name:segments(2)" },
         for: { files: "index.ts" },
         must: { exportValues: ["createClient"] },
       }).success

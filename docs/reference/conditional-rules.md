@@ -1,22 +1,34 @@
 # Conditional rules
 
-An `if` condition can gate either a block inside a convention's `must` array or an entire reusable convention referenced at the top level. This unlocks rules like "story files must export `meta`" or "test files must import the project's custom render helper" — structural conventions that linters and the type checker won't catch on their own.
+`if` and `ifNot` conditions can gate either a block inside a convention's `must` array or an entire reusable convention referenced at the top level. This unlocks rules like "story files must export `meta`" or "test files must import the project's custom render helper" — structural conventions that linters and the type checker won't catch on their own.
 
 ## Top-level conditions on reusable references
 
-A reusable convention can declare `if`, and a top-level object reference can override it:
+A reusable convention can declare `if`, `ifNot`, or both, and a top-level object reference can override either condition:
 
 ```json
 {
   "use": "common/conditionally-require-tests",
   "paths": "packages/{packageName}",
-  "if": { "hasFile": "${packageName}.test.ts" }
+  "if": { "hasFile": "${packageName}.test.ts" },
+  "ifNot": { "hasFile": "skip-tests.ts" }
 }
 ```
 
-For each path matched by `paths`, the condition is resolved with that path's placeholders and evaluated independently. A non-match skips every `must` and `mustNot` predicate or block for that path. A match continues with normal predicate execution, including each block's own `if` and `for` behavior. The use-site `if` replaces an inherited condition as one complete object rather than merging condition properties.
+For each path matched by `paths`, the conditions are resolved with that path's placeholders and evaluated independently. A failed gate skips every `must` and `mustNot` predicate or block for that path. A match continues with normal predicate execution, including each block's own conditions and `for` behavior. A use-site `if` or `ifNot` replaces the corresponding inherited condition as one complete object rather than merging condition properties.
 
 This top-level form is specific to reusable-convention references; hand-written conventions continue to put conditions inside `must` blocks. See [Reusable conventions](./reusable-conventions.md).
+
+## Positive and negative gates
+
+`if` and `ifNot` accept exactly the same condition object. Both use the same condition evaluator; `ifNot` reverses its result rather than defining a separate list of predicates. Adding support for a condition automatically makes it available through both fields.
+
+| Fields present | The rule runs when |
+| --- | --- |
+| neither | Always. |
+| `if` | `if` matches. |
+| `ifNot` | `ifNot` does not match. |
+| both | `if` matches and `ifNot` does not match. |
 
 ## Object form vs. array form
 
@@ -65,6 +77,7 @@ Switch from object to array form when you need:
   "name": "test-render-helper",
   "description": "Component test files must use the project's custom render helper",
   "if": { "hasFile": "index.test.tsx" },
+  "ifNot": { "hasFile": "skip-tests.ts" },
   "for": { "files": "index.test.tsx" },
   "excludeFiles": ["components/legacy/**"],
   "must": { "importValues": [{ "name": "render", "from": "@/test-utils" }] },
@@ -77,14 +90,19 @@ Switch from object to array form when you need:
 | `must` | `MustPredicates` | yes, unless `mustNot` is present | The predicates this block enforces. See [predicates.md](./predicates.md). |
 | `mustNot` | `MustPredicates` | yes, unless `must` is present | The predicates this block forbids. |
 | `if` | condition object | no | Gate. Block runs only if one supported condition holds. |
+| `ifNot` | condition object | no | Negative gate. Block runs only if the condition does not hold. |
 | `for` | `{ files: string \| string[] }` | no | Scope. Predicates apply to files matching this pattern within the parent path. |
 | `excludeFiles` | `string[]` | no | Glob patterns to exclude from the block. |
 | `name` | string matching `[a-z0-9-]+` | no | Identifier shown in violation reports. |
 | `description` | string | no | Human-readable explanation. |
 
-## `if.hasFile`
+## Condition predicates for `if` and `ifNot`
 
-The condition matches only when the named file exists at (or relative to) the matched path. Templates are resolved using the matched path's placeholders.
+Every predicate in this section is available through both `if` and `ifNot`. The predicate determines whether the condition matches; the containing field determines whether that result is used directly or reversed.
+
+### `hasFile`
+
+The condition matches only when the named file exists at (or relative to) the matched path. Templates are resolved using the matched path's placeholders. Use the same object under `ifNot` to run only when the file is absent.
 
 ```json
 {
@@ -101,11 +119,11 @@ The condition matches only when the named file exists at (or relative to) the ma
 
 For `components/Button`, the block runs only if `components/Button/index.test.tsx` exists. Components without test files are skipped — no false-positive "missing export" violations.
 
-## `if.placeholderSatisfies`
+### `placeholderSatisfies`
 
-The condition matches only when the named placeholder satisfies a constraint. Syntax, constraint catalog, and examples are in [constraints.md](./constraints.md#ifplaceholdersatisfies).
+The condition matches only when the named placeholder satisfies a constraint. Under `ifNot`, the gate passes when the placeholder does not satisfy it. Syntax, constraint catalog, and examples are in [constraints.md](./constraints.md#matchesregex).
 
-## Import conditions
+### Import predicates
 
 Import conditions inspect the file at the matched `paths` entry. They return false when the matched path is a directory. A block-level condition runs before `for.files`, so it always inspects the parent matched path rather than files selected by `for`. Parsing is shared with block conditions and TypeScript predicates for the same file.
 
@@ -149,7 +167,7 @@ Value and type imports remain separate:
 
 Only static ES import declarations count. Re-exports, dynamic `import()`, `require()`, and TypeScript import-equals do not.
 
-An `if` condition has exactly **one** condition property — not multiple and not an empty object.
+Each `if` or `ifNot` condition has exactly **one** condition property — not multiple and not an empty object.
 
 ## `for.files`
 
@@ -187,7 +205,7 @@ For `components/Button`, the block runs once per `*.stories.tsx` file inside `Bu
 }
 ```
 
-### Combining `if` and `for`
+### Combining conditions and `for`
 
 ```json
 {
@@ -197,7 +215,7 @@ For `components/Button`, the block runs once per `*.stories.tsx` file inside `Bu
 }
 ```
 
-`if` gates whether the block runs at all; `for` narrows which files inside the matched path the predicates apply to. Common idiom: gate on the existence of a file, then run predicates only on that file.
+`if` and `ifNot` gate whether the block runs at all; `for` narrows which files inside the matched path the predicates apply to. Common idiom: gate on the existence of a file, then run predicates only on that file.
 
 ## `excludeFiles`
 

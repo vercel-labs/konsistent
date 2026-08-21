@@ -90,7 +90,7 @@ This is the [`from`](../reference/predicates.md#exportvalues) field on `exportVa
 
 ### Conditional patterns
 
-Some files exist only in some entries (test files, story files). When they exist, do they follow conventions that the test framework or type checker can't enforce? These become [`if`](../reference/conditional-rules.md#ifhasfile) / [`for`](../reference/conditional-rules.md#forfiles) blocks:
+Some files exist only in some entries (test files, story files). When they exist—or when another feature is absent—do they follow conventions that the test framework or type checker can't enforce? These become [`if` and `ifNot`](../reference/conditional-rules.md#positive-and-negative-gates) / [`for`](../reference/conditional-rules.md#forfiles) blocks:
 
 - If `.stories.tsx` files exist, do they always export a `meta` constant? (Storybook needs it; the type checker doesn't enforce.)
 - If a `.test.tsx` file exists, does it import the project's custom render or test-context helper? (Project convention; lint rules don't know about it.)
@@ -154,5 +154,6 @@ For every pattern you identify:
 - Optional file conditions → `if.hasFile` blocks.
 - Subset-only rules → `if.placeholderSatisfies` with a `matches` or `segments` constraint.
 - Import-dependent rules → `if.hasValueImport`, `if.hasValueImportFrom`, `if.hasTypeImport`, or `if.hasTypeImportFrom` blocks.
+- Negative conditions → use the same condition under `ifNot`; it supports every condition available to `if`.
 
 See [examples.md](./examples.md) for ready-made templates of each shape, and [predicates.md](../reference/predicates.md) for the full predicate catalog.

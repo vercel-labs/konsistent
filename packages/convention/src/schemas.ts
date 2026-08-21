@@ -208,6 +208,7 @@ const MustBlockV1Shape = {
     .optional(),
   description: z.string().optional(),
   if: IfConditionV1Schema.optional(),
+  ifNot: IfConditionV1Schema.optional(),
   for: z
     .strictObject({ files: z.union([z.string(), z.array(z.string())]) })
     .optional(),
@@ -236,6 +237,7 @@ const ReusableConventionV1Shape = {
   paths: z.union([z.string(), z.array(z.string())]).optional(),
   excludeFiles: z.array(z.string()).optional(),
   if: IfConditionV1Schema.optional(),
+  ifNot: IfConditionV1Schema.optional(),
   for: z
     .strictObject({ files: z.union([z.string(), z.array(z.string())]) })
     .optional(),

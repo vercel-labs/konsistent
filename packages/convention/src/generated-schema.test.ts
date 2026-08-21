@@ -130,7 +130,7 @@ describe("reusable-convention-package.schema.json", () => {
     expect(valid).toBe(true);
   });
 
-  it("accepts value and type import conditions", () => {
+  it("accepts value and type import conditions through if and ifNot", () => {
     const conditions = [
       { hasValueImport: { name: "createClient", from: "./client" } },
       { hasValueImportFrom: "./client" },
@@ -138,19 +138,21 @@ describe("reusable-convention-package.schema.json", () => {
       { hasTypeImportFrom: "./client" },
     ];
 
-    for (const [index, condition] of conditions.entries()) {
-      const valid = validate({
-        conventionSpecVersion: "v1",
-        conventions: [
-          {
-            name: `import-condition-${index}`,
-            description: "Import condition.",
-            if: condition,
-            must: { haveType: "file" },
-          },
-        ],
-      });
-      expect(valid).toBe(true);
+    for (const conditionField of ["if", "ifNot"]) {
+      for (const [index, condition] of conditions.entries()) {
+        const valid = validate({
+          conventionSpecVersion: "v1",
+          conventions: [
+            {
+              name: `import-condition-${index}`,
+              description: "Import condition.",
+              [conditionField]: condition,
+              must: { haveType: "file" },
+            },
+          ],
+        });
+        expect(valid).toBe(true);
+      }
     }
   });
 

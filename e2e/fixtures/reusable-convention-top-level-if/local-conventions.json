@@ -6,6 +6,7 @@
       "description": "Matching directories must contain required.ts.",
       "paths": "src/{caseName}",
       "if": { "hasFile": "inherited-gate.ts" },
+      "ifNot": { "hasFile": "inherited-skip.ts" },
       "must": {
         "haveFiles": ["required.ts"]
       }

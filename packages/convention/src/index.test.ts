@@ -14,7 +14,7 @@ describe("ReusableConventionV1Schema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("accepts optional paths, excludeFiles, severity, if, for", () => {
+  it("accepts optional paths, excludeFiles, severity, if, ifNot, for", () => {
     const result = ReusableConventionV1Schema.safeParse({
       name: "files-must-export-default",
       description: "Component files must export default.",
@@ -22,6 +22,7 @@ describe("ReusableConventionV1Schema", () => {
       excludeFiles: ["**/*.test.ts"],
       severity: "warning",
       if: { hasFile: "${name}.ts" },
+      ifNot: { placeholderSatisfies: "name:segments(2)" },
       for: { files: "${name}.ts" },
       must: { exportValues: ["default"] },
     });

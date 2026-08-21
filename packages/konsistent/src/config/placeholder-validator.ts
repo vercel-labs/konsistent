@@ -97,7 +97,15 @@ function collectUsagesInConvention(opts: {
   if (convention.if) {
     collectUsagesInCondition({
       condition: convention.if,
-      prefix: "",
+      keyPrefix: "if",
+      declared,
+      usages,
+    });
+  }
+  if (convention.ifNot) {
+    collectUsagesInCondition({
+      condition: convention.ifNot,
+      keyPrefix: "ifNot",
       declared,
       usages,
     });
@@ -114,12 +122,11 @@ function collectUsagesInConvention(opts: {
 
 function collectUsagesInCondition(opts: {
   condition: IfConditionV1;
-  prefix: string;
+  keyPrefix: string;
   declared: Set<string>;
   usages: Usage[];
 }): void {
-  const { condition, prefix, declared, usages } = opts;
-  const keyPrefix = prefix ? `${prefix}.if` : "if";
+  const { condition, keyPrefix, declared, usages } = opts;
   if (Object.hasOwn(condition, "hasFile")) {
     pushStringUsages({
       value: (condition as { hasFile: string }).hasFile,
@@ -235,7 +242,15 @@ function collectUsagesInBlock(opts: {
   if (block.if) {
     collectUsagesInCondition({
       condition: block.if,
-      prefix: "must",
+      keyPrefix: "must.if",
+      declared: declaredHere,
+      usages,
+    });
+  }
+  if (block.ifNot) {
+    collectUsagesInCondition({
+      condition: block.ifNot,
+      keyPrefix: "must.ifNot",
       declared: declaredHere,
       usages,
     });
