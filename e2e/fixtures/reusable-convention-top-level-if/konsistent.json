@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "conventionSources": {
+    "common": "./local-conventions.json"
+  },
+  "conventions": [
+    {
+      "use": "common/conditionally-require-file",
+      "if": { "hasFile": "gate.ts" }
+    }
+  ]
+}
