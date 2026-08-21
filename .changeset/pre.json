@@ -16,11 +16,14 @@
     "konsistent-fixture-reusable-convention-unknown-source": "0.0.0"
   },
   "changesets": [
+    "bright-ravens-check",
     "eight-corners-bet",
     "fix-double-star-placeholder-matching",
     "four-wings-brake",
+    "fuzzy-hounds-rule",
     "long-kids-yell",
     "lucky-bees-fly",
+    "quick-snails-import",
     "ripe-places-rhyme",
     "salty-stamps-cover",
     "sunny-lights-obey",
