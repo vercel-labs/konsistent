@@ -9,6 +9,7 @@ import { ConventionV1Schema } from "./schema.js";
 import type { SourceMap } from "./source-resolver.js";
 
 const STRING_REF_PATTERN = /^[a-z0-9-]+\/[a-z0-9-]+$/;
+const CONDITION_FIELDS = ["if", "ifNot"] as const;
 
 export type ExpandReferencesResult =
   | { success: true; conventions: ConventionV1[]; identifiers: string[] }
@@ -190,9 +191,7 @@ function expandMustBlockReference(opts: {
   if (reusable.description !== undefined) {
     base.description = reusable.description;
   }
-  if (reusable.if !== undefined) {
-    base.if = reusable.if;
-  }
+  copyConditionFields({ from: reusable, to: base });
   if (reusable.for !== undefined) {
     base.for = reusable.for;
   }
@@ -301,9 +300,7 @@ function expandStringReference(opts: {
   if (reusable.excludeFiles !== undefined) {
     candidate.excludeFiles = reusable.excludeFiles;
   }
-  if (reusable.if !== undefined) {
-    candidate.if = reusable.if;
-  }
+  copyConditionFields({ from: reusable, to: candidate });
 
   const validated = ConventionV1Schema.safeParse(candidate);
   if (!validated.success) {
@@ -365,9 +362,7 @@ function expandUseReference(opts: {
   if (reusable.excludeFiles !== undefined) {
     base.excludeFiles = reusable.excludeFiles;
   }
-  if (reusable.if !== undefined) {
-    base.if = reusable.if;
-  }
+  copyConditionFields({ from: reusable, to: base });
 
   const merged = mergeReferenceOverrides({ base, overrides });
 
@@ -403,10 +398,24 @@ function mergeReferenceOverrides(opts: {
 }): Record<string, unknown> {
   const { base, overrides } = opts;
   const merged = deepMerge({ base, override: overrides });
-  if (Object.hasOwn(overrides, "if")) {
-    merged.if = overrides.if;
+  for (const field of CONDITION_FIELDS) {
+    if (Object.hasOwn(overrides, field)) {
+      merged[field] = overrides[field];
+    }
   }
   return merged;
+}
+
+function copyConditionFields(opts: {
+  from: { if?: unknown; ifNot?: unknown };
+  to: Record<string, unknown>;
+}): void {
+  const { from, to } = opts;
+  for (const field of CONDITION_FIELDS) {
+    if (from[field] !== undefined) {
+      to[field] = from[field];
+    }
+  }
 }
 
 function deepMerge(opts: {

@@ -34,25 +34,43 @@ describe("ConfigV1Schema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("keeps top-level conditions unavailable to hand-written conventions", () => {
+  it("accepts a negative condition on a top-level use reference", () => {
     const result = ConfigV1Schema.safeParse({
       version: "v1",
       conventions: [
         {
+          use: "common/conditional-rule",
           paths: "src/*.ts",
-          if: { hasFile: "test.ts" },
-          must: { haveType: "file" },
+          ifNot: { hasFile: "test.ts" },
         },
       ],
     });
 
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 
-  it("accepts a top-level condition in the resolved convention schema", () => {
+  it("keeps top-level conditions unavailable to hand-written conventions", () => {
+    for (const conditionField of ["if", "ifNot"]) {
+      const result = ConfigV1Schema.safeParse({
+        version: "v1",
+        conventions: [
+          {
+            paths: "src/*.ts",
+            [conditionField]: { hasFile: "test.ts" },
+            must: { haveType: "file" },
+          },
+        ],
+      });
+
+      expect(result.success).toBe(false);
+    }
+  });
+
+  it("accepts top-level conditions in the resolved convention schema", () => {
     const result = ConventionV1Schema.safeParse({
       paths: "src/*.ts",
       if: { hasFile: "test.ts" },
+      ifNot: { placeholderSatisfies: "name:segments(2)" },
       must: { haveType: "file" },
     });
 
@@ -517,7 +535,7 @@ describe("ConfigV1Schema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("accepts a MustBlock with both if and for fields", () => {
+  it("accepts a MustBlock with if, ifNot, and for fields", () => {
     const result = ConfigV1Schema.safeParse({
       version: "v1",
       conventions: [
@@ -526,6 +544,7 @@ describe("ConfigV1Schema", () => {
           must: [
             {
               if: { hasFile: "${name}.test.tsx" },
+              ifNot: { placeholderSatisfies: "name:segments(2)" },
               for: { files: "${name}.test.tsx" },
               must: { exportValues: ["describe"] },
             },
@@ -561,17 +580,24 @@ describe("ConfigV1Schema", () => {
     { hasTypeImport: "Client" },
     { hasTypeImport: { name: "Client", from: "./client" } },
     { hasTypeImportFrom: "./client" },
-  ])("accepts a MustBlock with an import condition", (condition) => {
-    const result = ConfigV1Schema.safeParse({
-      version: "v1",
-      conventions: [
-        {
-          paths: "src/*.ts",
-          must: [{ if: condition, must: { haveType: "file" } }],
-        },
-      ],
-    });
-    expect(result.success).toBe(true);
+  ])("accepts a MustBlock import condition through if and ifNot", (condition) => {
+    for (const conditionField of ["if", "ifNot"]) {
+      const result = ConfigV1Schema.safeParse({
+        version: "v1",
+        conventions: [
+          {
+            paths: "src/*.ts",
+            must: [
+              {
+                [conditionField]: condition,
+                must: { haveType: "file" },
+              },
+            ],
+          },
+        ],
+      });
+      expect(result.success).toBe(true);
+    }
   });
 
   it("rejects alias configuration in an import condition", () => {

@@ -239,15 +239,12 @@ function evaluatePlaceholderSatisfies(opts: {
 }
 
 function evaluateCondition(opts: {
-  condition: IfConditionV1 | undefined;
+  condition: IfConditionV1;
   context: PredicateContext;
   fileSystem: FileSystem;
   fileStructureCache: Map<string, FileStructure>;
 }): boolean {
   const { condition, context, fileSystem, fileStructureCache } = opts;
-  if (!condition) {
-    return true;
-  }
   if (Object.hasOwn(condition, "hasFile")) {
     const resolvedPath = context.resolveTemplate(
       (condition as { hasFile: string }).hasFile
@@ -303,6 +300,45 @@ function evaluateCondition(opts: {
     context,
     fileStructure,
   });
+}
+
+function evaluateConditions(opts: {
+  ifCondition?: IfConditionV1;
+  ifNotCondition?: IfConditionV1;
+  context: PredicateContext;
+  fileSystem: FileSystem;
+  fileStructureCache: Map<string, FileStructure>;
+}): boolean {
+  const {
+    ifCondition,
+    ifNotCondition,
+    context,
+    fileSystem,
+    fileStructureCache,
+  } = opts;
+  if (
+    ifCondition &&
+    !evaluateCondition({
+      condition: ifCondition,
+      context,
+      fileSystem,
+      fileStructureCache,
+    })
+  ) {
+    return false;
+  }
+  if (
+    ifNotCondition &&
+    evaluateCondition({
+      condition: ifNotCondition,
+      context,
+      fileSystem,
+      fileStructureCache,
+    })
+  ) {
+    return false;
+  }
+  return true;
 }
 
 const TS_PREDICATE_HANDLERS: Record<
@@ -1379,8 +1415,9 @@ export async function run(opts: {
       }
 
       if (
-        !evaluateCondition({
-          condition: convention.if,
+        !evaluateConditions({
+          ifCondition: convention.if,
+          ifNotCondition: convention.ifNot,
           context,
           fileSystem,
           fileStructureCache,
@@ -1391,8 +1428,9 @@ export async function run(opts: {
 
       for (const block of blocks) {
         if (
-          !evaluateCondition({
-            condition: block.if,
+          !evaluateConditions({
+            ifCondition: block.if,
+            ifNotCondition: block.ifNot,
             context,
             fileSystem,
             fileStructureCache,

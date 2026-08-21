@@ -84,6 +84,7 @@ const ConventionV1Shape = {
   paths: z.union([z.string(), z.array(z.string())]),
   placeholders: PlaceholdersMapSchema.optional(),
   if: IfConditionV1Schema.optional(),
+  ifNot: IfConditionV1Schema.optional(),
 };
 
 export const ConventionV1Schema = z.union([
@@ -112,6 +113,7 @@ export const MustBlockUseRefSchema = z.strictObject({
     .optional(),
   description: z.string().optional(),
   if: IfConditionV1Schema.optional(),
+  ifNot: IfConditionV1Schema.optional(),
   for: ForSchema.optional(),
   excludeFiles: z.array(z.string()).optional(),
   must: MustPredicatesV1Schema.optional(),
@@ -173,6 +175,7 @@ export const ConventionUseRefSchema = z.strictObject({
   placeholders: PlaceholdersMapSchema.optional(),
   excludeFiles: z.array(z.string()).optional(),
   if: IfConditionV1Schema.optional(),
+  ifNot: IfConditionV1Schema.optional(),
   for: ForSchema.optional(),
   must: MustPredicatesV1Schema.optional(),
   mustNot: MustPredicatesV1Schema.optional(),

@@ -26,6 +26,22 @@ function createMockFileSystem(opts: {
   };
 }
 
+function createMatchingConditions(): IfConditionV1[] {
+  return [
+    { hasFile: "marker.ts" },
+    { placeholderSatisfies: "moduleName:matches(^client$)" },
+    {
+      hasValueImport: {
+        name: "create${moduleName.toPascalCase()}",
+        from: "./${moduleName}",
+      },
+    },
+    { hasValueImportFrom: "./${moduleName}" },
+    { hasTypeImport: { name: "${moduleName.toPascalCase()}" } },
+    { hasTypeImportFrom: "./${moduleName}" },
+  ];
+}
+
 describe("run", () => {
   it("bounds ancestor conventions and nested file blocks to selected paths", async () => {
     const config: ConfigV1 = {
@@ -1123,27 +1139,23 @@ describe("run", () => {
   });
 
   it("supports every condition at the top level and reuses parsed files", async () => {
-    const conditions: IfConditionV1[] = [
-      { hasFile: "marker.ts" },
-      { placeholderSatisfies: "moduleName:matches(^client$)" },
-      {
-        hasValueImport: {
-          name: "create${moduleName.toPascalCase()}",
-          from: "./${moduleName}",
-        },
-      },
-      { hasValueImportFrom: "./${moduleName}" },
-      { hasTypeImport: { name: "${moduleName.toPascalCase()}" } },
-      { hasTypeImportFrom: "./${moduleName}" },
-    ];
+    const conditions = createMatchingConditions();
     const config: ConfigV1 = {
       version: "v1",
-      conventions: conditions.map((condition, index) => ({
-        name: `top-level-condition-${index}`,
-        paths: "src/{moduleName}.ts",
-        if: condition,
-        must: { exportConstants: [`missing${index}`] },
-      })),
+      conventions: conditions.flatMap((condition, index) => [
+        {
+          name: `top-level-condition-${index}`,
+          paths: "src/{moduleName}.ts",
+          if: condition,
+          must: { exportConstants: [`missing${index}`] },
+        },
+        {
+          name: `top-level-negative-condition-${index}`,
+          paths: "src/{moduleName}.ts",
+          ifNot: condition,
+          must: { exportConstants: [`missingNegative${index}`] },
+        },
+      ]),
     };
     const fs = createMockFileSystem({
       globResults: new Map([["src/*.ts", ["src/client.ts"]]]),
@@ -1160,7 +1172,135 @@ describe("run", () => {
     const { diagnostics } = await run({ config, fileSystem: fs });
 
     expect(diagnostics).toHaveLength(conditions.length);
+    expect(diagnostics.map((diagnostic) => diagnostic.conventionName)).toEqual(
+      conditions.map((_, index) => `top-level-condition-${index}`)
+    );
     expect(readSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("supports every condition through ifNot in nested blocks", async () => {
+    const conditions = createMatchingConditions();
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          name: "nested-conditions",
+          paths: "src/{moduleName}.ts",
+          must: conditions.flatMap((condition, index) => [
+            {
+              name: `positive-condition-${index}`,
+              if: condition,
+              must: { exportConstants: [`missing${index}`] },
+            },
+            {
+              name: `negative-condition-${index}`,
+              ifNot: condition,
+              must: { exportConstants: [`missingNegative${index}`] },
+            },
+          ]),
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/*.ts", ["src/client.ts"]]]),
+      files: new Set(["src/client.ts", "src/marker.ts"]),
+      fileContents: new Map([
+        [
+          "src/client.ts",
+          'import { createClient, type Client } from "./client";',
+        ],
+      ]),
+    });
+    const readSpy = vi.spyOn(fs, "readFile");
+
+    const { diagnostics } = await run({ config, fileSystem: fs });
+
+    expect(diagnostics).toHaveLength(conditions.length);
+    expect(diagnostics.map((diagnostic) => diagnostic.conventionName)).toEqual(
+      conditions.map((_, index) => `positive-condition-${index}`)
+    );
+    expect(readSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("combines if and ifNot gates at the top level and in nested blocks", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          name: "top-level-runs",
+          paths: "src/index.ts",
+          if: { hasFile: "marker.ts" },
+          ifNot: { hasFile: "skip.ts" },
+          must: { haveType: "directory" },
+        },
+        {
+          name: "top-level-skips",
+          paths: "src/index.ts",
+          if: { hasFile: "marker.ts" },
+          ifNot: { hasFile: "marker.ts" },
+          must: { haveType: "directory" },
+        },
+        {
+          name: "nested-gates",
+          paths: "src/index.ts",
+          must: [
+            {
+              name: "nested-runs",
+              if: { hasFile: "marker.ts" },
+              ifNot: { hasFile: "skip.ts" },
+              must: { haveType: "directory" },
+            },
+            {
+              name: "nested-skips",
+              if: { hasFile: "marker.ts" },
+              ifNot: { hasFile: "marker.ts" },
+              must: { haveType: "directory" },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/index.ts", ["src/index.ts"]]]),
+      files: new Set(["src/index.ts", "src/marker.ts"]),
+    });
+
+    const { diagnostics } = await run({ config, fileSystem: fs });
+
+    expect(diagnostics.map((diagnostic) => diagnostic.conventionName)).toEqual([
+      "top-level-runs",
+      "nested-runs",
+    ]);
+  });
+
+  it("exactly inverts non-matching placeholder and directory import conditions", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          name: "negative-edge-cases",
+          paths: "src/module",
+          ifNot: { placeholderSatisfies: "unknown:matches(" },
+          must: [
+            {
+              ifNot: { hasValueImportFrom: "pkg" },
+              must: { haveType: "file" },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module", ["src/module"]]]),
+      directories: new Set(["src/module"]),
+    });
+    const readSpy = vi.spyOn(fs, "readFile");
+
+    const { diagnostics } = await run({ config, fileSystem: fs });
+
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0]?.conventionName).toBe("negative-edge-cases");
+    expect(readSpy).not.toHaveBeenCalled();
   });
 
   it("skips import conditions when the matched path is a directory", async () => {

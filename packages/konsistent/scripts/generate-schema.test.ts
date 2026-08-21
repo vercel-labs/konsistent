@@ -106,7 +106,7 @@ describe("konsistent.schema.json", () => {
     expect(mustNotSchema.type).toBe("object");
   });
 
-  it("accepts value and type import conditions", () => {
+  it("accepts value and type import conditions through if and ifNot", () => {
     const conditions = [
       { hasValueImport: { name: "createClient", from: "./client" } },
       { hasValueImportFrom: "./client" },
@@ -118,10 +118,10 @@ describe("konsistent.schema.json", () => {
       conventions: [
         {
           paths: "src/index.ts",
-          must: conditions.map((condition) => ({
-            if: condition,
-            must: { haveType: "file" },
-          })),
+          must: conditions.flatMap((condition) => [
+            { if: condition, must: { haveType: "file" } },
+            { ifNot: condition, must: { haveType: "file" } },
+          ]),
         },
       ],
     });
@@ -137,6 +137,7 @@ describe("konsistent.schema.json", () => {
           use: "common/conditional-rule",
           paths: "src/*.ts",
           if: { hasFile: "test.ts" },
+          ifNot: { placeholderSatisfies: "name:segments(2)" },
         },
       ],
     });
