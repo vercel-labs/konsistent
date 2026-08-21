@@ -1,5 +1,16 @@
 # konsistent
 
+## 1.0.0-beta.8
+
+### Patch Changes
+
+- 5910917: feat(konsistent): add negative conditional rules with `ifNot`
+- faf1183: fix(konsistent): fix top-level reusable convention `if` conditions
+- ba93b78: feat(konsistent): add value and type import conditions for conditional rules
+- Updated dependencies [5910917]
+- Updated dependencies [ba93b78]
+  - @konsistent/convention@1.0.0-beta.8
+
 ## 1.0.0-beta.7
 
 ### Patch Changes

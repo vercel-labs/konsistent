@@ -1,5 +1,12 @@
 # @konsistent/convention
 
+## 1.0.0-beta.8
+
+### Patch Changes
+
+- 5910917: feat(konsistent): add negative conditional rules with `ifNot`
+- ba93b78: feat(konsistent): add value and type import conditions for conditional rules
+
 ## 1.0.0-beta.7
 
 ### Patch Changes
