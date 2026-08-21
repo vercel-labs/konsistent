@@ -655,6 +655,6 @@ Multiple predicates in the same `must` are AND-ed:
 }
 ```
 
-For OR-style logic (apply different predicates to different files), use [conditional rules](./conditional-rules.md) — the array form of `must` with `if`/`for` blocks.
+For OR-style logic (apply different predicates to different files), use [conditional rules](./conditional-rules.md) — the array form of `must` with `if`/`ifNot`/`for` blocks.
 
 Note that **reusable conventions** (those published via `@konsistent/convention` and consumed via `conventionSources`) are restricted to flat object-form `must` and `mustNot` predicates — the `MustBlock[]` form is unavailable on the author side. Hand-written conventions in your own `konsistent.json` can still use `MustBlock[]` in `must`. See [reusable-conventions.md](./reusable-conventions.md#restrictions).

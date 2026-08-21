@@ -97,7 +97,7 @@ A reusable convention has the same fields as a hand-written one with two adjustm
 - `name` and `description` are **required** (consumers see them in error messages and source listings).
 - `must` and `mustNot` must use the **flat object form** (`MustPredicates`). The `MustBlock[]` form is not allowed in reusable conventions — see [Restrictions](../reference/reusable-conventions.md#restrictions).
 - `paths` is **optional**. Omit it to force consumers to supply `paths` at the use-site (which is useful when the right pattern depends on the consuming project's layout). When `paths` is omitted, consumers can only reference the convention via the `use` form.
-- `if` is optional. At the top level it gates the complete expanded convention separately for every matched path, and consumers using the object form can replace it with another complete condition. The same field gates one block when the convention is referenced inside a parent's `must[]`.
+- `if` and `ifNot` are optional and accept the same condition object. At the top level they gate the complete expanded convention separately for every matched path, and consumers using the object form can replace either complete condition. The same fields gate one block when the convention is referenced inside a parent's `must[]`.
 - `for` only applies when the convention is referenced inside a parent's `must[]`; top-level references do not carry it into the resolved convention.
 
 ## 3. Build and verify

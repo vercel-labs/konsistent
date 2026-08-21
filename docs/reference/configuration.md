@@ -61,7 +61,7 @@ A convention is a rule that says "files matching `paths` must satisfy `must` and
 
 The configuration is `strict` — unknown fields cause a validation error. Run `konsistent validate` to catch typos.
 
-Hand-written conventions do not accept a top-level `if`. Top-level `if` is available on reusable-convention string and object references: an inherited or use-site condition gates the entire expanded convention for each matched path. See [Top-level conditions on reusable references](./conditional-rules.md#top-level-conditions-on-reusable-references).
+Hand-written conventions do not accept top-level `if` or `ifNot`. Both are available on reusable-convention string and object references: inherited or use-site conditions gate the entire expanded convention for each matched path. See [Top-level conditions on reusable references](./conditional-rules.md#top-level-conditions-on-reusable-references).
 
 ## `must`: predicates or blocks
 
@@ -92,7 +92,7 @@ All listed predicates apply unconditionally to every matched path. See [predicat
 ]
 ```
 
-Each entry is a `MustBlock` that can have `if`, `for`, `excludeFiles`, `name`, and `description`. See [conditional-rules.md](./conditional-rules.md). An entry may alternatively be a reusable-convention reference of the form `{ "use": "<vendor>/<name>", ...overrides }`, which expands into a `MustBlock` — see [reusable-conventions.md](./reusable-conventions.md#use-inside-a-parents-must).
+Each entry is a `MustBlock` that can have `if`, `ifNot`, `for`, `excludeFiles`, `name`, and `description`. See [conditional-rules.md](./conditional-rules.md). An entry may alternatively be a reusable-convention reference of the form `{ "use": "<vendor>/<name>", ...overrides }`, which expands into a `MustBlock` — see [reusable-conventions.md](./reusable-conventions.md#use-inside-a-parents-must).
 
 ## `mustNot`: negated predicates
 

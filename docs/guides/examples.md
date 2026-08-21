@@ -246,7 +246,9 @@ Apply predicates only when the matched file imports a particular value, type, or
 }
 ```
 
-Use `hasValueImport` or `hasTypeImport` to check one imported symbol. Use `hasValueImportFrom` or `hasTypeImportFrom` to check whether any import of that kind comes from an exact module source. See [conditional-rules.md](../reference/conditional-rules.md#import-conditions).
+Use `hasValueImport` or `hasTypeImport` to check one imported symbol. Use `hasValueImportFrom` or `hasTypeImportFrom` to check whether any import of that kind comes from an exact module source. See [conditional-rules.md](../reference/conditional-rules.md#import-predicates).
+
+Put any of these same condition objects under `ifNot` to apply predicates only when the import is absent. `ifNot` always uses the same condition catalog and matching behavior as `if`.
 
 ## Iterating over file patterns
 

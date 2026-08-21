@@ -3,7 +3,7 @@
 Constraints filter which placeholder values a rule applies to. They appear in two places:
 
 1. **Inline path constraints** — `paths: "packages/{providerId:matches(^[a-z]+ai$)}"`. Captured paths whose value fails the constraint are skipped.
-2. **`if.placeholderSatisfies`** — gates a `must` block on the placeholder's value (see [conditional-rules.md](./conditional-rules.md)).
+2. **`if.placeholderSatisfies` or `ifNot.placeholderSatisfies`** — gates a rule on the placeholder's value (see [conditional-rules.md](./conditional-rules.md)).
 
 Both contexts use the same `name:constraint(arg)` syntax.
 
@@ -31,7 +31,7 @@ The placeholder value must match the JavaScript regex. Case-sensitive. The patte
 
 Only providers whose ID ends in `ai` (e.g., `openai`, `mistralai`) are considered. The rule does not apply to `google`, `anthropic`, etc.
 
-### `if.placeholderSatisfies`
+### `placeholderSatisfies` with `matches(regex)`
 
 ```json
 {
@@ -46,7 +46,7 @@ Only providers whose ID ends in `ai` (e.g., `openai`, `mistralai`) are considere
 }
 ```
 
-The base rule (`src/index.ts` required) applies to every package. The conditional block (`src/${providerId}-stem.ts` required) applies only when `providerId` matches the regex.
+The base rule (`src/index.ts` required) applies to every package. The conditional block (`src/${providerId}-stem.ts` required) applies only when `providerId` matches the regex. Put the same `placeholderSatisfies` object under `ifNot` to apply a block only when the value does not match.
 
 ## `segments(n)`
 
@@ -92,7 +92,7 @@ chat_language           → 2 segments
 
 The first block matches files like `chat-language-model.ts` (2-segment `modelKind`); the second matches `embedding-model.ts` (1-segment `modelKind`). Different `must` predicates apply to each shape.
 
-### `if.placeholderSatisfies`
+### `placeholderSatisfies` with `segments(n)`
 
 ```json
 {
@@ -106,7 +106,7 @@ The first block matches files like `chat-language-model.ts` (2-segment `modelKin
 - The argument inside `(...)` is taken **verbatim** — no quotes around regexes or numbers.
 - The argument may **not contain `}`**. If you need a regex quantifier, use repetition: `\d\d?` instead of `\d{1,2}`.
 - Constraints apply to placeholder **values** (`{...}`) and to `placeholderSatisfies` arguments. They do not apply to template substitutions (`${...}`).
-- An `if` block has exactly one condition property (see [conditional-rules.md](./conditional-rules.md)).
+- Each `if` or `ifNot` object has exactly one condition property (see [conditional-rules.md](./conditional-rules.md)).
 
 ## Difference from path negation
 

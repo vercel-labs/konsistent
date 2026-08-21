@@ -66,7 +66,7 @@ The options:
 
 When "change the rule" admits more than one specific shape, surface the sub-options instead of collapsing them. Examples worth considering:
 - File-naming variants: `${name}-options.ts` vs. `${name}-model-options.ts`.
-- A **hybrid** rule that splits by a sub-pattern (e.g., "single-word providers ending in `ai` use flat-case; everything else uses camelCase") — encodable via [case maps](../reference/case-maps.md) or [`placeholderSatisfies`](../reference/conditional-rules.md#ifplaceholdersatisfies) constraints.
+- A **hybrid** rule that splits by a sub-pattern (e.g., "single-word providers ending in `ai` use flat-case; everything else uses camelCase") — encodable via [case maps](../reference/case-maps.md) or [`placeholderSatisfies`](../reference/conditional-rules.md#placeholdersatisfies) constraints.
 - Mixed-severity (`error` for must-have, `warning` for nice-to-have).
 
 For low-count rules, assume the code is wrong and skip ahead.
@@ -79,7 +79,7 @@ Apply config changes from step 3. Validate after every edit:
 pnpm konsistent validate
 ```
 
-See [configuration.md](../reference/configuration.md) for the full schema, [predicates.md](../reference/predicates.md) for the predicate catalog, and [conditional-rules.md](../reference/conditional-rules.md) for `if`/`for` blocks.
+See [configuration.md](../reference/configuration.md) for the full schema, [predicates.md](../reference/predicates.md) for the predicate catalog, and [conditional-rules.md](../reference/conditional-rules.md) for `if`/`ifNot`/`for` blocks.
 
 ## 5. Re-run and confirm
 
