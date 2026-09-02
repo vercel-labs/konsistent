@@ -7,7 +7,7 @@ settings:
 catalogs:
   default:
     '@types/node':
-      specifier: ^24
+      specifier: ^24.12.2
       version: 24.12.2
     ajv:
       specifier: ^8.18.0
@@ -52,6 +52,9 @@ importers:
       '@felixarntz/biome':
         specifier: ^0.2.0
         version: 0.2.0
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.12.2
       husky:
         specifier: ^9.1.7
         version: 9.1.7
