@@ -2,7 +2,10 @@ import type { ExportConstantDefinitionV1 } from "@konsistent/convention";
 import type { PredicateContext } from "../../core/context.js";
 import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
 import { createDiagnostic } from "../../core/diagnostics.js";
-import { matchConstantTypeSchema } from "../constant-type-schema.js";
+import {
+  matchConstantTypeSchema,
+  resolveConstantValueSchema,
+} from "../constant-type-schema.js";
 import type { FileStructure } from "../types.js";
 
 export function checkExportConstants(opts: {
@@ -42,7 +45,10 @@ export function checkExportConstants(opts: {
       );
       const result = matchConstantTypeSchema({
         actual: constantInfo?.typeInfo,
-        schema: definition.schema,
+        schema: resolveConstantValueSchema({
+          schema: definition.schema,
+          resolveTemplate: context.resolveTemplate,
+        }),
       });
       if (!result.matches) {
         diagnostics.push(

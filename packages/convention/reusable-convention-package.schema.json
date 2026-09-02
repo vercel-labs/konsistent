@@ -331,15 +331,28 @@
                                       "const": "array"
                                     },
                                     "items": {
-                                      "type": "object",
-                                      "properties": {
-                                        "type": {
+                                      "anyOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "type": {
+                                              "type": "string",
+                                              "enum": [
+                                                "string",
+                                                "number",
+                                                "boolean",
+                                                "null"
+                                              ]
+                                            }
+                                          },
+                                          "required": ["type"],
+                                          "additionalProperties": false
+                                        },
+                                        {
                                           "type": "string",
-                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                          "minLength": 1
                                         }
-                                      },
-                                      "required": ["type"],
-                                      "additionalProperties": false
+                                      ]
                                     }
                                   },
                                   "required": ["type", "items"],
@@ -365,15 +378,28 @@
                                             "additionalProperties": false
                                           },
                                           {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
+                                            "anyOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "type": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "string",
+                                                      "number",
+                                                      "boolean",
+                                                      "null"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": ["type"],
+                                                "additionalProperties": false
+                                              },
+                                              {
                                                 "type": "string",
-                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                                "minLength": 1
                                               }
-                                            },
-                                            "required": ["type"],
-                                            "additionalProperties": false
+                                            ]
                                           }
                                         ]
                                       }
@@ -475,15 +501,28 @@
                                       "const": "array"
                                     },
                                     "items": {
-                                      "type": "object",
-                                      "properties": {
-                                        "type": {
+                                      "anyOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "type": {
+                                              "type": "string",
+                                              "enum": [
+                                                "string",
+                                                "number",
+                                                "boolean",
+                                                "null"
+                                              ]
+                                            }
+                                          },
+                                          "required": ["type"],
+                                          "additionalProperties": false
+                                        },
+                                        {
                                           "type": "string",
-                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                          "minLength": 1
                                         }
-                                      },
-                                      "required": ["type"],
-                                      "additionalProperties": false
+                                      ]
                                     }
                                   },
                                   "required": ["type", "items"],
@@ -509,15 +548,28 @@
                                             "additionalProperties": false
                                           },
                                           {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
+                                            "anyOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "type": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "string",
+                                                      "number",
+                                                      "boolean",
+                                                      "null"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": ["type"],
+                                                "additionalProperties": false
+                                              },
+                                              {
                                                 "type": "string",
-                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                                "minLength": 1
                                               }
-                                            },
-                                            "required": ["type"],
-                                            "additionalProperties": false
+                                            ]
                                           }
                                         ]
                                       }
@@ -810,15 +862,28 @@
                                           "const": "array"
                                         },
                                         "items": {
-                                          "type": "object",
-                                          "properties": {
-                                            "type": {
+                                          "anyOf": [
+                                            {
+                                              "type": "object",
+                                              "properties": {
+                                                "type": {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "string",
+                                                    "number",
+                                                    "boolean",
+                                                    "null"
+                                                  ]
+                                                }
+                                              },
+                                              "required": ["type"],
+                                              "additionalProperties": false
+                                            },
+                                            {
                                               "type": "string",
-                                              "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                              "minLength": 1
                                             }
-                                          },
-                                          "required": ["type"],
-                                          "additionalProperties": false
+                                          ]
                                         }
                                       },
                                       "required": ["type", "items"],
@@ -844,15 +909,28 @@
                                                 "additionalProperties": false
                                               },
                                               {
-                                                "type": "object",
-                                                "properties": {
-                                                  "type": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "object",
+                                                    "properties": {
+                                                      "type": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                          "string",
+                                                          "number",
+                                                          "boolean",
+                                                          "null"
+                                                        ]
+                                                      }
+                                                    },
+                                                    "required": ["type"],
+                                                    "additionalProperties": false
+                                                  },
+                                                  {
                                                     "type": "string",
-                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                                    "minLength": 1
                                                   }
-                                                },
-                                                "required": ["type"],
-                                                "additionalProperties": false
+                                                ]
                                               }
                                             ]
                                           }
@@ -975,15 +1053,28 @@
                                       "const": "array"
                                     },
                                     "items": {
-                                      "type": "object",
-                                      "properties": {
-                                        "type": {
+                                      "anyOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "type": {
+                                              "type": "string",
+                                              "enum": [
+                                                "string",
+                                                "number",
+                                                "boolean",
+                                                "null"
+                                              ]
+                                            }
+                                          },
+                                          "required": ["type"],
+                                          "additionalProperties": false
+                                        },
+                                        {
                                           "type": "string",
-                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                          "minLength": 1
                                         }
-                                      },
-                                      "required": ["type"],
-                                      "additionalProperties": false
+                                      ]
                                     }
                                   },
                                   "required": ["type", "items"],
@@ -1009,15 +1100,28 @@
                                             "additionalProperties": false
                                           },
                                           {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
+                                            "anyOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "type": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "string",
+                                                      "number",
+                                                      "boolean",
+                                                      "null"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": ["type"],
+                                                "additionalProperties": false
+                                              },
+                                              {
                                                 "type": "string",
-                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                                "minLength": 1
                                               }
-                                            },
-                                            "required": ["type"],
-                                            "additionalProperties": false
+                                            ]
                                           }
                                         ]
                                       }
@@ -1430,15 +1534,28 @@
                                       "const": "array"
                                     },
                                     "items": {
-                                      "type": "object",
-                                      "properties": {
-                                        "type": {
+                                      "anyOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "type": {
+                                              "type": "string",
+                                              "enum": [
+                                                "string",
+                                                "number",
+                                                "boolean",
+                                                "null"
+                                              ]
+                                            }
+                                          },
+                                          "required": ["type"],
+                                          "additionalProperties": false
+                                        },
+                                        {
                                           "type": "string",
-                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                          "minLength": 1
                                         }
-                                      },
-                                      "required": ["type"],
-                                      "additionalProperties": false
+                                      ]
                                     }
                                   },
                                   "required": ["type", "items"],
@@ -1464,15 +1581,28 @@
                                             "additionalProperties": false
                                           },
                                           {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
+                                            "anyOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "type": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "string",
+                                                      "number",
+                                                      "boolean",
+                                                      "null"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": ["type"],
+                                                "additionalProperties": false
+                                              },
+                                              {
                                                 "type": "string",
-                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                                "minLength": 1
                                               }
-                                            },
-                                            "required": ["type"],
-                                            "additionalProperties": false
+                                            ]
                                           }
                                         ]
                                       }
@@ -1574,15 +1704,28 @@
                                       "const": "array"
                                     },
                                     "items": {
-                                      "type": "object",
-                                      "properties": {
-                                        "type": {
+                                      "anyOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "type": {
+                                              "type": "string",
+                                              "enum": [
+                                                "string",
+                                                "number",
+                                                "boolean",
+                                                "null"
+                                              ]
+                                            }
+                                          },
+                                          "required": ["type"],
+                                          "additionalProperties": false
+                                        },
+                                        {
                                           "type": "string",
-                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                          "minLength": 1
                                         }
-                                      },
-                                      "required": ["type"],
-                                      "additionalProperties": false
+                                      ]
                                     }
                                   },
                                   "required": ["type", "items"],
@@ -1608,15 +1751,28 @@
                                             "additionalProperties": false
                                           },
                                           {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
+                                            "anyOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "type": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "string",
+                                                      "number",
+                                                      "boolean",
+                                                      "null"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": ["type"],
+                                                "additionalProperties": false
+                                              },
+                                              {
                                                 "type": "string",
-                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                                "minLength": 1
                                               }
-                                            },
-                                            "required": ["type"],
-                                            "additionalProperties": false
+                                            ]
                                           }
                                         ]
                                       }
@@ -1909,15 +2065,28 @@
                                           "const": "array"
                                         },
                                         "items": {
-                                          "type": "object",
-                                          "properties": {
-                                            "type": {
+                                          "anyOf": [
+                                            {
+                                              "type": "object",
+                                              "properties": {
+                                                "type": {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "string",
+                                                    "number",
+                                                    "boolean",
+                                                    "null"
+                                                  ]
+                                                }
+                                              },
+                                              "required": ["type"],
+                                              "additionalProperties": false
+                                            },
+                                            {
                                               "type": "string",
-                                              "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                              "minLength": 1
                                             }
-                                          },
-                                          "required": ["type"],
-                                          "additionalProperties": false
+                                          ]
                                         }
                                       },
                                       "required": ["type", "items"],
@@ -1943,15 +2112,28 @@
                                                 "additionalProperties": false
                                               },
                                               {
-                                                "type": "object",
-                                                "properties": {
-                                                  "type": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "object",
+                                                    "properties": {
+                                                      "type": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                          "string",
+                                                          "number",
+                                                          "boolean",
+                                                          "null"
+                                                        ]
+                                                      }
+                                                    },
+                                                    "required": ["type"],
+                                                    "additionalProperties": false
+                                                  },
+                                                  {
                                                     "type": "string",
-                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                                    "minLength": 1
                                                   }
-                                                },
-                                                "required": ["type"],
-                                                "additionalProperties": false
+                                                ]
                                               }
                                             ]
                                           }
@@ -2074,15 +2256,28 @@
                                       "const": "array"
                                     },
                                     "items": {
-                                      "type": "object",
-                                      "properties": {
-                                        "type": {
+                                      "anyOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "type": {
+                                              "type": "string",
+                                              "enum": [
+                                                "string",
+                                                "number",
+                                                "boolean",
+                                                "null"
+                                              ]
+                                            }
+                                          },
+                                          "required": ["type"],
+                                          "additionalProperties": false
+                                        },
+                                        {
                                           "type": "string",
-                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                          "minLength": 1
                                         }
-                                      },
-                                      "required": ["type"],
-                                      "additionalProperties": false
+                                      ]
                                     }
                                   },
                                   "required": ["type", "items"],
@@ -2108,15 +2303,28 @@
                                             "additionalProperties": false
                                           },
                                           {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
+                                            "anyOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "type": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "string",
+                                                      "number",
+                                                      "boolean",
+                                                      "null"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": ["type"],
+                                                "additionalProperties": false
+                                              },
+                                              {
                                                 "type": "string",
-                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                                "minLength": 1
                                               }
-                                            },
-                                            "required": ["type"],
-                                            "additionalProperties": false
+                                            ]
                                           }
                                         ]
                                       }
@@ -2782,15 +2990,28 @@
                                       "const": "array"
                                     },
                                     "items": {
-                                      "type": "object",
-                                      "properties": {
-                                        "type": {
+                                      "anyOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "type": {
+                                              "type": "string",
+                                              "enum": [
+                                                "string",
+                                                "number",
+                                                "boolean",
+                                                "null"
+                                              ]
+                                            }
+                                          },
+                                          "required": ["type"],
+                                          "additionalProperties": false
+                                        },
+                                        {
                                           "type": "string",
-                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                          "minLength": 1
                                         }
-                                      },
-                                      "required": ["type"],
-                                      "additionalProperties": false
+                                      ]
                                     }
                                   },
                                   "required": ["type", "items"],
@@ -2816,15 +3037,28 @@
                                             "additionalProperties": false
                                           },
                                           {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
+                                            "anyOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "type": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "string",
+                                                      "number",
+                                                      "boolean",
+                                                      "null"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": ["type"],
+                                                "additionalProperties": false
+                                              },
+                                              {
                                                 "type": "string",
-                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                                "minLength": 1
                                               }
-                                            },
-                                            "required": ["type"],
-                                            "additionalProperties": false
+                                            ]
                                           }
                                         ]
                                       }
@@ -2926,15 +3160,28 @@
                                       "const": "array"
                                     },
                                     "items": {
-                                      "type": "object",
-                                      "properties": {
-                                        "type": {
+                                      "anyOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "type": {
+                                              "type": "string",
+                                              "enum": [
+                                                "string",
+                                                "number",
+                                                "boolean",
+                                                "null"
+                                              ]
+                                            }
+                                          },
+                                          "required": ["type"],
+                                          "additionalProperties": false
+                                        },
+                                        {
                                           "type": "string",
-                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                          "minLength": 1
                                         }
-                                      },
-                                      "required": ["type"],
-                                      "additionalProperties": false
+                                      ]
                                     }
                                   },
                                   "required": ["type", "items"],
@@ -2960,15 +3207,28 @@
                                             "additionalProperties": false
                                           },
                                           {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
+                                            "anyOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "type": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "string",
+                                                      "number",
+                                                      "boolean",
+                                                      "null"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": ["type"],
+                                                "additionalProperties": false
+                                              },
+                                              {
                                                 "type": "string",
-                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                                "minLength": 1
                                               }
-                                            },
-                                            "required": ["type"],
-                                            "additionalProperties": false
+                                            ]
                                           }
                                         ]
                                       }
@@ -3261,15 +3521,28 @@
                                           "const": "array"
                                         },
                                         "items": {
-                                          "type": "object",
-                                          "properties": {
-                                            "type": {
+                                          "anyOf": [
+                                            {
+                                              "type": "object",
+                                              "properties": {
+                                                "type": {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "string",
+                                                    "number",
+                                                    "boolean",
+                                                    "null"
+                                                  ]
+                                                }
+                                              },
+                                              "required": ["type"],
+                                              "additionalProperties": false
+                                            },
+                                            {
                                               "type": "string",
-                                              "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                              "minLength": 1
                                             }
-                                          },
-                                          "required": ["type"],
-                                          "additionalProperties": false
+                                          ]
                                         }
                                       },
                                       "required": ["type", "items"],
@@ -3295,15 +3568,28 @@
                                                 "additionalProperties": false
                                               },
                                               {
-                                                "type": "object",
-                                                "properties": {
-                                                  "type": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "object",
+                                                    "properties": {
+                                                      "type": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                          "string",
+                                                          "number",
+                                                          "boolean",
+                                                          "null"
+                                                        ]
+                                                      }
+                                                    },
+                                                    "required": ["type"],
+                                                    "additionalProperties": false
+                                                  },
+                                                  {
                                                     "type": "string",
-                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                                    "minLength": 1
                                                   }
-                                                },
-                                                "required": ["type"],
-                                                "additionalProperties": false
+                                                ]
                                               }
                                             ]
                                           }
@@ -3426,15 +3712,28 @@
                                       "const": "array"
                                     },
                                     "items": {
-                                      "type": "object",
-                                      "properties": {
-                                        "type": {
+                                      "anyOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "type": {
+                                              "type": "string",
+                                              "enum": [
+                                                "string",
+                                                "number",
+                                                "boolean",
+                                                "null"
+                                              ]
+                                            }
+                                          },
+                                          "required": ["type"],
+                                          "additionalProperties": false
+                                        },
+                                        {
                                           "type": "string",
-                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                          "minLength": 1
                                         }
-                                      },
-                                      "required": ["type"],
-                                      "additionalProperties": false
+                                      ]
                                     }
                                   },
                                   "required": ["type", "items"],
@@ -3460,15 +3759,28 @@
                                             "additionalProperties": false
                                           },
                                           {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
+                                            "anyOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "type": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "string",
+                                                      "number",
+                                                      "boolean",
+                                                      "null"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": ["type"],
+                                                "additionalProperties": false
+                                              },
+                                              {
                                                 "type": "string",
-                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                                "minLength": 1
                                               }
-                                            },
-                                            "required": ["type"],
-                                            "additionalProperties": false
+                                            ]
                                           }
                                         ]
                                       }
@@ -3881,15 +4193,28 @@
                                       "const": "array"
                                     },
                                     "items": {
-                                      "type": "object",
-                                      "properties": {
-                                        "type": {
+                                      "anyOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "type": {
+                                              "type": "string",
+                                              "enum": [
+                                                "string",
+                                                "number",
+                                                "boolean",
+                                                "null"
+                                              ]
+                                            }
+                                          },
+                                          "required": ["type"],
+                                          "additionalProperties": false
+                                        },
+                                        {
                                           "type": "string",
-                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                          "minLength": 1
                                         }
-                                      },
-                                      "required": ["type"],
-                                      "additionalProperties": false
+                                      ]
                                     }
                                   },
                                   "required": ["type", "items"],
@@ -3915,15 +4240,28 @@
                                             "additionalProperties": false
                                           },
                                           {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
+                                            "anyOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "type": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "string",
+                                                      "number",
+                                                      "boolean",
+                                                      "null"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": ["type"],
+                                                "additionalProperties": false
+                                              },
+                                              {
                                                 "type": "string",
-                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                                "minLength": 1
                                               }
-                                            },
-                                            "required": ["type"],
-                                            "additionalProperties": false
+                                            ]
                                           }
                                         ]
                                       }
@@ -4025,15 +4363,28 @@
                                       "const": "array"
                                     },
                                     "items": {
-                                      "type": "object",
-                                      "properties": {
-                                        "type": {
+                                      "anyOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "type": {
+                                              "type": "string",
+                                              "enum": [
+                                                "string",
+                                                "number",
+                                                "boolean",
+                                                "null"
+                                              ]
+                                            }
+                                          },
+                                          "required": ["type"],
+                                          "additionalProperties": false
+                                        },
+                                        {
                                           "type": "string",
-                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                          "minLength": 1
                                         }
-                                      },
-                                      "required": ["type"],
-                                      "additionalProperties": false
+                                      ]
                                     }
                                   },
                                   "required": ["type", "items"],
@@ -4059,15 +4410,28 @@
                                             "additionalProperties": false
                                           },
                                           {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
+                                            "anyOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "type": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "string",
+                                                      "number",
+                                                      "boolean",
+                                                      "null"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": ["type"],
+                                                "additionalProperties": false
+                                              },
+                                              {
                                                 "type": "string",
-                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                                "minLength": 1
                                               }
-                                            },
-                                            "required": ["type"],
-                                            "additionalProperties": false
+                                            ]
                                           }
                                         ]
                                       }
@@ -4360,15 +4724,28 @@
                                           "const": "array"
                                         },
                                         "items": {
-                                          "type": "object",
-                                          "properties": {
-                                            "type": {
+                                          "anyOf": [
+                                            {
+                                              "type": "object",
+                                              "properties": {
+                                                "type": {
+                                                  "type": "string",
+                                                  "enum": [
+                                                    "string",
+                                                    "number",
+                                                    "boolean",
+                                                    "null"
+                                                  ]
+                                                }
+                                              },
+                                              "required": ["type"],
+                                              "additionalProperties": false
+                                            },
+                                            {
                                               "type": "string",
-                                              "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                              "minLength": 1
                                             }
-                                          },
-                                          "required": ["type"],
-                                          "additionalProperties": false
+                                          ]
                                         }
                                       },
                                       "required": ["type", "items"],
@@ -4394,15 +4771,28 @@
                                                 "additionalProperties": false
                                               },
                                               {
-                                                "type": "object",
-                                                "properties": {
-                                                  "type": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "object",
+                                                    "properties": {
+                                                      "type": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                          "string",
+                                                          "number",
+                                                          "boolean",
+                                                          "null"
+                                                        ]
+                                                      }
+                                                    },
+                                                    "required": ["type"],
+                                                    "additionalProperties": false
+                                                  },
+                                                  {
                                                     "type": "string",
-                                                    "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                                    "minLength": 1
                                                   }
-                                                },
-                                                "required": ["type"],
-                                                "additionalProperties": false
+                                                ]
                                               }
                                             ]
                                           }
@@ -4525,15 +4915,28 @@
                                       "const": "array"
                                     },
                                     "items": {
-                                      "type": "object",
-                                      "properties": {
-                                        "type": {
+                                      "anyOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "type": {
+                                              "type": "string",
+                                              "enum": [
+                                                "string",
+                                                "number",
+                                                "boolean",
+                                                "null"
+                                              ]
+                                            }
+                                          },
+                                          "required": ["type"],
+                                          "additionalProperties": false
+                                        },
+                                        {
                                           "type": "string",
-                                          "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                          "minLength": 1
                                         }
-                                      },
-                                      "required": ["type"],
-                                      "additionalProperties": false
+                                      ]
                                     }
                                   },
                                   "required": ["type", "items"],
@@ -4559,15 +4962,28 @@
                                             "additionalProperties": false
                                           },
                                           {
-                                            "type": "object",
-                                            "properties": {
-                                              "type": {
+                                            "anyOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "type": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                      "string",
+                                                      "number",
+                                                      "boolean",
+                                                      "null"
+                                                    ]
+                                                  }
+                                                },
+                                                "required": ["type"],
+                                                "additionalProperties": false
+                                              },
+                                              {
                                                 "type": "string",
-                                                "pattern": "^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$"
+                                                "minLength": 1
                                               }
-                                            },
-                                            "required": ["type"],
-                                            "additionalProperties": false
+                                            ]
                                           }
                                         ]
                                       }

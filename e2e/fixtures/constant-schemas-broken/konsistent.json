@@ -11,7 +11,7 @@
             "name": "localAuths",
             "schema": {
               "type": "array",
-              "items": { "type": "Readonly<MyAuth>" }
+              "items": "Readonly<MyAuth>"
             }
           }
         ],
@@ -55,7 +55,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "auth": { "type": "Readonly<MyAuth>" },
+                "auth": "Readonly<MyAuth>",
                 "modelId": { "type": "string" }
               },
               "required": ["auth", "modelId"]

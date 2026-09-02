@@ -108,6 +108,86 @@ describe("validatePlaceholders", () => {
     }
   });
 
+  it("accepts declared placeholders in inner type constraints", () => {
+    const conventions: ConventionV1[] = [
+      {
+        name: "schema-types",
+        paths: ["src/{harnessId}.ts"],
+        must: {
+          declareTypes: [
+            {
+              name: "InternalSettings",
+              schema: {
+                type: "array",
+                items: "${harnessId.toPascalCase()}Data",
+              },
+            },
+          ],
+          exportTypes: [
+            {
+              name: "Settings",
+              schema: {
+                type: "object",
+                properties: {
+                  data: "${harnessId.toPascalCase()}Data",
+                },
+              },
+            },
+          ],
+        },
+      },
+    ];
+
+    expect(
+      validatePlaceholders({
+        conventions,
+        identifiers: ["schema-types"],
+      })
+    ).toEqual({ ok: true });
+  });
+
+  it("rejects undeclared placeholders in inner type constraints", () => {
+    const conventions: ConventionV1[] = [
+      {
+        name: "schema-types",
+        paths: ["src/{harnessId}.ts"],
+        must: {
+          declareConstants: [
+            {
+              name: "data",
+              schema: {
+                type: "array",
+                items: "${missingArrayType}",
+              },
+            },
+          ],
+          exportConstants: [
+            {
+              name: "data",
+              schema: {
+                type: "object",
+                properties: { data: "${missingPropertyType}" },
+              },
+            },
+          ],
+        },
+      },
+    ];
+
+    const result = validatePlaceholders({
+      conventions,
+      identifiers: ["schema-types"],
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain('"${missingArrayType}"');
+      expect(result.error).toContain("must.declareConstants");
+      expect(result.error).toContain('"${missingPropertyType}"');
+      expect(result.error).toContain("must.exportConstants");
+    }
+  });
+
   it("detects placeholders inside import and export aliases", () => {
     const conventions: ConventionV1[] = [
       {

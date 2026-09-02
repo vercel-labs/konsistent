@@ -74,7 +74,7 @@ describe("reusable-convention-package.schema.json", () => {
                 schema: {
                   type: "object",
                   properties: {
-                    auth: { type: "Readonly<MyAuth>" },
+                    auth: "Readonly<MyAuth>",
                   },
                 },
               },
@@ -87,7 +87,7 @@ describe("reusable-convention-package.schema.json", () => {
     expect(valid).toBe(true);
   });
 
-  it("rejects invalid characters in inner type references", () => {
+  it("rejects the legacy object form for inner type references", () => {
     const valid = validate({
       conventionSpecVersion: "v1",
       conventions: [

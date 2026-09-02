@@ -115,6 +115,9 @@ describe("type-schemas-broken fixture", () => {
       expect(error.stdout).toContain(
         'Type "InternalSettings" property "auth" must be of type "Readonly<MyAuth>"'
       );
+      expect(error.stdout).toContain(
+        'Type "InternalDataSettings" property "data" must be of type "TypesData"'
+      );
       expect(error.stdout).toContain("type-schemas");
     }
   });

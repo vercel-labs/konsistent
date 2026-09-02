@@ -340,12 +340,19 @@ describe("checkExportTypes", () => {
             properties: {
               model: { type: "string" },
               timeout: { type: "number" },
-              providers: { type: "ReadonlyArray<ModelProvider>" },
+              providers: "${providersType}",
             },
           },
         },
       ],
-      context: createMockContext({ path: "src/index.ts" }),
+      context: createMockContext({
+        path: "src/index.ts",
+        placeholders: {
+          providersType: {
+            toString: () => "ReadonlyArray<ModelProvider>",
+          },
+        },
+      }),
       fileStructure: parseFileStructure({
         source: `
           export type ModuleSettings = {

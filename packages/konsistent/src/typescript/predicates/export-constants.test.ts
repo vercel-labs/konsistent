@@ -200,12 +200,17 @@ describe("checkExportConstants", () => {
           name: "settings",
           schema: {
             type: "object",
-            properties: { auth: { type: "Readonly<MyAuth>" } },
+            properties: { auth: "${authType}" },
             required: ["auth"],
           },
         },
       ],
-      context: createMockContext({ path: "src/index.ts" }),
+      context: createMockContext({
+        path: "src/index.ts",
+        placeholders: {
+          authType: { toString: () => "Readonly<MyAuth>" },
+        },
+      }),
       fileStructure: parseFileStructure({
         source:
           "export const settings: { auth: Readonly<MyAuth> } = { auth: {} };",
