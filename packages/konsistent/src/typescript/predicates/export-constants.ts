@@ -2,10 +2,7 @@ import type { ExportConstantDefinitionV1 } from "@konsistent/convention";
 import type { PredicateContext } from "../../core/context.js";
 import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
 import { createDiagnostic } from "../../core/diagnostics.js";
-import {
-  matchConstantTypeSchema,
-  resolveConstantValueSchema,
-} from "../constant-type-schema.js";
+import { checkConstantDefinitionConstraint } from "../definition-type-constraint.js";
 import type { FileStructure } from "../types.js";
 
 export function checkExportConstants(opts: {
@@ -19,7 +16,8 @@ export function checkExportConstants(opts: {
   const diagnostics: Diagnostic[] = [];
 
   for (const entry of expected) {
-    const definition = typeof entry === "string" ? { name: entry } : entry;
+    const definition: ExportConstantDefinitionV1 =
+      typeof entry === "string" ? { name: entry } : entry;
     const resolvedName = context.resolveTemplate(definition.name);
 
     const found = fileStructure.exports.some(
@@ -39,30 +37,17 @@ export function checkExportConstants(opts: {
       continue;
     }
 
-    if (definition.schema) {
-      const constantInfo = fileStructure.constants.find(
-        (constant) => constant.name === resolvedName
-      );
-      const result = matchConstantTypeSchema({
-        actual: constantInfo?.typeInfo,
-        schema: resolveConstantValueSchema({
-          schema: definition.schema,
-          resolveTemplate: context.resolveTemplate,
-        }),
-      });
-      if (!result.matches) {
-        diagnostics.push(
-          createDiagnostic({
-            filePath: context.path,
-            predicateName: "exportConstants",
-            message: `Constant "${resolvedName}" ${result.reason}`,
-            conventionName,
-            line: constantInfo?.pos.line,
-            column: constantInfo?.pos.column,
-            severity,
-          })
-        );
-      }
+    const constraintDiagnostic = checkConstantDefinitionConstraint({
+      context,
+      conventionName,
+      definition,
+      fileStructure,
+      name: resolvedName,
+      predicateName: "exportConstants",
+      severity,
+    });
+    if (constraintDiagnostic) {
+      diagnostics.push(constraintDiagnostic);
     }
   }
 

@@ -9,11 +9,7 @@ import {
   resolveDefinitionName,
 } from "../../core/declaration-utils.js";
 import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
-import { createDiagnostic } from "../../core/diagnostics.js";
-import {
-  matchConstantTypeSchema,
-  resolveConstantValueSchema,
-} from "../constant-type-schema.js";
+import { checkConstantDefinitionConstraint } from "../definition-type-constraint.js";
 import type { FileStructure } from "../types.js";
 
 export function checkDeclareConstants(opts: {
@@ -33,7 +29,8 @@ export function checkDeclareConstants(opts: {
   };
 
   for (const entry of expected) {
-    const definition = typeof entry === "string" ? { name: entry } : entry;
+    const definition: ConstantDefinitionV1 =
+      typeof entry === "string" ? { name: entry } : entry;
     const resolvedName = resolveDefinitionName({ entry, context });
     const symbol = findDeclarationSymbol({
       fileStructure,
@@ -63,30 +60,18 @@ export function checkDeclareConstants(opts: {
       continue;
     }
 
-    if (definition.schema) {
-      const constantInfo = fileStructure.constants.find(
-        (constant) => constant.name === resolvedName
-      );
-      const result = matchConstantTypeSchema({
-        actual: constantInfo?.typeInfo,
-        schema: resolveConstantValueSchema({
-          schema: definition.schema,
-          resolveTemplate: context.resolveTemplate,
-        }),
-      });
-      if (!result.matches) {
-        diagnostics.push(
-          createDiagnostic({
-            filePath: context.path,
-            predicateName: "declareConstants",
-            message: `Constant "${resolvedName}" ${result.reason}`,
-            conventionName,
-            line: constantInfo?.pos.line ?? symbol.pos.line,
-            column: constantInfo?.pos.column ?? symbol.pos.column,
-            severity,
-          })
-        );
-      }
+    const constraintDiagnostic = checkConstantDefinitionConstraint({
+      context,
+      conventionName,
+      definition,
+      fallbackPosition: symbol.pos,
+      fileStructure,
+      name: resolvedName,
+      predicateName: "declareConstants",
+      severity,
+    });
+    if (constraintDiagnostic) {
+      diagnostics.push(constraintDiagnostic);
     }
   }
 

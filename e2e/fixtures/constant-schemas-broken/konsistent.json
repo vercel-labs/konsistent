@@ -13,9 +13,17 @@
               "type": "array",
               "items": "Readonly<MyAuth>"
             }
+          },
+          {
+            "name": "localSettings",
+            "type": "Readonly<ModuleSettings>"
           }
         ],
         "exportConstants": [
+          {
+            "name": "settings",
+            "type": "ModuleSettings<'public'>"
+          },
           {
             "name": "mode",
             "schema": {

@@ -449,4 +449,51 @@ describe("checkExportTypes", () => {
       'Type "Settings" must have a local type definition'
     );
   });
+
+  it("validates an exact type alias expression through an export alias", () => {
+    const result = checkExportTypes({
+      expected: [
+        {
+          name: "Settings",
+          alias: "PublicSettings",
+          type: "${name}Settings<'generic-value'>",
+        },
+      ],
+      context: createMockContext({
+        path: "src/index.ts",
+        placeholders: { name: { toString: () => "Shared" } },
+      }),
+      fileStructure: parseFileStructure({
+        source: [
+          "type Settings = SharedSettings<'generic-value'>;",
+          "export type { Settings as PublicSettings };",
+        ].join("\n"),
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("reports exact type expression formatting differences", () => {
+    const result = checkExportTypes({
+      expected: [{ name: "Settings", type: "Left | Right" }],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source: "export type Settings = Left|Right;",
+      }),
+    });
+    expect(result[0].message).toBe(
+      'Type "Settings" must have type "Left | Right"'
+    );
+  });
+
+  it("does not treat an exported interface as a type alias expression", () => {
+    const result = checkExportTypes({
+      expected: [{ name: "Settings", type: "SharedSettings" }],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source: "export interface Settings {}",
+      }),
+    });
+    expect(result[0].message).toBe('Type "Settings" must be a type alias');
+  });
 });

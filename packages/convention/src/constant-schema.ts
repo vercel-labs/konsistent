@@ -100,27 +100,40 @@ export const ConstantValueSchemaV1Schema = z.union([
   ConstantScalarSchemaV1Schema,
 ]);
 
-export const ConstantDefinitionV1Schema = z.strictObject({
-  name: z.string(),
-  schema: ConstantValueSchemaV1Schema.optional(),
-});
+const TypeExpressionV1Schema = z.string().min(1);
 
-export const ExportConstantDefinitionV1Schema = z.strictObject({
-  name: z.string(),
-  from: z.string().optional(),
-  schema: ConstantValueSchemaV1Schema.optional(),
-});
+export const ConstantDefinitionV1Schema = z.union([
+  z.strictObject({
+    name: z.string(),
+  }),
+  z.strictObject({
+    name: z.string(),
+    schema: ConstantValueSchemaV1Schema,
+  }),
+  z.strictObject({
+    name: z.string(),
+    type: TypeExpressionV1Schema,
+  }),
+]);
 
-export const TypeDefinitionV1Schema = z.strictObject({
-  name: z.string(),
-  schema: ConstantValueSchemaV1Schema.optional(),
-});
+export const ExportConstantDefinitionV1Schema = ConstantDefinitionV1Schema;
+
+export const TypeDefinitionV1Schema = ConstantDefinitionV1Schema;
 
 export const ExportTypeDefinitionV1Schema = z.union([
   z.strictObject({
     alias: z.string().optional(),
     name: z.string(),
-    schema: ConstantValueSchemaV1Schema.optional(),
+  }),
+  z.strictObject({
+    alias: z.string().optional(),
+    name: z.string(),
+    schema: ConstantValueSchemaV1Schema,
+  }),
+  z.strictObject({
+    alias: z.string().optional(),
+    name: z.string(),
+    type: TypeExpressionV1Schema,
   }),
   z.strictObject({
     alias: z.string().optional(),

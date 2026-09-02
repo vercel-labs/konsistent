@@ -493,6 +493,7 @@ function processDeclaration(opts: {
     collector.typeAliases.push({
       name: node.name.getText(sourceFile),
       typeInfo: parseTypeShape({ node: node.type }),
+      typeName: extractTypeAnnotation(node.type) as TypeAnnotationInfo,
       pos,
     });
   }

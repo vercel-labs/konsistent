@@ -218,6 +218,51 @@ describe("konsistent.schema.json", () => {
     expect(valid).toBe(false);
   });
 
+  it("accepts exact top-level type constraints", () => {
+    const valid = validate({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/settings.ts",
+          must: {
+            declareTypes: [
+              { name: "InternalType", type: "SharedType<'internal'>" },
+            ],
+            declareConstants: [
+              { name: "internalValue", type: "SharedType<'internal'>" },
+            ],
+            exportTypes: [{ name: "PublicType", type: "SharedType<'public'>" }],
+            exportConstants: [
+              { name: "publicValue", type: "SharedType<'public'>" },
+            ],
+          },
+        },
+      ],
+    });
+    expect(valid).toBe(true);
+  });
+
+  it("rejects conflicting top-level type constraints", () => {
+    const valid = validate({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/settings.ts",
+          must: {
+            exportTypes: [
+              {
+                name: "Settings",
+                from: "./settings",
+                type: "SharedSettings",
+              },
+            ],
+          },
+        },
+      ],
+    });
+    expect(valid).toBe(false);
+  });
+
   it("rejects the legacy object form for inner type references", () => {
     const valid = validate({
       version: "v1",

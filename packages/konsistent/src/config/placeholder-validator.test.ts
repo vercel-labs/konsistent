@@ -188,6 +188,64 @@ describe("validatePlaceholders", () => {
     }
   });
 
+  it("validates placeholders in top-level type constraints", () => {
+    const conventions: ConventionV1[] = [
+      {
+        name: "exact-types",
+        paths: ["src/{harnessId}.ts"],
+        must: {
+          declareTypes: [
+            {
+              name: "InternalSettings",
+              type: "${harnessId.toPascalCase()}Settings<'internal'>",
+            },
+          ],
+          exportConstants: [
+            {
+              name: "settings",
+              type: "${harnessId.toPascalCase()}Settings<'public'>",
+            },
+          ],
+        },
+      },
+    ];
+
+    expect(
+      validatePlaceholders({
+        conventions,
+        identifiers: ["exact-types"],
+      })
+    ).toEqual({ ok: true });
+  });
+
+  it("rejects undeclared placeholders in top-level type constraints", () => {
+    const conventions: ConventionV1[] = [
+      {
+        name: "exact-types",
+        paths: ["src/{harnessId}.ts"],
+        must: {
+          declareConstants: [
+            { name: "internalSettings", type: "${missingLocal}Settings" },
+          ],
+          exportTypes: [{ name: "Settings", type: "${missingExport}Settings" }],
+        },
+      },
+    ];
+
+    const result = validatePlaceholders({
+      conventions,
+      identifiers: ["exact-types"],
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain('"${missingLocal}"');
+      expect(result.error).toContain("must.declareConstants");
+      expect(result.error).toContain('"${missingExport}"');
+      expect(result.error).toContain("must.exportTypes");
+    }
+  });
+
   it("detects placeholders inside import and export aliases", () => {
     const conventions: ConventionV1[] = [
       {

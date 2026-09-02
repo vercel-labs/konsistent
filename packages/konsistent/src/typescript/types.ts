@@ -102,6 +102,7 @@ export interface TypeAliasInfo {
   name: string;
   pos: SourcePosition;
   typeInfo?: TypeShapeInfo;
+  typeName: TypeAnnotationInfo;
 }
 
 export type NonBarrelStatementKind =

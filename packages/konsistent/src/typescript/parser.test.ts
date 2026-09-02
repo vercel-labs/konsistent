@@ -638,6 +638,10 @@ describe("parseFileStructure", () => {
       expect(result.typeAliases[0]).toMatchObject({
         name: "ID",
         typeInfo: { kind: "unsupported" },
+        typeName: {
+          baseName: "string | number",
+          text: "string | number",
+        },
       });
     });
 
@@ -655,6 +659,26 @@ describe("parseFileStructure", () => {
           ],
         },
       });
+    });
+
+    it("preserves complete type alias expressions", () => {
+      const result = parseFileStructure({
+        source: [
+          "type Generic = Shared<'value'>;",
+          "type Union = Left | Right;",
+          "type Tuple = readonly [First, Second];",
+          "type Multiline =",
+          "  | First",
+          "  | Second;",
+        ].join("\n"),
+      });
+
+      expect(result.typeAliases.map((entry) => entry.typeName.text)).toEqual([
+        "Shared<'value'>",
+        "Left | Right",
+        "readonly [First, Second]",
+        ["| First", "  | Second"].join("\n"),
+      ]);
     });
   });
 

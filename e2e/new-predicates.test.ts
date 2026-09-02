@@ -73,6 +73,12 @@ describe("constant-schemas-broken fixture", () => {
         'Constant "localAuths" must be an array with items of type "Readonly<MyAuth>"'
       );
       expect(error.stdout).toContain(
+        'Constant "localSettings" must have type "Readonly<ModuleSettings>"'
+      );
+      expect(error.stdout).toContain(
+        `Constant "settings" must have type "ModuleSettings<'public'>"`
+      );
+      expect(error.stdout).toContain(
         'Constant "mode" must have exactly the configured enum values'
       );
       expect(error.stdout).toContain(
@@ -117,6 +123,12 @@ describe("type-schemas-broken fixture", () => {
       );
       expect(error.stdout).toContain(
         'Type "InternalDataSettings" property "data" must be of type "TypesData"'
+      );
+      expect(error.stdout).toContain(
+        `Type "InternalReference" must have type "TypesShared<'internal'>"`
+      );
+      expect(error.stdout).toContain(
+        `Type "ModuleReference" must have type "TypesShared<'public'>"`
       );
       expect(error.stdout).toContain("type-schemas");
     }
