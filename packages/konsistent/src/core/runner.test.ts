@@ -438,6 +438,59 @@ describe("run", () => {
     expect(diagnostics).toEqual([]);
   });
 
+  it("forbids a constant matching a mustNot exact type", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/module.ts",
+          mustNot: {
+            exportConstants: [{ name: "debug", type: "DebugSettings" }],
+          },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
+      files: new Set(["src/module.ts"]),
+      fileContents: new Map([
+        [
+          "src/module.ts",
+          "export const debug: DebugSettings = { enabled: true };",
+        ],
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].predicateName).toBe("mustNot.exportConstants");
+  });
+
+  it("allows a mustNot constant with a different exact type", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/module.ts",
+          mustNot: {
+            exportConstants: [{ name: "debug", type: "DebugSettings" }],
+          },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
+      files: new Set(["src/module.ts"]),
+      fileContents: new Map([
+        [
+          "src/module.ts",
+          "export const debug: OtherSettings = { enabled: true };",
+        ],
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
+  });
+
   it("forbids an exported type matching a mustNot schema", async () => {
     const config: ConfigV1 = {
       version: "v1",
@@ -498,6 +551,63 @@ describe("run", () => {
       files: new Set(["src/module.ts"]),
       fileContents: new Map([
         ["src/module.ts", "export type DebugSettings = { enabled: boolean };"],
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toEqual([]);
+  });
+
+  it("forbids an exported type matching a mustNot exact type", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/module.ts",
+          mustNot: {
+            exportTypes: [
+              { name: "DebugSettings", type: "SharedSettings<'debug'>" },
+            ],
+          },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
+      files: new Set(["src/module.ts"]),
+      fileContents: new Map([
+        [
+          "src/module.ts",
+          "export type DebugSettings = SharedSettings<'debug'>;",
+        ],
+      ]),
+    });
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0].predicateName).toBe("mustNot.exportTypes");
+  });
+
+  it("allows a mustNot exported type with a different exact type", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/module.ts",
+          mustNot: {
+            exportTypes: [
+              { name: "DebugSettings", type: "SharedSettings<'debug'>" },
+            ],
+          },
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
+      files: new Set(["src/module.ts"]),
+      fileContents: new Map([
+        [
+          "src/module.ts",
+          "export type DebugSettings = SharedSettings<'public'>;",
+        ],
       ]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });

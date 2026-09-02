@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  ConstantDefinitionV1Schema,
   ConstantValueSchemaV1Schema,
+  ExportConstantDefinitionV1Schema,
   ExportTypeDefinitionV1Schema,
   TypeDefinitionV1Schema,
 } from "./constant-schema.js";
@@ -64,13 +66,20 @@ describe("ConstantValueSchemaV1Schema", () => {
 });
 
 describe("type definition schemas", () => {
-  it("accepts schemas for local type definitions", () => {
-    expect(
-      TypeDefinitionV1Schema.safeParse({
+  it.each([
+    ConstantDefinitionV1Schema,
+    TypeDefinitionV1Schema,
+  ])("accepts unconstrained, schema, or type-constrained local definitions", (definitionSchema) => {
+    for (const definition of [
+      { name: "Settings" },
+      {
         name: "Settings",
         schema: { type: "object", properties: {} },
-      }).success
-    ).toBe(true);
+      },
+      { name: "Settings", type: "SharedSettings<'generic-value'>" },
+    ]) {
+      expect(definitionSchema.safeParse(definition).success).toBe(true);
+    }
   });
 
   it.each([
@@ -84,20 +93,64 @@ describe("type definition schemas", () => {
       alias: "PublicSettings",
       schema: { type: "object", properties: {} },
     },
+    { name: "Settings", type: "SharedSettings<'generic-value'>" },
+    {
+      name: "Settings",
+      alias: "PublicSettings",
+      type: "SharedSettings<'generic-value'>",
+    },
   ])("accepts exported type definition %#", (definition) => {
     expect(ExportTypeDefinitionV1Schema.safeParse(definition).success).toBe(
       true
     );
   });
 
-  it("rejects an exported type definition with both from and schema", () => {
-    expect(
-      ExportTypeDefinitionV1Schema.safeParse({
-        name: "Settings",
-        alias: "PublicSettings",
-        from: "./settings",
-        schema: { type: "object", properties: {} },
-      }).success
-    ).toBe(false);
+  it.each([
+    {
+      name: "Settings",
+      schema: { type: "object", properties: {} },
+      type: "SharedSettings",
+    },
+    {
+      name: "Settings",
+      from: "./settings",
+      schema: { type: "object", properties: {} },
+    },
+    {
+      name: "Settings",
+      from: "./settings",
+      type: "SharedSettings",
+    },
+    { name: "Settings", type: "" },
+  ])("rejects invalid exported type definition %#", (definition) => {
+    expect(ExportTypeDefinitionV1Schema.safeParse(definition).success).toBe(
+      false
+    );
+  });
+});
+
+describe("exported constant definition schemas", () => {
+  it.each([
+    { name: "settings" },
+    { name: "settings", schema: { type: "object", properties: {} } },
+    { name: "settings", type: "SharedSettings<'generic-value'>" },
+  ])("accepts exported constant definition %#", (definition) => {
+    expect(ExportConstantDefinitionV1Schema.safeParse(definition).success).toBe(
+      true
+    );
+  });
+
+  it.each([
+    {
+      name: "settings",
+      schema: { type: "object", properties: {} },
+      type: "SharedSettings",
+    },
+    { name: "settings", type: "" },
+    { name: "settings", from: "./settings" },
+  ])("rejects invalid exported constant definition %#", (definition) => {
+    expect(ExportConstantDefinitionV1Schema.safeParse(definition).success).toBe(
+      false
+    );
   });
 });

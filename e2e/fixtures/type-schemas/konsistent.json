@@ -24,6 +24,10 @@
                 "data": "${harnessId.toPascalCase()}Data"
               }
             }
+          },
+          {
+            "name": "InternalReference",
+            "type": "${harnessId.toPascalCase()}Shared<'internal'>"
           }
         ],
         "exportTypes": [
@@ -36,6 +40,10 @@
                 "timeout": { "type": "number" }
               }
             }
+          },
+          {
+            "name": "ModuleReference",
+            "type": "${harnessId.toPascalCase()}Shared<'public'>"
           }
         ]
       }

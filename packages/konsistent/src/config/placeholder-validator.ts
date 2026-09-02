@@ -307,7 +307,7 @@ function collectUsagesInPredicates(opts: {
   collectUsagesInDefinitionList({
     list: predicates.declareTypes,
     key: `${prefix}.declareTypes`,
-    objectFields: ["name"],
+    objectFields: ["name", "type"],
     schemaField: true,
     declared,
     usages,
@@ -315,7 +315,7 @@ function collectUsagesInPredicates(opts: {
   collectUsagesInDefinitionList({
     list: predicates.declareConstants,
     key: `${prefix}.declareConstants`,
-    objectFields: ["name"],
+    objectFields: ["name", "type"],
     schemaField: true,
     declared,
     usages,
@@ -373,7 +373,7 @@ function collectUsagesInPredicates(opts: {
   collectUsagesInDefinitionList({
     list: predicates.exportTypes,
     key: `${prefix}.exportTypes`,
-    objectFields: ["name", "alias", "from"],
+    objectFields: ["name", "alias", "from", "type"],
     schemaField: true,
     declared,
     usages,
@@ -381,7 +381,7 @@ function collectUsagesInPredicates(opts: {
   collectUsagesInDefinitionList({
     list: predicates.exportConstants,
     key: `${prefix}.exportConstants`,
-    objectFields: ["name", "from"],
+    objectFields: ["name", "type"],
     schemaField: true,
     declared,
     usages,

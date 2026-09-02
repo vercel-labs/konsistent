@@ -1,15 +1,8 @@
-import type {
-  ExportTypeDefinitionV1,
-  TypeDefinitionV1,
-} from "@konsistent/convention";
+import type { ExportTypeDefinitionV1 } from "@konsistent/convention";
 import type { PredicateContext } from "../../core/context.js";
-import { findTypeDefinition } from "../../core/declaration-utils.js";
 import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
 import { createDiagnostic } from "../../core/diagnostics.js";
-import {
-  matchTypeDefinitionSchema,
-  resolveConstantValueSchema,
-} from "../constant-type-schema.js";
+import { checkTypeDefinitionConstraint } from "../definition-type-constraint.js";
 import type { FileStructure } from "../types.js";
 
 export function checkExportTypes(opts: {
@@ -23,7 +16,8 @@ export function checkExportTypes(opts: {
   const diagnostics: Diagnostic[] = [];
 
   for (const entry of expected) {
-    const definition = typeof entry === "string" ? { name: entry } : entry;
+    const definition: ExportTypeDefinitionV1 =
+      typeof entry === "string" ? { name: entry } : entry;
     const resolvedName = context.resolveTemplate(definition.name);
     const resolvedFrom = Object.hasOwn(definition, "from")
       ? context.resolveTemplate((definition as { from: string }).from)
@@ -58,34 +52,18 @@ export function checkExportTypes(opts: {
       continue;
     }
 
-    const schema = Object.hasOwn(definition, "schema")
-      ? (definition as TypeDefinitionV1).schema
-      : undefined;
-    if (schema) {
-      const typeDefinition = findTypeDefinition({
-        fileStructure,
-        name: resolvedName,
-      });
-      const result = matchTypeDefinitionSchema({
-        actual: typeDefinition?.typeInfo,
-        schema: resolveConstantValueSchema({
-          schema,
-          resolveTemplate: context.resolveTemplate,
-        }),
-      });
-      if (!result.matches) {
-        diagnostics.push(
-          createDiagnostic({
-            filePath: context.path,
-            predicateName: "exportTypes",
-            message: `Type "${resolvedName}" ${result.reason}`,
-            conventionName,
-            line: typeDefinition?.pos.line ?? found.pos.line,
-            column: typeDefinition?.pos.column ?? found.pos.column,
-            severity,
-          })
-        );
-      }
+    const constraintDiagnostic = checkTypeDefinitionConstraint({
+      context,
+      conventionName,
+      definition,
+      fallbackPosition: found.pos,
+      fileStructure,
+      name: resolvedName,
+      predicateName: "exportTypes",
+      severity,
+    });
+    if (constraintDiagnostic) {
+      diagnostics.push(constraintDiagnostic);
     }
   }
 

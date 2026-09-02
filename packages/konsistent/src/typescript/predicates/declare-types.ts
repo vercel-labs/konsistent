@@ -5,16 +5,11 @@ import {
   createMissingDeclarationDiagnostic,
   type DeclarationCheckContext,
   findDeclarationSymbol,
-  findTypeDefinition,
   isDeclarationSymbolExported,
   resolveDefinitionName,
 } from "../../core/declaration-utils.js";
 import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
-import { createDiagnostic } from "../../core/diagnostics.js";
-import {
-  matchTypeDefinitionSchema,
-  resolveConstantValueSchema,
-} from "../constant-type-schema.js";
+import { checkTypeDefinitionConstraint } from "../definition-type-constraint.js";
 import type { FileStructure } from "../types.js";
 
 export function checkDeclareTypes(opts: {
@@ -34,7 +29,8 @@ export function checkDeclareTypes(opts: {
   };
 
   for (const entry of expected) {
-    const definition = typeof entry === "string" ? { name: entry } : entry;
+    const definition: TypeDefinitionV1 =
+      typeof entry === "string" ? { name: entry } : entry;
     const resolvedName = resolveDefinitionName({ entry, context });
     const symbol = findDeclarationSymbol({
       fileStructure,
@@ -64,31 +60,18 @@ export function checkDeclareTypes(opts: {
       continue;
     }
 
-    if (definition.schema) {
-      const typeDefinition = findTypeDefinition({
-        fileStructure,
-        name: resolvedName,
-      });
-      const result = matchTypeDefinitionSchema({
-        actual: typeDefinition?.typeInfo,
-        schema: resolveConstantValueSchema({
-          schema: definition.schema,
-          resolveTemplate: context.resolveTemplate,
-        }),
-      });
-      if (!result.matches) {
-        diagnostics.push(
-          createDiagnostic({
-            filePath: context.path,
-            predicateName: "declareTypes",
-            message: `Type "${resolvedName}" ${result.reason}`,
-            conventionName,
-            line: typeDefinition?.pos.line ?? symbol.pos.line,
-            column: typeDefinition?.pos.column ?? symbol.pos.column,
-            severity,
-          })
-        );
-      }
+    const constraintDiagnostic = checkTypeDefinitionConstraint({
+      context,
+      conventionName,
+      definition,
+      fallbackPosition: symbol.pos,
+      fileStructure,
+      name: resolvedName,
+      predicateName: "declareTypes",
+      severity,
+    });
+    if (constraintDiagnostic) {
+      diagnostics.push(constraintDiagnostic);
     }
   }
 

@@ -115,4 +115,45 @@ describe("checkDeclareTypes", () => {
       column: 1,
     });
   });
+
+  it("validates an exact template-expanded type alias expression", () => {
+    const result = checkDeclareTypes({
+      expected: [
+        {
+          name: "Settings",
+          type: "${name}Settings<'generic-value'> | undefined",
+        },
+      ],
+      context: createMockContext({
+        path: "src/index.ts",
+        placeholders: { name: { toString: () => "Shared" } },
+      }),
+      fileStructure: parseSource({
+        source: "type Settings = SharedSettings<'generic-value'> | undefined;",
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("reports a mismatched exact type alias expression", () => {
+    const result = checkDeclareTypes({
+      expected: [{ name: "Settings", type: "SharedSettings<'public'>" }],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({
+        source: "type Settings = SharedSettings<'private'>;",
+      }),
+    });
+    expect(result[0].message).toBe(
+      `Type "Settings" must have type "SharedSettings<'public'>"`
+    );
+  });
+
+  it("does not treat an interface as an exact type alias expression", () => {
+    const result = checkDeclareTypes({
+      expected: [{ name: "Settings", type: "SharedSettings" }],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({ source: "interface Settings {}" }),
+    });
+    expect(result[0].message).toBe('Type "Settings" must be a type alias');
+  });
 });

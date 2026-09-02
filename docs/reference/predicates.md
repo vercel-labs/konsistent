@@ -98,8 +98,8 @@ All declaration predicates accept an array of bare strings or objects with a `na
 ### `declareTypes`
 
 Assert local type declarations. Interfaces and type aliases qualify. An object
-entry can use `schema` to validate the local definition using the same supported
-shapes and declaration semantics as `exportTypes`.
+entry can use `schema` to validate a supported declaration shape, or `type` to
+require an exact type alias expression.
 
 ```json
 "must": {
@@ -110,6 +110,10 @@ shapes and declaration semantics as `exportTypes`.
         "type": "object",
         "properties": { "enabled": { "type": "boolean" } }
       }
+    },
+    {
+      "name": "InternalReference",
+      "type": "${providerId.toPascalCase()}Settings<'internal'>"
     }
   ]
 }
@@ -118,12 +122,13 @@ shapes and declaration semantics as `exportTypes`.
 ### `declareConstants`
 
 Assert local `const` declarations. Optionally validate an explicit type
-annotation using the same `schema` field as `exportConstants`.
+annotation using the same `schema` or `type` fields as `exportConstants`.
 
 ```json
 "must": {
   "declareConstants": [
-    { "name": "DEFAULT_PORT", "schema": { "type": "number" } }
+    { "name": "DEFAULT_PORT", "schema": { "type": "number" } },
+    { "name": "settings", "type": "Readonly<ModuleSettings>" }
   ]
 }
 ```
@@ -224,8 +229,8 @@ pair. Omitting `alias` forbids the original name under every named export alias.
 ### `exportTypes`
 
 Assert type-only exports. Exported type aliases and interfaces qualify. Use
-`from` to require a re-export, or use `schema` to validate a locally defined
-exported type.
+`from` to require a re-export, `schema` to validate a supported declaration
+shape, or `type` to require an exact type alias expression.
 
 ```json
 "must": {
@@ -264,28 +269,50 @@ exported type.
 }
 ```
 
+```json
+"must": {
+  "exportTypes": [
+    {
+      "name": "ModuleSettings",
+      "type": "SharedSettings<'${providerId}'>"
+    }
+  ]
+}
+```
+
 | Field | Type | Description |
 | --- | --- | --- |
 | `name` | string | The original local or re-exported type name. Templates allowed. |
 | `alias` | string | Optional. Require a named type export to expose the type under this name. Templates allowed. |
 | `from` | string | Optional. Require a type re-export from this module specifier. |
 | `schema` | object | Optional. Validate a locally declared type definition. |
+| `type` | string | Optional. Require the exact source expression of a locally declared type alias. Templates allowed. |
 
-`from` and `schema` are mutually exclusive. Schema validation never resolves a
-type definition from another file. The `schema` field supports the same forms
-and declaration semantics documented under [`exportConstants`](#exportconstants).
-When `alias` is combined with `schema`, the schema validates the original local
-type definition. Alias omission and unsupported export forms behave as
-documented for `exportValues`.
+`from`, `schema`, and `type` are mutually exclusive. Neither validation field
+resolves a type definition from another file. The `schema` field supports the
+same forms and declaration semantics documented under
+[`exportConstants`](#exportconstants). The `type` field supports any TypeScript
+type expression, including generic instantiations, unions, intersections, and
+tuples, but requires a type alias because interfaces have no alias expression.
+When `alias` is combined with `schema` or `type`, the constraint validates the
+original local type definition. Alias omission and unsupported export forms
+behave as documented for `exportValues`.
 
 ### `exportConstants`
 
-Assert `const` exports specifically. Stricter than `exportValues` — a `function` or `let` with the right name will not satisfy this predicate. An object entry can use `schema` to validate the constant's explicit type annotation.
+Assert `const` exports specifically. Stricter than `exportValues` — a `function`
+or `let` with the right name will not satisfy this predicate. An object entry
+can use `schema` to validate a supported shape or `type` to require its complete
+explicit type annotation.
 
 ```json
 "must": {
   "exportConstants": [
     "pluginId",
+    {
+      "name": "settings",
+      "type": "ModuleSettings<'public'>"
+    },
     {
       "name": "mode",
       "schema": {
@@ -320,6 +347,10 @@ Assert `const` exports specifically. Stricter than `exportValues` — a `functio
 | --- | --- | --- |
 | `name` | string | The constant name. Templates allowed. |
 | `schema` | object | Optional. Supported JSON Schema subset for the constant's explicit type annotation. |
+| `type` | string | Optional. Exact TypeScript type annotation. Templates allowed. |
+
+`schema` and `type` are mutually exclusive. `exportConstants` checks locally
+declared constants and does not accept `from`.
 
 The supported `schema` forms are:
 
@@ -330,11 +361,24 @@ The supported `schema` forms are:
 
 Object schemas describe TypeScript declaration shapes rather than ordinary JSON Schema instances. Every name in `properties` must exist in the annotation or definition. Names listed in `required` must be non-optional (`name: Type`); all other configured names must be optional (`name?: Type`). `required` defaults to an empty array. `additionalProperties` defaults to `true`, allowing unconfigured TypeScript properties; set it to `false` to reject them.
 
-Inner TypeScript type references are compared directly to the source annotation without resolving imports or aliases. They support template substitutions, including transformations such as `"${harnessId.toPascalCase()}Data"`. The comparison includes formatting, so `Readonly<MyAuth>` does not match `Readonly< MyAuth >`.
+Inner TypeScript type references and top-level `type` constraints are compared
+directly to the source annotation or type alias expression without resolving
+imports or aliases. They support template substitutions, including
+transformations such as `"${harnessId.toPascalCase()}Data"`. The comparison
+includes formatting, so `Readonly<MyAuth>` does not match
+`Readonly< MyAuth >`.
 
 This is deliberately a strict subset of JSON Schema. Unsupported keywords and shapes are rejected during configuration validation, including `integer`, `$ref`, combinators, nested object or array schemas, tuple schemas, enum array items, schema-valued `additionalProperties`, and constraints such as `minItems`.
 
-Constant schema checks require an explicit annotation on a locally declared constant. Type schema checks require a local type alias or interface definition; interfaces with `extends` are unsupported. Inferred types, top-level named type references, tuples, intersections, index signatures, methods, computed properties, nested inline types, inherited properties, and cross-file re-exports are not resolved. Enum values and property names inside `schema` are literal data and do not expand placeholders.
+Constant `schema` and `type` checks require an explicit annotation on a locally
+declared constant. Type schema checks require a local type alias or interface
+definition; interfaces with `extends` are unsupported. Type checks require a
+local type alias. Inferred types, imports, aliases, semantic equivalence, and
+cross-file re-exports are not resolved. The limitations on top-level named type
+references, tuples, intersections, index signatures, methods, computed
+properties, nested inline types, and inherited properties apply only to
+`schema`; `type` compares any expression as source text. Enum values and
+property names inside `schema` are literal data and do not expand placeholders.
 
 ### `exportFunctions`
 

@@ -243,4 +243,32 @@ describe("checkExportConstants", () => {
       'Constant "options" must not have additional property "retries"'
     );
   });
+
+  it("validates an exact template-expanded type annotation", () => {
+    const result = checkExportConstants({
+      expected: [{ name: "settings", type: "${name}Settings<'public'>" }],
+      context: createMockContext({
+        path: "src/index.ts",
+        placeholders: { name: { toString: () => "Module" } },
+      }),
+      fileStructure: parseFileStructure({
+        source:
+          "export const settings: ModuleSettings<'public'> = { enabled: true };",
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("reports a mismatched exact type annotation", () => {
+    const result = checkExportConstants({
+      expected: [{ name: "settings", type: "Readonly<ModuleSettings>" }],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseFileStructure({
+        source: "export const settings: ModuleSettings = {};",
+      }),
+    });
+    expect(result[0].message).toBe(
+      'Constant "settings" must have type "Readonly<ModuleSettings>"'
+    );
+  });
 });

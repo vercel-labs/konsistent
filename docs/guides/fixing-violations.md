@@ -157,6 +157,11 @@ For `exportConstants`, the value must be a `const`. If a `let` or `function` exi
 
 When a constant entry includes `schema`, the constant must also have a matching explicit type annotation. Add or adjust the annotation only after confirming the initializer and all assignments satisfy it. Schema checks support scalar, literal-union enum, homogeneous array, and inline object annotations; array items and object properties may use a string to require an exact TypeScript type reference. They do not infer initializer types or resolve referenced types. For object schemas, every configured property must be declared. Names in `required` must be non-optional, while other configured names must include `?`.
 
+When an entry includes `type`, its complete explicit annotation must match the
+configured TypeScript type expression exactly after template substitution.
+Formatting is significant, and konsistent does not resolve imports, aliases, or
+semantic equivalence.
+
 #### `exportTypes`
 
 Message: `Missing export type "X"` or `Type "X" ...` for schema mismatches.
@@ -171,6 +176,11 @@ Search first: grep for `X`, case variants, stripped suffixes (`XConfig` ↔ `X` 
 - **Non-trivial**: no candidate after search, and the type would require designing a new shape. Defer.
 
 When an entry includes `schema`, inspect the local type alias or interface rather than searching for a re-export. Every configured object property must exist with the exact required/optional status expressed by `required`; configured scalar types and type references must match the annotation exactly. Unconfigured properties are allowed unless `additionalProperties` is `false`. Do not replace a local schema-constrained type with a cross-file re-export, because `schema` and `from` are mutually exclusive.
+
+When an entry includes `type`, inspect the right-hand side of the local type
+alias. It must match the complete configured expression exactly after template
+substitution. Interfaces cannot satisfy `type`, and cross-file re-exports cannot
+satisfy it because `type` and `from` are mutually exclusive.
 
 #### `exportFunctions`
 

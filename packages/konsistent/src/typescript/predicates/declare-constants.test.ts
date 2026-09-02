@@ -117,4 +117,42 @@ describe("checkDeclareConstants", () => {
       'Constant "port" must have an explicit type annotation'
     );
   });
+
+  it("validates an exact template-expanded type annotation", () => {
+    const result = checkDeclareConstants({
+      expected: [{ name: "settings", type: "Readonly<${name}Settings>" }],
+      context: createMockContext({
+        path: "src/index.ts",
+        placeholders: { name: { toString: () => "Module" } },
+      }),
+      fileStructure: parseSource({
+        source: "const settings: Readonly<ModuleSettings> = {};",
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("reports a mismatched exact type annotation", () => {
+    const result = checkDeclareConstants({
+      expected: [{ name: "settings", type: "Readonly<ModuleSettings>" }],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({
+        source: "const settings: ModuleSettings = {};",
+      }),
+    });
+    expect(result[0].message).toBe(
+      'Constant "settings" must have type "Readonly<ModuleSettings>"'
+    );
+  });
+
+  it("requires an explicit annotation for an exact type constraint", () => {
+    const result = checkDeclareConstants({
+      expected: [{ name: "settings", type: "ModuleSettings" }],
+      context: createMockContext({ path: "src/index.ts" }),
+      fileStructure: parseSource({ source: "const settings = {};" }),
+    });
+    expect(result[0].message).toBe(
+      'Constant "settings" must have an explicit type annotation'
+    );
+  });
 });

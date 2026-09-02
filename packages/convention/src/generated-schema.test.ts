@@ -87,6 +87,31 @@ describe("reusable-convention-package.schema.json", () => {
     expect(valid).toBe(true);
   });
 
+  it("accepts exact top-level type constraints", () => {
+    const valid = validate({
+      conventionSpecVersion: "v1",
+      conventions: [
+        {
+          name: "exact-types",
+          description: "Exact declaration types.",
+          must: {
+            declareTypes: [
+              { name: "InternalType", type: "SharedType<'internal'>" },
+            ],
+            declareConstants: [
+              { name: "internalValue", type: "SharedType<'internal'>" },
+            ],
+            exportTypes: [{ name: "PublicType", type: "SharedType<'public'>" }],
+            exportConstants: [
+              { name: "publicValue", type: "SharedType<'public'>" },
+            ],
+          },
+        },
+      ],
+    });
+    expect(valid).toBe(true);
+  });
+
   it("rejects the legacy object form for inner type references", () => {
     const valid = validate({
       conventionSpecVersion: "v1",
@@ -207,6 +232,28 @@ describe("reusable-convention-package.schema.json", () => {
               {
                 name: "Settings",
                 from: "./settings",
+                schema: { type: "object", properties: {} },
+              },
+            ],
+          },
+        },
+      ],
+    });
+    expect(valid).toBe(false);
+  });
+
+  it("rejects conflicting top-level type constraints", () => {
+    const valid = validate({
+      conventionSpecVersion: "v1",
+      conventions: [
+        {
+          name: "settings",
+          description: "Settings exports.",
+          must: {
+            exportTypes: [
+              {
+                name: "Settings",
+                type: "SharedSettings",
                 schema: { type: "object", properties: {} },
               },
             ],

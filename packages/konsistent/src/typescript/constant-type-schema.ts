@@ -53,6 +53,24 @@ export interface ConstantSchemaMatchResult {
   reason?: string;
 }
 
+export function matchTypeExpression(opts: {
+  actual: string | undefined;
+  expected: string;
+  missingReason: string;
+}): ConstantSchemaMatchResult {
+  const { actual, expected, missingReason } = opts;
+  if (actual === undefined) {
+    return { matches: false, reason: missingReason };
+  }
+  if (actual !== expected) {
+    return {
+      matches: false,
+      reason: `must have type "${expected}"`,
+    };
+  }
+  return { matches: true };
+}
+
 function resolveInnerTypeConstraint(opts: {
   constraint: InnerTypeConstraintV1;
   resolveTemplate: (template: string) => string;

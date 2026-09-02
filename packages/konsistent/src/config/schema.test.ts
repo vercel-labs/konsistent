@@ -204,6 +204,65 @@ describe("ConfigV1Schema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("accepts exact top-level type constraints", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          must: {
+            declareTypes: [{ name: "LocalType", type: "SharedType<'local'>" }],
+            declareConstants: [
+              { name: "localConstant", type: "SharedType<'local'>" },
+            ],
+            exportTypes: [
+              {
+                name: "PublicType",
+                alias: "AliasedType",
+                type: "SharedType<'public'>",
+              },
+            ],
+            exportConstants: [
+              { name: "publicConstant", type: "SharedType<'public'>" },
+            ],
+          },
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it.each([
+    { name: "Settings", schema: { type: "string" }, type: "SharedSettings" },
+    { name: "Settings", from: "./settings", type: "SharedSettings" },
+  ])("rejects conflicting exportTypes definition %#", (definition) => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          must: { exportTypes: [definition] },
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects from on exportConstants", () => {
+    const result = ConfigV1Schema.safeParse({
+      version: "v1",
+      conventions: [
+        {
+          paths: "src/*.ts",
+          must: {
+            exportConstants: [{ name: "settings", from: "./settings" }],
+          },
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("accepts aliases for value and type import and export predicates", () => {
     const result = ConfigV1Schema.safeParse({
       version: "v1",
