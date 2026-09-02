@@ -70,12 +70,17 @@ describe("checkDeclareTypes", () => {
             type: "object",
             properties: {
               enabled: { type: "boolean" },
-              auth: { type: "Namespace.MyAuth" },
+              auth: "${authType}",
             },
           },
         },
       ],
-      context: createMockContext({ path: "src/index.ts" }),
+      context: createMockContext({
+        path: "src/index.ts",
+        placeholders: {
+          authType: { toString: () => "Namespace.MyAuth" },
+        },
+      }),
       fileStructure: parseSource({
         source: [
           "type Settings = { model?: string; extra?: number };",

@@ -3,11 +3,20 @@ import type { PredicateContext } from "../../core/context.js";
 import { parseFileStructure } from "../parser.js";
 import { checkDeclareConstants } from "./declare-constants.js";
 
-function createMockContext(opts: { path: string }): PredicateContext {
+function createMockContext(opts: {
+  path: string;
+  placeholders?: Record<string, { toString(): string }>;
+}): PredicateContext {
+  const placeholders = opts.placeholders ?? {};
   return {
     path: opts.path,
-    placeholders: {} as PredicateContext["placeholders"],
-    resolveTemplate: (t: string) => t,
+    placeholders: placeholders as PredicateContext["placeholders"],
+    resolveTemplate(t: string): string {
+      return t.replace(/\$\{(\w+)\}/g, (match, name) => {
+        const placeholder = placeholders[name];
+        return placeholder ? placeholder.toString() : match;
+      });
+    },
     fileExists: () => false,
     readDir: () => [],
   };
@@ -70,11 +79,16 @@ describe("checkDeclareConstants", () => {
           name: "authProviders",
           schema: {
             type: "array",
-            items: { type: "Readonly<MyAuth>" },
+            items: "${authType}",
           },
         },
       ],
-      context: createMockContext({ path: "src/index.ts" }),
+      context: createMockContext({
+        path: "src/index.ts",
+        placeholders: {
+          authType: { toString: () => "Readonly<MyAuth>" },
+        },
+      }),
       fileStructure: parseSource({
         source: "const authProviders: ReadonlyArray<Readonly<MyAuth>> = [];",
       }),

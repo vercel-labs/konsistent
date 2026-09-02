@@ -308,6 +308,7 @@ function collectUsagesInPredicates(opts: {
     list: predicates.declareTypes,
     key: `${prefix}.declareTypes`,
     objectFields: ["name"],
+    schemaField: true,
     declared,
     usages,
   });
@@ -315,6 +316,7 @@ function collectUsagesInPredicates(opts: {
     list: predicates.declareConstants,
     key: `${prefix}.declareConstants`,
     objectFields: ["name"],
+    schemaField: true,
     declared,
     usages,
   });
@@ -372,6 +374,7 @@ function collectUsagesInPredicates(opts: {
     list: predicates.exportTypes,
     key: `${prefix}.exportTypes`,
     objectFields: ["name", "alias", "from"],
+    schemaField: true,
     declared,
     usages,
   });
@@ -379,6 +382,7 @@ function collectUsagesInPredicates(opts: {
     list: predicates.exportConstants,
     key: `${prefix}.exportConstants`,
     objectFields: ["name", "from"],
+    schemaField: true,
     declared,
     usages,
   });
@@ -471,6 +475,7 @@ function collectUsagesInDefinitionList(opts: {
   arrayFields?: string[];
   extendField?: boolean;
   implementField?: boolean;
+  schemaField?: boolean;
   declared: Set<string>;
   usages: Usage[];
 }): void {
@@ -481,6 +486,7 @@ function collectUsagesInDefinitionList(opts: {
     arrayFields,
     extendField,
     implementField,
+    schemaField,
     declared,
     usages,
   } = opts;
@@ -516,6 +522,42 @@ function collectUsagesInDefinitionList(opts: {
         declared,
         usages,
       });
+    }
+    if (schemaField) {
+      collectSchemaUsages({
+        value: entry.schema,
+        key,
+        declared,
+        usages,
+      });
+    }
+  }
+}
+
+function collectSchemaUsages(opts: {
+  value: unknown;
+  key: string;
+  declared: Set<string>;
+  usages: Usage[];
+}): void {
+  const { value, key, declared, usages } = opts;
+  if (!(value && typeof value === "object")) {
+    return;
+  }
+
+  const schema = value as Record<string, unknown>;
+  if (schema.type === "array" && typeof schema.items === "string") {
+    pushStringUsages({ value: schema.items, key, declared, usages });
+  }
+  if (
+    schema.type === "object" &&
+    schema.properties &&
+    typeof schema.properties === "object"
+  ) {
+    for (const constraint of Object.values(schema.properties)) {
+      if (typeof constraint === "string") {
+        pushStringUsages({ value: constraint, key, declared, usages });
+      }
     }
   }
 }

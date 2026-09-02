@@ -1,6 +1,8 @@
 import type {
+  ConstantEnumSchemaV1,
   ConstantScalarTypeV1,
   ConstantValueSchemaV1,
+  InnerTypeConstraintV1,
 } from "@konsistent/convention";
 import ts from "typescript";
 
@@ -49,6 +51,57 @@ export type TypeShapeInfo = ConstantTypeInfo;
 export interface ConstantSchemaMatchResult {
   matches: boolean;
   reason?: string;
+}
+
+function resolveInnerTypeConstraint(opts: {
+  constraint: InnerTypeConstraintV1;
+  resolveTemplate: (template: string) => string;
+}): InnerTypeConstraintV1 {
+  return typeof opts.constraint === "string"
+    ? opts.resolveTemplate(opts.constraint)
+    : opts.constraint;
+}
+
+export function resolveConstantValueSchema(opts: {
+  schema: ConstantValueSchemaV1;
+  resolveTemplate: (template: string) => string;
+}): ConstantValueSchemaV1 {
+  const { schema, resolveTemplate } = opts;
+  if (schema.type === "array") {
+    return {
+      ...schema,
+      items: resolveInnerTypeConstraint({
+        constraint: schema.items,
+        resolveTemplate,
+      }),
+    };
+  }
+  if (schema.type === "object") {
+    const properties: typeof schema.properties = Object.create(null);
+    for (const [name, constraint] of Object.entries(schema.properties)) {
+      properties[name] =
+        typeof constraint === "string"
+          ? resolveTemplate(constraint)
+          : constraint;
+    }
+    return {
+      ...schema,
+      properties,
+    };
+  }
+  return schema;
+}
+
+function innerTypeConstraintText(
+  constraint: InnerTypeConstraintV1 | Record<string, never>
+): string | undefined {
+  if (typeof constraint === "string") {
+    return constraint;
+  }
+  if (Object.hasOwn(constraint, "type")) {
+    return (constraint as { type: ConstantScalarTypeV1 }).type;
+  }
+  return;
 }
 
 function parseScalarType(
@@ -246,7 +299,7 @@ function scalarValueKey(value: ConstantScalarValue): string {
 
 function matchEnumSchema(opts: {
   actual: ConstantTypeInfo;
-  schema: Extract<ConstantValueSchemaV1, { enum: unknown }>;
+  schema: ConstantEnumSchemaV1;
 }): ConstantSchemaMatchResult {
   const { actual, schema } = opts;
   if (
@@ -277,6 +330,12 @@ function matchEnumSchema(opts: {
     };
   }
   return { matches: true };
+}
+
+function isEnumSchema(
+  schema: ConstantValueSchemaV1
+): schema is ConstantEnumSchemaV1 {
+  return Object.hasOwn(schema, "enum");
 }
 
 function matchObjectSchema(opts: {
@@ -315,13 +374,11 @@ function matchObjectSchema(opts: {
         reason: `property "${name}" must be optional`,
       };
     }
-    if (
-      Object.hasOwn(propertySchema, "type") &&
-      property.type !== propertySchema.type
-    ) {
+    const expectedType = innerTypeConstraintText(propertySchema);
+    if (expectedType !== undefined && property.type !== expectedType) {
       return {
         matches: false,
-        reason: `property "${name}" must be of type "${propertySchema.type}"`,
+        reason: `property "${name}" must be of type "${expectedType}"`,
       };
     }
   }
@@ -354,14 +411,15 @@ function matchTypeSchema(opts: {
   if (actual.kind === "unsupported") {
     return { matches: false, reason: unsupportedReason };
   }
-  if (Object.hasOwn(schema, "enum")) {
+  if (isEnumSchema(schema)) {
     return matchEnumSchema({ actual, schema });
   }
   if (schema.type === "array") {
-    if (actual.kind !== "array" || actual.itemType !== schema.items.type) {
+    const expectedItemType = innerTypeConstraintText(schema.items);
+    if (actual.kind !== "array" || actual.itemType !== expectedItemType) {
       return {
         matches: false,
-        reason: `must be an array with items of type "${schema.items.type}"`,
+        reason: `must be an array with items of type "${expectedItemType}"`,
       };
     }
     return { matches: true };

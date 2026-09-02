@@ -18,13 +18,10 @@ export const ConstantScalarSchemaV1Schema = z.strictObject({
   type: ConstantScalarTypeV1Schema,
 });
 
-const ConstantInnerTypeV1Schema = z
-  .string()
-  .regex(/^[A-Za-z0-9_$.,<>]+(?: +[A-Za-z0-9_$.,<>]+)*$/);
-
-const ConstantInnerTypeSchemaV1Schema = z.strictObject({
-  type: ConstantInnerTypeV1Schema,
-});
+export const InnerTypeConstraintV1Schema = z.union([
+  ConstantScalarSchemaV1Schema,
+  z.string().min(1),
+]);
 
 export const ConstantEnumSchemaV1Schema = z
   .strictObject({
@@ -58,12 +55,12 @@ export const ConstantEnumSchemaV1Schema = z
 
 const ConstantObjectPropertySchemaV1Schema = z.union([
   z.strictObject({}),
-  ConstantInnerTypeSchemaV1Schema,
+  InnerTypeConstraintV1Schema,
 ]);
 
 export const ConstantArraySchemaV1Schema = z.strictObject({
   type: z.literal("array"),
-  items: ConstantInnerTypeSchemaV1Schema,
+  items: InnerTypeConstraintV1Schema,
 });
 
 export const ConstantObjectSchemaV1Schema = z
@@ -136,6 +133,7 @@ export type ConstantScalarTypeV1 = z.infer<typeof ConstantScalarTypeV1Schema>;
 export type ConstantScalarSchemaV1 = z.infer<
   typeof ConstantScalarSchemaV1Schema
 >;
+export type InnerTypeConstraintV1 = z.infer<typeof InnerTypeConstraintV1Schema>;
 export type ConstantEnumSchemaV1 = z.infer<typeof ConstantEnumSchemaV1Schema>;
 export type ConstantArraySchemaV1 = z.infer<typeof ConstantArraySchemaV1Schema>;
 export type ConstantObjectSchemaV1 = z.infer<

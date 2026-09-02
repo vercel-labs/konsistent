@@ -3,7 +3,7 @@
   "conventions": [
     {
       "name": "type-schemas",
-      "paths": "src/types.ts",
+      "paths": "src/{harnessId}.ts",
       "must": {
         "declareTypes": [
           {
@@ -12,7 +12,16 @@
               "type": "object",
               "properties": {
                 "enabled": { "type": "boolean" },
-                "auth": { "type": "Readonly<MyAuth>" }
+                "auth": "Readonly<MyAuth>"
+              }
+            }
+          },
+          {
+            "name": "InternalDataSettings",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": "${harnessId.toPascalCase()}Data"
               }
             }
           }

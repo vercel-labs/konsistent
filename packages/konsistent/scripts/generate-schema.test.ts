@@ -218,7 +218,7 @@ describe("konsistent.schema.json", () => {
     expect(valid).toBe(false);
   });
 
-  it("rejects invalid characters in inner type references", () => {
+  it("rejects the legacy object form for inner type references", () => {
     const valid = validate({
       version: "v1",
       conventions: [

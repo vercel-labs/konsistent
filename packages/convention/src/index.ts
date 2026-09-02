@@ -8,6 +8,7 @@ export type {
   ConstantValueSchemaV1,
   ExportConstantDefinitionV1,
   ExportTypeDefinitionV1,
+  InnerTypeConstraintV1,
   TypeDefinitionV1,
 } from "./constant-schema.js";
 export {
@@ -20,6 +21,7 @@ export {
   ConstantValueSchemaV1Schema,
   ExportConstantDefinitionV1Schema,
   ExportTypeDefinitionV1Schema,
+  InnerTypeConstraintV1Schema,
   TypeDefinitionV1Schema,
 } from "./constant-schema.js";
 export { defineConventions } from "./define-conventions.js";

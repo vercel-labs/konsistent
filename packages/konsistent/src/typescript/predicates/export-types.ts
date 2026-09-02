@@ -6,7 +6,10 @@ import type { PredicateContext } from "../../core/context.js";
 import { findTypeDefinition } from "../../core/declaration-utils.js";
 import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
 import { createDiagnostic } from "../../core/diagnostics.js";
-import { matchTypeDefinitionSchema } from "../constant-type-schema.js";
+import {
+  matchTypeDefinitionSchema,
+  resolveConstantValueSchema,
+} from "../constant-type-schema.js";
 import type { FileStructure } from "../types.js";
 
 export function checkExportTypes(opts: {
@@ -65,7 +68,10 @@ export function checkExportTypes(opts: {
       });
       const result = matchTypeDefinitionSchema({
         actual: typeDefinition?.typeInfo,
-        schema,
+        schema: resolveConstantValueSchema({
+          schema,
+          resolveTemplate: context.resolveTemplate,
+        }),
       });
       if (!result.matches) {
         diagnostics.push(

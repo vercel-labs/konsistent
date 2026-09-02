@@ -10,7 +10,10 @@ import {
 } from "../../core/declaration-utils.js";
 import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
 import { createDiagnostic } from "../../core/diagnostics.js";
-import { matchConstantTypeSchema } from "../constant-type-schema.js";
+import {
+  matchConstantTypeSchema,
+  resolveConstantValueSchema,
+} from "../constant-type-schema.js";
 import type { FileStructure } from "../types.js";
 
 export function checkDeclareConstants(opts: {
@@ -66,7 +69,10 @@ export function checkDeclareConstants(opts: {
       );
       const result = matchConstantTypeSchema({
         actual: constantInfo?.typeInfo,
-        schema: definition.schema,
+        schema: resolveConstantValueSchema({
+          schema: definition.schema,
+          resolveTemplate: context.resolveTemplate,
+        }),
       });
       if (!result.matches) {
         diagnostics.push(

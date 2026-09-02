@@ -125,7 +125,7 @@ describe("constant type schemas", () => {
     expect(
       matches({
         type: entry.annotation,
-        schema: { type: "array", items: { type: entry.itemType } },
+        schema: { type: "array", items: entry.itemType },
       })
     ).toBe(true);
   });
@@ -134,7 +134,7 @@ describe("constant type schemas", () => {
     expect(
       matches({
         type: "Array<Readonly< MyType >>",
-        schema: { type: "array", items: { type: "Readonly<MyType>" } },
+        schema: { type: "array", items: "Readonly<MyType>" },
       })
     ).toBe(false);
   });
@@ -164,7 +164,7 @@ describe("constant type schemas", () => {
         schema: {
           type: "object",
           properties: {
-            auth: { type: "Readonly<MyAuth>" },
+            auth: "Readonly<MyAuth>",
             modelId: { type: "string" },
           },
           required: ["auth", "modelId"],
@@ -179,7 +179,7 @@ describe("constant type schemas", () => {
         type: "{ auth: Readonly< MyAuth > }",
         schema: {
           type: "object",
-          properties: { auth: { type: "Readonly<MyAuth>" } },
+          properties: { auth: "Readonly<MyAuth>" },
           required: ["auth"],
         },
       })
@@ -197,7 +197,7 @@ describe("constant type schemas", () => {
         type: `{ auth: ${type} }`,
         schema: {
           type: "object",
-          properties: { auth: { type: "MyAuth" } },
+          properties: { auth: "MyAuth" },
           required: ["auth"],
         },
       })
@@ -356,7 +356,7 @@ describe("type definition schemas", () => {
       name: "Settings",
       schema: {
         type: "object",
-        properties: { auth: { type: "Readonly<MyAuth>" } },
+        properties: { auth: "Readonly<MyAuth>" },
         required: ["auth"],
       },
       source: "type Settings = { auth: Readonly<MyAuth> }",

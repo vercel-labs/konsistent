@@ -253,7 +253,7 @@ exported type.
       "schema": {
         "type": "object",
         "properties": {
-          "auth": { "type": "Readonly<MyAuth>" },
+          "auth": "Readonly<MyAuth>",
           "model": { "type": "string" },
           "timeout": { "type": "number" }
         },
@@ -325,12 +325,12 @@ The supported `schema` forms are:
 
 - Scalar: `{ "type": "string" }`, using `string`, `number`, `boolean`, or `null`.
 - Enum: `{ "type": "string", "enum": ["a", "b"] }`. The annotation must contain exactly the configured literal values, although their order does not matter.
-- Array: `{ "type": "array", "items": { "type": "string" } }`. Items may use a scalar type or a TypeScript type reference such as `MyAuth`, `Namespace.MyAuth`, or `Readonly<MyAuth>`. `T[]`, `Array<T>`, `readonly T[]`, and `ReadonlyArray<T>` annotations qualify.
-- Object: `{ "type": "object", "properties": { ... }, "required": [...], "additionalProperties": false }`. Every configured property must be declared. An empty property schema (`{}`) checks its presence and optionality without constraining its type; a typed schema checks a scalar type or an exact TypeScript type reference.
+- Array: `{ "type": "array", "items": { "type": "string" } }`. Items may use a scalar schema or a TypeScript type reference string such as `"MyAuth"`, `"Namespace.MyAuth"`, or `"Readonly<MyAuth>"`. `T[]`, `Array<T>`, `readonly T[]`, and `ReadonlyArray<T>` annotations qualify.
+- Object: `{ "type": "object", "properties": { ... }, "required": [...], "additionalProperties": false }`. Every configured property must be declared. An empty property schema (`{}`) checks its presence and optionality without constraining its type; a scalar schema checks its JSON type; a string checks an exact TypeScript type reference.
 
 Object schemas describe TypeScript declaration shapes rather than ordinary JSON Schema instances. Every name in `properties` must exist in the annotation or definition. Names listed in `required` must be non-optional (`name: Type`); all other configured names must be optional (`name?: Type`). `required` defaults to an empty array. `additionalProperties` defaults to `true`, allowing unconfigured TypeScript properties; set it to `false` to reject them.
 
-Inner type references are compared directly to the source annotation without resolving imports or aliases. The comparison includes formatting, so `Readonly<MyAuth>` does not match `Readonly< MyAuth >`. Configured references may contain ASCII letters, digits, spaces, `_`, `$`, `.`, `<`, `>`, and `,`; leading or trailing spaces are rejected.
+Inner TypeScript type references are compared directly to the source annotation without resolving imports or aliases. They support template substitutions, including transformations such as `"${harnessId.toPascalCase()}Data"`. The comparison includes formatting, so `Readonly<MyAuth>` does not match `Readonly< MyAuth >`.
 
 This is deliberately a strict subset of JSON Schema. Unsupported keywords and shapes are rejected during configuration validation, including `integer`, `$ref`, combinators, nested object or array schemas, tuple schemas, enum array items, schema-valued `additionalProperties`, and constraints such as `minItems`.
 

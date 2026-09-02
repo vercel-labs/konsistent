@@ -11,7 +11,10 @@ import {
 } from "../../core/declaration-utils.js";
 import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
 import { createDiagnostic } from "../../core/diagnostics.js";
-import { matchTypeDefinitionSchema } from "../constant-type-schema.js";
+import {
+  matchTypeDefinitionSchema,
+  resolveConstantValueSchema,
+} from "../constant-type-schema.js";
 import type { FileStructure } from "../types.js";
 
 export function checkDeclareTypes(opts: {
@@ -68,7 +71,10 @@ export function checkDeclareTypes(opts: {
       });
       const result = matchTypeDefinitionSchema({
         actual: typeDefinition?.typeInfo,
-        schema: definition.schema,
+        schema: resolveConstantValueSchema({
+          schema: definition.schema,
+          resolveTemplate: context.resolveTemplate,
+        }),
       });
       if (!result.matches) {
         diagnostics.push(
