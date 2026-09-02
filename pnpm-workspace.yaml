@@ -11,7 +11,7 @@ packages:
   - "e2e/fixtures/config-package-consumer"
 
 catalog:
-  "@types/node": "^24"
+  "@types/node": "^24.12.2"
   ajv: "^8.18.0"
   citty: "^0.2"
   del-cli: "^6"
