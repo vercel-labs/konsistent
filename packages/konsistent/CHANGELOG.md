@@ -1,5 +1,15 @@
 # konsistent
 
+## 1.0.0-beta.9
+
+### Patch Changes
+
+- 4e8baa6: fix(konsistent): represent exact TypeScript type references as string alternatives to JSON Schema shapes
+- 1f3717c: feat(konsistent): support exact top-level TypeScript type constraints alternatively to JSON schema
+- Updated dependencies [4e8baa6]
+- Updated dependencies [1f3717c]
+  - @konsistent/convention@1.0.0-beta.9
+
 ## 1.0.0-beta.8
 
 ### Patch Changes
