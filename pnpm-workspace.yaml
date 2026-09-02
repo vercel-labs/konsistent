@@ -25,7 +25,9 @@ catalog:
 
 overrides:
   esbuild: "catalog:"
-  "read-yaml-file@1>js-yaml": "^3.15.0"
+  "read-yaml-file@1>js-yaml": "^3.15.1"
+  "@changesets/parse>js-yaml": "^4.3.1"
+  brace-expansion: "^5.0.7"
   vite: "catalog:"
 
 allowBuilds:
