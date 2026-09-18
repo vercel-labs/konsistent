@@ -16,6 +16,7 @@
     "konsistent-fixture-reusable-convention-unknown-source": "0.0.0"
   },
   "changesets": [
+    "all-rabbits-wonder",
     "bright-ravens-check",
     "eight-corners-bet",
     "fix-double-star-placeholder-matching",

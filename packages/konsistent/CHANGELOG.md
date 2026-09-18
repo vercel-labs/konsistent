@@ -1,5 +1,11 @@
 # konsistent
 
+## 1.0.0-beta.10
+
+### Patch Changes
+
+- 6472849: chore(konsistent): add readme badges
+
 ## 1.0.0-beta.9
 
 ### Patch Changes
