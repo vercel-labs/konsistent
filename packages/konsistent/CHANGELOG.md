@@ -1,5 +1,15 @@
 # konsistent
 
+## 1.0.0-beta.10
+
+### Patch Changes
+
+- 6472849: chore(konsistent): add readme badges
+- 9847b5b: fix(konsistent): evaluate `if` and `ifNot` block conditions against `for.files` entries when present
+- c0d3164: feat(konsistent): add `callFunction` predicate
+- Updated dependencies [c0d3164]
+  - @konsistent/convention@1.0.0-beta.10
+
 ## 1.0.0-beta.9
 
 ### Patch Changes
