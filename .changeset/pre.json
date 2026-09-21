@@ -16,6 +16,7 @@
     "konsistent-fixture-reusable-convention-unknown-source": "0.0.0"
   },
   "changesets": [
+    "all-rabbits-wonder",
     "bright-ravens-check",
     "eight-corners-bet",
     "fix-double-star-placeholder-matching",
@@ -25,12 +26,14 @@
     "long-kids-yell",
     "lucky-bees-fly",
     "quick-snails-import",
+    "quiet-files-gate",
     "ripe-places-rhyme",
     "salty-stamps-cover",
     "soft-types-match",
     "sunny-lights-obey",
     "tame-buttons-rush",
     "thick-canyons-move",
+    "true-spies-double",
     "twenty-cameras-tan",
     "whole-ideas-punch"
   ]
