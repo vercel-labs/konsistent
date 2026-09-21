@@ -1,0 +1,45 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "for-import-conditions",
+      "paths": "src/{moduleName}",
+      "must": [
+        {
+          "name": "value-import-condition",
+          "if": {
+            "hasValueImport": {
+              "name": "createClient",
+              "from": "./dependencies"
+            }
+          },
+          "for": { "files": "*.ts" },
+          "must": { "exportConstants": ["valueImportConditionPassed"] }
+        },
+        {
+          "name": "type-import-condition",
+          "if": {
+            "hasTypeImport": {
+              "name": "Client",
+              "from": "./dependencies"
+            }
+          },
+          "for": { "files": "*.ts" },
+          "must": { "exportConstants": ["typeImportConditionPassed"] }
+        },
+        {
+          "name": "value-import-from-condition",
+          "if": { "hasValueImportFrom": "./side-effect" },
+          "for": { "files": "*.ts" },
+          "must": { "exportConstants": ["valueImportFromConditionPassed"] }
+        },
+        {
+          "name": "type-import-from-condition",
+          "if": { "hasTypeImportFrom": "./dependencies" },
+          "for": { "files": "*.ts" },
+          "must": { "exportConstants": ["typeImportFromConditionPassed"] }
+        }
+      ]
+    }
+  ]
+}

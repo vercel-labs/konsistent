@@ -91,7 +91,7 @@ Switch from object to array form when you need:
 | `mustNot` | `MustPredicates` | yes, unless `must` is present | The predicates this block forbids. |
 | `if` | condition object | no | Gate. Block runs only if one supported condition holds. |
 | `ifNot` | condition object | no | Negative gate. Block runs only if the condition does not hold. |
-| `for` | `{ files: string \| string[] }` | no | Scope. Predicates apply to files matching this pattern within the parent path. |
+| `for` | `{ files: string \| string[] }` | no | Scope. Conditions and predicates apply to files matching this pattern within the parent path. |
 | `excludeFiles` | `string[]` | no | Glob patterns to exclude from the block. |
 | `name` | string matching `[a-z0-9-]+` | no | Identifier shown in violation reports. |
 | `description` | string | no | Human-readable explanation. |
@@ -102,7 +102,7 @@ Every predicate in this section is available through both `if` and `ifNot`. The 
 
 ### `hasFile`
 
-The condition matches only when the named file exists at (or relative to) the matched path. Templates are resolved using the matched path's placeholders. Use the same object under `ifNot` to run only when the file is absent.
+The condition matches only when the named file exists at (or relative to) the condition context. Templates are resolved using the context's placeholders. Use the same object under `ifNot` to run only when the file is absent.
 
 ```json
 {
@@ -125,7 +125,7 @@ The condition matches only when the named placeholder satisfies a constraint. Un
 
 ### Import predicates
 
-Import conditions inspect the file at the matched `paths` entry. They return false when the matched path is a directory. A block-level condition runs before `for.files`, so it always inspects the parent matched path rather than files selected by `for`. Parsing is shared with block conditions and TypeScript predicates for the same file.
+Import conditions inspect the file represented by the condition context. Without `for.files`, that is the path matched by `paths`; with `for.files`, the condition is evaluated separately for each matched file. They return false when the context path is a directory. Parsing is shared with block conditions and TypeScript predicates for the same file.
 
 | Condition | Value | Applies when |
 | --- | --- | --- |
@@ -215,7 +215,7 @@ For `components/Button`, the block runs once per `*.stories.tsx` file inside `Bu
 }
 ```
 
-`if` and `ifNot` gate whether the block runs at all; `for` narrows which files inside the matched path the predicates apply to. Common idiom: gate on the existence of a file, then run predicates only on that file.
+Without `for`, `if` and `ifNot` gate the block using the parent matched path. With `for`, the block first finds matching files, then evaluates the conditions independently for each file; a failed condition skips only that file. The same per-file context is used for the block's predicates. Common idiom: select optional files with `for`, then gate each file on its imports.
 
 ## `excludeFiles`
 

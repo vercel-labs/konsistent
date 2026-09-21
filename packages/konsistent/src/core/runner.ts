@@ -1228,6 +1228,17 @@ async function evaluateForBlock(opts: {
 
   if (!block.for) {
     if (
+      !evaluateConditions({
+        ifCondition: block.if,
+        ifNotCondition: block.ifNot,
+        context: parentContext,
+        fileSystem,
+        fileStructureCache,
+      })
+    ) {
+      return [];
+    }
+    if (
       isFileExcluded({
         filePath: parentContext.path,
         excludeFiles: block.excludeFiles,
@@ -1292,6 +1303,18 @@ async function evaluateForBlock(opts: {
       },
       fileSystem,
     });
+
+    if (
+      !evaluateConditions({
+        ifCondition: block.if,
+        ifNotCondition: block.ifNot,
+        context: forContext,
+        fileSystem,
+        fileStructureCache,
+      })
+    ) {
+      continue;
+    }
 
     if (
       isFileExcluded({
@@ -1427,17 +1450,6 @@ export async function run(opts: {
       }
 
       for (const block of blocks) {
-        if (
-          !evaluateConditions({
-            ifCondition: block.if,
-            ifNotCondition: block.ifNot,
-            context,
-            fileSystem,
-            fileStructureCache,
-          })
-        ) {
-          continue;
-        }
         diagnostics.push(
           ...(await evaluateForBlock({
             block,
