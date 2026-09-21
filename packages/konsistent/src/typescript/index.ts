@@ -1,5 +1,6 @@
 export { parseFileStructure } from "./parser.js";
 export type {
+  CallInfo,
   ClassInfo,
   ConstantInfo,
   DeclarationSymbolInfo,

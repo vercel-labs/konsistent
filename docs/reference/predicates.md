@@ -15,6 +15,8 @@ The full machine-readable schema lives at `node_modules/konsistent/konsistent.sc
   - [`declareFunctions`](#declarefunctions)
   - [`declareInterfaces`](#declareinterfaces)
   - [`declareClasses`](#declareclasses)
+- [Call predicates](#call-predicates)
+  - [`callFunction`](#callfunction)
 - [Export predicates](#export-predicates)
   - [`exportValues`](#exportvalues)
   - [`exportTypes`](#exporttypes)
@@ -176,6 +178,36 @@ Assert local class declarations. Optionally validate `extends` and `implements`,
   ]
 }
 ```
+
+---
+
+## Call predicates
+
+### `callFunction`
+
+Assert that the file calls a function by its local call-site name. The name can
+refer to a local function, an imported binding, or the terminal name in a
+member call such as `client.send()`.
+
+```json
+"must": {
+  "callFunction": [
+    "initialize",
+    {
+      "name": "send",
+      "arguments": ["'email'", "options"]
+    }
+  ]
+}
+```
+
+The string form checks only the function name. `arguments` contains TypeScript
+expression strings and checks them from left to right. It uses prefix matching,
+so additional call arguments are allowed. String literals are compared by
+their decoded value, which makes `"'email'"` and `"\"email\""` equivalent.
+
+Calls made through computed member access, such as `client["send"]()`, and
+constructor calls such as `new Client()` do not match.
 
 ---
 

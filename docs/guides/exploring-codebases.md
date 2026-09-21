@@ -149,6 +149,7 @@ For every pattern you identify:
 - Path → glob with placeholders for the parts that vary.
 - Required files → `haveFiles`.
 - Local declarations → `declareTypes`, `declareConstants`, `declareFunctions`, `declareInterfaces`, `declareClasses`.
+- Required call sites → `callFunction`.
 - Exports → `exportValues`, `exportTypes`, `exportConstants`, `exportFunctions`, `exportInterfaces`, `exportClasses`.
 - Imports → `importValues`, `importTypes`, `importValuesFrom`, `importTypesFrom`, `importValuesFromCurrentDir`, `importValuesFromParents`, `importValuesFromExternals`, `importTypesFromCurrentDir`, `importTypesFromParents`, `importTypesFromExternals`.
 - Optional file conditions → `if.hasFile` blocks.

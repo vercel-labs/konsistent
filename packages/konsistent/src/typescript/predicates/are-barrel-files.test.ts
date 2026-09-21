@@ -21,6 +21,7 @@ function createMockFileStructure(opts: {
     imports: [],
     interfaces: [],
     classes: [],
+    calls: [],
     functions: [],
     constants: [],
     declarationSymbols: [],

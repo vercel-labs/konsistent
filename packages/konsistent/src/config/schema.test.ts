@@ -168,6 +168,10 @@ describe("ConfigV1Schema", () => {
                 returnValueOfType: "Local",
               },
             ],
+            callFunction: [
+              "initialize",
+              { name: "send", arguments: ["'email'"] },
+            ],
             declareInterfaces: [{ name: "Local", extend: "BaseLocal" }],
             declareClasses: [
               {

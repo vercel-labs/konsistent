@@ -91,6 +91,12 @@ export interface FunctionInfo {
   returnType?: TypeAnnotationInfo;
 }
 
+export interface CallInfo {
+  arguments: string[];
+  name: string;
+  pos: SourcePosition;
+}
+
 export interface ConstantInfo {
   name: string;
   pos: SourcePosition;
@@ -118,6 +124,7 @@ export interface NonBarrelStatementInfo {
 }
 
 export interface FileStructure {
+  calls: CallInfo[];
   classes: ClassInfo[];
   constants: ConstantInfo[];
   declarationSymbols: DeclarationSymbolInfo[];

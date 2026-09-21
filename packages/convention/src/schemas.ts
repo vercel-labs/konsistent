@@ -61,6 +61,11 @@ export const FunctionDefinitionV1Schema = z.strictObject({
   returnValueOfType: z.string().optional(),
 });
 
+export const CallFunctionDefinitionV1Schema = z.strictObject({
+  name: z.string(),
+  arguments: z.array(z.string()).optional(),
+});
+
 const ExtendDefinitionV1Schema = z.union([
   z.string(),
   z.strictObject({
@@ -120,6 +125,9 @@ export const MustPredicatesV1Schema = z.strictObject({
     .optional(),
   declareFunctions: z
     .array(z.union([z.string(), FunctionDefinitionV1Schema]))
+    .optional(),
+  callFunction: z
+    .array(z.union([z.string(), CallFunctionDefinitionV1Schema]))
     .optional(),
   declareInterfaces: z
     .array(z.union([z.string(), InterfaceDefinitionV1Schema]))
@@ -268,6 +276,9 @@ export type DeclarationDefinitionV1 = z.infer<
 export type ImportDefinitionV1 = z.infer<typeof ImportDefinitionV1Schema>;
 export type IfConditionV1 = z.infer<typeof IfConditionV1Schema>;
 export type FunctionDefinitionV1 = z.infer<typeof FunctionDefinitionV1Schema>;
+export type CallFunctionDefinitionV1 = z.infer<
+  typeof CallFunctionDefinitionV1Schema
+>;
 export type InterfaceDefinitionV1 = z.infer<typeof InterfaceDefinitionV1Schema>;
 export type ClassDefinitionV1 = z.infer<typeof ClassDefinitionV1Schema>;
 export type MustPredicatesV1 = z.infer<typeof MustPredicatesV1Schema>;
