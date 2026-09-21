@@ -1,0 +1,22 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "required-calls",
+      "paths": "src/index.ts",
+      "must": {
+        "callFunction": [
+          "initialize",
+          {
+            "name": "dispatch",
+            "arguments": ["'email'", "options"]
+          },
+          { "name": "send", "arguments": ["'done'"] }
+        ]
+      },
+      "mustNot": {
+        "callFunction": ["blocked"]
+      }
+    }
+  ]
+}

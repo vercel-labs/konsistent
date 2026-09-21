@@ -34,6 +34,7 @@ function createMockFileStructure(opts: {
       implements: [],
       ...c,
     })),
+    calls: [],
     functions: [],
     constants: [],
     declarationSymbols: [],

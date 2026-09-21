@@ -6,6 +6,7 @@ import {
 import { z } from "zod";
 
 export type {
+  CallFunctionDefinitionV1,
   ClassDefinitionV1,
   ConstantArraySchemaV1,
   ConstantDefinitionV1,
@@ -30,6 +31,7 @@ export type {
   TypeDefinitionV1,
 } from "@konsistent/convention";
 export {
+  CallFunctionDefinitionV1Schema,
   ClassDefinitionV1Schema,
   ConstantArraySchemaV1Schema,
   ConstantDefinitionV1Schema,

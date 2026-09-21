@@ -698,6 +698,54 @@ describe("validatePlaceholders", () => {
     expect(result.ok).toBe(true);
   });
 
+  it("validates placeholders in callFunction names and arguments", () => {
+    const conventions: ConventionV1[] = [
+      {
+        name: "call-function",
+        paths: "packages/{providerId}/src/index.ts",
+        must: {
+          callFunction: [
+            {
+              name: "initialize${providerId}",
+              arguments: ["'${providerId}'"],
+            },
+          ],
+        },
+      },
+    ];
+
+    expect(
+      validatePlaceholders({
+        conventions,
+        identifiers: ["call-function"],
+      })
+    ).toEqual({ ok: true });
+
+    const invalidResult = validatePlaceholders({
+      conventions: [
+        {
+          ...conventions[0],
+          must: {
+            callFunction: [
+              {
+                name: "initialize${missing}",
+                arguments: ["'${missingArgument}'"],
+              },
+            ],
+          },
+        },
+      ],
+      identifiers: ["call-function"],
+    });
+
+    expect(invalidResult.ok).toBe(false);
+    if (!invalidResult.ok) {
+      expect(invalidResult.error).toContain('"${missing}"');
+      expect(invalidResult.error).toContain('"${missingArgument}"');
+      expect(invalidResult.error).toContain("must.callFunction");
+    }
+  });
+
   it("rejects a name declared in both paths and placeholders", () => {
     const conventions: ConventionV1[] = [
       {

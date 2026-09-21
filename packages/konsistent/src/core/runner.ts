@@ -15,6 +15,7 @@ import { checkHaveType } from "../predicates/have-type.js";
 import { hasImport, hasImportFrom } from "../typescript/import-matcher.js";
 import { parseFileStructure } from "../typescript/parser.js";
 import { checkAreBarrelFiles } from "../typescript/predicates/are-barrel-files.js";
+import { checkCallFunction } from "../typescript/predicates/call-function.js";
 import { checkDeclareClasses } from "../typescript/predicates/declare-classes.js";
 import { checkDeclareConstants } from "../typescript/predicates/declare-constants.js";
 import { checkDeclareFunctions } from "../typescript/predicates/declare-functions.js";
@@ -76,6 +77,7 @@ export const TS_PREDICATES = new Set([
   "declareTypes",
   "declareConstants",
   "declareFunctions",
+  "callFunction",
   "declareClasses",
   "declareInterfaces",
   "export",
@@ -387,6 +389,16 @@ const TS_PREDICATE_HANDLERS: Record<
     must.declareFunctions
       ? checkDeclareFunctions({
           expected: must.declareFunctions,
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        })
+      : [],
+  callFunction: ({ must, context, fileStructure, conventionName, severity }) =>
+    must.callFunction
+      ? checkCallFunction({
+          expected: must.callFunction,
           context,
           fileStructure,
           conventionName,
@@ -843,6 +855,7 @@ const ITEM_LEVEL_MUST_NOT_PREDICATES = new Set<string>([
   "declareTypes",
   "declareConstants",
   "declareFunctions",
+  "callFunction",
   "declareInterfaces",
   "declareClasses",
   "exportValues",
@@ -916,6 +929,8 @@ function formatForbiddenMessage(opts: {
       return `Forbidden constant declaration "${name}"`;
     case "declareFunctions":
       return `Forbidden function declaration "${name}"`;
+    case "callFunction":
+      return `Forbidden call to function "${name}"`;
     case "declareInterfaces":
       return `Forbidden interface declaration "${name}"`;
     case "declareClasses":

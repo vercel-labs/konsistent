@@ -39,6 +39,7 @@ export {
   importSourceConstraintValue,
 } from "./import-source-selector.js";
 export type {
+  CallFunctionDefinitionV1,
   ClassDefinitionV1,
   DeclarationDefinitionV1,
   ExportDefinitionV1,
@@ -52,6 +53,7 @@ export type {
   ReusableConventionV1,
 } from "./schemas.js";
 export {
+  CallFunctionDefinitionV1Schema,
   ClassDefinitionV1Schema,
   DeclarationDefinitionV1Schema,
   ExportDefinitionV1Schema,

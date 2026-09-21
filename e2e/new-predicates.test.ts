@@ -19,6 +19,33 @@ function runCli(opts: { cwd: string; args?: string[] }) {
   });
 }
 
+describe("call-function fixture", () => {
+  const cwd = resolve(fixturesDir, "call-function");
+
+  it("passes local, imported, member, and argument call checks", async () => {
+    await expect(runCli({ cwd })).resolves.not.toThrow();
+  });
+});
+
+describe("call-function-broken fixture", () => {
+  const cwd = resolve(fixturesDir, "call-function-broken");
+
+  it("reports missing, mismatched, and forbidden calls", async () => {
+    try {
+      await runCli({ cwd });
+      expect.fail("Expected check to exit with code 1");
+    } catch (err: unknown) {
+      const error = err as { stdout: string; code: number; status: number };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain('Missing call to function "initialize"');
+      expect(error.stdout).toContain(
+        'Missing call to function "dispatch" with configured arguments'
+      );
+      expect(error.stdout).toContain('Forbidden call to function "dispatch"');
+    }
+  });
+});
+
 describe("declaration-predicates fixture", () => {
   const cwd = resolve(fixturesDir, "declaration-predicates");
 

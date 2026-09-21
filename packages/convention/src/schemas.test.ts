@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  CallFunctionDefinitionV1Schema,
   ClassDefinitionV1Schema,
   ExportDefinitionV1Schema,
   FunctionDefinitionV1Schema,
@@ -59,6 +60,21 @@ describe("symbol definition schemas", () => {
       }).success
     ).toBe(true);
   });
+
+  it("accepts call function definitions with expression arguments", () => {
+    expect(
+      CallFunctionDefinitionV1Schema.safeParse({
+        name: "send",
+        arguments: ["'email'", "options"],
+      }).success
+    ).toBe(true);
+    expect(
+      CallFunctionDefinitionV1Schema.safeParse({
+        name: "send",
+        arguments: ["'email'", 1],
+      }).success
+    ).toBe(false);
+  });
 });
 
 describe("predicate and block schemas", () => {
@@ -113,6 +129,7 @@ describe("predicate and block schemas", () => {
       exportValues: ["createClient"],
       importValuesFrom: ["@scope/*", "!@scope/internal"],
       importTypesFromCurrentDir: true,
+      callFunction: ["initialize", { name: "send", arguments: ["'email'"] }],
       areBarrelFiles: false,
     });
 

@@ -4,6 +4,7 @@ import {
   parseTypeShape,
 } from "./constant-type-schema.js";
 import type {
+  CallInfo,
   ClassInfo,
   ConstantInfo,
   DeclarationSymbolInfo,
@@ -223,6 +224,7 @@ function processExportedDeclaration(opts: {
 }
 
 interface ParseCollector {
+  calls: CallInfo[];
   classes: ClassInfo[];
   constants: ConstantInfo[];
   declarationSymbols: DeclarationSymbolInfo[];
@@ -521,6 +523,61 @@ function processExportModifier(opts: {
   }
 }
 
+function unwrapCallExpressionName(expression: ts.Expression): ts.Expression {
+  let current = expression;
+  while (
+    ts.isParenthesizedExpression(current) ||
+    ts.isAsExpression(current) ||
+    ts.isTypeAssertionExpression(current) ||
+    ts.isNonNullExpression(current) ||
+    ts.isSatisfiesExpression(current)
+  ) {
+    current = current.expression;
+  }
+  return current;
+}
+
+function extractCallName(opts: {
+  expression: ts.Expression;
+  sourceFile: ts.SourceFile;
+}): string | undefined {
+  const expression = unwrapCallExpressionName(opts.expression);
+  if (ts.isIdentifier(expression)) {
+    return expression.getText(opts.sourceFile);
+  }
+  if (ts.isPropertyAccessExpression(expression)) {
+    return expression.name.getText(opts.sourceFile);
+  }
+  return;
+}
+
+function processCalls(opts: {
+  node: ts.Node;
+  sourceFile: ts.SourceFile;
+  collector: ParseCollector;
+}): void {
+  const { node, sourceFile, collector } = opts;
+  if (ts.isCallExpression(node)) {
+    const name = extractCallName({
+      expression: node.expression,
+      sourceFile,
+    });
+    if (name) {
+      collector.calls.push({
+        arguments: node.arguments.map((argument) =>
+          argument.getText(sourceFile)
+        ),
+        name,
+        pos: getPosition({ sourceFile, node }),
+      });
+    }
+  }
+
+  ts.forEachChild(node, (child) => {
+    processCalls({ node: child, sourceFile, collector });
+  });
+}
+
 export function parseFileStructure(opts: {
   source: string;
   filePath?: string;
@@ -533,6 +590,7 @@ export function parseFileStructure(opts: {
   );
 
   const collector: ParseCollector = {
+    calls: [],
     exports: [],
     imports: [],
     importSources: [],
@@ -585,6 +643,8 @@ export function parseFileStructure(opts: {
       processExportModifier({ node, sourceFile, collector });
     }
   });
+
+  processCalls({ node: sourceFile, sourceFile, collector });
 
   classifyNonBarrelStatements({ sourceFile, collector });
 

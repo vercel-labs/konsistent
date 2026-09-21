@@ -896,4 +896,47 @@ describe("parseFileStructure", () => {
       expect(result.nonBarrelStatements[0].kind).toBe("export-equals");
     });
   });
+
+  describe("calls", () => {
+    it("extracts direct, imported, nested, and member calls", () => {
+      const result = parseFileStructure({
+        source: [
+          'import { send as dispatch } from "./api";',
+          "function run() {",
+          '  initialize("x", options);',
+          "  dispatch('email');",
+          "  client.send?.(getValue());",
+          "  outer(inner());",
+          "}",
+        ].join("\n"),
+      });
+
+      expect(result.calls.map((call) => call.name)).toEqual([
+        "initialize",
+        "dispatch",
+        "send",
+        "getValue",
+        "outer",
+        "inner",
+      ]);
+      expect(result.calls[0]?.arguments).toEqual(['"x"', "options"]);
+      expect(result.calls[1]?.arguments).toEqual(["'email'"]);
+    });
+
+    it("ignores computed member calls and constructor calls", () => {
+      const result = parseFileStructure({
+        source: 'new Service(); client["send"]();',
+      });
+
+      expect(result.calls).toEqual([]);
+    });
+
+    it("reports the call position", () => {
+      const result = parseFileStructure({
+        source: ["", "  initialize();"].join("\n"),
+      });
+
+      expect(result.calls[0]?.pos).toEqual({ line: 2, column: 3 });
+    });
+  });
 });

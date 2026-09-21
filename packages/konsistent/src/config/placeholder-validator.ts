@@ -329,6 +329,14 @@ function collectUsagesInPredicates(opts: {
     usages,
   });
   collectUsagesInDefinitionList({
+    list: predicates.callFunction,
+    key: `${prefix}.callFunction`,
+    objectFields: ["name"],
+    arrayFields: ["arguments"],
+    declared,
+    usages,
+  });
+  collectUsagesInDefinitionList({
     list: predicates.declareInterfaces,
     key: `${prefix}.declareInterfaces`,
     objectFields: ["name"],
