@@ -1659,7 +1659,35 @@ describe("run", () => {
     expect(diagnostics[0].filePath).toBe("components/Button/Button.test.tsx");
   });
 
-  it("evaluates if condition before for iteration", async () => {
+  it("evaluates every if predicate against each for file", async () => {
+    const matchingImport = {
+      hasValueImport: { name: "createClient", from: "./dependencies" },
+    } satisfies IfConditionV1;
+    const conditions: Array<{
+      name: string;
+      condition: IfConditionV1;
+    }> = [
+      { name: "has-file", condition: { hasFile: "marker.ts" } },
+      {
+        name: "placeholder-satisfies",
+        condition: { placeholderSatisfies: "variant:matches(^matching$)" },
+      },
+      { name: "has-value-import", condition: matchingImport },
+      {
+        name: "has-type-import",
+        condition: {
+          hasTypeImport: { name: "Client", from: "./dependencies" },
+        },
+      },
+      {
+        name: "has-value-import-from",
+        condition: { hasValueImportFrom: "./side-effect" },
+      },
+      {
+        name: "has-type-import-from",
+        condition: { hasTypeImportFrom: "./dependencies" },
+      },
+    ];
     const config: ConfigV1 = {
       version: "v1",
       conventions: [
@@ -1667,31 +1695,67 @@ describe("run", () => {
           name: "if-and-for",
           paths: "components/{name}",
           must: [
+            ...conditions.map(({ name, condition }) => ({
+              name,
+              if: condition,
+              for: { files: "{variant}/*.ts" },
+              must: { haveType: "directory" },
+            })),
             {
-              if: { hasFile: "${name}.test.tsx" },
-              for: { files: "${name}.test.tsx" },
+              name: "if-not",
+              ifNot: matchingImport,
+              for: { files: "{variant}/*.ts" },
               must: { haveType: "directory" },
             },
           ],
         },
       ],
     };
-    const fsWithCondition = createMockFileSystem({
+    const fs = createMockFileSystem({
       globResults: new Map([
         ["components/*", ["components/Button"]],
         [
-          "components/Button/Button.test.tsx",
-          ["components/Button/Button.test.tsx"],
+          "components/Button/*/*.ts",
+          [
+            "components/Button/matching/matching.ts",
+            "components/Button/skipped/skipped.ts",
+          ],
         ],
       ]),
-      directories: new Set(["components/Button"]),
-      files: new Set(["components/Button/Button.test.tsx"]),
+      directories: new Set([
+        "components/Button",
+        "components/Button/matching",
+        "components/Button/skipped",
+      ]),
+      files: new Set([
+        "components/Button/matching/matching.ts",
+        "components/Button/matching/marker.ts",
+        "components/Button/skipped/skipped.ts",
+      ]),
+      fileContents: new Map([
+        [
+          "components/Button/matching/matching.ts",
+          [
+            'import { createClient, type Client } from "./dependencies";',
+            'import "./side-effect";',
+          ].join("\n"),
+        ],
+      ]),
     });
-    const { diagnostics } = await run({ config, fileSystem: fsWithCondition });
-    expect(diagnostics).toHaveLength(1);
-    expect(diagnostics[0].message).toBe(
-      "Expected a directory but found a file"
-    );
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics).toHaveLength(7);
+    expect(
+      diagnostics.filter(
+        (diagnostic) =>
+          diagnostic.filePath === "components/Button/matching/matching.ts"
+      )
+    ).toHaveLength(6);
+    expect(
+      diagnostics.filter(
+        (diagnostic) =>
+          diagnostic.filePath === "components/Button/skipped/skipped.ts"
+      )
+    ).toHaveLength(1);
   });
 
   it("skips for block when if condition is not met", async () => {
