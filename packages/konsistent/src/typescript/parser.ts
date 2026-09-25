@@ -113,13 +113,16 @@ function processExportDeclaration(opts: {
 
   if (node.exportClause && ts.isNamedExports(node.exportClause)) {
     for (const element of node.exportClause.elements) {
-      exports.push({
+      const exportInfo: ExportInfo = {
         name: (element.propertyName ?? element.name).getText(sourceFile),
         kind: "re-export",
         isType: isType || element.isTypeOnly,
         pos,
-        ...(from === undefined ? {} : { from }),
-      });
+      };
+      if (from !== undefined) {
+        exportInfo.from = from;
+      }
+      exports.push(exportInfo);
     }
   } else if (!node.exportClause && from) {
     exports.push({
@@ -149,13 +152,16 @@ function processNamedExportSymbols(opts: {
   }
 
   for (const element of node.exportClause.elements) {
-    symbols.push({
+    const symbol: NamedExportSymbolInfo = {
       name: element.name.getText(sourceFile),
       sourceName: (element.propertyName ?? element.name).getText(sourceFile),
       isType: node.isTypeOnly || element.isTypeOnly,
       pos: getPosition({ sourceFile, node: element.name }),
-      ...(from === undefined ? {} : { from }),
-    });
+    };
+    if (from !== undefined) {
+      symbol.from = from;
+    }
+    symbols.push(symbol);
   }
 
   return symbols;
