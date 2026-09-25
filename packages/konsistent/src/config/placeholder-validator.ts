@@ -386,6 +386,18 @@ function collectUsagesInPredicates(opts: {
     declared,
     usages,
   });
+  collectImportFromUsages({
+    sources: predicates.exportValuesFrom,
+    key: `${prefix}.exportValuesFrom`,
+    declared,
+    usages,
+  });
+  collectImportFromUsages({
+    sources: predicates.exportTypesFrom,
+    key: `${prefix}.exportTypesFrom`,
+    declared,
+    usages,
+  });
   collectUsagesInDefinitionList({
     list: predicates.exportConstants,
     key: `${prefix}.exportConstants`,

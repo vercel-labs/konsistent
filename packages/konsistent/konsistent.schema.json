@@ -1276,6 +1276,50 @@
                       ]
                     }
                   },
+                  "exportValuesFrom": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  },
+                  "exportTypesFrom": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  },
+                  "exportValuesFromCurrentDir": {
+                    "type": "boolean"
+                  },
+                  "exportValuesFromParents": {
+                    "type": "boolean"
+                  },
+                  "exportValuesFromExternals": {
+                    "type": "boolean"
+                  },
+                  "exportTypesFromCurrentDir": {
+                    "type": "boolean"
+                  },
+                  "exportTypesFromParents": {
+                    "type": "boolean"
+                  },
+                  "exportTypesFromExternals": {
+                    "type": "boolean"
+                  },
                   "exportConstants": {
                     "type": "array",
                     "items": {
@@ -2749,6 +2793,50 @@
                         }
                       ]
                     }
+                  },
+                  "exportValuesFrom": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  },
+                  "exportTypesFrom": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  },
+                  "exportValuesFromCurrentDir": {
+                    "type": "boolean"
+                  },
+                  "exportValuesFromParents": {
+                    "type": "boolean"
+                  },
+                  "exportValuesFromExternals": {
+                    "type": "boolean"
+                  },
+                  "exportTypesFromCurrentDir": {
+                    "type": "boolean"
+                  },
+                  "exportTypesFromParents": {
+                    "type": "boolean"
+                  },
+                  "exportTypesFromExternals": {
+                    "type": "boolean"
                   },
                   "exportConstants": {
                     "type": "array",
@@ -4282,6 +4370,50 @@
                               ]
                             }
                           },
+                          "exportValuesFrom": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            ]
+                          },
+                          "exportTypesFrom": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            ]
+                          },
+                          "exportValuesFromCurrentDir": {
+                            "type": "boolean"
+                          },
+                          "exportValuesFromParents": {
+                            "type": "boolean"
+                          },
+                          "exportValuesFromExternals": {
+                            "type": "boolean"
+                          },
+                          "exportTypesFromCurrentDir": {
+                            "type": "boolean"
+                          },
+                          "exportTypesFromParents": {
+                            "type": "boolean"
+                          },
+                          "exportTypesFromExternals": {
+                            "type": "boolean"
+                          },
                           "exportConstants": {
                             "type": "array",
                             "items": {
@@ -6032,6 +6164,50 @@
                                             ]
                                           }
                                         },
+                                        "exportValuesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "exportTypesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "exportValuesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "exportValuesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "exportValuesFromExternals": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromExternals": {
+                                          "type": "boolean"
+                                        },
                                         "exportConstants": {
                                           "type": "array",
                                           "items": {
@@ -7505,6 +7681,50 @@
                                               }
                                             ]
                                           }
+                                        },
+                                        "exportValuesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "exportTypesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "exportValuesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "exportValuesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "exportValuesFromExternals": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromExternals": {
+                                          "type": "boolean"
                                         },
                                         "exportConstants": {
                                           "type": "array",
@@ -9252,6 +9472,50 @@
                                             ]
                                           }
                                         },
+                                        "exportValuesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "exportTypesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "exportValuesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "exportValuesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "exportValuesFromExternals": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromExternals": {
+                                          "type": "boolean"
+                                        },
                                         "exportConstants": {
                                           "type": "array",
                                           "items": {
@@ -10725,6 +10989,50 @@
                                               }
                                             ]
                                           }
+                                        },
+                                        "exportValuesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "exportTypesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "exportValuesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "exportValuesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "exportValuesFromExternals": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromExternals": {
+                                          "type": "boolean"
                                         },
                                         "exportConstants": {
                                           "type": "array",
@@ -12478,6 +12786,50 @@
                                         ]
                                       }
                                     },
+                                    "exportValuesFrom": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "exportTypesFrom": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "exportValuesFromCurrentDir": {
+                                      "type": "boolean"
+                                    },
+                                    "exportValuesFromParents": {
+                                      "type": "boolean"
+                                    },
+                                    "exportValuesFromExternals": {
+                                      "type": "boolean"
+                                    },
+                                    "exportTypesFromCurrentDir": {
+                                      "type": "boolean"
+                                    },
+                                    "exportTypesFromParents": {
+                                      "type": "boolean"
+                                    },
+                                    "exportTypesFromExternals": {
+                                      "type": "boolean"
+                                    },
                                     "exportConstants": {
                                       "type": "array",
                                       "items": {
@@ -13951,6 +14303,50 @@
                                           }
                                         ]
                                       }
+                                    },
+                                    "exportValuesFrom": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "exportTypesFrom": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "exportValuesFromCurrentDir": {
+                                      "type": "boolean"
+                                    },
+                                    "exportValuesFromParents": {
+                                      "type": "boolean"
+                                    },
+                                    "exportValuesFromExternals": {
+                                      "type": "boolean"
+                                    },
+                                    "exportTypesFromCurrentDir": {
+                                      "type": "boolean"
+                                    },
+                                    "exportTypesFromParents": {
+                                      "type": "boolean"
+                                    },
+                                    "exportTypesFromExternals": {
+                                      "type": "boolean"
                                     },
                                     "exportConstants": {
                                       "type": "array",
@@ -15436,6 +15832,50 @@
                             }
                           ]
                         }
+                      },
+                      "exportValuesFrom": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ]
+                      },
+                      "exportTypesFrom": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ]
+                      },
+                      "exportValuesFromCurrentDir": {
+                        "type": "boolean"
+                      },
+                      "exportValuesFromParents": {
+                        "type": "boolean"
+                      },
+                      "exportValuesFromExternals": {
+                        "type": "boolean"
+                      },
+                      "exportTypesFromCurrentDir": {
+                        "type": "boolean"
+                      },
+                      "exportTypesFromParents": {
+                        "type": "boolean"
+                      },
+                      "exportTypesFromExternals": {
+                        "type": "boolean"
                       },
                       "exportConstants": {
                         "type": "array",
@@ -16968,6 +17408,50 @@
                               ]
                             }
                           },
+                          "exportValuesFrom": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            ]
+                          },
+                          "exportTypesFrom": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            ]
+                          },
+                          "exportValuesFromCurrentDir": {
+                            "type": "boolean"
+                          },
+                          "exportValuesFromParents": {
+                            "type": "boolean"
+                          },
+                          "exportValuesFromExternals": {
+                            "type": "boolean"
+                          },
+                          "exportTypesFromCurrentDir": {
+                            "type": "boolean"
+                          },
+                          "exportTypesFromParents": {
+                            "type": "boolean"
+                          },
+                          "exportTypesFromExternals": {
+                            "type": "boolean"
+                          },
                           "exportConstants": {
                             "type": "array",
                             "items": {
@@ -18718,6 +19202,50 @@
                                             ]
                                           }
                                         },
+                                        "exportValuesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "exportTypesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "exportValuesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "exportValuesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "exportValuesFromExternals": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromExternals": {
+                                          "type": "boolean"
+                                        },
                                         "exportConstants": {
                                           "type": "array",
                                           "items": {
@@ -20191,6 +20719,50 @@
                                               }
                                             ]
                                           }
+                                        },
+                                        "exportValuesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "exportTypesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "exportValuesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "exportValuesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "exportValuesFromExternals": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromExternals": {
+                                          "type": "boolean"
                                         },
                                         "exportConstants": {
                                           "type": "array",
@@ -21938,6 +22510,50 @@
                                             ]
                                           }
                                         },
+                                        "exportValuesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "exportTypesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "exportValuesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "exportValuesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "exportValuesFromExternals": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromExternals": {
+                                          "type": "boolean"
+                                        },
                                         "exportConstants": {
                                           "type": "array",
                                           "items": {
@@ -23411,6 +24027,50 @@
                                               }
                                             ]
                                           }
+                                        },
+                                        "exportValuesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "exportTypesFrom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "exportValuesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "exportValuesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "exportValuesFromExternals": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromCurrentDir": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromParents": {
+                                          "type": "boolean"
+                                        },
+                                        "exportTypesFromExternals": {
+                                          "type": "boolean"
                                         },
                                         "exportConstants": {
                                           "type": "array",
@@ -25164,6 +25824,50 @@
                                         ]
                                       }
                                     },
+                                    "exportValuesFrom": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "exportTypesFrom": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "exportValuesFromCurrentDir": {
+                                      "type": "boolean"
+                                    },
+                                    "exportValuesFromParents": {
+                                      "type": "boolean"
+                                    },
+                                    "exportValuesFromExternals": {
+                                      "type": "boolean"
+                                    },
+                                    "exportTypesFromCurrentDir": {
+                                      "type": "boolean"
+                                    },
+                                    "exportTypesFromParents": {
+                                      "type": "boolean"
+                                    },
+                                    "exportTypesFromExternals": {
+                                      "type": "boolean"
+                                    },
                                     "exportConstants": {
                                       "type": "array",
                                       "items": {
@@ -26637,6 +27341,50 @@
                                           }
                                         ]
                                       }
+                                    },
+                                    "exportValuesFrom": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "exportTypesFrom": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "exportValuesFromCurrentDir": {
+                                      "type": "boolean"
+                                    },
+                                    "exportValuesFromParents": {
+                                      "type": "boolean"
+                                    },
+                                    "exportValuesFromExternals": {
+                                      "type": "boolean"
+                                    },
+                                    "exportTypesFromCurrentDir": {
+                                      "type": "boolean"
+                                    },
+                                    "exportTypesFromParents": {
+                                      "type": "boolean"
+                                    },
+                                    "exportTypesFromExternals": {
+                                      "type": "boolean"
                                     },
                                     "exportConstants": {
                                       "type": "array",
@@ -28122,6 +28870,50 @@
                             }
                           ]
                         }
+                      },
+                      "exportValuesFrom": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ]
+                      },
+                      "exportTypesFrom": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ]
+                      },
+                      "exportValuesFromCurrentDir": {
+                        "type": "boolean"
+                      },
+                      "exportValuesFromParents": {
+                        "type": "boolean"
+                      },
+                      "exportValuesFromExternals": {
+                        "type": "boolean"
+                      },
+                      "exportTypesFromCurrentDir": {
+                        "type": "boolean"
+                      },
+                      "exportTypesFromParents": {
+                        "type": "boolean"
+                      },
+                      "exportTypesFromExternals": {
+                        "type": "boolean"
                       },
                       "exportConstants": {
                         "type": "array",

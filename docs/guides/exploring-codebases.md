@@ -86,7 +86,7 @@ Check if barrel files re-export from specific submodules:
 - Do `index.ts` files consistently re-export from a file whose name follows the directory name?
 - Do they re-export from a fixed set of submodules?
 
-This is the [`from`](../reference/predicates.md#exportvalues) field on `exportValues` and `exportTypes`.
+Use the [`from`](../reference/predicates.md#exportvalues) field on `exportValues` and `exportTypes` to check a particular re-exported name and its source. To check sources independently of names, including bare `export * from`, use [`exportValuesFrom` and `exportTypesFrom`](../reference/predicates.md#exportvaluesfrom) or their current-directory, parent-directory, and external-source variants. Namespace re-exports are excluded from these source predicates.
 
 ### Conditional patterns
 
@@ -150,7 +150,7 @@ For every pattern you identify:
 - Required files → `haveFiles`.
 - Local declarations → `declareTypes`, `declareConstants`, `declareFunctions`, `declareInterfaces`, `declareClasses`.
 - Required call sites → `callFunction`.
-- Exports → `exportValues`, `exportTypes`, `exportConstants`, `exportFunctions`, `exportInterfaces`, `exportClasses`.
+- Exports → `exportValues`, `exportTypes`, `exportConstants`, `exportFunctions`, `exportInterfaces`, `exportClasses`, `exportValuesFrom`, `exportTypesFrom`, and their `CurrentDir`, `Parents`, and `Externals` variants.
 - Imports → `importValues`, `importTypes`, `importValuesFrom`, `importTypesFrom`, `importValuesFromCurrentDir`, `importValuesFromParents`, `importValuesFromExternals`, `importTypesFromCurrentDir`, `importTypesFromParents`, `importTypesFromExternals`.
 - Optional file conditions → `if.hasFile` blocks.
 - Subset-only rules → `if.placeholderSatisfies` with a `matches` or `segments` constraint.

@@ -20,6 +20,14 @@ The full machine-readable schema lives at `node_modules/konsistent/konsistent.sc
 - [Export predicates](#export-predicates)
   - [`exportValues`](#exportvalues)
   - [`exportTypes`](#exporttypes)
+  - [`exportValuesFrom`](#exportvaluesfrom)
+  - [`exportTypesFrom`](#exporttypesfrom)
+  - [`exportValuesFromCurrentDir`](#exportvaluesfromcurrentdir)
+  - [`exportValuesFromParents`](#exportvaluesfromparents)
+  - [`exportValuesFromExternals`](#exportvaluesfromexternals)
+  - [`exportTypesFromCurrentDir`](#exporttypesfromcurrentdir)
+  - [`exportTypesFromParents`](#exporttypesfromparents)
+  - [`exportTypesFromExternals`](#exporttypesfromexternals)
   - [`exportConstants`](#exportconstants)
   - [`exportFunctions`](#exportfunctions)
   - [`exportInterfaces`](#exportinterfaces)
@@ -333,6 +341,52 @@ not resolve aliases or semantic type equivalence.
 When `alias` is combined with `schema` or `type`, the constraint validates the
 original local type definition. Alias omission and unsupported export forms
 behave as documented for `exportValues`.
+
+### `exportValuesFrom`
+
+Require a value re-export from a module specifier. Accepts a string or array of strings:
+
+```json
+"must": { "exportValuesFrom": ["./helpers", "@scope/package/*"] }
+```
+
+Matches named re-exports (`export { value } from "./helpers"`) and bare `export * from "./helpers"`. An inline `type` specifier does not count as a value re-export. Local exports, imports, and namespace re-exports (`export * as ns from "pkg"`) do not count.
+
+The matching rules are the same as [`importValuesFrom`](#importvaluesfrom): exact module specifiers, trailing `/*` for subpaths (not the package root), additive array entries, and nested `!` exclusions and re-inclusions. In `mustNot`, each selected source is independently forbidden.
+
+### `exportTypesFrom`
+
+Require a type re-export from a module specifier:
+
+```json
+"mustNot": { "exportTypesFrom": ["@internal/*", "!@internal/public/*"] }
+```
+
+Matches `export type { Name } from "pkg"`, inline `export { type Name } from "pkg"`, and bare `export type * from "pkg"`. A bare `export * from "pkg"` counts only for `exportValuesFrom`, even if its target exports types. Uses the same exact, array, wildcard, and exclusion rules as `exportValuesFrom`.
+
+### `exportValuesFromCurrentDir`
+
+Require (`true`) or forbid (`false`) a value re-export from `"."` or `"./..."`.
+
+### `exportValuesFromParents`
+
+Require (`true`) or forbid (`false`) a value re-export from `".."` or `"../..."`.
+
+### `exportValuesFromExternals`
+
+Require (`true`) or forbid (`false`) a value re-export from a specifier outside the current or parent directory. Package names, `node:` specifiers, and unresolved aliases count as external.
+
+### `exportTypesFromCurrentDir`
+
+Require (`true`) or forbid (`false`) a type re-export from `"."` or `"./..."`.
+
+### `exportTypesFromParents`
+
+Require (`true`) or forbid (`false`) a type re-export from `".."` or `"../..."`.
+
+### `exportTypesFromExternals`
+
+Require (`true`) or forbid (`false`) a type re-export from a specifier outside the current or parent directory. All six location predicates apply the same re-export and star-export distinctions as `exportValuesFrom` and `exportTypesFrom`.
 
 ### `exportConstants`
 

@@ -1,0 +1,27 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "paths": "src/missing.ts",
+      "must": {
+        "exportValuesFrom": ["./value", "@vendor/*"],
+        "exportTypesFrom": "../type",
+        "exportValuesFromCurrentDir": true,
+        "exportValuesFromParents": true,
+        "exportValuesFromExternals": true,
+        "exportTypesFromCurrentDir": true,
+        "exportTypesFromParents": true,
+        "exportTypesFromExternals": true
+      }
+    },
+    {
+      "paths": "src/forbidden.ts",
+      "mustNot": {
+        "exportValuesFrom": ["pkg/*", "!pkg/allowed/*", "pkg/allowed/blocked/*"],
+        "exportTypesFrom": "../types",
+        "exportValuesFromCurrentDir": true,
+        "exportTypesFromParents": true
+      }
+    }
+  ]
+}

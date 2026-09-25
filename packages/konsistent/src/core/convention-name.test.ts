@@ -250,6 +250,39 @@ describe("generateConventionName", () => {
     });
   });
 
+  describe("export source predicates", () => {
+    it("names exact sources and location checks by value or type", () => {
+      expect(
+        generateConventionName({
+          must: { exportValuesFrom: "@scope/${packageName}" },
+        })
+      ).toBe("must-export-from-scope");
+      expect(
+        generateConventionName({ mustNot: { exportTypesFrom: "pkg/*" } })
+      ).toBe("must-not-export-type-from-pkg");
+      expect(
+        generateConventionName({ must: { exportValuesFromCurrentDir: true } })
+      ).toBe("must-export-from-current-dir");
+      expect(
+        generateConventionName({ must: { exportValuesFromParents: false } })
+      ).toBe("must-not-export-from-parents");
+      expect(
+        generateConventionName({ must: { exportValuesFromExternals: true } })
+      ).toBe("must-export-from-externals");
+      expect(
+        generateConventionName({
+          mustNot: { exportTypesFromCurrentDir: false },
+        })
+      ).toBe("must-export-type-from-current-dir");
+      expect(
+        generateConventionName({ must: { exportTypesFromParents: true } })
+      ).toBe("must-export-type-from-parents");
+      expect(
+        generateConventionName({ must: { exportTypesFromExternals: false } })
+      ).toBe("must-not-export-type-from-externals");
+    });
+  });
+
   describe("importTypes", () => {
     it("generates must-import-{name-kebab}-type", () => {
       expect(

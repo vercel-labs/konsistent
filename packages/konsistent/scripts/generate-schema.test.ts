@@ -50,6 +50,10 @@ function readFixtureConfig(fixtureName: string): unknown {
 }
 
 describe("konsistent.schema.json", () => {
+  it("accepts export source predicates in a fixture config", () => {
+    expect(validate(readFixtureConfig("export-source-predicates"))).toBe(true);
+  });
+
   it("marks legacy predicate properties as deprecated", () => {
     const matches = collectDeprecatedPropertySchemas({ value: schema });
     expect(matches.length).toBeGreaterThan(0);

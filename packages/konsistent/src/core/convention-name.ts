@@ -97,6 +97,42 @@ const PREDICATE_RULES: Record<
     const prefix = negated ? "must-not-export" : "must-export";
     return kebab ? `${prefix}-${kebab}-type` : `${prefix}-type`;
   },
+  exportValuesFrom: ({ items, negated }) => {
+    const kebab = sourceToKebab(items[0] as string);
+    const prefix = negated ? "must-not-export-from" : "must-export-from";
+    return kebab ? `${prefix}-${kebab}` : prefix;
+  },
+  exportTypesFrom: ({ items, negated }) => {
+    const kebab = sourceToKebab(items[0] as string);
+    const prefix = negated
+      ? "must-not-export-type-from"
+      : "must-export-type-from";
+    return kebab ? `${prefix}-${kebab}` : prefix;
+  },
+  exportValuesFromCurrentDir: ({ items, negated }) =>
+    (items[0] === false) === negated
+      ? "must-export-from-current-dir"
+      : "must-not-export-from-current-dir",
+  exportValuesFromParents: ({ items, negated }) =>
+    (items[0] === false) === negated
+      ? "must-export-from-parents"
+      : "must-not-export-from-parents",
+  exportValuesFromExternals: ({ items, negated }) =>
+    (items[0] === false) === negated
+      ? "must-export-from-externals"
+      : "must-not-export-from-externals",
+  exportTypesFromCurrentDir: ({ items, negated }) =>
+    (items[0] === false) === negated
+      ? "must-export-type-from-current-dir"
+      : "must-not-export-type-from-current-dir",
+  exportTypesFromParents: ({ items, negated }) =>
+    (items[0] === false) === negated
+      ? "must-export-type-from-parents"
+      : "must-not-export-type-from-parents",
+  exportTypesFromExternals: ({ items, negated }) =>
+    (items[0] === false) === negated
+      ? "must-export-type-from-externals"
+      : "must-not-export-type-from-externals",
   exportConstants: ({ items, negated }) => {
     const kebab = deriveKebabFromName(
       getItemName(items[0] as string | { name: string })
