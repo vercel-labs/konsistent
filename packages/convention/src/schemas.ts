@@ -101,9 +101,14 @@ const ExactImportSourcePredicateV1Schema = z.union([
   z.string(),
   z.array(z.string()),
 ]);
-const ImportSourceSelectorPredicateV1Schema =
-  ExactImportSourcePredicateV1Schema.superRefine((value, context) => {
-    const result = compileImportSourceConstraints({ expected: value });
+function createSourceSelectorPredicateV1Schema(opts: {
+  sourceLabel: "Import" | "Export";
+}) {
+  return ExactImportSourcePredicateV1Schema.superRefine((value, context) => {
+    const result = compileImportSourceConstraints({
+      expected: value,
+      sourceLabel: opts.sourceLabel,
+    });
     if (result.success) {
       return;
     }
@@ -113,6 +118,12 @@ const ImportSourceSelectorPredicateV1Schema =
       path: result.index === undefined ? [] : [result.index],
     });
   });
+}
+
+const ImportSourceSelectorPredicateV1Schema =
+  createSourceSelectorPredicateV1Schema({ sourceLabel: "Import" });
+const ExportSourceSelectorPredicateV1Schema =
+  createSourceSelectorPredicateV1Schema({ sourceLabel: "Export" });
 
 export const MustPredicatesV1Schema = z.strictObject({
   haveType: z.enum(["file", "directory"]).optional(),
@@ -146,6 +157,14 @@ export const MustPredicatesV1Schema = z.strictObject({
   exportTypes: z
     .array(z.union([z.string(), ExportTypeDefinitionV1Schema]))
     .optional(),
+  exportValuesFrom: ExportSourceSelectorPredicateV1Schema.optional(),
+  exportTypesFrom: ExportSourceSelectorPredicateV1Schema.optional(),
+  exportValuesFromCurrentDir: z.boolean().optional(),
+  exportValuesFromParents: z.boolean().optional(),
+  exportValuesFromExternals: z.boolean().optional(),
+  exportTypesFromCurrentDir: z.boolean().optional(),
+  exportTypesFromParents: z.boolean().optional(),
+  exportTypesFromExternals: z.boolean().optional(),
   exportConstants: z
     .array(z.union([z.string(), ExportConstantDefinitionV1Schema]))
     .optional(),

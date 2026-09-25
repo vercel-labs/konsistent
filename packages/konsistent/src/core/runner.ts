@@ -31,6 +31,10 @@ import { checkImportSource } from "../typescript/predicates/import-source.js";
 import { checkImportSourceExact } from "../typescript/predicates/import-source-exact.js";
 import { checkImportTypes } from "../typescript/predicates/import-types.js";
 import { checkImportValues } from "../typescript/predicates/import-values.js";
+import {
+  checkModuleSource,
+  checkModuleSourceGroup,
+} from "../typescript/predicates/module-source.js";
 import { checkUseDeclarationOrder } from "../typescript/predicates/use-declaration-order.js";
 import type { FileStructure } from "../typescript/types.js";
 import { toCamelCase, toPascalCase } from "./case-utils.js";
@@ -83,6 +87,14 @@ export const TS_PREDICATES = new Set([
   "export",
   "exportValues",
   "exportTypes",
+  "exportValuesFrom",
+  "exportTypesFrom",
+  "exportValuesFromCurrentDir",
+  "exportValuesFromParents",
+  "exportValuesFromExternals",
+  "exportTypesFromCurrentDir",
+  "exportTypesFromParents",
+  "exportTypesFromExternals",
   "exportConstants",
   "exportFunctions",
   "exportClasses",
@@ -469,6 +481,164 @@ const TS_PREDICATE_HANDLERS: Record<
           severity,
         })
       : [],
+  exportValuesFrom: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.exportValuesFrom === undefined
+      ? []
+      : checkModuleSource({
+          expected: must.exportValuesFrom,
+          direction: "export",
+          kind: "value",
+          predicateName: "exportValuesFrom",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
+  exportTypesFrom: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.exportTypesFrom === undefined
+      ? []
+      : checkModuleSource({
+          expected: must.exportTypesFrom,
+          direction: "export",
+          kind: "type",
+          predicateName: "exportTypesFrom",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
+  exportValuesFromCurrentDir: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.exportValuesFromCurrentDir === undefined
+      ? []
+      : checkModuleSourceGroup({
+          expected: must.exportValuesFromCurrentDir,
+          predicateName: "exportValuesFromCurrentDir",
+          direction: "export",
+          kind: "value",
+          group: "currentDir",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
+  exportValuesFromParents: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.exportValuesFromParents === undefined
+      ? []
+      : checkModuleSourceGroup({
+          expected: must.exportValuesFromParents,
+          predicateName: "exportValuesFromParents",
+          direction: "export",
+          kind: "value",
+          group: "parents",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
+  exportValuesFromExternals: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.exportValuesFromExternals === undefined
+      ? []
+      : checkModuleSourceGroup({
+          expected: must.exportValuesFromExternals,
+          predicateName: "exportValuesFromExternals",
+          direction: "export",
+          kind: "value",
+          group: "externals",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
+  exportTypesFromCurrentDir: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.exportTypesFromCurrentDir === undefined
+      ? []
+      : checkModuleSourceGroup({
+          expected: must.exportTypesFromCurrentDir,
+          predicateName: "exportTypesFromCurrentDir",
+          direction: "export",
+          kind: "type",
+          group: "currentDir",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
+  exportTypesFromParents: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.exportTypesFromParents === undefined
+      ? []
+      : checkModuleSourceGroup({
+          expected: must.exportTypesFromParents,
+          predicateName: "exportTypesFromParents",
+          direction: "export",
+          kind: "type",
+          group: "parents",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
+  exportTypesFromExternals: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.exportTypesFromExternals === undefined
+      ? []
+      : checkModuleSourceGroup({
+          expected: must.exportTypesFromExternals,
+          predicateName: "exportTypesFromExternals",
+          direction: "export",
+          kind: "type",
+          group: "externals",
+          context,
+          fileStructure,
+          conventionName,
+          severity,
+        }),
   exportConstants: ({
     must,
     context,
@@ -861,6 +1031,8 @@ const ITEM_LEVEL_MUST_NOT_PREDICATES = new Set<string>([
   "exportValues",
   "export",
   "exportTypes",
+  "exportValuesFrom",
+  "exportTypesFrom",
   "exportConstants",
   "exportFunctions",
   "exportInterfaces",
@@ -872,6 +1044,29 @@ const ITEM_LEVEL_MUST_NOT_PREDICATES = new Set<string>([
   "importFrom",
   "importTypes",
 ]);
+
+const SOURCE_SELECTOR_PREDICATES = new Set([
+  "importValuesFrom",
+  "importTypesFrom",
+  "exportValuesFrom",
+  "exportTypesFrom",
+]);
+
+function formatForbiddenExportSourceGroup(opts: {
+  key: string;
+  value: unknown;
+}): string {
+  const noun = opts.key.startsWith("exportTypes") ? "type export" : "export";
+  let location = "external packages";
+  if (opts.key.endsWith("CurrentDir")) {
+    location = "current directory";
+  } else if (opts.key.endsWith("Parents")) {
+    location = "parent directories";
+  }
+  return opts.value === false
+    ? `Missing ${noun} from ${location} is not allowed`
+    : `Forbidden ${noun} from ${location}`;
+}
 
 function resolveEntryName(opts: {
   value: unknown;
@@ -940,6 +1135,10 @@ function formatForbiddenMessage(opts: {
       return `Forbidden export "${name}"${aliasSuffix}`;
     case "exportTypes":
       return `Forbidden type export "${name}"${aliasSuffix}`;
+    case "exportValuesFrom":
+      return `Forbidden export from "${context.resolveTemplate(String(value))}"`;
+    case "exportTypesFrom":
+      return `Forbidden type export from "${context.resolveTemplate(String(value))}"`;
     case "exportConstants":
       return `Forbidden constant export "${name}"`;
     case "exportFunctions":
@@ -985,6 +1184,13 @@ function formatForbiddenMessage(opts: {
       return value === false
         ? "Missing type import from external packages is not allowed"
         : "Forbidden type import from external packages";
+    case "exportValuesFromCurrentDir":
+    case "exportValuesFromParents":
+    case "exportValuesFromExternals":
+    case "exportTypesFromCurrentDir":
+    case "exportTypesFromParents":
+    case "exportTypesFromExternals":
+      return formatForbiddenExportSourceGroup({ key, value });
     case "useDeclarationOrder":
       return `Forbidden declaration order "${(value as string[])
         .map((entry) => context.resolveTemplate(entry))
@@ -1005,6 +1211,17 @@ function buildSingletonPredicate(opts: {
   return { [opts.key]: opts.value } as MustPredicatesV1;
 }
 
+function validatedSourceConstraints(opts: { key: string; value: string[] }) {
+  const compiled = compileImportSourceConstraints({
+    expected: opts.value,
+    sourceLabel: opts.key.startsWith("export") ? "Export" : "Import",
+  });
+  if (!compiled.success) {
+    throw new Error(compiled.error);
+  }
+  return compiled.constraints;
+}
+
 function buildMustNotChecks(opts: {
   mustNot: MustPredicatesV1;
 }): Array<{ key: string; predicate: MustPredicatesV1; value: unknown }> {
@@ -1019,17 +1236,11 @@ function buildMustNotChecks(opts: {
     if (value === undefined) {
       continue;
     }
-    if (
-      Array.isArray(value) &&
-      (key === "importValuesFrom" || key === "importTypesFrom")
-    ) {
-      const compiled = compileImportSourceConstraints({
-        expected: value as string[],
-      });
-      if (!compiled.success) {
-        throw new Error(compiled.error);
-      }
-      for (const constraint of compiled.constraints) {
+    if (Array.isArray(value) && SOURCE_SELECTOR_PREDICATES.has(key)) {
+      for (const constraint of validatedSourceConstraints({
+        key,
+        value: value as string[],
+      })) {
         checks.push({
           key,
           predicate: buildSingletonPredicate({

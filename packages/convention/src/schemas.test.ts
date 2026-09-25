@@ -144,6 +144,33 @@ describe("predicate and block schemas", () => {
     expect(result.success).toBe(false);
   });
 
+  it("accepts export source selectors and all export source location predicates", () => {
+    expect(
+      MustPredicatesV1Schema.safeParse({
+        exportValuesFrom: ["pkg/*", "!pkg/private/*", "pkg/private/public/*"],
+        exportTypesFrom: "./types",
+        exportValuesFromCurrentDir: true,
+        exportValuesFromParents: false,
+        exportValuesFromExternals: true,
+        exportTypesFromCurrentDir: false,
+        exportTypesFromParents: true,
+        exportTypesFromExternals: false,
+      }).success
+    ).toBe(true);
+    const invalid = MustPredicatesV1Schema.safeParse({
+      exportTypesFrom: ["!pkg/private/*", "pkg/*"],
+    });
+    expect(invalid.success).toBe(false);
+    if (!invalid.success) {
+      expect(invalid.error.issues[0]?.message).toContain(
+        "export source pattern"
+      );
+    }
+    expect(
+      MustPredicatesV1Schema.safeParse({ exportFrom: "pkg" }).success
+    ).toBe(false);
+  });
+
   it("requires each block to provide must or mustNot predicates", () => {
     expect(
       MustBlockV1Schema.safeParse({

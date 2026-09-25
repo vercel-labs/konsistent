@@ -238,6 +238,45 @@ describe("import-values-and-types-from fixture", () => {
   });
 });
 
+describe("export-source-predicates fixture", () => {
+  it("passes named and star re-exports, groups, and mustNot exclusions", async () => {
+    await expect(
+      runCli({ cwd: resolve(fixturesDir, "export-source-predicates") })
+    ).resolves.not.toThrow();
+  });
+});
+
+describe("export-source-predicates-broken fixture", () => {
+  it("reports missing and forbidden value and type re-export sources", async () => {
+    try {
+      await runCli({
+        cwd: resolve(fixturesDir, "export-source-predicates-broken"),
+      });
+      expect.fail("Expected check to exit with code 1");
+    } catch (err: unknown) {
+      const error = err as { stdout: string; code: number; status: number };
+      expect(error.code ?? error.status).toBe(1);
+      for (const message of [
+        'Missing export from "./value"',
+        'Missing export from "@vendor/*"',
+        'Missing type export from "../type"',
+        "Missing export from current directory",
+        "Missing export from parent directories",
+        "Missing export from external packages",
+        "Missing type export from current directory",
+        "Missing type export from parent directories",
+        "Missing type export from external packages",
+        'Forbidden export from "pkg/*"',
+        'Forbidden type export from "../types"',
+        "Forbidden export from current directory",
+        "Forbidden type export from parent directories",
+      ]) {
+        expect(error.stdout).toContain(message);
+      }
+    }
+  });
+});
+
 describe("import-values-and-types-from-broken fixture", () => {
   const cwd = resolve(fixturesDir, "import-values-and-types-from-broken");
 

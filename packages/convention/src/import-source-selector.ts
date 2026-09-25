@@ -26,7 +26,13 @@ export type CompileImportSourceConstraintsResult =
   | { success: true; constraints: ImportSourceConstraint[] }
   | { success: false; index?: number; error: string };
 
-function parsePattern(opts: { configuredSource: string; index?: number }):
+type SourceLabel = "Import" | "Export";
+
+function parsePattern(opts: {
+  configuredSource: string;
+  sourceLabel: SourceLabel;
+  index?: number;
+}):
   | {
       success: true;
       negated: boolean;
@@ -42,7 +48,7 @@ function parsePattern(opts: { configuredSource: string; index?: number }):
     return {
       success: false,
       index: opts.index,
-      error: "Import source patterns must not be empty.",
+      error: `${opts.sourceLabel} source patterns must not be empty.`,
     };
   }
 
@@ -54,7 +60,7 @@ function parsePattern(opts: { configuredSource: string; index?: number }):
     return {
       success: false,
       index: opts.index,
-      error: `Import source pattern "${opts.configuredSource}" may only use "*" as a trailing "/*".`,
+      error: `${opts.sourceLabel} source pattern "${opts.configuredSource}" may only use "*" as a trailing "/*".`,
     };
   }
 
@@ -62,7 +68,7 @@ function parsePattern(opts: { configuredSource: string; index?: number }):
     return {
       success: false,
       index: opts.index,
-      error: `Import source pattern "${opts.configuredSource}" must include a prefix before "/*".`,
+      error: `${opts.sourceLabel} source pattern "${opts.configuredSource}" must include a prefix before "/*".`,
     };
   }
 
@@ -174,6 +180,7 @@ function addSelectorRule(opts: {
   pattern: ImportSourcePattern;
   selected: boolean;
   index: number;
+  sourceLabel: SourceLabel;
 }): { success: true } | { success: false; index: number; error: string } {
   if (
     !patternContains({
@@ -185,7 +192,7 @@ function addSelectorRule(opts: {
     return {
       success: false,
       index: opts.index,
-      error: `Import source pattern "${opts.pattern.source}" must be strictly nested under wildcard selector "${opts.selector.source}".`,
+      error: `${opts.sourceLabel} source pattern "${opts.pattern.source}" must be strictly nested under wildcard selector "${opts.selector.source}".`,
     };
   }
 
@@ -197,7 +204,7 @@ function addSelectorRule(opts: {
     return {
       success: false,
       index: opts.index,
-      error: `Import source pattern "${opts.pattern.source}" overlaps both included and excluded branches of wildcard selector "${opts.selector.source}".`,
+      error: `${opts.sourceLabel} source pattern "${opts.pattern.source}" overlaps both included and excluded branches of wildcard selector "${opts.selector.source}".`,
     };
   }
   if (
@@ -210,14 +217,14 @@ function addSelectorRule(opts: {
     return {
       success: false,
       index: opts.index,
-      error: `Import source pattern "${opts.pattern.source}" must be more specific than the rule it modifies.`,
+      error: `${opts.sourceLabel} source pattern "${opts.pattern.source}" must be more specific than the rule it modifies.`,
     };
   }
   if (selection.selected === opts.selected) {
     return {
       success: false,
       index: opts.index,
-      error: `Import source pattern "${opts.pattern.source}" does not change wildcard selector "${opts.selector.source}".`,
+      error: `${opts.sourceLabel} source pattern "${opts.pattern.source}" does not change wildcard selector "${opts.selector.source}".`,
     };
   }
 
@@ -238,19 +245,20 @@ function addNegatedPattern(opts: {
   pattern: ImportSourcePattern;
   activeSelector: ImportSourceSelectorConstraint | undefined;
   index: number;
+  sourceLabel: SourceLabel;
 }): AddConfiguredPatternResult {
   if (!opts.expectedIsArray) {
     return {
       success: false,
       index: opts.index,
-      error: "Negated import source patterns may only be used in arrays.",
+      error: `Negated ${opts.sourceLabel.toLowerCase()} source patterns may only be used in arrays.`,
     };
   }
   if (!opts.activeSelector) {
     return {
       success: false,
       index: opts.index,
-      error: `Negated import source pattern "${opts.configuredSource}" must follow a wildcard selector.`,
+      error: `Negated ${opts.sourceLabel.toLowerCase()} source pattern "${opts.configuredSource}" must follow a wildcard selector.`,
     };
   }
   const added = addSelectorRule({
@@ -258,6 +266,7 @@ function addNegatedPattern(opts: {
     pattern: opts.pattern,
     selected: false,
     index: opts.index,
+    sourceLabel: opts.sourceLabel,
   });
   if (!added.success) {
     return added;
@@ -270,6 +279,7 @@ function addPositivePattern(opts: {
   constraints: ImportSourceConstraint[];
   activeSelector: ImportSourceSelectorConstraint | undefined;
   index: number;
+  sourceLabel: SourceLabel;
 }): AddConfiguredPatternResult {
   if (
     opts.activeSelector &&
@@ -283,6 +293,7 @@ function addPositivePattern(opts: {
       pattern: opts.pattern,
       selected: true,
       index: opts.index,
+      sourceLabel: opts.sourceLabel,
     });
     return added.success
       ? { success: true, activeSelector: opts.activeSelector }
@@ -299,7 +310,7 @@ function addPositivePattern(opts: {
     return {
       success: false,
       index: opts.index,
-      error: `Import source pattern "${opts.pattern.source}" overlaps independent constraint "${overlapping.source}".`,
+      error: `${opts.sourceLabel} source pattern "${opts.pattern.source}" overlaps independent constraint "${overlapping.source}".`,
     };
   }
 
@@ -319,7 +330,9 @@ function addPositivePattern(opts: {
 
 export function compileImportSourceConstraints(opts: {
   expected: string | string[];
+  sourceLabel?: SourceLabel;
 }): CompileImportSourceConstraintsResult {
+  const sourceLabel = opts.sourceLabel ?? "Import";
   const configuredSources =
     typeof opts.expected === "string" ? [opts.expected] : opts.expected;
   const constraints: ImportSourceConstraint[] = [];
@@ -330,7 +343,7 @@ export function compileImportSourceConstraints(opts: {
     if (configuredSource === undefined) {
       continue;
     }
-    const parsed = parsePattern({ configuredSource, index });
+    const parsed = parsePattern({ configuredSource, index, sourceLabel });
     if (!parsed.success) {
       return parsed;
     }
@@ -342,12 +355,14 @@ export function compileImportSourceConstraints(opts: {
           pattern: parsed.pattern,
           activeSelector,
           index,
+          sourceLabel,
         })
       : addPositivePattern({
           pattern: parsed.pattern,
           constraints,
           activeSelector,
           index,
+          sourceLabel,
         });
     if (!added.success) {
       return added;

@@ -45,6 +45,28 @@ function collectDeprecatedPropertySchemas(opts: {
 }
 
 describe("reusable-convention-package.schema.json", () => {
+  it("accepts export source predicates in reusable conventions", () => {
+    expect(
+      validate({
+        conventionSpecVersion: "v1",
+        conventions: [
+          {
+            name: "sources",
+            description: "Re-export source checks.",
+            must: {
+              exportValuesFrom: ["pkg/*", "!pkg/private/*"],
+              exportTypesFromParents: true,
+            },
+            mustNot: {
+              exportTypesFrom: "./internal",
+              exportValuesFromExternals: true,
+            },
+          },
+        ],
+      })
+    ).toBe(true);
+  });
+
   it("marks legacy predicate properties as deprecated", () => {
     const matches = collectDeprecatedPropertySchemas({ value: schema });
     expect(matches.length).toBeGreaterThan(0);

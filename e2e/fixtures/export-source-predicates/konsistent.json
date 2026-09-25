@@ -1,0 +1,32 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "paths": "src/matching.ts",
+      "must": {
+        "exportValuesFrom": ["pkg/*", "!pkg/private/*", "pkg/private/public/*", "./values"],
+        "exportTypesFrom": ["../types", "types-pkg/*"],
+        "exportValuesFromCurrentDir": true,
+        "exportValuesFromParents": false,
+        "exportValuesFromExternals": true,
+        "exportTypesFromCurrentDir": false,
+        "exportTypesFromParents": true,
+        "exportTypesFromExternals": true
+      },
+      "mustNot": {
+        "exportValuesFrom": "forbidden",
+        "exportTypesFrom": ["pkg/*", "!pkg/allowed/*"],
+        "exportValuesFromParents": true,
+        "exportTypesFromCurrentDir": true
+      }
+    },
+    {
+      "paths": "src/star-and-namespace.ts",
+      "mustNot": {
+        "exportTypesFrom": "star-pkg",
+        "exportValuesFrom": "namespace-pkg",
+        "exportValuesFromCurrentDir": true
+      }
+    }
+  ]
+}

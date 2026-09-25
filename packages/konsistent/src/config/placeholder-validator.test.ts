@@ -639,6 +639,27 @@ describe("validatePlaceholders", () => {
     }
   });
 
+  it("validates placeholders in both export source predicates and exclusions", () => {
+    const conventions: ConventionV1[] = [
+      {
+        paths: "src/{x}",
+        must: { exportValuesFrom: "@scope/${missingValue}" },
+        mustNot: {
+          exportTypesFrom: ["pkg/*", "!pkg/${missingType}/*"],
+        },
+      },
+    ];
+    const result = validatePlaceholders({
+      conventions,
+      identifiers: ["exports"],
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain("must.exportValuesFrom");
+      expect(result.error).toContain("mustNot.exportTypesFrom");
+    }
+  });
+
   it("treats placeholders declared in for.files as in-scope for the block's predicates", () => {
     const conventions: ConventionV1[] = [
       {
