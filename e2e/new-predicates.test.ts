@@ -78,7 +78,7 @@ describe("declaration-predicates-broken fixture", () => {
 describe("constant-schemas fixture", () => {
   const cwd = resolve(fixturesDir, "constant-schemas");
 
-  it("konsistent check exits 0 when constant schemas match", async () => {
+  it("passes constant schemas and formatted type expressions", async () => {
     await expect(runCli({ cwd })).resolves.not.toThrow();
   });
 });
@@ -127,7 +127,7 @@ describe("constant-schemas-broken fixture", () => {
 describe("type-schemas fixture", () => {
   const cwd = resolve(fixturesDir, "type-schemas");
 
-  it("konsistent check exits 0 for partial type schema matches", async () => {
+  it("passes partial schemas and formatted type expressions", async () => {
     await expect(runCli({ cwd })).resolves.not.toThrow();
   });
 });

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   matchConstantTypeSchema,
   matchTypeDefinitionSchema,
+  matchTypeExpression,
 } from "./constant-type-schema.js";
 import { parseFileStructure } from "./parser.js";
 
@@ -35,6 +36,58 @@ function matchDefinition(opts: {
     schema: opts.schema,
   });
 }
+
+describe("exact type expression matching", () => {
+  it("ignores formatting whitespace and comments", () => {
+    expect(
+      matchTypeExpression({
+        actual: `Prettify<
+          /* Type expressions may be formatted across multiple lines. */
+          HarnessV1SandboxSessionCreateOptions<VercelCreationSettings> & {
+            sandbox?: never;
+          }
+        >`,
+        expected:
+          "Prettify<HarnessV1SandboxSessionCreateOptions<VercelCreationSettings> & {sandbox?: never;}>",
+        missingReason: "must have an explicit type annotation",
+      })
+    ).toEqual({ matches: true });
+  });
+
+  it("preserves literal contents, aliases, and grouping", () => {
+    const match = (opts: { actual: string; expected: string }) =>
+      matchTypeExpression({
+        ...opts,
+        missingReason: "must have an explicit type annotation",
+      });
+
+    expect(match({ actual: '"a b"', expected: '"ab"' }).matches).toBe(false);
+    expect(
+      match({ actual: "ModuleSettings", expected: "{ enabled: boolean }" })
+        .matches
+    ).toBe(false);
+    expect(
+      match({ actual: "A | (B & C)", expected: "A | B & C" }).matches
+    ).toBe(false);
+  });
+
+  it("falls back to exact text matching when parsing fails", () => {
+    expect(
+      matchTypeExpression({
+        actual: "ModuleSettings<",
+        expected: "ModuleSettings<",
+        missingReason: "must have an explicit type annotation",
+      })
+    ).toEqual({ matches: true });
+    expect(
+      matchTypeExpression({
+        actual: "ModuleSettings<",
+        expected: "ModuleSettings< ",
+        missingReason: "must have an explicit type annotation",
+      }).matches
+    ).toBe(false);
+  });
+});
 
 describe("constant type schemas", () => {
   it.each([

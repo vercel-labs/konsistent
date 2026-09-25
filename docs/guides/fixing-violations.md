@@ -158,9 +158,9 @@ For `exportConstants`, the value must be a `const`. If a `let` or `function` exi
 When a constant entry includes `schema`, the constant must also have a matching explicit type annotation. Add or adjust the annotation only after confirming the initializer and all assignments satisfy it. Schema checks support scalar, literal-union enum, homogeneous array, and inline object annotations; array items and object properties may use a string to require an exact TypeScript type reference. They do not infer initializer types or resolve referenced types. For object schemas, every configured property must be declared. Names in `required` must be non-optional, while other configured names must include `?`.
 
 When an entry includes `type`, its complete explicit annotation must match the
-configured TypeScript type expression exactly after template substitution.
-Formatting is significant, and konsistent does not resolve imports, aliases, or
-semantic equivalence.
+configured TypeScript type expression exactly after template substitution,
+ignoring formatting whitespace and comments. `konsistent` does not resolve
+imports, aliases, or semantic equivalence.
 
 #### `exportTypes`
 
@@ -179,8 +179,9 @@ When an entry includes `schema`, inspect the local type alias or interface rathe
 
 When an entry includes `type`, inspect the right-hand side of the local type
 alias. It must match the complete configured expression exactly after template
-substitution. Interfaces cannot satisfy `type`, and cross-file re-exports cannot
-satisfy it because `type` and `from` are mutually exclusive.
+substitution, ignoring formatting whitespace and comments. Interfaces cannot
+satisfy `type`, and cross-file re-exports cannot satisfy it because `type` and
+`from` are mutually exclusive.
 
 #### `exportFunctions`
 
