@@ -1,5 +1,11 @@
 # @konsistent/convention
 
+## 1.0.0-beta.11
+
+### Patch Changes
+
+- 58271ed: feat(konsistent): add value and type re-export source predicates with exact, wildcard, exclusion, and location matching
+
 ## 1.0.0-beta.10
 
 ### Patch Changes

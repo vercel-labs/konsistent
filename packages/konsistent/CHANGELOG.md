@@ -1,5 +1,15 @@
 # konsistent
 
+## 1.0.0-beta.11
+
+### Patch Changes
+
+- ca70ff8: fix(konsistent): minor code cleanup to satisfy new agentic rules
+- d049b74: fix(konsistent): ignore formatting when matching exact type expressions
+- 58271ed: feat(konsistent): add value and type re-export source predicates with exact, wildcard, exclusion, and location matching
+- Updated dependencies [58271ed]
+  - @konsistent/convention@1.0.0-beta.11
+
 ## 1.0.0-beta.10
 
 ### Patch Changes

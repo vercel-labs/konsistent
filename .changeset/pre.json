@@ -17,7 +17,9 @@
   },
   "changesets": [
     "all-rabbits-wonder",
+    "bright-horses-trade",
     "bright-ravens-check",
+    "eager-pumas-guess",
     "eight-corners-bet",
     "fix-double-star-placeholder-matching",
     "four-wings-brake",
@@ -35,6 +37,7 @@
     "thick-canyons-move",
     "true-spies-double",
     "twenty-cameras-tan",
-    "whole-ideas-punch"
+    "whole-ideas-punch",
+    "young-regions-check"
   ]
 }
