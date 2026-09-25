@@ -53,6 +53,59 @@ export interface ConstantSchemaMatchResult {
   reason?: string;
 }
 
+function normalizeTypeExpressionPair(opts: {
+  actual: string;
+  expected: string;
+}): { actual: string; expected: string } | undefined {
+  const sourceText = `type __KonsistentActual = ${opts.actual}
+;type __KonsistentExpected = ${opts.expected}
+;`;
+  const transpileResult = ts.transpileModule(sourceText, {
+    reportDiagnostics: true,
+  });
+  if (
+    transpileResult.diagnostics?.some(
+      (diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error
+    )
+  ) {
+    return;
+  }
+
+  const sourceFile = ts.createSourceFile(
+    "type-expression.ts",
+    sourceText,
+    ts.ScriptTarget.Latest,
+    true
+  );
+  const [actualDeclaration, expectedDeclaration] = sourceFile.statements;
+  if (
+    sourceFile.statements.length !== 2 ||
+    !actualDeclaration ||
+    !ts.isTypeAliasDeclaration(actualDeclaration) ||
+    !expectedDeclaration ||
+    !ts.isTypeAliasDeclaration(expectedDeclaration)
+  ) {
+    return;
+  }
+
+  const printer = ts.createPrinter({
+    newLine: ts.NewLineKind.LineFeed,
+    removeComments: true,
+  });
+  return {
+    actual: printer.printNode(
+      ts.EmitHint.Unspecified,
+      actualDeclaration.type,
+      sourceFile
+    ),
+    expected: printer.printNode(
+      ts.EmitHint.Unspecified,
+      expectedDeclaration.type,
+      sourceFile
+    ),
+  };
+}
+
 export function matchTypeExpression(opts: {
   actual: string | undefined;
   expected: string;
@@ -62,7 +115,11 @@ export function matchTypeExpression(opts: {
   if (actual === undefined) {
     return { matches: false, reason: missingReason };
   }
-  if (actual !== expected) {
+  if (actual === expected) {
+    return { matches: true };
+  }
+  const normalized = normalizeTypeExpressionPair({ actual, expected });
+  if (!normalized || normalized.actual !== normalized.expected) {
     return {
       matches: false,
       reason: `must have type "${expected}"`,

@@ -101,7 +101,8 @@ All declaration predicates accept an array of bare strings or objects with a `na
 
 Assert local type declarations. Interfaces and type aliases qualify. An object
 entry can use `schema` to validate a supported declaration shape, or `type` to
-require an exact type alias expression.
+require an exact type alias expression while ignoring formatting whitespace
+and comments.
 
 ```json
 "must": {
@@ -262,7 +263,8 @@ pair. Omitting `alias` forbids the original name under every named export alias.
 
 Assert type-only exports. Exported type aliases and interfaces qualify. Use
 `from` to require a re-export, `schema` to validate a supported declaration
-shape, or `type` to require an exact type alias expression.
+shape, or `type` to require an exact type alias expression while ignoring
+formatting whitespace and comments.
 
 ```json
 "must": {
@@ -318,7 +320,7 @@ shape, or `type` to require an exact type alias expression.
 | `alias` | string | Optional. Require a named type export to expose the type under this name. Templates allowed. |
 | `from` | string | Optional. Require a type re-export from this module specifier. |
 | `schema` | object | Optional. Validate a locally declared type definition. |
-| `type` | string | Optional. Require the exact source expression of a locally declared type alias. Templates allowed. |
+| `type` | string | Optional. Require the exact syntax of a locally declared type alias, ignoring formatting whitespace and comments. Templates allowed. |
 
 `from`, `schema`, and `type` are mutually exclusive. Neither validation field
 resolves a type definition from another file. The `schema` field supports the
@@ -326,6 +328,8 @@ same forms and declaration semantics documented under
 [`exportConstants`](#exportconstants). The `type` field supports any TypeScript
 type expression, including generic instantiations, unions, intersections, and
 tuples, but requires a type alias because interfaces have no alias expression.
+It compares syntax after ignoring formatting whitespace and comments; it does
+not resolve aliases or semantic type equivalence.
 When `alias` is combined with `schema` or `type`, the constraint validates the
 original local type definition. Alias omission and unsupported export forms
 behave as documented for `exportValues`.
@@ -379,7 +383,7 @@ explicit type annotation.
 | --- | --- | --- |
 | `name` | string | The constant name. Templates allowed. |
 | `schema` | object | Optional. Supported JSON Schema subset for the constant's explicit type annotation. |
-| `type` | string | Optional. Exact TypeScript type annotation. Templates allowed. |
+| `type` | string | Optional. Require the exact TypeScript type annotation, ignoring formatting whitespace and comments. Templates allowed. |
 
 `schema` and `type` are mutually exclusive. `exportConstants` checks locally
 declared constants and does not accept `from`.

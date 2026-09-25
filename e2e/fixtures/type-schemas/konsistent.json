@@ -28,6 +28,10 @@
           {
             "name": "InternalReference",
             "type": "${harnessId.toPascalCase()}Shared<'internal'>"
+          },
+          {
+            "name": "InternalNetworkOptions",
+            "type": "Prettify<TypesShared<'internal'> & {sandbox?: never;}>"
           }
         ],
         "exportTypes": [
@@ -44,6 +48,10 @@
           {
             "name": "ModuleReference",
             "type": "${harnessId.toPascalCase()}Shared<'public'>"
+          },
+          {
+            "name": "ModuleNetworkOptions",
+            "type": "Prettify<TypesShared<'public'> & {sandbox?: never;}>"
           }
         ]
       }

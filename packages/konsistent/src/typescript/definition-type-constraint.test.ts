@@ -23,10 +23,35 @@ describe("definition type constraints", () => {
       context: createContext(),
       definition: { type: "Readonly<${scope}>" },
       fileStructure: parseFileStructure({
-        source: "const settings: Readonly<ModuleSettings> = {};",
+        source: `const settings: Readonly<
+          /*
+           * The settings object should not be mutated.
+           */
+          ModuleSettings
+        > = {};`,
       }),
       name: "settings",
       predicateName: "declareConstants",
+    });
+
+    expect(result).toBeUndefined();
+  });
+
+  it("matches type alias expressions regardless of formatting", () => {
+    const result = checkTypeDefinitionConstraint({
+      context: createContext(),
+      definition: {
+        type: "Prettify<ModuleSettings<'public'> & {sandbox?: never;}>",
+      },
+      fileStructure: parseFileStructure({
+        source: `type Settings = Prettify<
+          ModuleSettings<'public'> & {
+            sandbox?: never;
+          }
+        >;`,
+      }),
+      name: "Settings",
+      predicateName: "declareTypes",
     });
 
     expect(result).toBeUndefined();

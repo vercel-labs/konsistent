@@ -474,7 +474,7 @@ describe("checkExportTypes", () => {
     expect(result).toEqual([]);
   });
 
-  it("reports exact type expression formatting differences", () => {
+  it("ignores formatting differences in exact type expressions", () => {
     const result = checkExportTypes({
       expected: [{ name: "Settings", type: "Left | Right" }],
       context: createMockContext({ path: "src/index.ts" }),
@@ -482,9 +482,7 @@ describe("checkExportTypes", () => {
         source: "export type Settings = Left|Right;",
       }),
     });
-    expect(result[0].message).toBe(
-      'Type "Settings" must have type "Left | Right"'
-    );
+    expect(result).toEqual([]);
   });
 
   it("does not treat an exported interface as a type alias expression", () => {
