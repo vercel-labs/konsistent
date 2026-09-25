@@ -259,11 +259,14 @@ function parseObjectType(opts: {
     }
     names.add(name);
     const type = parseInnerType(member.type);
-    properties.push({
+    const property: ConstantObjectPropertyTypeInfo = {
       name,
       optional: Boolean(member.questionToken),
-      ...(type ? { type } : {}),
-    });
+    };
+    if (type !== undefined) {
+      property.type = type;
+    }
+    properties.push(property);
   }
 
   return { kind: "object", properties };
