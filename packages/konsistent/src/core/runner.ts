@@ -32,7 +32,7 @@ import { checkImportSourceExact } from "../typescript/predicates/import-source-e
 import { checkImportTypes } from "../typescript/predicates/import-types.js";
 import { checkImportValues } from "../typescript/predicates/import-values.js";
 import {
-  checkModuleSourceExact,
+  checkModuleSource,
   checkModuleSourceGroup,
 } from "../typescript/predicates/module-source.js";
 import { checkUseDeclarationOrder } from "../typescript/predicates/use-declaration-order.js";
@@ -490,7 +490,7 @@ const TS_PREDICATE_HANDLERS: Record<
   }) =>
     must.exportValuesFrom === undefined
       ? []
-      : checkModuleSourceExact({
+      : checkModuleSource({
           expected: must.exportValuesFrom,
           direction: "export",
           kind: "value",
@@ -509,7 +509,7 @@ const TS_PREDICATE_HANDLERS: Record<
   }) =>
     must.exportTypesFrom === undefined
       ? []
-      : checkModuleSourceExact({
+      : checkModuleSource({
           expected: must.exportTypesFrom,
           direction: "export",
           kind: "type",

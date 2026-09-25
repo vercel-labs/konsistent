@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { PredicateContext } from "../../core/context.js";
 import { parseFileStructure } from "../parser.js";
-import {
-  checkModuleSourceExact,
-  checkModuleSourceGroup,
-} from "./module-source.js";
+import { checkModuleSource, checkModuleSourceGroup } from "./module-source.js";
 
 const context: PredicateContext = {
   path: "src/index.ts",
@@ -23,7 +20,7 @@ function exact(opts: {
   expected: string | string[];
   kind: "type" | "value";
 }) {
-  return checkModuleSourceExact({
+  return checkModuleSource({
     expected: opts.expected,
     direction: "export",
     kind: opts.kind,

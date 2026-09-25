@@ -1,7 +1,7 @@
 import type { PredicateContext } from "../../core/context.js";
 import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
 import type { FileStructure } from "../types.js";
-import { checkModuleSourceExact } from "./module-source.js";
+import { checkModuleSource } from "./module-source.js";
 
 export type ExactImportSourceKind = "either" | "type" | "value";
 
@@ -15,7 +15,7 @@ export function checkImportSourceExact(opts: {
   conventionName?: string;
   severity?: DiagnosticSeverity;
 }): Diagnostic[] {
-  return checkModuleSourceExact({
+  return checkModuleSource({
     ...opts,
     direction: "import",
     kind: opts.importKind ?? "value",

@@ -44,7 +44,7 @@ function doesSourceMatch(opts: { from: string; expected: string }): boolean {
   return opts.from === opts.expected;
 }
 
-export function checkModuleSourceExact(opts: {
+export function checkModuleSource(opts: {
   expected: string | string[];
   direction: ModuleSourceDirection;
   kind: ModuleSourceKind;
