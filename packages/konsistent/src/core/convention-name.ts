@@ -45,6 +45,12 @@ const PREDICATE_RULES: Record<
     const prefix = negated ? "must-not-have" : "must-have";
     return kebab ? `${prefix}-${kebab}` : prefix;
   },
+  haveDirectories: ({ items, negated }) => {
+    const first = items[0] as string;
+    const kebab = fileToKebab(stripTemplateExpressions(first));
+    const prefix = negated ? "must-not-have" : "must-have";
+    return kebab ? `${prefix}-${kebab}-directory` : `${prefix}-directory`;
+  },
   declareTypes: ({ items, negated }) => {
     const kebab = deriveKebabFromName(
       getItemName(items[0] as string | { name: string })

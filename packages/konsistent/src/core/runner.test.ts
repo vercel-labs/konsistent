@@ -20,6 +20,7 @@ function createMockFileSystem(opts: {
     },
     isDirectory: (p: string) => directories.has(p),
     isFile: (p: string) => files.has(p),
+    directoryExists: (p: string) => directories.has(p),
     fileExists: (p: string) => files.has(p) || directories.has(p),
     readDir: () => [],
     readFile: (p: string) => fileContents.get(p) ?? "",
@@ -991,6 +992,56 @@ describe("run", () => {
         (diagnostic) => diagnostic.filePath === "modules/nested"
       )
     ).toBe(true);
+  });
+
+  it("checks directory patterns in if, ifNot, must, and mustNot", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "modules/{module}",
+          must: [
+            {
+              if: { hasDirectory: "instructions.{md,ts}" },
+              must: { haveDirectories: ["root-only"] },
+            },
+            {
+              ifNot: { hasDirectory: "instructions.{md,ts}" },
+              must: {
+                haveDirectories: ["instructions/*.{md,ts}", "metadata/*"],
+              },
+            },
+            {
+              mustNot: { haveDirectories: ["secret/*", "forbidden/*"] },
+            },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["modules/*", ["modules/root", "modules/nested"]]]),
+      directories: new Set(["modules/root", "modules/nested"]),
+    });
+    const matches = new Set([
+      "modules/root/instructions.{md,ts}",
+      "modules/root/root-only",
+      "modules/nested/instructions/*.{md,ts}",
+      "modules/nested/secret/*",
+      "modules/nested/forbidden/*",
+    ]);
+    vi.spyOn(fs, "directoryExists").mockImplementation((path) =>
+      matches.has(path)
+    );
+
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics.map((diagnostic) => diagnostic.message)).toEqual([
+      "Missing required directory: metadata/*",
+      'Forbidden directory "secret/*"',
+      'Forbidden directory "forbidden/*"',
+    ]);
+    expect(diagnostics.every((d) => d.filePath === "modules/nested")).toBe(
+      true
+    );
   });
 
   it("evaluates must block unconditionally when no if is present", async () => {
@@ -2354,6 +2405,7 @@ describe("caching behavior", () => {
       }),
       isDirectory: () => false,
       isFile: (p: string) => p === "src/shared.ts",
+      directoryExists: () => false,
       fileExists: (p: string) => p === "src/shared.ts",
       readDir: () => [],
       readFile: readFileSpy,
@@ -2390,6 +2442,7 @@ describe("caching behavior", () => {
       }),
       isDirectory: (p: string) => p === "components/Button",
       isFile: (p: string) => p === "components/Button/shared.ts",
+      directoryExists: (p: string) => p === "components/Button",
       fileExists: (p: string) =>
         p === "components/Button" || p === "components/Button/shared.ts",
       readDir: () => [],

@@ -9,6 +9,7 @@ The full machine-readable schema lives at `node_modules/konsistent/konsistent.sc
 - [Filesystem predicates](#filesystem-predicates)
   - [`haveType`](#havetype)
   - [`haveFiles`](#havefiles)
+  - [`haveDirectories`](#havedirectories)
 - [Declaration predicates](#declaration-predicates)
   - [`declareTypes`](#declaretypes)
   - [`declareConstants`](#declareconstants)
@@ -98,6 +99,20 @@ For `packages/openai`, this requires both `packages/openai/src/index.ts` and `pa
 `haveFiles` paths are relative to the matched directory and may contain forward slashes for nested paths. Patterns support `*`, `**`, `?`, brace alternation (`*.{md,ts}`), and character classes (`[ab]`). Every array entry must match, but a single entry only requires one matching file. For example, `["src/*.{ts,tsx}", "docs/**/*.md"]` requires at least one matching file for each entry. Literal paths continue to use exact-path existence checks. Unlike `paths`, this predicate does not support negated glob patterns.
 
 In `mustNot.haveFiles`, each entry is forbidden independently: a matching file for any one pattern produces a violation.
+
+### `haveDirectories`
+
+Assert that each listed directory exists, or that each listed glob pattern matches at least one directory, relative to the matched path. Files do not satisfy this predicate. Each array entry is required independently, and templates resolve from the matched path's placeholders.
+
+```json
+{
+  "paths": "packages/{providerId}",
+  "must": { "haveDirectories": ["src", "docs/*.{md,ts}"] },
+  "mustNot": { "haveDirectories": ["secret/*"] }
+}
+```
+
+Patterns support `*`, `**`, `?`, brace alternation, and character classes; negated glob patterns are not supported. `mustNot.haveDirectories` forbids each entry independently: a matching directory for any one entry produces a violation. Literal directory paths use exact directory checks.
 
 ---
 

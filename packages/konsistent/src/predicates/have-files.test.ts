@@ -16,6 +16,7 @@ function createMockContext(opts: {
     placeholders,
     resolveTemplate: (template: string) =>
       resolveTemplate({ template, placeholders }),
+    directoryExists: () => false,
     fileExists: (rel: string) => existingFiles.has(rel),
     readDir: () => [],
   };

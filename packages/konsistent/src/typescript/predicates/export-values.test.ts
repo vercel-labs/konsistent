@@ -18,6 +18,7 @@ function createMockContext(opts: {
         return ph ? ph.toString() : _match;
       });
     },
+    directoryExists: () => false,
     fileExists: () => false,
     readDir: () => [],
   };

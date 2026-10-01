@@ -8,6 +8,7 @@ function createMockContext(opts: { path: string }): PredicateContext {
     path: opts.path,
     placeholders: {} as PredicateContext["placeholders"],
     resolveTemplate: (t: string) => t,
+    directoryExists: () => false,
     fileExists: () => false,
     readDir: () => [],
   };

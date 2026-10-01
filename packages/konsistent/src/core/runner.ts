@@ -10,6 +10,7 @@ import type {
   MustBlockV1,
   MustPredicatesV1,
 } from "../config/schema.js";
+import { checkHaveDirectories } from "../predicates/have-directories.js";
 import { checkHaveFiles } from "../predicates/have-files.js";
 import { checkHaveType } from "../predicates/have-type.js";
 import { hasImport, hasImportFrom } from "../typescript/import-matcher.js";
@@ -173,6 +174,9 @@ function buildContext(opts: {
     fileExists(relativePath: string): boolean {
       return fileSystem.fileExists(join(basePath, relativePath));
     },
+    directoryExists(relativePath: string): boolean {
+      return fileSystem.directoryExists(join(basePath, relativePath));
+    },
     readDir(relativePath: string): string[] {
       return fileSystem.readDir(join(basePath, relativePath));
     },
@@ -264,6 +268,12 @@ function evaluateCondition(opts: {
       (condition as { hasFile: string }).hasFile
     );
     return context.fileExists(resolvedPath);
+  }
+  if (Object.hasOwn(condition, "hasDirectory")) {
+    const resolvedPath = context.resolveTemplate(
+      (condition as { hasDirectory: string }).hasDirectory
+    );
+    return context.directoryExists(resolvedPath);
   }
   if (Object.hasOwn(condition, "placeholderSatisfies")) {
     return evaluatePlaceholderSatisfies({
@@ -1022,6 +1032,7 @@ function getOrParseFileStructure(opts: {
 
 const ITEM_LEVEL_MUST_NOT_PREDICATES = new Set<string>([
   "haveFiles",
+  "haveDirectories",
   "declareTypes",
   "declareConstants",
   "declareFunctions",
@@ -1118,6 +1129,8 @@ function formatForbiddenMessage(opts: {
       return `Forbidden path type "${String(value)}"`;
     case "haveFiles":
       return `Forbidden file "${context.resolveTemplate(String(value))}"`;
+    case "haveDirectories":
+      return `Forbidden directory "${context.resolveTemplate(String(value))}"`;
     case "declareTypes":
       return `Forbidden type declaration "${name}"`;
     case "declareConstants":
@@ -1318,6 +1331,16 @@ function checkMustPredicates(opts: {
       diagnostics.push(
         ...checkHaveFiles({
           expected: must.haveFiles,
+          context,
+          conventionName,
+          severity,
+        })
+      );
+    }
+    if (key === "haveDirectories" && must.haveDirectories) {
+      diagnostics.push(
+        ...checkHaveDirectories({
+          expected: must.haveDirectories,
           context,
           conventionName,
           severity,

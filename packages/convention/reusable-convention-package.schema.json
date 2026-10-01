@@ -58,6 +58,16 @@
                   {
                     "type": "object",
                     "properties": {
+                      "hasDirectory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["hasDirectory"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
                       "placeholderSatisfies": {
                         "type": "string"
                       }
@@ -151,6 +161,16 @@
                       }
                     },
                     "required": ["hasFile"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "hasDirectory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["hasDirectory"],
                     "additionalProperties": false
                   },
                   {
@@ -267,6 +287,12 @@
                     "enum": ["file", "directory"]
                   },
                   "haveFiles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "haveDirectories": {
                     "type": "array",
                     "items": {
                       "type": "string"
@@ -1651,6 +1677,12 @@
                     "enum": ["file", "directory"]
                   },
                   "haveFiles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "haveDirectories": {
                     "type": "array",
                     "items": {
                       "type": "string"
@@ -3079,6 +3111,16 @@
                   {
                     "type": "object",
                     "properties": {
+                      "hasDirectory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["hasDirectory"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
                       "placeholderSatisfies": {
                         "type": "string"
                       }
@@ -3172,6 +3214,16 @@
                       }
                     },
                     "required": ["hasFile"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "hasDirectory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["hasDirectory"],
                     "additionalProperties": false
                   },
                   {
@@ -3288,6 +3340,12 @@
                     "enum": ["file", "directory"]
                   },
                   "haveFiles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "haveDirectories": {
                     "type": "array",
                     "items": {
                       "type": "string"
@@ -4672,6 +4730,12 @@
                     "enum": ["file", "directory"]
                   },
                   "haveFiles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "haveDirectories": {
                     "type": "array",
                     "items": {
                       "type": "string"

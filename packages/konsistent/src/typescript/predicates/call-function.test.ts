@@ -16,6 +16,7 @@ function createContext(opts: {
         (match, name: string) => placeholders[name] ?? match
       );
     },
+    directoryExists: () => false,
     fileExists: () => false,
     readDir: () => [],
   };

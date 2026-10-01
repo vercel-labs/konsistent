@@ -12,6 +12,7 @@ function createContext(): PredicateContext {
     placeholders: {},
     resolveTemplate: (template) =>
       template.replace("${scope}", "ModuleSettings"),
+    directoryExists: () => false,
     fileExists: () => false,
     readDir: () => [],
   };

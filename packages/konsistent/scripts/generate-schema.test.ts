@@ -50,6 +50,12 @@ function readFixtureConfig(fixtureName: string): unknown {
 }
 
 describe("konsistent.schema.json", () => {
+  it("accepts directory predicates in fixture configs", () => {
+    expect(validate(readFixtureConfig("directory-predicates"))).toBe(true);
+    expect(validate(readFixtureConfig("directory-predicates-broken"))).toBe(
+      true
+    );
+  });
   it("accepts export source predicates in a fixture config", () => {
     expect(validate(readFixtureConfig("export-source-predicates"))).toBe(true);
   });

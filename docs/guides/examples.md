@@ -39,6 +39,22 @@ Every module needs an `instructions.md` or `instructions.ts` file, either at its
 
 The `ifNot` block runs only if neither root file exists. Its `haveFiles` pattern then requires at least one matching file directly inside `instructions/`.
 
+For instruction directories instead of files, use `hasDirectory` and `haveDirectories` with the same conditional structure:
+
+```json
+{
+  "paths": "modules/{module}",
+  "must": [
+    {
+      "ifNot": { "hasDirectory": "instructions.{md,ts}" },
+      "must": { "haveDirectories": ["instructions/*.{md,ts}"] }
+    }
+  ]
+}
+```
+
+Only directories satisfy these checks; a file named `instructions.md` does not.
+
 ## Plugin packages
 
 Every plugin must have specific files and exports:

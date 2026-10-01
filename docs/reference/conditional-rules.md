@@ -133,6 +133,24 @@ For an alternative-file requirement, use a glob under `ifNot` to require another
 }
 ```
 
+### `hasDirectory`
+
+The condition matches when its value resolves to an existing directory or when at least one directory matches its glob pattern, relative to the condition context. A file never satisfies `hasDirectory`, even when its name matches the pattern. Templates resolve before matching. Patterns support `*`, `**`, `?`, brace alternation, and character classes; negated glob patterns are not supported. The same condition works under `ifNot` to run when no matching directory exists.
+
+```json
+{
+  "paths": "modules/{module}",
+  "must": [
+    {
+      "ifNot": { "hasDirectory": "instructions.{md,ts}" },
+      "must": { "haveDirectories": ["instructions/*.{md,ts}"] }
+    }
+  ]
+}
+```
+
+This requires an `instructions.md` or `instructions.ts` directory at the module root or at least one matching directory inside `instructions/`.
+
 ### `placeholderSatisfies`
 
 The condition matches only when the named placeholder satisfies a constraint. Under `ifNot`, the gate passes when the placeholder does not satisfy it. Syntax, constraint catalog, and examples are in [constraints.md](./constraints.md#matchesregex).
