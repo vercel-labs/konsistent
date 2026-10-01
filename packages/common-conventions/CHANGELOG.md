@@ -1,5 +1,12 @@
 # @konsistent/common-conventions
 
+## 1.0.0-beta.12
+
+### Patch Changes
+
+- Updated dependencies [d85c1ae]
+  - @konsistent/convention@1.0.0-beta.12
+
 ## 1.0.0-beta.11
 
 ### Patch Changes
