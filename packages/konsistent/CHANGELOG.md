@@ -1,5 +1,14 @@
 # konsistent
 
+## 1.0.0-beta.12
+
+### Patch Changes
+
+- d85c1ae: feat(konsistent): add `hasDirectory` conditional predicate and `haveDirectories` predicate
+- d44bd53: feat(konsistent): add glob support to conditional predicate `hasFile` and predicate `haveFiles`
+- Updated dependencies [d85c1ae]
+  - @konsistent/convention@1.0.0-beta.12
+
 ## 1.0.0-beta.11
 
 ### Patch Changes

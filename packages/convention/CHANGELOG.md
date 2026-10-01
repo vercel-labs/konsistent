@@ -1,5 +1,11 @@
 # @konsistent/convention
 
+## 1.0.0-beta.12
+
+### Patch Changes
+
+- d85c1ae: feat(konsistent): add `hasDirectory` conditional predicate and `haveDirectories` predicate
+
 ## 1.0.0-beta.11
 
 ### Patch Changes
