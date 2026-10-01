@@ -1,0 +1,18 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "instruction-files",
+      "paths": "modules/{module}",
+      "must": [
+        {
+          "ifNot": { "hasFile": "instructions.{md,ts}" },
+          "must": {
+            "haveFiles": ["instructions/*.{md,ts}", "marker.ts"]
+          }
+        }
+      ],
+      "mustNot": { "haveFiles": ["forbidden/*.{md,ts}"] }
+    }
+  ]
+}

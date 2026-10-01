@@ -1,0 +1,1 @@
+The brackets are part of this literal filename.

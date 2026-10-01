@@ -945,6 +945,54 @@ describe("run", () => {
     expect(diagnostics).toEqual([]);
   });
 
+  it("applies file patterns to positive and negative gates and forbidden files", async () => {
+    const config: ConfigV1 = {
+      version: "v1",
+      conventions: [
+        {
+          paths: "modules/{module}",
+          must: [
+            {
+              if: { hasFile: "instructions.{md,ts}" },
+              must: { haveFiles: ["root-only.ts"] },
+            },
+            {
+              ifNot: { hasFile: "instructions.{md,ts}" },
+              must: {
+                haveFiles: ["instructions/*.{md,ts}", "metadata/*.json"],
+              },
+            },
+            { mustNot: { haveFiles: ["secret/*.{md,ts}"] } },
+          ],
+        },
+      ],
+    };
+    const fs = createMockFileSystem({
+      globResults: new Map([["modules/*", ["modules/root", "modules/nested"]]]),
+      directories: new Set(["modules/root", "modules/nested"]),
+    });
+    const matchingPatterns = new Set([
+      "modules/root/instructions.{md,ts}",
+      "modules/root/root-only.ts",
+      "modules/nested/instructions/*.{md,ts}",
+      "modules/nested/secret/*.{md,ts}",
+    ]);
+    vi.spyOn(fs, "fileExists").mockImplementation((path) =>
+      matchingPatterns.has(path)
+    );
+
+    const { diagnostics } = await run({ config, fileSystem: fs });
+    expect(diagnostics.map((diagnostic) => diagnostic.message)).toEqual([
+      "Missing required file: metadata/*.json",
+      'Forbidden file "secret/*.{md,ts}"',
+    ]);
+    expect(
+      diagnostics.every(
+        (diagnostic) => diagnostic.filePath === "modules/nested"
+      )
+    ).toBe(true);
+  });
+
   it("evaluates must block unconditionally when no if is present", async () => {
     const config: ConfigV1 = {
       version: "v1",

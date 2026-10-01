@@ -21,6 +21,24 @@ Every `packages/{providerId}` is a directory with a barrel and a provider implem
 
 See [`haveFiles`](../reference/predicates.md#havefiles) and [path placeholders](../reference/path-patterns.md#placeholders).
 
+## Root or nested instructions
+
+Every module needs an `instructions.md` or `instructions.ts` file, either at its root or inside its `instructions/` directory:
+
+```json
+{
+  "paths": "modules/{module}",
+  "must": [
+    {
+      "ifNot": { "hasFile": "instructions.{md,ts}" },
+      "must": { "haveFiles": ["instructions/*.{md,ts}"] }
+    }
+  ]
+}
+```
+
+The `ifNot` block runs only if neither root file exists. Its `haveFiles` pattern then requires at least one matching file directly inside `instructions/`.
+
 ## Plugin packages
 
 Every plugin must have specific files and exports:

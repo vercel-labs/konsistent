@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
-import { glob } from "tinyglobby";
+import { glob, globSync, isDynamicPattern } from "tinyglobby";
 
 export interface FileSystem {
   fileExists(path: string): boolean;
@@ -13,6 +13,7 @@ export interface FileSystem {
 
 export function createRealFileSystem(opts: { cwd: string }): FileSystem {
   const globCache = new Map<string, Promise<string[]>>();
+  const filePatternCache = new Map<string, boolean>();
 
   return {
     glob(patterns: string[]): Promise<string[]> {
@@ -45,7 +46,27 @@ export function createRealFileSystem(opts: { cwd: string }): FileSystem {
       }
     },
     fileExists(path: string): boolean {
-      return existsSync(resolve(opts.cwd, path));
+      if (existsSync(resolve(opts.cwd, path))) {
+        return true;
+      }
+      if (!isDynamicPattern(path)) {
+        return false;
+      }
+
+      const cached = filePatternCache.get(path);
+      if (cached !== undefined) {
+        return cached;
+      }
+
+      const matched =
+        globSync({
+          patterns: path,
+          cwd: opts.cwd,
+          expandDirectories: false,
+          onlyFiles: true,
+        }).length > 0;
+      filePatternCache.set(path, matched);
+      return matched;
     },
     readDir(path: string): string[] {
       try {
