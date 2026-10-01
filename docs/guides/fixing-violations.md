@@ -128,9 +128,11 @@ Message: `Expected file but found directory` (or vice versa).
 
 #### `haveFiles`
 
-Message: `Missing required file "X"`.
+Message: `Missing required file: X`.
 
 Search first: read the matched directory. Is the expected content present in a file with a different name (e.g. expected `${name}-provider.ts`, found `provider.ts`)? Is it in a subdirectory? Is it split across files?
+
+If `X` contains a glob, the diagnostic shows the pattern rather than a particular filename. Check for a file matching that pattern relative to the matched path; each `haveFiles` entry needs at least one matching file.
 
 - **Trivial**:
   - Expected content lives under another filename → **rename** the file.

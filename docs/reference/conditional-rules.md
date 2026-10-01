@@ -102,7 +102,7 @@ Every predicate in this section is available through both `if` and `ifNot`. The 
 
 ### `hasFile`
 
-The condition matches only when the named file exists at (or relative to) the condition context. Templates are resolved using the context's placeholders. Use the same object under `ifNot` to run only when the file is absent.
+The condition matches when its value resolves to an existing path or when at least one file matches its glob pattern, relative to the condition context. Templates are resolved using the context's placeholders before matching. Globs support `*`, `**`, `?`, brace alternation such as `*.{md,ts}`, and character classes such as `[ab]`. Use the same object under `ifNot` to run only when there is no match. Literal paths continue to use exact-path existence checks. Unlike `paths`, this predicate does not support negated glob patterns.
 
 ```json
 {
@@ -118,6 +118,20 @@ The condition matches only when the named file exists at (or relative to) the co
 ```
 
 For `components/Button`, the block runs only if `components/Button/index.test.tsx` exists. Components without test files are skipped — no false-positive "missing export" violations.
+
+For an alternative-file requirement, use a glob under `ifNot` to require another glob when no root file matches:
+
+```json
+{
+  "paths": "modules/{module}",
+  "must": [
+    {
+      "ifNot": { "hasFile": "instructions.{md,ts}" },
+      "must": { "haveFiles": ["instructions/*.{md,ts}"] }
+    }
+  ]
+}
+```
 
 ### `placeholderSatisfies`
 

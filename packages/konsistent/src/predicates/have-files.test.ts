@@ -46,6 +46,18 @@ describe("checkHaveFiles", () => {
     expect(result[1].message).toBe("Missing required file: README.md");
   });
 
+  it("requires one match for each pattern independently", () => {
+    const result = checkHaveFiles({
+      expected: ["instructions/*.{md,ts}", "src/**/*.ts", "README.md"],
+      context: createMockContext({
+        path: "packages/openai",
+        existingFiles: new Set(["instructions/*.{md,ts}", "README.md"]),
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe("Missing required file: src/**/*.ts");
+  });
+
   it("resolves templates in file names", () => {
     const placeholders = {
       name: new PlaceholderValue({ value: "openai" }),
@@ -55,6 +67,21 @@ describe("checkHaveFiles", () => {
       context: createMockContext({
         path: "packages/openai",
         existingFiles: new Set(["OpenaiProvider.ts"]),
+        placeholders,
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("resolves placeholders before matching a file pattern", () => {
+    const placeholders = {
+      name: new PlaceholderValue({ value: "openai" }),
+    };
+    const result = checkHaveFiles({
+      expected: ["instructions/${name}*.{md,ts}"],
+      context: createMockContext({
+        path: "packages/openai",
+        existingFiles: new Set(["instructions/openai*.{md,ts}"]),
         placeholders,
       }),
     });

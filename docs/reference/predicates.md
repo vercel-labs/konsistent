@@ -81,7 +81,7 @@ Use this when a glob pattern could match either (e.g., `packages/{name}` could m
 
 ### `haveFiles`
 
-Assert that specific files exist within the matched path. Used with directory paths.
+Assert that each listed path exists or each listed glob pattern matches at least one file within the matched path. Used with directory paths.
 
 ```json
 {
@@ -95,7 +95,9 @@ Assert that specific files exist within the matched path. Used with directory pa
 
 For `packages/openai`, this requires both `packages/openai/src/index.ts` and `packages/openai/src/openai-provider.ts` to exist. Templates resolve from the parent path placeholders.
 
-`haveFiles` paths are relative to the matched directory and may contain forward slashes for nested paths.
+`haveFiles` paths are relative to the matched directory and may contain forward slashes for nested paths. Patterns support `*`, `**`, `?`, brace alternation (`*.{md,ts}`), and character classes (`[ab]`). Every array entry must match, but a single entry only requires one matching file. For example, `["src/*.{ts,tsx}", "docs/**/*.md"]` requires at least one matching file for each entry. Literal paths continue to use exact-path existence checks. Unlike `paths`, this predicate does not support negated glob patterns.
+
+In `mustNot.haveFiles`, each entry is forbidden independently: a matching file for any one pattern produces a violation.
 
 ---
 
