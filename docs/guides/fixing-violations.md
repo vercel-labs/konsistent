@@ -142,6 +142,17 @@ If `X` contains a glob, the diagnostic shows the pattern rather than a particula
 
 Always check what *should* go in the file by reading sibling files matched by the same path pattern. If a clear template exists, the violation is trivial.
 
+#### `haveDirectories`
+
+Message: `Missing required directory: X`.
+
+Look for an existing directory with the expected contents at a different path or under a different name. For glob patterns, each entry requires at least one matching directory, not a matching file.
+
+- **Trivial**: an existing directory belongs at the required path and can be moved or renamed, with references updated.
+- **Non-trivial**: no appropriate directory exists and its intended contents are unclear. Defer until the required structure is known.
+
+For `mustNot.haveDirectories`, the diagnostic is `Forbidden directory "X"`. Check what the directory contains before removing or relocating it.
+
 #### `exportValues` / `exportConstants`
 
 Message: `Missing export "X"` / `Missing export const "X"`.

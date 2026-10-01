@@ -5,6 +5,7 @@ import { createGitClient, parseNullDelimitedPaths } from "./git-client.js";
 function createMockFileSystem(files: string[]): FileSystem {
   const paths = new Set(files);
   return {
+    directoryExists: () => false,
     fileExists: (path) => paths.has(path),
     glob: () => Promise.resolve([]),
     isDirectory: () => false,

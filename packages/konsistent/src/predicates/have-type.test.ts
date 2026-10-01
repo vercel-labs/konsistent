@@ -8,6 +8,7 @@ function createMockContext(opts: { path: string }): PredicateContext {
     path: opts.path,
     placeholders: {},
     resolveTemplate: (t: string) => t,
+    directoryExists: () => false,
     fileExists: () => false,
     readDir: () => [],
   };
@@ -23,6 +24,7 @@ function createMockFileSystem(opts: {
     glob: async () => [],
     isDirectory: (p: string) => directories.has(p),
     isFile: (p: string) => files.has(p),
+    directoryExists: (p: string) => directories.has(p),
     fileExists: (p: string) => files.has(p) || directories.has(p),
     readDir: () => [],
     readFile: () => "",

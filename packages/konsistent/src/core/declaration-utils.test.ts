@@ -17,6 +17,7 @@ function createMockContext(): PredicateContext {
     resolveTemplate(template: string): string {
       return template.replace("${name}", "Example");
     },
+    directoryExists: () => false,
     fileExists: () => false,
     readDir: () => [],
   };

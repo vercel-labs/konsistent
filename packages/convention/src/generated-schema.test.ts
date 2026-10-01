@@ -45,6 +45,23 @@ function collectDeprecatedPropertySchemas(opts: {
 }
 
 describe("reusable-convention-package.schema.json", () => {
+  it("accepts directory conditions and assertions in reusable conventions", () => {
+    expect(
+      validate({
+        conventionSpecVersion: "v1",
+        conventions: [
+          {
+            name: "directories",
+            description: "Require directory structure.",
+            if: { hasDirectory: "instructions.{md,ts}" },
+            ifNot: { hasDirectory: "skip" },
+            must: { haveDirectories: ["instructions/*"] },
+            mustNot: { haveDirectories: ["secret/*"] },
+          },
+        ],
+      })
+    ).toBe(true);
+  });
   it("accepts export source predicates in reusable conventions", () => {
     expect(
       validate({

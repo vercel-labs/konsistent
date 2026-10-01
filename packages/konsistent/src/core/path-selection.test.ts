@@ -13,6 +13,7 @@ function createMockFileSystem(opts: {
   const files = new Set(opts.files ?? []);
   const directories = new Set(opts.directories ?? []);
   return {
+    directoryExists: (path) => directories.has(path),
     fileExists: (path) => files.has(path) || directories.has(path),
     glob: vi.fn((patterns: string[]) =>
       Promise.resolve(opts.globResults?.[patterns.join("\0")] ?? [])

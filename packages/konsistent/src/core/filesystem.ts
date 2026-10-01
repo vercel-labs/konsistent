@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { glob, globSync, isDynamicPattern } from "tinyglobby";
 
 export interface FileSystem {
+  directoryExists(path: string): boolean;
   fileExists(path: string): boolean;
   glob(patterns: string[]): Promise<string[]>;
   isDirectory(path: string): boolean;
@@ -14,6 +15,15 @@ export interface FileSystem {
 export function createRealFileSystem(opts: { cwd: string }): FileSystem {
   const globCache = new Map<string, Promise<string[]>>();
   const filePatternCache = new Map<string, boolean>();
+  const directoryPatternCache = new Map<string, boolean>();
+
+  function isDirectory(path: string): boolean {
+    try {
+      return statSync(resolve(opts.cwd, path)).isDirectory();
+    } catch {
+      return false;
+    }
+  }
 
   return {
     glob(patterns: string[]): Promise<string[]> {
@@ -31,13 +41,7 @@ export function createRealFileSystem(opts: { cwd: string }): FileSystem {
       globCache.set(key, result);
       return result;
     },
-    isDirectory(path: string): boolean {
-      try {
-        return statSync(resolve(opts.cwd, path)).isDirectory();
-      } catch {
-        return false;
-      }
-    },
+    isDirectory,
     isFile(path: string): boolean {
       try {
         return statSync(resolve(opts.cwd, path)).isFile();
@@ -66,6 +70,29 @@ export function createRealFileSystem(opts: { cwd: string }): FileSystem {
           onlyFiles: true,
         }).length > 0;
       filePatternCache.set(path, matched);
+      return matched;
+    },
+    directoryExists(path: string): boolean {
+      if (isDirectory(path)) {
+        return true;
+      }
+      if (!isDynamicPattern(path)) {
+        return false;
+      }
+
+      const cached = directoryPatternCache.get(path);
+      if (cached !== undefined) {
+        return cached;
+      }
+
+      const matched =
+        globSync({
+          patterns: path,
+          cwd: opts.cwd,
+          expandDirectories: false,
+          onlyDirectories: true,
+        }).length > 0;
+      directoryPatternCache.set(path, matched);
       return matched;
     },
     readDir(path: string): string[] {

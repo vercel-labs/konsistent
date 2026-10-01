@@ -19,6 +19,27 @@ describe("ConfigV1Schema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts directory conditions and assertions in must blocks", () => {
+    expect(
+      ConfigV1Schema.safeParse({
+        version: "v1",
+        conventions: [
+          {
+            paths: "modules/{module}",
+            must: [
+              {
+                if: { hasDirectory: "instructions/*" },
+                ifNot: { hasDirectory: "archive" },
+                must: { haveDirectories: ["src", "docs/*"] },
+                mustNot: { haveDirectories: ["secret/*"] },
+              },
+            ],
+          },
+        ],
+      }).success
+    ).toBe(true);
+  });
+
   it("accepts a condition on a top-level use reference", () => {
     const result = ConfigV1Schema.safeParse({
       version: "v1",

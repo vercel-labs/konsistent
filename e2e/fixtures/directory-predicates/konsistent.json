@@ -1,0 +1,20 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "instruction-directories",
+      "paths": "modules/{module}",
+      "must": [
+        {
+          "if": { "hasDirectory": "instructions.{md,ts}" },
+          "must": { "haveDirectories": ["root-only"] }
+        },
+        {
+          "ifNot": { "hasDirectory": "instructions.{md,ts}" },
+          "must": { "haveDirectories": ["instructions/*.{md,ts}", "metadata/*"] }
+        }
+      ],
+      "mustNot": { "haveDirectories": ["secret/*", "forbidden/*"] }
+    }
+  ]
+}

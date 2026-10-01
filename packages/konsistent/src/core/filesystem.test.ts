@@ -72,3 +72,45 @@ describe("createRealFileSystem file pattern matching", () => {
     expect(spy).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("createRealFileSystem directory pattern matching", () => {
+  it("matches exact directories but not files without running a glob", async () => {
+    const { globSync } = await import("tinyglobby");
+    const spy = vi.mocked(globSync);
+    spy.mockClear();
+
+    const fs = createRealFileSystem({ cwd: import.meta.dirname });
+    expect(fs.directoryExists("../predicates")).toBe(true);
+    expect(fs.directoryExists("filesystem.ts")).toBe(false);
+    expect(fs.directoryExists("not-present")).toBe(false);
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it("checks dynamic patterns only for matching directories", async () => {
+    const { globSync } = await import("tinyglobby");
+    const spy = vi.mocked(globSync);
+    spy.mockReset().mockReturnValue(["src/modules/foo"]);
+
+    const fs = createRealFileSystem({ cwd: "/fake" });
+    expect(fs.directoryExists("src/modules/*")).toBe(true);
+    expect(spy).toHaveBeenCalledWith({
+      patterns: "src/modules/*",
+      cwd: "/fake",
+      expandDirectories: false,
+      onlyDirectories: true,
+    });
+  });
+
+  it("caches matching and missing directory patterns independently", async () => {
+    const { globSync } = await import("tinyglobby");
+    const spy = vi.mocked(globSync);
+    spy.mockReset().mockReturnValueOnce([]).mockReturnValueOnce(["src/api"]);
+
+    const fs = createRealFileSystem({ cwd: "/fake" });
+    expect(fs.directoryExists("src/missing/*")).toBe(false);
+    expect(fs.directoryExists("src/missing/*")).toBe(false);
+    expect(fs.directoryExists("src/a*")).toBe(true);
+    expect(fs.directoryExists("src/a*")).toBe(true);
+    expect(spy).toHaveBeenCalledTimes(2);
+  });
+});

@@ -38,6 +38,19 @@ describe("generateConventionName", () => {
     });
   });
 
+  describe("haveDirectories", () => {
+    it("generates descriptive names for positive and negative checks", () => {
+      expect(
+        generateConventionName({
+          must: { haveDirectories: ["src/components"] },
+        })
+      ).toBe("must-have-src-components-directory");
+      expect(
+        generateConventionName({ mustNot: { haveDirectories: ["secret/*"] } })
+      ).toBe("must-not-have-secret-*-directory");
+    });
+  });
+
   describe("exportValues", () => {
     it("generates must-export-{name-kebab}", () => {
       expect(

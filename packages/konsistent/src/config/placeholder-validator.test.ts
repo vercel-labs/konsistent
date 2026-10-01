@@ -3,6 +3,31 @@ import { validatePlaceholders } from "./placeholder-validator.js";
 import type { ConventionV1 } from "./schema.js";
 
 describe("validatePlaceholders", () => {
+  it("checks placeholders in directory conditions and predicates", () => {
+    const conventions: ConventionV1[] = [
+      {
+        name: "directory-check",
+        paths: "modules/{module}",
+        must: [
+          {
+            if: { hasDirectory: "${unknown}/*" },
+            must: { haveDirectories: ["${module}/src"] },
+            mustNot: { haveDirectories: ["${missing}/*"] },
+          },
+        ],
+      },
+    ];
+    const result = validatePlaceholders({
+      conventions,
+      identifiers: ["directory-check"],
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain("if.hasDirectory");
+      expect(result.error).toContain("mustNot.haveDirectories");
+      expect(result.error).not.toContain('"${module}"');
+    }
+  });
   it("accepts a placeholder declared in paths and used in must.haveFiles", () => {
     const conventions: ConventionV1[] = [
       {

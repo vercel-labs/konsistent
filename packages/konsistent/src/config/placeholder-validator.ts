@@ -134,6 +134,13 @@ function collectUsagesInCondition(opts: {
       declared,
       usages,
     });
+  } else if (Object.hasOwn(condition, "hasDirectory")) {
+    pushStringUsages({
+      value: (condition as { hasDirectory: string }).hasDirectory,
+      key: `${keyPrefix}.hasDirectory`,
+      declared,
+      usages,
+    });
   } else if (Object.hasOwn(condition, "placeholderSatisfies")) {
     pushStringUsages({
       value: (condition as { placeholderSatisfies: string })
@@ -298,6 +305,17 @@ function collectUsagesInPredicates(opts: {
       pushStringUsages({
         value: f,
         key: `${prefix}.haveFiles`,
+        declared,
+        usages,
+      });
+    }
+  }
+
+  if (predicates.haveDirectories) {
+    for (const directory of predicates.haveDirectories) {
+      pushStringUsages({
+        value: directory,
+        key: `${prefix}.haveDirectories`,
         declared,
         usages,
       });

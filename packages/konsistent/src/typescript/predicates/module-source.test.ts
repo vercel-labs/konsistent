@@ -7,6 +7,7 @@ const context: PredicateContext = {
   path: "src/index.ts",
   placeholders: {},
   resolveTemplate: (value) => value.replace("${package}", "pkg"),
+  directoryExists: () => false,
   fileExists: () => false,
   readDir: () => [],
 };

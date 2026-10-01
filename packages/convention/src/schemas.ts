@@ -34,6 +34,7 @@ const ImportConditionEntryV1Schema = z.union([
 
 export const IfConditionV1Schema = z.union([
   z.strictObject({ hasFile: z.string() }),
+  z.strictObject({ hasDirectory: z.string() }),
   z.strictObject({ placeholderSatisfies: z.string() }),
   z.strictObject({ hasValueImport: ImportConditionEntryV1Schema }),
   z.strictObject({ hasValueImportFrom: z.string() }),
@@ -128,6 +129,7 @@ const ExportSourceSelectorPredicateV1Schema =
 export const MustPredicatesV1Schema = z.strictObject({
   haveType: z.enum(["file", "directory"]).optional(),
   haveFiles: z.array(z.string()).optional(),
+  haveDirectories: z.array(z.string()).optional(),
   declareTypes: z
     .array(z.union([z.string(), TypeDefinitionV1Schema]))
     .optional(),

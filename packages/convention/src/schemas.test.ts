@@ -126,6 +126,7 @@ describe("predicate and block schemas", () => {
     const result = MustPredicatesV1Schema.safeParse({
       haveType: "file",
       haveFiles: ["index.ts"],
+      haveDirectories: ["instructions/*.{md,ts}"],
       exportValues: ["createClient"],
       importValuesFrom: ["@scope/*", "!@scope/internal"],
       importTypesFromCurrentDir: true,
@@ -134,6 +135,21 @@ describe("predicate and block schemas", () => {
     });
 
     expect(result.success).toBe(true);
+  });
+
+  it("accepts directory conditions and requires directory predicate arrays", () => {
+    expect(
+      IfConditionV1Schema.safeParse({ hasDirectory: "src/*" }).success
+    ).toBe(true);
+    expect(
+      IfConditionV1Schema.safeParse({ hasDirectory: ["src"] }).success
+    ).toBe(false);
+    expect(
+      MustPredicatesV1Schema.safeParse({ haveDirectories: ["src"] }).success
+    ).toBe(true);
+    expect(
+      MustPredicatesV1Schema.safeParse({ haveDirectories: "src" }).success
+    ).toBe(false);
   });
 
   it("rejects invalid import source selector ordering", () => {
