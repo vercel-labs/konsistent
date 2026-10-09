@@ -1,0 +1,4 @@
+{
+  "version": "v1",
+  "conventions": [{ "paths": "src", "must": { "haveType": "directory", "haveFiles": ["readme.md"] } }]
+}

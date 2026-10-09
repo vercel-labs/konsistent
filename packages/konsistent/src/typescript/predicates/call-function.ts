@@ -1,7 +1,7 @@
-import ts from "typescript";
 import type { PredicateContext } from "../../core/context.js";
 import type { Diagnostic, DiagnosticSeverity } from "../../core/diagnostics.js";
 import { createDiagnostic } from "../../core/diagnostics.js";
+import { normalizeArgumentExpression } from "../syntax-comparison.js";
 import type { CallInfo, FileStructure } from "../types.js";
 
 interface CallFunctionDefinition {
@@ -9,85 +9,31 @@ interface CallFunctionDefinition {
   name: string;
 }
 
-function unwrapParenthesizedExpression(
-  expression: ts.Expression
-): ts.Expression {
-  let current = expression;
-  while (ts.isParenthesizedExpression(current)) {
-    current = current.expression;
-  }
-  return current;
-}
-
-function parseExpression(opts: { text: string }): ts.Expression | undefined {
-  const sourceFile = ts.createSourceFile(
-    "konsistent-expression.ts",
-    `(${opts.text});`,
-    ts.ScriptTarget.Latest,
-    true
-  );
-  const statement = sourceFile.statements[0];
-  if (!(statement && ts.isExpressionStatement(statement))) {
-    return;
-  }
-  return unwrapParenthesizedExpression(statement.expression);
-}
-
 function parseExpectedArguments(opts: {
   arguments: string[] | undefined;
   context: PredicateContext;
-}): { expressions?: ts.Expression[]; valid: boolean } {
+}): { expressions?: string[]; valid: boolean } {
   const { arguments: argumentsList, context } = opts;
   if (argumentsList === undefined) {
     return { valid: true };
   }
 
   const expressions = argumentsList.map((argument) =>
-    parseExpression({ text: context.resolveTemplate(argument) })
+    normalizeArgumentExpression({
+      text: context.resolveTemplate(argument),
+      session: context.typescriptSession,
+    })
   );
   if (expressions.some((expression) => expression === undefined)) {
     return { valid: false };
   }
-  return { expressions: expressions as ts.Expression[], valid: true };
-}
-
-function normalizeNode(opts: {
-  node: ts.Node;
-  sourceFile: ts.SourceFile;
-}): string {
-  const { node, sourceFile } = opts;
-  if (ts.isStringLiteral(node)) {
-    return `string:${JSON.stringify(node.text)}`;
-  }
-  if (ts.isIdentifier(node)) {
-    return `identifier:${node.text}`;
-  }
-
-  const children: string[] = [];
-  ts.forEachChild(node, (child) => {
-    children.push(normalizeNode({ node: child, sourceFile }));
-  });
-  if (children.length === 0) {
-    return `${node.kind}:${node.getText(sourceFile)}`;
-  }
-  return `${node.kind}(${children.join(",")})`;
-}
-
-function expressionsMatch(opts: {
-  actual: ts.Expression;
-  expected: ts.Expression;
-}): boolean {
-  const actualSourceFile = opts.actual.getSourceFile();
-  const expectedSourceFile = opts.expected.getSourceFile();
-  return (
-    normalizeNode({ node: opts.actual, sourceFile: actualSourceFile }) ===
-    normalizeNode({ node: opts.expected, sourceFile: expectedSourceFile })
-  );
+  return { expressions: expressions as string[], valid: true };
 }
 
 function callMatches(opts: {
   call: CallInfo;
-  expectedArguments: ts.Expression[] | undefined;
+  context: PredicateContext;
+  expectedArguments: string[] | undefined;
   expectedName: string;
 }): boolean {
   const { call, expectedArguments, expectedName } = opts;
@@ -106,11 +52,11 @@ function callMatches(opts: {
     if (actualArgumentText === undefined) {
       return false;
     }
-    const actualArgument = parseExpression({ text: actualArgumentText });
-    return (
-      actualArgument !== undefined &&
-      expressionsMatch({ actual: actualArgument, expected: expectedArgument })
-    );
+    const actualArgument = normalizeArgumentExpression({
+      text: actualArgumentText,
+      session: opts.context.typescriptSession,
+    });
+    return actualArgument !== undefined && actualArgument === expectedArgument;
   });
 }
 
@@ -137,6 +83,7 @@ export function checkCallFunction(opts: {
       fileStructure.calls.some((call) =>
         callMatches({
           call,
+          context,
           expectedArguments: parsedArguments.expressions,
           expectedName,
         })

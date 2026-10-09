@@ -23,7 +23,7 @@
     "node": ">=22.11.0"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "node scripts/build.mjs && tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "generate-schema": "tsx scripts/generate-schema.ts",
     "test": "vitest run"
@@ -39,7 +39,7 @@
     "@types/node": "catalog:",
     "ajv": "catalog:",
     "del-cli": "catalog:",
-    "tsup": "catalog:",
+    "esbuild": "catalog:",
     "tsx": "catalog:",
     "vitest": "catalog:",
     "zod": "catalog:"

@@ -1,0 +1,5 @@
+{
+  "extends": "./nonexistent-tsconfig.json",
+  "compilerOptions": { "types": ["nonexistent-types"], "noEmit": true },
+  "files": ["nonexistent.ts"]
+}

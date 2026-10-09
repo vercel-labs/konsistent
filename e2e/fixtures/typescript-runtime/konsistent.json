@@ -1,0 +1,33 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "native-syntax",
+      "paths": "src/index.ts",
+      "must": {
+        "exportTypes": [{ "name": "Value", "type": "Readonly<{ enabled?: boolean; token: Foo; }>" }],
+        "exportConstants": [{ "name": "count", "type": "1000" }],
+        "callFunction": [{ "name": "send", "arguments": ["'é😀'", "{a:1}"] }]
+      }
+    },
+    {
+      "name": "native-conditions",
+      "paths": "src",
+      "must": [{
+        "for": { "files": ["index.ts", "empty.ts", "next.ts"] },
+        "if": { "hasTypeImport": "Foo" },
+        "must": { "exportTypes": ["Value"] }
+      }]
+    },
+    {
+      "name": "native-jsx",
+      "paths": "src/view.tsx",
+      "must": { "exportConstants": ["View"] }
+    },
+    {
+      "name": "native-barrel",
+      "paths": "src/barrel.ts",
+      "must": { "areBarrelFiles": true, "exportTypesFrom": ["./missing"] }
+    }
+  ]
+}

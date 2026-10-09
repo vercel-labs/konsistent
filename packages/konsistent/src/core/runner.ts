@@ -14,6 +14,8 @@ import { checkHaveDirectories } from "../predicates/have-directories.js";
 import { checkHaveFiles } from "../predicates/have-files.js";
 import { checkHaveType } from "../predicates/have-type.js";
 import { hasImport, hasImportFrom } from "../typescript/import-matcher.js";
+import type { TypeScriptSession } from "../typescript/native-session.js";
+import { createTypeScriptSession } from "../typescript/native-session.js";
 import { parseFileStructure } from "../typescript/parser.js";
 import { checkAreBarrelFiles } from "../typescript/predicates/are-barrel-files.js";
 import { checkCallFunction } from "../typescript/predicates/call-function.js";
@@ -158,6 +160,7 @@ function deriveCamelToPascalMap(opts: {
 function buildContext(opts: {
   matched: MatchedPath;
   fileSystem: FileSystem;
+  typescriptSession?: TypeScriptSession;
 }): PredicateContext {
   const { matched, fileSystem } = opts;
   const { path: matchedPath, placeholders } = matched;
@@ -166,6 +169,7 @@ function buildContext(opts: {
     : dirname(matchedPath);
 
   return {
+    typescriptSession: opts.typescriptSession,
     path: matchedPath,
     placeholders,
     resolveTemplate(template: string): string {
@@ -287,6 +291,7 @@ function evaluateCondition(opts: {
 
   const fileStructure = getOrParseFileStructure({
     filePath: context.path,
+    session: context.typescriptSession,
     fileSystem,
     cache: fileStructureCache,
   });
@@ -1018,6 +1023,7 @@ function getOrParseFileStructure(opts: {
   filePath: string;
   fileSystem: FileSystem;
   cache: Map<string, FileStructure>;
+  session?: TypeScriptSession;
 }): FileStructure {
   const cached = opts.cache.get(opts.filePath);
   if (cached) {
@@ -1025,7 +1031,11 @@ function getOrParseFileStructure(opts: {
   }
 
   const source = opts.fileSystem.readFile(opts.filePath);
-  const structure = parseFileStructure({ source, filePath: opts.filePath });
+  const structure = parseFileStructure({
+    source,
+    filePath: opts.filePath,
+    session: opts.session,
+  });
   opts.cache.set(opts.filePath, structure);
   return structure;
 }
@@ -1310,6 +1320,7 @@ function checkMustPredicates(opts: {
   if (needsTs) {
     fileStructure = getOrParseFileStructure({
       filePath: context.path,
+      session: context.typescriptSession,
       fileSystem,
       cache: fileStructureCache,
     });
@@ -1546,6 +1557,7 @@ async function evaluateForBlock(opts: {
     }
 
     const forContext = buildContext({
+      typescriptSession: parentContext.typescriptSession,
       matched: {
         path: entry.path,
         placeholders: mergedPlaceholders,
@@ -1601,6 +1613,23 @@ export async function run(opts: {
   config: ConfigV1;
   fileSystem: FileSystem;
   pathSelection?: PathSelection;
+  typescriptSession?: TypeScriptSession;
+}): Promise<RunResult> {
+  const typescriptSession = opts.typescriptSession ?? createTypeScriptSession();
+  try {
+    return await runWithSession({ ...opts, typescriptSession });
+  } finally {
+    if (!opts.typescriptSession) {
+      typescriptSession.close();
+    }
+  }
+}
+
+async function runWithSession(opts: {
+  config: ConfigV1;
+  fileSystem: FileSystem;
+  pathSelection?: PathSelection;
+  typescriptSession: TypeScriptSession;
 }): Promise<RunResult> {
   const startTime = performance.now();
   const { config, fileSystem, pathSelection } = opts;
@@ -1674,7 +1703,11 @@ export async function run(opts: {
         path: entry.path,
         placeholders: { ...staticPlaceholders, ...entry.placeholders },
       };
-      const context = buildContext({ matched: mergedEntry, fileSystem });
+      const context = buildContext({
+        matched: mergedEntry,
+        fileSystem,
+        typescriptSession: opts.typescriptSession,
+      });
 
       if (
         isFileExcluded({

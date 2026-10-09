@@ -4,7 +4,30 @@ import type {
   ConstantValueSchemaV1,
   InnerTypeConstraintV1,
 } from "@konsistent/convention";
-import ts from "typescript";
+import {
+  type InterfaceDeclaration,
+  isArrayTypeNode,
+  isIdentifier,
+  isLiteralTypeNode,
+  isNumericLiteral,
+  isPrefixUnaryExpression,
+  isPropertySignatureDeclaration,
+  isStringLiteral,
+  isTypeAliasDeclaration,
+  isTypeLiteralNode,
+  isTypeOperatorNode,
+  isTypeReferenceNode,
+  isUnionTypeNode,
+  type NodeArray,
+  type PropertyName,
+  SyntaxKind,
+  type TypeElement,
+  type TypeNode,
+} from "typescript/unstable/ast";
+import { DiagnosticCategory } from "typescript/unstable/sync";
+import type { ParsedSource, TypeScriptSession } from "./native-session.js";
+import { withTypeScriptSession } from "./native-session.js";
+import { typeSyntaxFingerprint } from "./syntax-comparison.js";
 
 type ConstantScalarValue = string | number | boolean | null;
 
@@ -56,60 +79,58 @@ export interface ConstantSchemaMatchResult {
 function normalizeTypeExpressionPair(opts: {
   actual: string;
   expected: string;
+  session?: TypeScriptSession;
 }): { actual: string; expected: string } | undefined {
   const sourceText = `type __KonsistentActual = ${opts.actual}
 ;type __KonsistentExpected = ${opts.expected}
 ;`;
-  const transpileResult = ts.transpileModule(sourceText, {
-    reportDiagnostics: true,
+  return withTypeScriptSession({
+    session: opts.session,
+    run: (session) =>
+      session.withSourceFile({
+        source: sourceText,
+        filePath: "type-expression.ts",
+        visit(source) {
+          if (
+            source
+              .getSyntacticDiagnostics()
+              .some(
+                (diagnostic) => diagnostic.category === DiagnosticCategory.Error
+              )
+          ) {
+            return;
+          }
+          const [actualDeclaration, expectedDeclaration] =
+            source.sourceFile.statements;
+          if (
+            source.sourceFile.statements.length !== 2 ||
+            !actualDeclaration ||
+            !isTypeAliasDeclaration(actualDeclaration) ||
+            !expectedDeclaration ||
+            !isTypeAliasDeclaration(expectedDeclaration)
+          ) {
+            return;
+          }
+          return {
+            actual: JSON.stringify([
+              source.printNode({ node: actualDeclaration.type }),
+              typeSyntaxFingerprint({ node: actualDeclaration.type, source }),
+            ]),
+            expected: JSON.stringify([
+              source.printNode({ node: expectedDeclaration.type }),
+              typeSyntaxFingerprint({ node: expectedDeclaration.type, source }),
+            ]),
+          };
+        },
+      }),
   });
-  if (
-    transpileResult.diagnostics?.some(
-      (diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error
-    )
-  ) {
-    return;
-  }
-
-  const sourceFile = ts.createSourceFile(
-    "type-expression.ts",
-    sourceText,
-    ts.ScriptTarget.Latest,
-    true
-  );
-  const [actualDeclaration, expectedDeclaration] = sourceFile.statements;
-  if (
-    sourceFile.statements.length !== 2 ||
-    !actualDeclaration ||
-    !ts.isTypeAliasDeclaration(actualDeclaration) ||
-    !expectedDeclaration ||
-    !ts.isTypeAliasDeclaration(expectedDeclaration)
-  ) {
-    return;
-  }
-
-  const printer = ts.createPrinter({
-    newLine: ts.NewLineKind.LineFeed,
-    removeComments: true,
-  });
-  return {
-    actual: printer.printNode(
-      ts.EmitHint.Unspecified,
-      actualDeclaration.type,
-      sourceFile
-    ),
-    expected: printer.printNode(
-      ts.EmitHint.Unspecified,
-      expectedDeclaration.type,
-      sourceFile
-    ),
-  };
 }
 
 export function matchTypeExpression(opts: {
   actual: string | undefined;
   expected: string;
   missingReason: string;
+  session?: TypeScriptSession;
 }): ConstantSchemaMatchResult {
   const { actual, expected, missingReason } = opts;
   if (actual === undefined) {
@@ -118,7 +139,11 @@ export function matchTypeExpression(opts: {
   if (actual === expected) {
     return { matches: true };
   }
-  const normalized = normalizeTypeExpressionPair({ actual, expected });
+  const normalized = normalizeTypeExpressionPair({
+    actual,
+    expected,
+    session: opts.session,
+  });
   if (!normalized || normalized.actual !== normalized.expected) {
     return {
       matches: false,
@@ -180,20 +205,20 @@ function innerTypeConstraintText(
 }
 
 function parseScalarType(
-  node: ts.TypeNode | undefined
+  node: TypeNode | undefined
 ): ConstantScalarTypeV1 | undefined {
   switch (node?.kind) {
-    case ts.SyntaxKind.StringKeyword:
+    case SyntaxKind.StringKeyword:
       return "string";
-    case ts.SyntaxKind.NumberKeyword:
+    case SyntaxKind.NumberKeyword:
       return "number";
-    case ts.SyntaxKind.BooleanKeyword:
+    case SyntaxKind.BooleanKeyword:
       return "boolean";
     default:
       if (
         node &&
-        ts.isLiteralTypeNode(node) &&
-        node.literal.kind === ts.SyntaxKind.NullKeyword
+        isLiteralTypeNode(node) &&
+        node.literal.kind === SyntaxKind.NullKeyword
       ) {
         return "null";
       }
@@ -201,31 +226,31 @@ function parseScalarType(
   }
 }
 
-function parseLiteralValue(node: ts.TypeNode): ConstantScalarValue | undefined {
-  if (!ts.isLiteralTypeNode(node)) {
+function parseLiteralValue(node: TypeNode): ConstantScalarValue | undefined {
+  if (!isLiteralTypeNode(node)) {
     return;
   }
 
   const { literal } = node;
-  if (ts.isStringLiteral(literal)) {
+  if (isStringLiteral(literal)) {
     return literal.text;
   }
-  if (ts.isNumericLiteral(literal)) {
+  if (isNumericLiteral(literal)) {
     return Number(literal.text);
   }
-  if (literal.kind === ts.SyntaxKind.TrueKeyword) {
+  if (literal.kind === SyntaxKind.TrueKeyword) {
     return true;
   }
-  if (literal.kind === ts.SyntaxKind.FalseKeyword) {
+  if (literal.kind === SyntaxKind.FalseKeyword) {
     return false;
   }
-  if (literal.kind === ts.SyntaxKind.NullKeyword) {
+  if (literal.kind === SyntaxKind.NullKeyword) {
     return null;
   }
   if (
-    ts.isPrefixUnaryExpression(literal) &&
-    literal.operator === ts.SyntaxKind.MinusToken &&
-    ts.isNumericLiteral(literal.operand)
+    isPrefixUnaryExpression(literal) &&
+    literal.operator === SyntaxKind.MinusToken &&
+    isNumericLiteral(literal.operand)
   ) {
     return -Number(literal.operand.text);
   }
@@ -236,8 +261,8 @@ function getScalarValueType(value: ConstantScalarValue): ConstantScalarTypeV1 {
   return value === null ? "null" : (typeof value as ConstantScalarTypeV1);
 }
 
-function parseEnumType(node: ts.TypeNode): ConstantEnumTypeInfo | undefined {
-  const members = ts.isUnionTypeNode(node) ? node.types : [node];
+function parseEnumType(node: TypeNode): ConstantEnumTypeInfo | undefined {
+  const members = isUnionTypeNode(node) ? node.types : [node];
   const values: ConstantScalarValue[] = [];
 
   for (const member of members) {
@@ -256,28 +281,32 @@ function parseEnumType(node: ts.TypeNode): ConstantEnumTypeInfo | undefined {
   return { kind: "enum", type, values };
 }
 
-function parseArrayType(node: ts.TypeNode): ConstantArrayTypeInfo | undefined {
-  if (ts.isArrayTypeNode(node)) {
-    const itemType = parseInnerType(node.elementType);
+function parseArrayType(opts: {
+  node: TypeNode;
+  source: ParsedSource;
+}): ConstantArrayTypeInfo | undefined {
+  const { node, source } = opts;
+  if (isArrayTypeNode(node)) {
+    const itemType = parseInnerType({ node: node.elementType, source });
     return itemType ? { kind: "array", itemType } : undefined;
   }
 
   if (
-    ts.isTypeOperatorNode(node) &&
-    node.operator === ts.SyntaxKind.ReadonlyKeyword &&
-    ts.isArrayTypeNode(node.type)
+    isTypeOperatorNode(node) &&
+    node.operator === SyntaxKind.ReadonlyKeyword &&
+    isArrayTypeNode(node.type)
   ) {
-    const itemType = parseInnerType(node.type.elementType);
+    const itemType = parseInnerType({ node: node.type.elementType, source });
     return itemType ? { kind: "array", itemType } : undefined;
   }
 
-  if (ts.isTypeReferenceNode(node)) {
-    const name = node.typeName.getText();
+  if (isTypeReferenceNode(node)) {
+    const name = source.getText({ node: node.typeName });
     if (
       (name === "Array" || name === "ReadonlyArray") &&
       node.typeArguments?.length === 1
     ) {
-      const itemType = parseInnerType(node.typeArguments[0]);
+      const itemType = parseInnerType({ node: node.typeArguments[0], source });
       return itemType ? { kind: "array", itemType } : undefined;
     }
   }
@@ -285,29 +314,34 @@ function parseArrayType(node: ts.TypeNode): ConstantArrayTypeInfo | undefined {
   return;
 }
 
-function parseInnerType(node: ts.TypeNode | undefined): string | undefined {
-  if (!(node && (parseScalarType(node) || ts.isTypeReferenceNode(node)))) {
+function parseInnerType(opts: {
+  node: TypeNode | undefined;
+  source: ParsedSource;
+}): string | undefined {
+  const { node, source } = opts;
+  if (!(node && (parseScalarType(node) || isTypeReferenceNode(node)))) {
     return;
   }
-  return node.getText();
+  return source.getText({ node });
 }
 
-function getPropertyName(name: ts.PropertyName): string | undefined {
-  if (ts.isIdentifier(name) || ts.isStringLiteral(name)) {
+function getPropertyName(name: PropertyName): string | undefined {
+  if (isIdentifier(name) || isStringLiteral(name)) {
     return name.text;
   }
   return;
 }
 
 function parseObjectType(opts: {
-  members: ts.NodeArray<ts.TypeElement>;
+  members: NodeArray<TypeElement>;
+  source: ParsedSource;
 }): ConstantObjectTypeInfo | undefined {
   const { members } = opts;
   const properties: ConstantObjectPropertyTypeInfo[] = [];
   const names = new Set<string>();
 
   for (const member of members) {
-    if (!(ts.isPropertySignature(member) && member.name)) {
+    if (!(isPropertySignatureDeclaration(member) && member.name)) {
       return;
     }
     const name = getPropertyName(member.name);
@@ -315,10 +349,10 @@ function parseObjectType(opts: {
       return;
     }
     names.add(name);
-    const type = parseInnerType(member.type);
+    const type = parseInnerType({ node: member.type, source: opts.source });
     const property: ConstantObjectPropertyTypeInfo = {
       name,
-      optional: Boolean(member.questionToken),
+      optional: member.postfixToken?.kind === SyntaxKind.QuestionToken,
     };
     if (type !== undefined) {
       property.type = type;
@@ -330,7 +364,8 @@ function parseObjectType(opts: {
 }
 
 export function parseTypeShape(opts: {
-  node: ts.TypeNode | undefined;
+  node: TypeNode | undefined;
+  source: ParsedSource;
 }): ConstantTypeInfo | undefined {
   const { node } = opts;
   if (!node) {
@@ -347,14 +382,16 @@ export function parseTypeShape(opts: {
     return enumType;
   }
 
-  const arrayType = parseArrayType(node);
+  const arrayType = parseArrayType({ node, source: opts.source });
   if (arrayType) {
     return arrayType;
   }
 
-  if (ts.isTypeLiteralNode(node)) {
+  if (isTypeLiteralNode(node)) {
     return (
-      parseObjectType({ members: node.members }) ?? { kind: "unsupported" }
+      parseObjectType({ members: node.members, source: opts.source }) ?? {
+        kind: "unsupported",
+      }
     );
   }
 
@@ -362,13 +399,18 @@ export function parseTypeShape(opts: {
 }
 
 export function parseInterfaceTypeShape(opts: {
-  node: ts.InterfaceDeclaration;
+  node: InterfaceDeclaration;
+  source: ParsedSource;
 }): ConstantTypeInfo {
   const { node } = opts;
   if (node.heritageClauses?.length) {
     return { kind: "unsupported" };
   }
-  return parseObjectType({ members: node.members }) ?? { kind: "unsupported" };
+  return (
+    parseObjectType({ members: node.members, source: opts.source }) ?? {
+      kind: "unsupported",
+    }
+  );
 }
 
 function scalarValueKey(value: ConstantScalarValue): string {

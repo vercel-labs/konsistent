@@ -3,6 +3,12 @@
   "source": ["package.json", "packages/*/package.json"],
   "semverGroups": [
     {
+      "label": "Pin the unstable TypeScript API to an exact version",
+      "range": "",
+      "dependencies": ["typescript"],
+      "packages": ["**"]
+    },
+    {
       "label": "Use caret ranges for all dependencies",
       "range": "^",
       "dependencies": ["**"],
@@ -24,7 +30,7 @@
         "ajv",
         "citty",
         "del-cli",
-        "tsup",
+        "esbuild",
         "tsx",
         "typescript",
         "vitest",

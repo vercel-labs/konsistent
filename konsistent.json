@@ -28,9 +28,9 @@
           "excludeFiles": ["packages/common-conventions", "packages/convention"]
         },
         {
-          "name": "package-must-have-tsup-config",
+          "name": "package-must-have-build-script",
           "must": {
-            "haveFiles": ["tsup.config.ts"]
+            "haveFiles": ["scripts/build.mjs"]
           },
           "excludeFiles": ["packages/common-conventions"]
         },

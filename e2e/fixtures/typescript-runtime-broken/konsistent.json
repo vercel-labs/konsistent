@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "conventions": [{
+    "name": "native-mismatches",
+    "paths": "src/index.ts",
+    "must": {
+      "exportConstants": [{ "name": "café", "schema": { "type": "number" } }, { "name": "count", "type": "16" }],
+      "exportTypes": [{ "name": "Value", "type": "\"ab\"" }],
+      "callFunction": [{ "name": "send", "arguments": ["1000"] }]
+    }
+  }]
+}

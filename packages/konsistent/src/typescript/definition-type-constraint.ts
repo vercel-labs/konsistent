@@ -82,6 +82,7 @@ export function checkConstantDefinitionConstraint(opts: {
   } else if (configuredType) {
     result = matchTypeExpression({
       actual: constantInfo?.typeName?.text,
+      session: opts.context.typescriptSession,
       expected: opts.context.resolveTemplate(configuredType),
       missingReason: "must have an explicit type annotation",
     });
@@ -136,6 +137,7 @@ export function checkTypeDefinitionConstraint(opts: {
   } else if (configuredType) {
     result = matchTypeExpression({
       actual: typeAlias?.typeName.text,
+      session: opts.context.typescriptSession,
       expected: opts.context.resolveTemplate(configuredType),
       missingReason: "must be a type alias",
     });

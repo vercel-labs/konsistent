@@ -19,11 +19,12 @@
     "node": ">=22.11.0"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "node scripts/build.mjs",
     "typecheck": "tsc --noEmit",
     "generate-schema": "tsx scripts/generate-schema.ts",
     "test": "vitest run",
-    "prepack": "cp -r ../../docs ./docs",
+    "test:package": "node scripts/verify-package.mjs",
+    "prepack": "node --input-type=module -e \"import { cp } from 'node:fs/promises'; await cp('../../docs', './docs', { recursive: true });\"",
     "post-publish-clean": "del-cli docs"
   },
   "dependencies": {
@@ -41,7 +42,7 @@
     "@types/picomatch": "^4",
     "ajv": "catalog:",
     "del-cli": "catalog:",
-    "tsup": "catalog:",
+    "esbuild": "catalog:",
     "tsx": "catalog:",
     "vitest": "catalog:"
   },
