@@ -20,10 +20,10 @@
     }
   },
   "engines": {
-    "node": ">=22.11.0"
+    "node": "^22.18.0 || ^24.11.0 || >=26.0.0"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "generate-schema": "tsx scripts/generate-schema.ts",
     "test": "vitest run"
@@ -39,7 +39,7 @@
     "@types/node": "catalog:",
     "ajv": "catalog:",
     "del-cli": "catalog:",
-    "tsup": "catalog:",
+    "tsdown": "catalog:",
     "tsx": "catalog:",
     "vitest": "catalog:",
     "zod": "catalog:"
