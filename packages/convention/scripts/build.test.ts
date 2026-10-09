@@ -11,6 +11,15 @@ const zodImportPattern = /from ["']zod["']/;
 const jitiImportPattern = /from ["']jiti["']/;
 
 describe("convention build", () => {
+  it("includes shared compiler settings in the test cache inputs", async () => {
+    const configuration = JSON.parse(
+      await readFile(resolve(packageDirectory, "../../turbo.json"), "utf8")
+    );
+    expect(configuration.tasks.test.inputs).toEqual(
+      expect.arrayContaining(["$TURBO_DEFAULT$", "$TURBO_ROOT$/tsconfig.json"])
+    );
+  });
+
   it("preserves independent ESM library and CLI entrypoints", async () => {
     const outdir = await mkdtemp(join(tmpdir(), "convention-build-"));
     try {
