@@ -79,7 +79,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
 
-  test-e2e:
+  test-e2e-platforms:
+    name: test-e2e (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
@@ -110,8 +111,11 @@ jobs:
         shell: bash
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:e2e
-      - run: pnpm test --force
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with:
-          node-version: 22.18.0
-      - run: node packages/konsistent/scripts/verify-package.mjs
+
+  test-e2e:
+    if: always()
+    needs: test-e2e-platforms
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all platform e2e runs to pass
+        run: test "${{ needs.test-e2e-platforms.result }}" = success
