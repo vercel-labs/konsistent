@@ -1,5 +1,15 @@
 # konsistent
 
+## 1.0.0-beta.13
+
+### Patch Changes
+
+- 2038913: chore(konsistent): migrate from `tsup` to `tsdown`
+- 170417b: feat(konsistent): use TypeScript 7 for TS parsing and internal tooling
+- Updated dependencies [2038913]
+- Updated dependencies [170417b]
+  - @konsistent/convention@1.0.0-beta.13
+
 ## 1.0.0-beta.12
 
 ### Patch Changes
