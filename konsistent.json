@@ -28,9 +28,9 @@
           "excludeFiles": ["packages/common-conventions", "packages/convention"]
         },
         {
-          "name": "package-must-have-build-script",
+          "name": "package-must-have-tsdown-config",
           "must": {
-            "haveFiles": ["scripts/build.mjs"]
+            "haveFiles": ["tsdown.config.ts"]
           },
           "excludeFiles": ["packages/common-conventions"]
         },

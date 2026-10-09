@@ -13,7 +13,7 @@ function createManifests() {
         "@konsistent/convention": "1.0.0-beta.12",
       },
       bin: { konsistent: "./dist/cli.js" },
-      engines: { node: ">=22.11.0" },
+      engines: { node: "^22.18.0 || ^24.11.0 || >=26.0.0" },
     },
     conventionManifest: {
       dependencies: { citty: "^0.2" },
@@ -72,6 +72,12 @@ describe("packed package contracts", () => {
       manifests.cliManifest.dependencies.typescript = version;
       expect(() => validatePublishedPackages(manifests)).toThrow();
     }
+  });
+
+  it("rejects the superseded Node.js requirement", () => {
+    const manifests = createManifests();
+    manifests.cliManifest.engines.node = ">=22.11.0";
+    expect(() => validatePublishedPackages(manifests)).toThrow();
   });
 
   it("rejects unresolved workspace and catalog protocols", () => {

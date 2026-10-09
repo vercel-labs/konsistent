@@ -30,7 +30,7 @@
         "ajv",
         "citty",
         "del-cli",
-        "esbuild",
+        "tsdown",
         "tsx",
         "typescript",
         "vitest",

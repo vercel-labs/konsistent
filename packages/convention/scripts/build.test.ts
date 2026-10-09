@@ -1,8 +1,10 @@
 import { mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
+import { build } from "tsdown";
 import { describe, expect, it } from "vitest";
-import { buildPackage } from "./build.mjs";
+
+const packageDirectory = resolve(import.meta.dirname, "..");
 
 const shebangPattern = /#!\/usr\/bin\/env node/g;
 const zodImportPattern = /from ["']zod["']/;
@@ -13,8 +15,17 @@ describe("convention build", () => {
     const outdir = await mkdtemp(join(tmpdir(), "convention-build-"));
     try {
       await writeFile(join(outdir, "stale.js"), "stale");
-      await buildPackage({ outdir });
-      expect((await readdir(outdir)).sort()).toEqual(["cli.js", "index.js"]);
+      await build({
+        cwd: packageDirectory,
+        config: join(packageDirectory, "tsdown.config.ts"),
+        outDir: outdir,
+        logLevel: "silent",
+      });
+      expect((await readdir(outdir)).sort()).toEqual([
+        "cli.js",
+        "index.d.ts",
+        "index.js",
+      ]);
       const cli = await readFile(join(outdir, "cli.js"), "utf8");
       const library = await readFile(join(outdir, "index.js"), "utf8");
       expect(cli.startsWith("#!/usr/bin/env node\n")).toBe(true);

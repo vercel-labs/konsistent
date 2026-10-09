@@ -24,7 +24,7 @@ export function validatePublishedPackages(opts) {
   const { cliManifest, conventionManifest, typescriptVersion } = opts;
   assert.equal(cliManifest.dependencies.typescript, typescriptVersion);
   assert.equal(cliManifest.bin.konsistent, "./dist/cli.js");
-  assert.equal(cliManifest.engines.node, ">=22.11.0");
+  assert.equal(cliManifest.engines.node, "^22.18.0 || ^24.11.0 || >=26.0.0");
   assert.equal(conventionManifest.exports["."].types, "./dist/index.d.ts");
   assert.equal(conventionManifest.exports["."].import, "./dist/index.js");
   assert.equal(
@@ -173,7 +173,7 @@ export async function verifyPackage() {
         "@konsistent",
         "convention",
         "dist",
-        "index.d.ts.map"
+        "index.d.ts"
       )
     );
     const libraryPath = join(
