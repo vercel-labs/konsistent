@@ -1,31 +1,43 @@
 {
   "name": "konsistent",
-  "description": "konsistent is a CLI tool that enforces structural conventions in TypeScript codebases.",
   "version": "1.0.0-beta.12",
-  "type": "module",
+  "description": "konsistent is a CLI tool that enforces structural conventions in TypeScript codebases.",
+  "keywords": [
+    "lint",
+    "consistent code",
+    "code conventions",
+    "JavaScript",
+    "TypeScript"
+  ],
+  "bugs": {
+    "url": "https://github.com/vercel-labs/konsistent/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vercel-labs/konsistent",
+    "directory": "packages/konsistent"
+  },
   "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "konsistent": "./dist/cli.js"
+  },
+  "directories": {
+    "doc": "./docs"
+  },
   "files": [
     "dist",
     "docs",
     "konsistent.schema.json"
   ],
-  "directories": {
-    "doc": "./docs"
-  },
-  "bin": {
-    "konsistent": "./dist/cli.js"
-  },
-  "engines": {
-    "node": "^22.18.0 || ^24.11.0 || >=26.0.0"
-  },
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsc --noEmit",
     "generate-schema": "tsx scripts/generate-schema.ts",
+    "prepack": "node --input-type=module -e \"import { cp } from 'node:fs/promises'; await cp('../../docs', './docs', { recursive: true });\"",
+    "post-publish-clean": "del-cli docs",
     "test": "vitest run",
     "test:package": "node scripts/verify-package.mjs",
-    "prepack": "node --input-type=module -e \"import { cp } from 'node:fs/promises'; await cp('../../docs', './docs', { recursive: true });\"",
-    "post-publish-clean": "del-cli docs"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@konsistent/convention": "workspace:*",
@@ -46,23 +58,11 @@
     "tsx": "catalog:",
     "vitest": "catalog:"
   },
+  "engines": {
+    "node": "^22.18.0 || ^24.11.0 || >=26.0.0"
+  },
   "publishConfig": {
     "access": "public",
     "provenance": true
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/vercel-labs/konsistent",
-    "directory": "packages/konsistent"
-  },
-  "bugs": {
-    "url": "https://github.com/vercel-labs/konsistent/issues"
-  },
-  "keywords": [
-    "lint",
-    "consistent code",
-    "code conventions",
-    "JavaScript",
-    "TypeScript"
-  ]
+  }
 }

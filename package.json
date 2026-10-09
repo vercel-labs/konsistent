@@ -2,39 +2,39 @@
   "name": "konsistent-monorepo",
   "private": true,
   "license": "Apache-2.0",
-  "packageManager": "pnpm@11.1.3",
-  "engines": {
-    "node": "^22.18.0 || ^24.11.0 || >=26.0.0"
-  },
   "scripts": {
     "build": "turbo run build --filter='./packages/*'",
-    "typecheck": "turbo run typecheck --filter='./packages/*'",
+    "changeset": "changeset",
+    "check": "ultracite check",
+    "check:deps": "syncpack lint",
+    "ci:release": "turbo run build --filter='./packages/*' && changeset publish",
+    "ci:version": "pnpm -F @konsistent/convention build && pnpm -F konsistent build && changeset version && pnpm install --no-frozen-lockfile",
+    "fix": "ultracite fix",
+    "fix:deps": "syncpack fix-mismatches && syncpack format",
+    "konsistent": "KONSISTENT_NO_UPDATE_CHECK=true konsistent",
+    "prepare": "husky",
+    "set-latest-dist-tags": "node tools/scripts/set-latest-dist-tags.mjs",
     "test": "turbo run test --filter='./packages/*'",
     "test:e2e": "turbo run test:e2e:run",
     "test:e2e:run": "vitest run -c e2e/vitest.config.ts",
     "test:package": "turbo run test:package --filter=konsistent",
-    "check": "ultracite check",
-    "check:deps": "syncpack lint",
-    "fix": "ultracite fix",
-    "fix:deps": "syncpack fix-mismatches && syncpack format",
-    "set-latest-dist-tags": "node tools/scripts/set-latest-dist-tags.mjs",
-    "changeset": "changeset",
-    "ci:version": "pnpm -F @konsistent/convention build && pnpm -F konsistent build && changeset version && pnpm install --no-frozen-lockfile",
-    "ci:release": "turbo run build --filter='./packages/*' && changeset publish",
-    "prepare": "husky",
-    "konsistent": "KONSISTENT_NO_UPDATE_CHECK=true konsistent"
+    "typecheck": "turbo run typecheck --filter='./packages/*'"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2",
+    "@biomejs/biome": "^2.5.15",
     "@changesets/cli": "^2.31.0",
     "@felixarntz/biome": "^0.3.1",
     "@types/node": "catalog:",
     "husky": "^9.1.7",
     "konsistent": "workspace:*",
-    "syncpack": "^15",
-    "turbo": "^2",
+    "syncpack": "^15.3.3",
+    "turbo": "^2.11.7",
     "typescript": "catalog:",
-    "ultracite": "^7",
+    "ultracite": "^7.12.4",
     "vitest": "catalog:"
+  },
+  "packageManager": "pnpm@11.1.3",
+  "engines": {
+    "node": "^22.18.0 || ^24.11.0 || >=26.0.0"
   }
 }

@@ -1,39 +1,48 @@
 {
   "name": "@konsistent/convention",
-  "description": "Convention spec for konsistent — Zod schemas and authoring helpers for reusable conventions.",
   "version": "1.0.0-beta.12",
-  "type": "module",
-  "license": "Apache-2.0",
-  "files": [
-    "dist",
-    "reusable-convention-package.schema.json"
+  "description": "Convention spec for konsistent — Zod schemas and authoring helpers for reusable conventions.",
+  "keywords": [
+    "lint",
+    "consistent code",
+    "code conventions",
+    "JavaScript",
+    "TypeScript"
   ],
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "bin": {
-    "konsistent-convention": "./dist/cli.js"
+  "bugs": {
+    "url": "https://github.com/vercel-labs/konsistent/issues"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vercel-labs/konsistent",
+    "directory": "packages/convention"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
   },
-  "engines": {
-    "node": "^22.18.0 || ^24.11.0 || >=26.0.0"
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "konsistent-convention": "./dist/cli.js"
   },
+  "files": [
+    "dist",
+    "reusable-convention-package.schema.json"
+  ],
   "scripts": {
     "build": "tsdown",
-    "typecheck": "tsc --noEmit",
     "generate-schema": "tsx scripts/generate-schema.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "citty": "catalog:",
     "jiti": "^2"
-  },
-  "peerDependencies": {
-    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",
@@ -43,23 +52,14 @@
     "vitest": "catalog:",
     "zod": "catalog:"
   },
+  "peerDependencies": {
+    "zod": "catalog:"
+  },
+  "engines": {
+    "node": "^22.18.0 || ^24.11.0 || >=26.0.0"
+  },
   "publishConfig": {
     "access": "public",
     "provenance": true
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/vercel-labs/konsistent",
-    "directory": "packages/convention"
-  },
-  "bugs": {
-    "url": "https://github.com/vercel-labs/konsistent/issues"
-  },
-  "keywords": [
-    "lint",
-    "consistent code",
-    "code conventions",
-    "JavaScript",
-    "TypeScript"
-  ]
+  }
 }
