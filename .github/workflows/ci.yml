@@ -79,10 +79,17 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
 
-  test-e2e:
-    runs-on: ubuntu-latest
+  test-e2e-platforms:
+    name: test-e2e (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        # This action only supports Linux runners.
+        if: runner.os == 'Linux'
         with:
           egress-policy: audit
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -102,5 +109,15 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm -F @konsistent/convention build
       - run: rm -rf node_modules packages/*/node_modules e2e/fixtures/*/node_modules
+        # Use Bash for the POSIX cleanup command on Windows.
+        shell: bash
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:e2e
+
+  test-e2e:
+    if: always()
+    needs: test-e2e-platforms
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all platform e2e runs to pass
+        run: test "${{ needs.test-e2e-platforms.result }}" = success

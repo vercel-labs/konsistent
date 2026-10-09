@@ -1,6 +1,9 @@
 import { resolve } from "node:path";
 import { runCommand } from "citty";
+import { API } from "typescript/unstable/sync";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import * as runner from "../core/runner.js";
+import * as nativeSession from "../typescript/native-session.js";
 import checkCommand, { resolveFormat } from "./check.js";
 
 const emptyConfigPath = resolve(
@@ -28,6 +31,77 @@ afterEach(() => {
 });
 
 describe("check command", () => {
+  it.each([
+    { signal: "SIGINT" as const, exitCode: 130 },
+    { signal: "SIGTERM" as const, exitCode: 143 },
+  ])("closes the session before exiting on $signal", async ({
+    signal,
+    exitCode,
+  }) => {
+    vi.spyOn(process, "cwd").mockReturnValue(emptyConfigPath);
+    const session = nativeSession.createTypeScriptSession();
+    const close = vi.spyOn(session, "close");
+    vi.spyOn(nativeSession, "createTypeScriptSession").mockReturnValue(session);
+    const exit = vi
+      .spyOn(process, "exit")
+      .mockImplementation(() => undefined as never);
+    const originalListeners = process.listenerCount(signal);
+    vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    vi.spyOn(runner, "run").mockImplementation(() => {
+      const listener = process.listeners(signal).at(-1);
+      expect(listener).toBeDefined();
+      listener?.call(process, signal);
+      return Promise.resolve({ diagnostics: [], filesChecked: 0, elapsed: 0 });
+    });
+    await runCommand(checkCommand, { rawArgs: [] });
+    expect(exit).toHaveBeenCalledWith(exitCode);
+    expect(close.mock.invocationCallOrder[0]).toBeLessThan(
+      exit.mock.invocationCallOrder[0]
+    );
+    expect(process.listenerCount(signal)).toBe(originalListeners);
+  });
+
+  it("closes the session before reporting and removes scoped signal handlers", async () => {
+    vi.spyOn(process, "cwd").mockReturnValue(emptyConfigPath);
+    const session = nativeSession.createTypeScriptSession();
+    const close = vi.spyOn(session, "close");
+    vi.spyOn(nativeSession, "createTypeScriptSession").mockReturnValue(session);
+    const interruptCount = process.listenerCount("SIGINT");
+    const terminateCount = process.listenerCount("SIGTERM");
+    vi.spyOn(process.stdout, "write").mockImplementation(() => {
+      expect(close).toHaveBeenCalledTimes(1);
+      return true;
+    });
+    await runCommand(checkCommand, { rawArgs: [] });
+    expect(close).toHaveBeenCalledTimes(1);
+    expect(process.listenerCount("SIGINT")).toBe(interruptCount);
+    expect(process.listenerCount("SIGTERM")).toBe(terminateCount);
+  });
+
+  it("reports native runtime failures after closing the session", async () => {
+    vi.spyOn(process, "cwd").mockReturnValue(deprecatedPredicatesPath);
+    const session = nativeSession.createTypeScriptSession();
+    const close = vi.spyOn(session, "close");
+    vi.spyOn(nativeSession, "createTypeScriptSession").mockReturnValue(session);
+    vi.spyOn(API.prototype, "updateSnapshot").mockImplementation(() => {
+      throw new Error("Native executable missing");
+    });
+    const error = vi.spyOn(console, "error").mockImplementation(vi.fn());
+    vi.spyOn(console, "warn").mockImplementation(vi.fn());
+    const exit = vi.spyOn(process, "exit").mockImplementation(() => {
+      expect(close).toHaveBeenCalledTimes(1);
+      return undefined as never;
+    });
+    await runCommand(checkCommand, { rawArgs: ["--format", "json"] });
+    expect(exit).toHaveBeenCalledWith(1);
+    expect(error).toHaveBeenCalledWith(
+      expect.stringContaining("TypeScript 7 native runtime failed")
+    );
+    expect(error).toHaveBeenCalledWith(
+      expect.stringContaining("Ensure optional dependencies are installed")
+    );
+  });
+
   it("defines metadata and arguments", () => {
     expect(checkCommand).toMatchObject({ meta: { name: "check" }, args: {} });
   });

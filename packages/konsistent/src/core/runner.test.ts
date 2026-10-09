@@ -1,5 +1,8 @@
+import { API } from "typescript/unstable/sync";
 import { describe, expect, it, vi } from "vitest";
 import type { ConfigV1, IfConditionV1 } from "../config/schema.js";
+import { createTypeScriptSession } from "../typescript/native-session.js";
+import { parseFileStructure } from "../typescript/parser.js";
 import type { FileSystem } from "./filesystem.js";
 import { run } from "./runner.js";
 
@@ -44,6 +47,95 @@ function createMatchingConditions(): IfConditionV1[] {
 }
 
 describe("run", () => {
+  it("threads a borrowed session through conditions, nested files, and comparisons", async () => {
+    const session = createTypeScriptSession();
+    const close = vi.spyOn(session, "close");
+    const updates = vi.spyOn(API.prototype, "updateSnapshot");
+    const fs = createMockFileSystem({
+      directories: new Set(["src"]),
+      files: new Set(["src/value.ts"]),
+      globResults: new Map([
+        ["src", ["src"]],
+        ["src/*.ts", ["src/value.ts"]],
+      ]),
+      fileContents: new Map([
+        [
+          "src/value.ts",
+          'import type { Foo } from "./missing"; export type Value = Array< Foo >; send("email", 1_000);',
+        ],
+      ]),
+    });
+    const read = vi.spyOn(fs, "readFile");
+    try {
+      const result = await run({
+        typescriptSession: session,
+        fileSystem: fs,
+        config: {
+          version: "v1",
+          conventions: [
+            {
+              paths: "src",
+              must: [
+                {
+                  for: { files: "*.ts" },
+                  if: { hasTypeImport: "Foo" },
+                  must: {
+                    exportTypes: [{ name: "Value", type: "Array<Foo>" }],
+                    callFunction: [{ name: "send", arguments: ["'email'"] }],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      });
+      expect(result.diagnostics).toEqual([]);
+      expect(read).toHaveBeenCalledTimes(1);
+      expect(updates).toHaveBeenCalledTimes(4);
+      expect(new Set(updates.mock.instances).size).toBe(1);
+      expect(close).not.toHaveBeenCalled();
+      expect(
+        parseFileStructure({ source: "export const next = 1;", session })
+          .constants[0].name
+      ).toBe("next");
+    } finally {
+      session.close();
+      updates.mockRestore();
+    }
+  });
+
+  it("closes its owned native process if reading a later file fails", async () => {
+    const close = vi.spyOn(API.prototype, "close");
+    const error = new Error("Read failed");
+    const fs = createMockFileSystem({
+      files: new Set(["src/first.ts", "src/second.ts"]),
+      globResults: new Map([["src/*.ts", ["src/first.ts", "src/second.ts"]]]),
+      fileContents: new Map([["src/first.ts", "export const value = 1;"]]),
+    });
+    vi.spyOn(fs, "readFile").mockImplementation((path) => {
+      if (path === "src/second.ts") {
+        throw error;
+      }
+      return "export const value = 1;";
+    });
+    try {
+      await expect(
+        run({
+          fileSystem: fs,
+          config: {
+            version: "v1",
+            conventions: [
+              { paths: "src/*.ts", must: { exportValues: ["value"] } },
+            ],
+          },
+        })
+      ).rejects.toThrow(error);
+      expect(close).toHaveBeenCalledTimes(1);
+    } finally {
+      close.mockRestore();
+    }
+  });
+
   it("bounds ancestor conventions and nested file blocks to selected paths", async () => {
     const config: ConfigV1 = {
       version: "v1",

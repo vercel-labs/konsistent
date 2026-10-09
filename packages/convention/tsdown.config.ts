@@ -13,6 +13,7 @@ export default defineConfig([
       codeSplitting: false,
     },
     dts: {
+      generator: "tsgo",
       sourcemap: false,
     },
   },

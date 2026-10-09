@@ -23,7 +23,8 @@
     "typecheck": "tsc --noEmit",
     "generate-schema": "tsx scripts/generate-schema.ts",
     "test": "vitest run",
-    "prepack": "cp -r ../../docs ./docs",
+    "test:package": "node scripts/verify-package.mjs",
+    "prepack": "node --input-type=module -e \"import { cp } from 'node:fs/promises'; await cp('../../docs', './docs', { recursive: true });\"",
     "post-publish-clean": "del-cli docs"
   },
   "dependencies": {

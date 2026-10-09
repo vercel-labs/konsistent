@@ -20,7 +20,7 @@ export function checkExportTypes(opts: {
       typeof entry === "string" ? { name: entry } : entry;
     const resolvedName = context.resolveTemplate(definition.name);
     const resolvedFrom = Object.hasOwn(definition, "from")
-      ? context.resolveTemplate((definition as { from: string }).from)
+      ? context.resolveTemplate(Reflect.get(definition, "from") as string)
       : undefined;
     const resolvedAlias =
       Object.hasOwn(definition, "alias") &&

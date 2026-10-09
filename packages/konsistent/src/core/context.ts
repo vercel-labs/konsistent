@@ -1,3 +1,4 @@
+import type { TypeScriptSession } from "../typescript/native-session.js";
 import type { PlaceholderValue } from "./placeholder.js";
 
 export interface PredicateContext {
@@ -7,4 +8,5 @@ export interface PredicateContext {
   placeholders: Record<string, PlaceholderValue>;
   readDir(relativePath: string): string[];
   resolveTemplate(template: string): string;
+  typescriptSession?: TypeScriptSession;
 }

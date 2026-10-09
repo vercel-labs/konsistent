@@ -24,6 +24,10 @@ import {
   formatTruncationMessage,
   truncateDiagnostics,
 } from "../core/truncate-diagnostics.js";
+import {
+  createTypeScriptSession,
+  TypeScriptRuntimeError,
+} from "../typescript/native-session.js";
 
 const checkArgs = {
   "config-path": {
@@ -203,6 +207,35 @@ function createReporter(opts: { format: string; colors?: boolean }): Reporter {
   return createDefaultReporter({ colors: opts.colors });
 }
 
+async function runCheckWithSession(
+  opts: Parameters<typeof run>[0]
+): ReturnType<typeof run> {
+  const typescriptSession = createTypeScriptSession();
+  const onInterrupt = () => {
+    try {
+      typescriptSession.close();
+    } finally {
+      process.exit(130);
+    }
+  };
+  const onTerminate = () => {
+    try {
+      typescriptSession.close();
+    } finally {
+      process.exit(143);
+    }
+  };
+  process.once("SIGINT", onInterrupt);
+  process.once("SIGTERM", onTerminate);
+  try {
+    return await run({ ...opts, typescriptSession });
+  } finally {
+    process.removeListener("SIGINT", onInterrupt);
+    process.removeListener("SIGTERM", onTerminate);
+    typescriptSession.close();
+  }
+}
+
 export default defineCommand({
   meta: {
     name: "check",
@@ -277,11 +310,21 @@ export default defineCommand({
       warning: resolvedPathSelection.emptyWarning,
     });
 
-    const runResult = await run({
-      config,
-      fileSystem,
-      pathSelection: resolvedPathSelection.pathSelection,
-    });
+    let runResult: Awaited<ReturnType<typeof run>>;
+    try {
+      runResult = await runCheckWithSession({
+        config,
+        fileSystem,
+        pathSelection: resolvedPathSelection.pathSelection,
+      });
+    } catch (error) {
+      if (!(error instanceof TypeScriptRuntimeError)) {
+        throw error;
+      }
+      console.error(pc.red(error.message));
+      process.exit(1);
+      return;
+    }
 
     const maxDiags = Number.parseInt(args["max-diagnostics"], 10) || 100;
     const { diagnostics: reported, omitted } = truncateDiagnostics({
