@@ -88,6 +88,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        # This action only supports Linux runners.
         if: runner.os == 'Linux'
         with:
           egress-policy: audit
@@ -108,6 +109,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm -F @konsistent/convention build
       - run: rm -rf node_modules packages/*/node_modules e2e/fixtures/*/node_modules
+        # Use Bash for the POSIX cleanup command on Windows.
         shell: bash
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:e2e
