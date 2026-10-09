@@ -1,4 +1,4 @@
-import { basename, dirname, join, posix } from "node:path";
+import { basename, dirname, posix } from "node:path";
 import {
   compileImportSourceConstraints,
   importSourceConstraintValue,
@@ -176,13 +176,13 @@ function buildContext(opts: {
       return resolveTemplate({ template, placeholders });
     },
     fileExists(relativePath: string): boolean {
-      return fileSystem.fileExists(join(basePath, relativePath));
+      return fileSystem.fileExists(posix.join(basePath, relativePath));
     },
     directoryExists(relativePath: string): boolean {
-      return fileSystem.directoryExists(join(basePath, relativePath));
+      return fileSystem.directoryExists(posix.join(basePath, relativePath));
     },
     readDir(relativePath: string): string[] {
-      return fileSystem.readDir(join(basePath, relativePath));
+      return fileSystem.readDir(posix.join(basePath, relativePath));
     },
   };
 }

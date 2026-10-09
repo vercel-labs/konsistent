@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 const execFile = promisify(execFileCallback);
 const cli = resolve(import.meta.dirname, "../packages/konsistent/dist/cli.js");
 const fixturesDirectory = resolve(import.meta.dirname, "fixtures");
+const allowedTypeScriptStderr = /^(?:|context canceled\r?\n?)$/;
 
 function runCli(opts: { fixture: string; args?: string[] }) {
   return execFile(
@@ -35,7 +36,12 @@ describe("TypeScript 7 runtime", () => {
       runCli({ fixture: "typescript-runtime-broken" })
     ).rejects.toMatchObject({
       code: 1,
-      stderr: "",
+      /*
+       * TypeScript 7.0.2 may emit this during cancellation after a failed
+       * check. Accept only this exact output until a stable release includes
+       * the fix from microsoft/TypeScript#64276.
+       */
+      stderr: expect.stringMatching(allowedTypeScriptStderr),
     });
     try {
       await runCli({ fixture: "typescript-runtime-broken" });
