@@ -6,23 +6,23 @@ import {
 
 function createManifests() {
   return {
-    typescriptVersion: "7.0.2",
     cliManifest: {
-      dependencies: {
-        typescript: "7.0.2",
-        "@konsistent/convention": "1.0.0-beta.12",
-      },
       bin: { konsistent: "./dist/cli.js" },
+      dependencies: {
+        "@konsistent/convention": "1.0.0-beta.12",
+        typescript: "7.0.2",
+      },
       engines: { node: "^22.18.0 || ^24.11.0 || >=26.0.0" },
     },
     conventionManifest: {
-      dependencies: { citty: "^0.2" },
-      peerDependencies: { zod: "^4" },
-      exports: {
-        ".": { types: "./dist/index.d.ts", import: "./dist/index.js" },
-      },
       bin: { "konsistent-convention": "./dist/cli.js" },
+      dependencies: { citty: "^0.2" },
+      exports: {
+        ".": { import: "./dist/index.js", types: "./dist/index.d.ts" },
+      },
+      peerDependencies: { zod: "^4" },
     },
+    typescriptVersion: "7.0.2",
   };
 }
 
@@ -31,35 +31,35 @@ describe("packed package contracts", () => {
     const command = "C:\\Program Files\\nodejs\\node.exe";
     const args = ["C:\\Temporary Files\\konsistent\\cli.js", "--version"];
     expect(
-      resolveCommandInvocation({ command, args, platform: "win32" })
-    ).toEqual({ command, args, shell: false });
+      resolveCommandInvocation({ args, command, platform: "win32" })
+    ).toEqual({ args, command, shell: false });
   });
 
-  it.each([
-    "npm",
-    "pnpm",
-  ])("runs the Windows %s command through a shell with quoted paths", (command) => {
-    expect(
-      resolveCommandInvocation({
+  it.each(["npm", "pnpm"])(
+    "runs the Windows %s command through a shell with quoted paths",
+    (command) => {
+      expect(
+        resolveCommandInvocation({
+          args: ["pack", "C:\\Temporary Files\\package.tgz"],
+          command,
+          platform: "win32",
+        })
+      ).toEqual({
+        args: ['"pack"', '"C:\\Temporary Files\\package.tgz"'],
         command,
-        args: ["pack", "C:\\Temporary Files\\package.tgz"],
-        platform: "win32",
-      })
-    ).toEqual({
-      command,
-      args: ['"pack"', '"C:\\Temporary Files\\package.tgz"'],
-      shell: true,
-    });
-  });
+        shell: true,
+      });
+    }
+  );
 
   it("runs Unix package-manager commands without a shell", () => {
     expect(
       resolveCommandInvocation({
-        command: "pnpm",
         args: ["pack"],
+        command: "pnpm",
         platform: "linux",
       })
-    ).toEqual({ command: "pnpm", args: ["pack"], shell: false });
+    ).toEqual({ args: ["pack"], command: "pnpm", shell: false });
   });
 
   it("accepts exact compiler pins and preserved package entrypoints", () => {

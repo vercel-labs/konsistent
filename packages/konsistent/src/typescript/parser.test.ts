@@ -9,9 +9,9 @@ describe("parseFileStructure", () => {
       });
       expect(result.exports).toHaveLength(1);
       expect(result.exports[0]).toMatchObject({
-        name: "greet",
-        kind: "function",
         isType: false,
+        kind: "function",
+        name: "greet",
       });
     });
 
@@ -21,9 +21,9 @@ describe("parseFileStructure", () => {
       });
       expect(result.exports).toHaveLength(1);
       expect(result.exports[0]).toMatchObject({
-        name: "MyClass",
-        kind: "class",
         isType: false,
+        kind: "class",
+        name: "MyClass",
       });
     });
 
@@ -33,9 +33,9 @@ describe("parseFileStructure", () => {
       });
       expect(result.exports).toHaveLength(1);
       expect(result.exports[0]).toMatchObject({
-        name: "MyInterface",
-        kind: "interface",
         isType: true,
+        kind: "interface",
+        name: "MyInterface",
       });
     });
 
@@ -45,9 +45,9 @@ describe("parseFileStructure", () => {
       });
       expect(result.exports).toHaveLength(1);
       expect(result.exports[0]).toMatchObject({
-        name: "value",
-        kind: "const",
         isType: false,
+        kind: "const",
+        name: "value",
       });
     });
 
@@ -57,9 +57,9 @@ describe("parseFileStructure", () => {
       });
       expect(result.exports).toHaveLength(1);
       expect(result.exports[0]).toMatchObject({
-        name: "Direction",
-        kind: "enum",
         isType: false,
+        kind: "enum",
+        name: "Direction",
       });
     });
 
@@ -72,15 +72,15 @@ describe("parseFileStructure", () => {
       const result = parseFileStructure({ source });
       expect(result.exports).toHaveLength(2);
       expect(result.exports[0]).toMatchObject({
-        name: "foo",
-        kind: "re-export",
         isType: false,
+        kind: "re-export",
+        name: "foo",
       });
       expect(result.exports[0].from).toBeUndefined();
       expect(result.exports[1]).toMatchObject({
-        name: "bar",
-        kind: "re-export",
         isType: false,
+        kind: "re-export",
+        name: "bar",
       });
     });
 
@@ -90,10 +90,10 @@ describe("parseFileStructure", () => {
       });
       expect(result.exports).toHaveLength(2);
       expect(result.exports[0]).toMatchObject({
-        name: "foo",
-        kind: "re-export",
         from: "./module",
         isType: false,
+        kind: "re-export",
+        name: "foo",
       });
     });
 
@@ -103,10 +103,10 @@ describe("parseFileStructure", () => {
       });
       expect(result.exports).toHaveLength(1);
       expect(result.exports[0]).toMatchObject({
-        name: "Foo",
-        kind: "re-export",
         from: "./types",
         isType: true,
+        kind: "re-export",
+        name: "Foo",
       });
     });
 
@@ -116,12 +116,12 @@ describe("parseFileStructure", () => {
       });
       expect(result.exports).toHaveLength(2);
       expect(result.exports[0]).toMatchObject({
-        name: "Foo",
         isType: true,
+        name: "Foo",
       });
       expect(result.exports[1]).toMatchObject({
-        name: "bar",
         isType: false,
+        name: "bar",
       });
     });
 
@@ -131,9 +131,9 @@ describe("parseFileStructure", () => {
       });
       expect(result.exports).toHaveLength(1);
       expect(result.exports[0]).toMatchObject({
-        name: "*",
-        kind: "re-export",
         from: "./everything",
+        kind: "re-export",
+        name: "*",
       });
     });
 
@@ -143,8 +143,8 @@ describe("parseFileStructure", () => {
       });
       expect(result.exports).toHaveLength(1);
       expect(result.exports[0]).toMatchObject({
-        name: "default",
         isType: false,
+        name: "default",
       });
     });
 
@@ -154,9 +154,9 @@ describe("parseFileStructure", () => {
       });
       expect(result.exports).toHaveLength(1);
       expect(result.exports[0]).toMatchObject({
-        name: "MyType",
-        kind: "interface",
         isType: true,
+        kind: "interface",
+        name: "MyType",
       });
     });
   });
@@ -168,18 +168,18 @@ describe("parseFileStructure", () => {
       });
       expect(result.imports).toHaveLength(2);
       expect(result.imports[0]).toMatchObject({
+        from: "module",
+        isType: false,
         kind: "named",
         name: "foo",
         sourceName: "foo",
-        from: "module",
-        isType: false,
       });
       expect(result.imports[1]).toMatchObject({
+        from: "module",
+        isType: false,
         kind: "named",
         name: "bar",
         sourceName: "bar",
-        from: "module",
-        isType: false,
       });
     });
 
@@ -190,16 +190,16 @@ describe("parseFileStructure", () => {
       });
       expect(result.imports).toMatchObject([
         {
+          isType: false,
           kind: "named",
           name: "localName",
           sourceName: "sourceName",
-          isType: false,
         },
         {
+          isType: true,
           kind: "named",
           name: "LocalType",
           sourceName: "SourceType",
-          isType: true,
         },
       ]);
     });
@@ -210,9 +210,9 @@ describe("parseFileStructure", () => {
       });
       expect(result.imports).toHaveLength(1);
       expect(result.imports[0]).toMatchObject({
-        name: "Foo",
         from: "module",
         isType: true,
+        name: "Foo",
       });
     });
 
@@ -222,12 +222,12 @@ describe("parseFileStructure", () => {
       });
       expect(result.imports).toHaveLength(2);
       expect(result.imports[0]).toMatchObject({
-        name: "Foo",
         isType: true,
+        name: "Foo",
       });
       expect(result.imports[1]).toMatchObject({
-        name: "bar",
         isType: false,
+        name: "bar",
       });
     });
 
@@ -237,10 +237,10 @@ describe("parseFileStructure", () => {
       });
       expect(result.imports).toHaveLength(1);
       expect(result.imports[0]).toMatchObject({
-        kind: "namespace",
-        name: "ns",
         from: "module",
         isType: false,
+        kind: "namespace",
+        name: "ns",
       });
     });
 
@@ -250,10 +250,10 @@ describe("parseFileStructure", () => {
       });
       expect(result.imports).toHaveLength(1);
       expect(result.imports[0]).toMatchObject({
-        kind: "default",
-        name: "DefaultExport",
         from: "module",
         isType: false,
+        kind: "default",
+        name: "DefaultExport",
       });
     });
 
@@ -266,7 +266,7 @@ describe("parseFileStructure", () => {
         {
           from: "./setup",
           isType: false,
-          pos: { line: 1, column: 1 },
+          pos: { column: 1, line: 1 },
         },
       ]);
     });
@@ -279,7 +279,7 @@ describe("parseFileStructure", () => {
         {
           from: "./types",
           isType: true,
-          pos: { line: 1, column: 1 },
+          pos: { column: 1, line: 1 },
         },
       ]);
     });
@@ -292,7 +292,7 @@ describe("parseFileStructure", () => {
         {
           from: "./types",
           isType: true,
-          pos: { line: 1, column: 1 },
+          pos: { column: 1, line: 1 },
         },
       ]);
     });
@@ -305,12 +305,12 @@ describe("parseFileStructure", () => {
         {
           from: "./module",
           isType: false,
-          pos: { line: 1, column: 1 },
+          pos: { column: 1, line: 1 },
         },
         {
           from: "./module",
           isType: true,
-          pos: { line: 1, column: 1 },
+          pos: { column: 1, line: 1 },
         },
       ]);
     });
@@ -351,10 +351,10 @@ describe("parseFileStructure", () => {
         source: "export const thingId = 'thing';",
       });
       expect(result.declarationSymbols[0]).toMatchObject({
-        name: "thingId",
-        kind: "const",
-        isExported: true,
         isDefaultExport: false,
+        isExported: true,
+        kind: "const",
+        name: "thingId",
       });
     });
 
@@ -363,10 +363,10 @@ describe("parseFileStructure", () => {
         source: "export default function makeThing() {}",
       });
       expect(result.declarationSymbols[0]).toMatchObject({
-        name: "makeThing",
-        kind: "function",
-        isExported: true,
         isDefaultExport: true,
+        isExported: true,
+        kind: "function",
+        name: "makeThing",
       });
     });
 
@@ -386,18 +386,18 @@ describe("parseFileStructure", () => {
       });
       expect(result.namedExportSymbols).toEqual([
         {
-          name: "exportedName",
-          sourceName: "sourceName",
-          isType: false,
           from: "./module",
-          pos: { line: 1, column: 24 },
+          isType: false,
+          name: "exportedName",
+          pos: { column: 24, line: 1 },
+          sourceName: "sourceName",
         },
         {
-          name: "TypeName",
-          sourceName: "TypeName",
-          isType: true,
           from: "./module",
-          pos: { line: 1, column: 43 },
+          isType: true,
+          name: "TypeName",
+          pos: { column: 43, line: 1 },
+          sourceName: "TypeName",
         },
       ]);
     });
@@ -409,7 +409,7 @@ describe("parseFileStructure", () => {
       expect(result.defaultExportSymbols).toEqual([
         {
           name: "value",
-          pos: { line: 2, column: 16 },
+          pos: { column: 16, line: 2 },
         },
       ]);
     });
@@ -422,8 +422,8 @@ describe("parseFileStructure", () => {
       });
       expect(result.interfaces).toHaveLength(1);
       expect(result.interfaces[0]).toMatchObject({
-        name: "Foo",
         extends: [],
+        name: "Foo",
         typeInfo: {
           kind: "object",
           properties: [{ name: "bar", optional: false, type: "string" }],
@@ -437,11 +437,11 @@ describe("parseFileStructure", () => {
       });
       expect(result.interfaces).toHaveLength(1);
       expect(result.interfaces[0]).toMatchObject({
-        name: "Foo",
         extends: [
           { name: "Bar", typeArguments: [] },
           { name: "Baz", typeArguments: [] },
         ],
+        name: "Foo",
         typeInfo: { kind: "unsupported" },
       });
     });
@@ -452,8 +452,8 @@ describe("parseFileStructure", () => {
       });
       expect(result.interfaces).toHaveLength(1);
       expect(result.interfaces[0]).toMatchObject({
-        name: "Foo",
         extends: [{ name: "Pick", typeArguments: ["Bar", "'a' | 'b'"] }],
+        name: "Foo",
       });
     });
 
@@ -462,8 +462,8 @@ describe("parseFileStructure", () => {
         source: "interface Foo extends Omit<Bar, 'x'> {}",
       });
       expect(result.interfaces[0]).toMatchObject({
-        name: "Foo",
         extends: [{ name: "Omit", typeArguments: ["Bar", "'x'"] }],
+        name: "Foo",
       });
     });
 
@@ -472,8 +472,8 @@ describe("parseFileStructure", () => {
         source: "interface Foo extends Partial<Bar> {}",
       });
       expect(result.interfaces[0]).toMatchObject({
-        name: "Foo",
         extends: [{ name: "Partial", typeArguments: ["Bar"] }],
+        name: "Foo",
       });
     });
 
@@ -482,11 +482,11 @@ describe("parseFileStructure", () => {
         source: "interface Foo extends Pick<Bar, 'a'>, Baz {}",
       });
       expect(result.interfaces[0]).toMatchObject({
-        name: "Foo",
         extends: [
           { name: "Pick", typeArguments: ["Bar", "'a'"] },
           { name: "Baz", typeArguments: [] },
         ],
+        name: "Foo",
       });
     });
   });
@@ -509,8 +509,8 @@ describe("parseFileStructure", () => {
       });
       expect(result.classes).toHaveLength(1);
       expect(result.classes[0]).toMatchObject({
-        name: "Child",
         extends: "Parent",
+        name: "Child",
       });
     });
 
@@ -527,8 +527,8 @@ describe("parseFileStructure", () => {
       });
       expect(result.classes).toHaveLength(1);
       expect(result.classes[0]).toMatchObject({
-        name: "MyClass",
         implements: ["Serializable"],
+        name: "MyClass",
       });
     });
 
@@ -538,8 +538,8 @@ describe("parseFileStructure", () => {
       });
       expect(result.classes).toHaveLength(1);
       expect(result.classes[0]).toMatchObject({
-        name: "MyClass",
         implements: ["Serializable", "Disposable"],
+        name: "MyClass",
       });
     });
 
@@ -549,9 +549,9 @@ describe("parseFileStructure", () => {
       });
       expect(result.classes).toHaveLength(1);
       expect(result.classes[0]).toMatchObject({
-        name: "MyClass",
         extends: "BaseClass",
         implements: ["Serializable"],
+        name: "MyClass",
       });
     });
   });
@@ -564,10 +564,10 @@ describe("parseFileStructure", () => {
       expect(result.functions).toHaveLength(1);
       expect(result.functions[0]).toMatchObject({
         name: "greet",
-        returnType: { text: "void", baseName: "void" },
+        returnType: { baseName: "void", text: "void" },
       });
       expect(result.functions[0].params).toEqual([
-        { name: "name", typeName: { text: "string", baseName: "string" } },
+        { name: "name", typeName: { baseName: "string", text: "string" } },
       ]);
     });
 
@@ -576,8 +576,8 @@ describe("parseFileStructure", () => {
         source: "function add(a: number, b: number): number { return a + b; }",
       });
       expect(result.functions[0].params).toEqual([
-        { name: "a", typeName: { text: "number", baseName: "number" } },
-        { name: "b", typeName: { text: "number", baseName: "number" } },
+        { name: "a", typeName: { baseName: "number", text: "number" } },
+        { name: "b", typeName: { baseName: "number", text: "number" } },
       ]);
     });
 
@@ -606,7 +606,7 @@ describe("parseFileStructure", () => {
       expect(result.constants).toHaveLength(1);
       expect(result.constants[0]).toMatchObject({
         name: "value",
-        typeName: { text: "number", baseName: "number" },
+        typeName: { baseName: "number", text: "number" },
       });
     });
 
@@ -687,19 +687,19 @@ describe("parseFileStructure", () => {
       const result = parseFileStructure({
         source: "const x = 1;",
       });
-      expect(result.constants[0].pos).toEqual({ line: 1, column: 1 });
+      expect(result.constants[0].pos).toEqual({ column: 1, line: 1 });
     });
 
     it("reports correct position for later lines", () => {
       const source = ["const a = 1;", "", "function foo() {}"].join("\n");
       const result = parseFileStructure({ source });
-      expect(result.functions[0].pos).toEqual({ line: 3, column: 1 });
+      expect(result.functions[0].pos).toEqual({ column: 1, line: 3 });
     });
 
     it("reports correct column for indented code", () => {
       const source = "    const x = 1;";
       const result = parseFileStructure({ source });
-      expect(result.constants[0].pos).toEqual({ line: 1, column: 5 });
+      expect(result.constants[0].pos).toEqual({ column: 5, line: 1 });
     });
 
     it("reports correct positions for imports", () => {
@@ -708,8 +708,8 @@ describe("parseFileStructure", () => {
         "import { baz } from 'qux';",
       ].join("\n");
       const result = parseFileStructure({ source });
-      expect(result.imports[0].pos).toEqual({ line: 1, column: 1 });
-      expect(result.imports[1].pos).toEqual({ line: 2, column: 1 });
+      expect(result.imports[0].pos).toEqual({ column: 1, line: 1 });
+      expect(result.imports[1].pos).toEqual({ column: 1, line: 2 });
     });
 
     it("reports correct positions for exports", () => {
@@ -717,26 +717,26 @@ describe("parseFileStructure", () => {
         "\n"
       );
       const result = parseFileStructure({ source });
-      expect(result.exports[0].pos).toEqual({ line: 1, column: 1 });
-      expect(result.exports[1].pos).toEqual({ line: 2, column: 1 });
+      expect(result.exports[0].pos).toEqual({ column: 1, line: 1 });
+      expect(result.exports[1].pos).toEqual({ column: 1, line: 2 });
     });
 
     it("reports correct positions for interfaces", () => {
       const source = ["", "interface Foo { x: number; }"].join("\n");
       const result = parseFileStructure({ source });
-      expect(result.interfaces[0].pos).toEqual({ line: 2, column: 1 });
+      expect(result.interfaces[0].pos).toEqual({ column: 1, line: 2 });
     });
 
     it("reports correct positions for classes", () => {
       const source = ["", "  class Foo {}"].join("\n");
       const result = parseFileStructure({ source });
-      expect(result.classes[0].pos).toEqual({ line: 2, column: 3 });
+      expect(result.classes[0].pos).toEqual({ column: 3, line: 2 });
     });
 
     it("reports correct positions for type aliases", () => {
       const source = ["const x = 1;", "type ID = string;"].join("\n");
       const result = parseFileStructure({ source });
-      expect(result.typeAliases[0].pos).toEqual({ line: 2, column: 1 });
+      expect(result.typeAliases[0].pos).toEqual({ column: 1, line: 2 });
     });
   });
 
@@ -781,17 +781,17 @@ describe("parseFileStructure", () => {
 
       expect(result.functions).toHaveLength(1);
       expect(result.functions[0].params).toEqual([
-        { name: "opts", typeName: { text: "Config", baseName: "Config" } },
+        { name: "opts", typeName: { baseName: "Config", text: "Config" } },
       ]);
       expect(result.functions[0].returnType).toEqual({
-        text: "Service",
         baseName: "Service",
+        text: "Service",
       });
 
       expect(result.constants).toHaveLength(1);
       expect(result.constants[0].typeName).toEqual({
-        text: "string",
         baseName: "string",
+        text: "string",
       });
 
       expect(result.typeAliases).toHaveLength(1);
@@ -936,7 +936,7 @@ describe("parseFileStructure", () => {
         source: ["", "  initialize();"].join("\n"),
       });
 
-      expect(result.calls[0]?.pos).toEqual({ line: 2, column: 3 });
+      expect(result.calls[0]?.pos).toEqual({ column: 3, line: 2 });
     });
   });
 });

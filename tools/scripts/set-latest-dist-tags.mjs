@@ -72,8 +72,8 @@ async function runCommand({
     child.on("close", (status, signal) => {
       const result = {
         status: status ?? 1,
-        stdout: stdout.trim(),
         stderr: stderr.trim(),
+        stdout: stdout.trim(),
       };
 
       if (result.status !== 0 && !allowFailure) {
@@ -83,7 +83,7 @@ async function runCommand({
           .trim();
 
         reject(
-          new Error(formatCommandFailure({ output, args, command, signal }))
+          new Error(formatCommandFailure({ args, command, output, signal }))
         );
         return;
       }
@@ -440,6 +440,7 @@ async function main() {
       continue;
     }
 
+    // biome-ignore lint/performance/noAwaitInLoops: OTP-authenticated npm tag updates must not overlap.
     await setLatestDistTag({
       dryRun,
       otp,

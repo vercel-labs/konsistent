@@ -12,14 +12,14 @@ import {
 
 function createMockContext(): PredicateContext {
   return {
+    directoryExists: () => false,
+    fileExists: () => false,
     path: "src/example.ts",
     placeholders: {},
+    readDir: () => [],
     resolveTemplate(template: string): string {
       return template.replace("${name}", "Example");
     },
-    directoryExists: () => false,
-    fileExists: () => false,
-    readDir: () => [],
   };
 }
 
@@ -38,11 +38,11 @@ describe("declaration utilities", () => {
   it("resolves definition names from strings and objects", () => {
     const context = createMockContext();
 
-    expect(resolveDefinitionName({ entry: "${name}Type", context })).toBe(
+    expect(resolveDefinitionName({ context, entry: "${name}Type" })).toBe(
       "ExampleType"
     );
     expect(
-      resolveDefinitionName({ entry: { name: "${name}Value" }, context })
+      resolveDefinitionName({ context, entry: { name: "${name}Value" } })
     ).toBe("ExampleValue");
   });
 
@@ -53,7 +53,7 @@ describe("declaration utilities", () => {
         kinds: ["const"],
         name: "localValue",
       })
-    ).toMatchObject({ name: "localValue", kind: "const" });
+    ).toMatchObject({ kind: "const", name: "localValue" });
     expect(
       findTypeDefinition({ fileStructure, name: "LocalType" })
     ).toMatchObject({ name: "LocalType" });
@@ -117,11 +117,11 @@ describe("declaration utilities", () => {
         name: "missingValue",
       })
     ).toMatchObject({
-      filePath: "src/example.ts",
       conventionName: "local-constants",
+      filePath: "src/example.ts",
+      message: 'Missing local constant declaration "missingValue"',
       predicateName: "declareConstants",
       severity: "warning",
-      message: 'Missing local constant declaration "missingValue"',
     });
     expect(
       createExportedDeclarationDiagnostic({
@@ -133,12 +133,12 @@ describe("declaration utilities", () => {
         symbol,
       })
     ).toMatchObject({
+      column: 7,
       filePath: "src/example.ts",
-      predicateName: "declareConstants",
+      line: 4,
       message:
         'Local constant declaration "exportedValue" must not be exported',
-      line: 4,
-      column: 7,
+      predicateName: "declareConstants",
     });
   });
 });

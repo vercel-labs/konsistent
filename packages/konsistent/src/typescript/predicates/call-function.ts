@@ -20,8 +20,8 @@ function parseExpectedArguments(opts: {
 
   const expressions = argumentsList.map((argument) =>
     normalizeArgumentExpression({
-      text: context.resolveTemplate(argument),
       session: context.typescriptSession,
+      text: context.resolveTemplate(argument),
     })
   );
   if (expressions.some((expression) => expression === undefined)) {
@@ -53,8 +53,8 @@ function callMatches(opts: {
       return false;
     }
     const actualArgument = normalizeArgumentExpression({
-      text: actualArgumentText,
       session: opts.context.typescriptSession,
+      text: actualArgumentText,
     });
     return actualArgument !== undefined && actualArgument === expectedArgument;
   });
@@ -95,13 +95,13 @@ export function checkCallFunction(opts: {
 
     diagnostics.push(
       createDiagnostic({
+        conventionName,
         filePath: context.path,
-        predicateName: "callFunction",
         message:
           definition.arguments === undefined
             ? `Missing call to function "${expectedName}"`
             : `Missing call to function "${expectedName}" with configured arguments`,
-        conventionName,
+        predicateName: "callFunction",
         severity,
       })
     );

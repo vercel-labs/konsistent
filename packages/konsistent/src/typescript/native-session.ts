@@ -6,20 +6,20 @@ import { normalizeSource } from "./source-normalization.js";
 import type { SourcePosition } from "./types.js";
 
 export interface ParsedSource {
-  getPosition(opts: { node: Node }): SourcePosition;
-  getSyntacticDiagnostics(): readonly Diagnostic[];
-  getText(opts: { node: Node }): string;
-  printNode(opts: { node: Node }): string;
+  getPosition: (opts: { node: Node }) => SourcePosition;
+  getSyntacticDiagnostics: () => readonly Diagnostic[];
+  getText: (opts: { node: Node }) => string;
+  printNode: (opts: { node: Node }) => string;
   sourceFile: SourceFile;
 }
 
 export interface TypeScriptSession {
-  close(): void;
-  withSourceFile<T>(opts: {
+  close: () => void;
+  withSourceFile: <T>(opts: {
     source: string;
     filePath?: string;
     visit: (source: ParsedSource) => T;
-  }): T;
+  }) => T;
 }
 
 export class TypeScriptRuntimeError extends Error {
@@ -61,13 +61,13 @@ export function createTypeScriptSession(): TypeScriptSession {
   }
   files[configPath] = JSON.stringify({
     compilerOptions: {
-      noLib: true,
-      noResolve: true,
-      types: [],
-      target: "esnext",
-      module: "esnext",
       allowJs: true,
       jsx: "preserve",
+      module: "esnext",
+      noLib: true,
+      noResolve: true,
+      target: "esnext",
+      types: [],
     },
     files: slots,
   });
@@ -80,11 +80,20 @@ export function createTypeScriptSession(): TypeScriptSession {
     try {
       return opts.run();
     } catch (cause) {
+      // biome-ignore lint/style/useErrorCause: TypeScriptRuntimeError forwards the caught error as Error.cause.
       throw new TypeScriptRuntimeError({ cause, filePath: opts.filePath });
     }
   }
 
   return {
+    close() {
+      if (closed) {
+        return;
+      }
+      closed = true;
+      nativeCall({ run: () => api?.close() });
+      api = undefined;
+    },
     withSourceFile({ source, filePath, visit }) {
       if (closed) {
         throw new TypeScriptRuntimeError({
@@ -106,12 +115,12 @@ export function createTypeScriptSession(): TypeScriptSession {
               cwd,
               fs: {
                 ...virtualFs,
-                readFile: (path) => virtualFs.readFile?.(path) ?? null,
                 getAccessibleEntries: (path) =>
                   virtualFs.getAccessibleEntries?.(path) ?? {
-                    files: [],
                     directories: [],
+                    files: [],
                   },
+                readFile: (path) => virtualFs.readFile?.(path) ?? null,
               },
             });
             virtualFs.writeFile?.(virtualPath, normalized.text);
@@ -133,15 +142,6 @@ export function createTypeScriptSession(): TypeScriptSession {
         });
         const { project, sourceFile } = parsed;
         return visit({
-          sourceFile,
-          getText({ node }) {
-            return source.slice(
-              normalized.getOriginalOffset({
-                offset: node.getStart(sourceFile),
-              }),
-              normalized.getOriginalOffset({ offset: node.end })
-            );
-          },
           getPosition({ node }) {
             return normalized.getPosition({
               offset: node.getStart(sourceFile),
@@ -152,6 +152,14 @@ export function createTypeScriptSession(): TypeScriptSession {
               filePath,
               run: () => project.program.getSyntacticDiagnostics(virtualPath),
             }),
+          getText({ node }) {
+            return source.slice(
+              normalized.getOriginalOffset({
+                offset: node.getStart(sourceFile),
+              }),
+              normalized.getOriginalOffset({ offset: node.end })
+            );
+          },
           printNode: ({ node }) =>
             nativeCall({
               filePath,
@@ -160,6 +168,7 @@ export function createTypeScriptSession(): TypeScriptSession {
                   preserveSourceNewlines: false,
                 }),
             }),
+          sourceFile,
         });
       } finally {
         if (snapshot) {
@@ -180,14 +189,6 @@ export function createTypeScriptSession(): TypeScriptSession {
           });
         }
       }
-    },
-    close() {
-      if (closed) {
-        return;
-      }
-      closed = true;
-      nativeCall({ run: () => api?.close() });
-      api = undefined;
     },
   };
 }

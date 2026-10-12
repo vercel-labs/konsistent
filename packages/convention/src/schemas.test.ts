@@ -15,16 +15,16 @@ describe("symbol definition schemas", () => {
   it("accepts source aliases for imports and exports", () => {
     expect(
       ExportDefinitionV1Schema.safeParse({
-        name: "sourceValue",
         alias: "publicValue",
         from: "./source",
+        name: "sourceValue",
       }).success
     ).toBe(true);
     expect(
       ImportDefinitionV1Schema.safeParse({
-        name: "sourceValue",
         alias: "localValue",
         from: "package",
+        name: "sourceValue",
       }).success
     ).toBe(true);
   });
@@ -48,15 +48,15 @@ describe("symbol definition schemas", () => {
     ).toBe(true);
     expect(
       InterfaceDefinitionV1Schema.safeParse({
+        extend: { allowOmissions: true, type: "BaseClient" },
         name: "Client",
-        extend: { type: "BaseClient", allowOmissions: true },
       }).success
     ).toBe(true);
     expect(
       ClassDefinitionV1Schema.safeParse({
-        name: "ClientImpl",
         extend: "BaseClient",
-        implement: ["Disposable", { type: "Client", allowOmissions: true }],
+        implement: ["Disposable", { allowOmissions: true, type: "Client" }],
+        name: "ClientImpl",
       }).success
     ).toBe(true);
   });
@@ -64,14 +64,14 @@ describe("symbol definition schemas", () => {
   it("accepts call function definitions with expression arguments", () => {
     expect(
       CallFunctionDefinitionV1Schema.safeParse({
-        name: "send",
         arguments: ["'email'", "options"],
+        name: "send",
       }).success
     ).toBe(true);
     expect(
       CallFunctionDefinitionV1Schema.safeParse({
-        name: "send",
         arguments: ["'email'", 1],
+        name: "send",
       }).success
     ).toBe(false);
   });
@@ -80,27 +80,27 @@ describe("symbol definition schemas", () => {
 describe("predicate and block schemas", () => {
   it.each([
     {
-      name: "value import string",
       condition: { hasValueImport: "createClient" },
+      name: "value import string",
     },
     {
-      name: "value import object",
       condition: {
-        hasValueImport: { name: "createClient", from: "./client" },
+        hasValueImport: { from: "./client", name: "createClient" },
       },
+      name: "value import object",
     },
     {
-      name: "value import source",
       condition: { hasValueImportFrom: "./client" },
+      name: "value import source",
     },
-    { name: "type import string", condition: { hasTypeImport: "Client" } },
+    { condition: { hasTypeImport: "Client" }, name: "type import string" },
     {
+      condition: { hasTypeImport: { from: "./client", name: "Client" } },
       name: "type import object",
-      condition: { hasTypeImport: { name: "Client", from: "./client" } },
     },
     {
-      name: "type import source",
       condition: { hasTypeImportFrom: "./client" },
+      name: "type import source",
     },
   ])("accepts $name condition", ({ condition }) => {
     expect(IfConditionV1Schema.safeParse(condition).success).toBe(true);
@@ -110,8 +110,8 @@ describe("predicate and block schemas", () => {
     expect(
       IfConditionV1Schema.safeParse({
         hasValueImport: {
-          name: "createClient",
           alias: "createApiClient",
+          name: "createClient",
         },
       }).success
     ).toBe(false);
@@ -124,14 +124,14 @@ describe("predicate and block schemas", () => {
 
   it("accepts current predicates and valid import source selectors", () => {
     const result = MustPredicatesV1Schema.safeParse({
-      haveType: "file",
-      haveFiles: ["index.ts"],
-      haveDirectories: ["instructions/*.{md,ts}"],
-      exportValues: ["createClient"],
-      importValuesFrom: ["@scope/*", "!@scope/internal"],
-      importTypesFromCurrentDir: true,
-      callFunction: ["initialize", { name: "send", arguments: ["'email'"] }],
       areBarrelFiles: false,
+      callFunction: ["initialize", { arguments: ["'email'"], name: "send" }],
+      exportValues: ["createClient"],
+      haveDirectories: ["instructions/*.{md,ts}"],
+      haveFiles: ["index.ts"],
+      haveType: "file",
+      importTypesFromCurrentDir: true,
+      importValuesFrom: ["@scope/*", "!@scope/internal"],
     });
 
     expect(result.success).toBe(true);
@@ -163,14 +163,14 @@ describe("predicate and block schemas", () => {
   it("accepts export source selectors and all export source location predicates", () => {
     expect(
       MustPredicatesV1Schema.safeParse({
-        exportValuesFrom: ["pkg/*", "!pkg/private/*", "pkg/private/public/*"],
         exportTypesFrom: "./types",
-        exportValuesFromCurrentDir: true,
-        exportValuesFromParents: false,
-        exportValuesFromExternals: true,
         exportTypesFromCurrentDir: false,
-        exportTypesFromParents: true,
         exportTypesFromExternals: false,
+        exportTypesFromParents: true,
+        exportValuesFrom: ["pkg/*", "!pkg/private/*", "pkg/private/public/*"],
+        exportValuesFromCurrentDir: true,
+        exportValuesFromExternals: true,
+        exportValuesFromParents: false,
       }).success
     ).toBe(true);
     const invalid = MustPredicatesV1Schema.safeParse({
@@ -190,17 +190,17 @@ describe("predicate and block schemas", () => {
   it("requires each block to provide must or mustNot predicates", () => {
     expect(
       MustBlockV1Schema.safeParse({
-        name: "required-export",
+        for: { files: "index.ts" },
         if: { hasFile: "index.ts" },
         ifNot: { placeholderSatisfies: "name:segments(2)" },
-        for: { files: "index.ts" },
         must: { exportValues: ["createClient"] },
+        name: "required-export",
       }).success
     ).toBe(true);
     expect(
       MustBlockV1Schema.safeParse({
-        name: "forbidden-export",
         mustNot: { exportValues: ["debug"] },
+        name: "forbidden-export",
       }).success
     ).toBe(true);
     expect(MustBlockV1Schema.safeParse({ name: "empty" }).success).toBe(false);

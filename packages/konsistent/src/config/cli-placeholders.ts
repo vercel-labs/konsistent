@@ -13,27 +13,27 @@ export function parseCliPlaceholders(opts: {
     const colon = entry.indexOf(":");
     if (colon < 1 || colon === entry.length - 1) {
       return {
-        success: false,
         error: `Invalid --placeholder "${entry}". Expected format "name:value".`,
+        success: false,
       };
     }
     const name = entry.slice(0, colon);
     const value = entry.slice(colon + 1);
     if (!NAME_REGEX.test(name)) {
       return {
-        success: false,
         error: `Invalid --placeholder "${entry}": name "${name}" must match [a-zA-Z][a-zA-Z0-9]*.`,
+        success: false,
       };
     }
     if (!VALUE_REGEX.test(value)) {
       return {
-        success: false,
         error: `Invalid --placeholder "${entry}": value "${value}" must match [a-zA-Z0-9_-]+.`,
+        success: false,
       };
     }
     result[name] = value;
   }
-  return { success: true, placeholders: result };
+  return { placeholders: result, success: true };
 }
 
 export function normalizePlaceholderArg(raw: unknown): string[] {

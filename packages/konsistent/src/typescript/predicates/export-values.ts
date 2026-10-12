@@ -53,14 +53,14 @@ export function checkExportValues(opts: {
     if (!found) {
       diagnostics.push(
         createDiagnostic({
+          conventionName,
           filePath: context.path,
-          predicateName,
           message: formatMissingExportMessage({
-            name: resolvedName,
             alias: resolvedAlias,
             from: resolvedFrom,
+            name: resolvedName,
           }),
-          conventionName,
+          predicateName,
           severity,
         })
       );

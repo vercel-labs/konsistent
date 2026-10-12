@@ -10,20 +10,20 @@ import {
 describe("ConstantValueSchemaV1Schema", () => {
   it.each([
     { type: "string" },
-    { type: "number", enum: [1, 2] },
-    { type: "array", items: { type: "boolean" } },
-    { type: "array", items: "ReadonlyArray<MyType>" },
-    { type: "array", items: "${name.toPascalCase()}Data" },
+    { enum: [1, 2], type: "number" },
+    { items: { type: "boolean" }, type: "array" },
+    { items: "ReadonlyArray<MyType>", type: "array" },
+    { items: "${name.toPascalCase()}Data", type: "array" },
     {
-      type: "object",
+      additionalProperties: false,
       properties: {
-        name: { type: "string" },
         auth: "Readonly<MyAuth>",
         data: "${name.toPascalCase()}Data",
         metadata: {},
+        name: { type: "string" },
       },
       required: ["name"],
-      additionalProperties: false,
+      type: "object",
     },
   ])("accepts supported schema $type", (schema) => {
     expect(ConstantValueSchemaV1Schema.safeParse(schema).success).toBe(true);
@@ -31,34 +31,34 @@ describe("ConstantValueSchemaV1Schema", () => {
 
   it.each([
     { type: "integer" },
-    { type: "string", enum: [] },
-    { type: "string", enum: ["a", "a"] },
-    { type: "string", enum: ["a", 1] },
+    { enum: [], type: "string" },
+    { enum: ["a", "a"], type: "string" },
+    { enum: ["a", 1], type: "string" },
     { type: "array" },
-    { type: "array", items: { type: "string", enum: ["a"] } },
-    { type: "array", items: { type: "string" }, minItems: 1 },
-    { type: "array", items: "" },
-    { type: "array", items: { type: "MyType" } },
+    { items: { enum: ["a"], type: "string" }, type: "array" },
+    { items: { type: "string" }, minItems: 1, type: "array" },
+    { items: "", type: "array" },
+    { items: { type: "MyType" }, type: "array" },
     {
-      type: "object",
       properties: { child: { type: "MyType" } },
+      type: "object",
     },
     {
-      type: "object",
       properties: { name: {} },
       required: ["missing"],
+      type: "object",
     },
     {
-      type: "object",
       properties: { name: {} },
       required: ["name", "name"],
+      type: "object",
     },
     {
-      type: "object",
-      properties: {},
       additionalProperties: { type: "string" },
+      properties: {},
+      type: "object",
     },
-    { type: "string", oneOf: [{ type: "string" }] },
+    { oneOf: [{ type: "string" }], type: "string" },
     { type: "MyType" },
   ])("rejects unsupported schema %#", (schema) => {
     expect(ConstantValueSchemaV1Schema.safeParse(schema).success).toBe(false);
@@ -66,37 +66,37 @@ describe("ConstantValueSchemaV1Schema", () => {
 });
 
 describe("type definition schemas", () => {
-  it.each([
-    ConstantDefinitionV1Schema,
-    TypeDefinitionV1Schema,
-  ])("accepts unconstrained, schema, or type-constrained local definitions", (definitionSchema) => {
-    for (const definition of [
-      { name: "Settings" },
-      {
-        name: "Settings",
-        schema: { type: "object", properties: {} },
-      },
-      { name: "Settings", type: "SharedSettings<'generic-value'>" },
-    ]) {
-      expect(definitionSchema.safeParse(definition).success).toBe(true);
+  it.each([ConstantDefinitionV1Schema, TypeDefinitionV1Schema])(
+    "accepts unconstrained, schema, or type-constrained local definitions",
+    (definitionSchema) => {
+      for (const definition of [
+        { name: "Settings" },
+        {
+          name: "Settings",
+          schema: { properties: {}, type: "object" },
+        },
+        { name: "Settings", type: "SharedSettings<'generic-value'>" },
+      ]) {
+        expect(definitionSchema.safeParse(definition).success).toBe(true);
+      }
     }
-  });
+  );
 
   it.each([
     { name: "Settings" },
-    { name: "Settings", alias: "PublicSettings" },
-    { name: "Settings", from: "./settings" },
-    { name: "Settings", alias: "PublicSettings", from: "./settings" },
-    { name: "Settings", schema: { type: "object", properties: {} } },
+    { alias: "PublicSettings", name: "Settings" },
+    { from: "./settings", name: "Settings" },
+    { alias: "PublicSettings", from: "./settings", name: "Settings" },
+    { name: "Settings", schema: { properties: {}, type: "object" } },
     {
-      name: "Settings",
       alias: "PublicSettings",
-      schema: { type: "object", properties: {} },
+      name: "Settings",
+      schema: { properties: {}, type: "object" },
     },
     { name: "Settings", type: "SharedSettings<'generic-value'>" },
     {
-      name: "Settings",
       alias: "PublicSettings",
+      name: "Settings",
       type: "SharedSettings<'generic-value'>",
     },
   ])("accepts exported type definition %#", (definition) => {
@@ -108,17 +108,17 @@ describe("type definition schemas", () => {
   it.each([
     {
       name: "Settings",
-      schema: { type: "object", properties: {} },
+      schema: { properties: {}, type: "object" },
       type: "SharedSettings",
     },
     {
-      name: "Settings",
       from: "./settings",
-      schema: { type: "object", properties: {} },
+      name: "Settings",
+      schema: { properties: {}, type: "object" },
     },
     {
-      name: "Settings",
       from: "./settings",
+      name: "Settings",
       type: "SharedSettings",
     },
     { name: "Settings", type: "" },
@@ -132,7 +132,7 @@ describe("type definition schemas", () => {
 describe("exported constant definition schemas", () => {
   it.each([
     { name: "settings" },
-    { name: "settings", schema: { type: "object", properties: {} } },
+    { name: "settings", schema: { properties: {}, type: "object" } },
     { name: "settings", type: "SharedSettings<'generic-value'>" },
   ])("accepts exported constant definition %#", (definition) => {
     expect(ExportConstantDefinitionV1Schema.safeParse(definition).success).toBe(
@@ -143,11 +143,11 @@ describe("exported constant definition schemas", () => {
   it.each([
     {
       name: "settings",
-      schema: { type: "object", properties: {} },
+      schema: { properties: {}, type: "object" },
       type: "SharedSettings",
     },
     { name: "settings", type: "" },
-    { name: "settings", from: "./settings" },
+    { from: "./settings", name: "settings" },
   ])("rejects invalid exported constant definition %#", (definition) => {
     expect(ExportConstantDefinitionV1Schema.safeParse(definition).success).toBe(
       false

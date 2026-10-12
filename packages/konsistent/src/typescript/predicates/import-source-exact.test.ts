@@ -5,33 +5,33 @@ import { checkImportSourceExact } from "./import-source-exact.js";
 
 function createMockContext(opts: {
   path: string;
-  placeholders?: Record<string, { toString(): string }>;
+  placeholders?: Record<string, { toString: () => string }>;
 }): PredicateContext {
   const placeholders = opts.placeholders ?? {};
   return {
+    directoryExists: () => false,
+    fileExists: () => false,
     path: opts.path,
     placeholders: placeholders as PredicateContext["placeholders"],
+    readDir: () => [],
     resolveTemplate(t: string): string {
       return t.replace(/\$\{(\w+)\}/g, (_match, name) => {
         const ph = placeholders[name];
         return ph ? ph.toString() : _match;
       });
     },
-    directoryExists: () => false,
-    fileExists: () => false,
-    readDir: () => [],
   };
 }
 
 function parseSource(opts: { source: string }) {
-  return parseFileStructure({ source: opts.source, filePath: "src/index.ts" });
+  return parseFileStructure({ filePath: "src/index.ts", source: opts.source });
 }
 
 describe("checkImportSourceExact", () => {
   it("matches exact relative import sources", () => {
     const result = checkImportSourceExact({
-      expected: "./helper",
       context: createMockContext({ path: "src/index.ts" }),
+      expected: "./helper",
       fileStructure: parseSource({ source: "import './helper';" }),
     });
     expect(result).toEqual([]);
@@ -39,8 +39,8 @@ describe("checkImportSourceExact", () => {
 
   it("returns a diagnostic when the import source is missing", () => {
     const result = checkImportSourceExact({
-      expected: "./helper",
       context: createMockContext({ path: "src/index.ts" }),
+      expected: "./helper",
       fileStructure: parseSource({ source: "import './setup';" }),
     });
     expect(result).toHaveLength(1);
@@ -51,8 +51,8 @@ describe("checkImportSourceExact", () => {
 
   it("matches exact package import sources", () => {
     const result = checkImportSourceExact({
-      expected: "react",
       context: createMockContext({ path: "src/index.ts" }),
+      expected: "react",
       fileStructure: parseSource({
         source: "import React from 'react';",
       }),
@@ -62,8 +62,8 @@ describe("checkImportSourceExact", () => {
 
   it("does not match package subpaths without a wildcard", () => {
     const result = checkImportSourceExact({
-      expected: "package",
       context: createMockContext({ path: "src/index.ts" }),
+      expected: "package",
       fileStructure: parseSource({
         source: "import { value } from 'package/v4';",
       }),
@@ -74,8 +74,8 @@ describe("checkImportSourceExact", () => {
 
   it("matches package subpaths with a trailing wildcard", () => {
     const result = checkImportSourceExact({
-      expected: "package/*",
       context: createMockContext({ path: "src/index.ts" }),
+      expected: "package/*",
       fileStructure: parseSource({
         source: "import { value } from 'package/v4';",
       }),
@@ -85,8 +85,8 @@ describe("checkImportSourceExact", () => {
 
   it("matches scoped package subpaths with a trailing wildcard", () => {
     const result = checkImportSourceExact({
-      expected: "@scope/pkg/*",
       context: createMockContext({ path: "src/index.ts" }),
+      expected: "@scope/pkg/*",
       fileStructure: parseSource({
         source: "import { tool } from '@scope/pkg/tools';",
       }),
@@ -97,8 +97,8 @@ describe("checkImportSourceExact", () => {
   it("matches package roots and sub-entrypoints from a vendor", () => {
     for (const source of ["@vendor/project", "@vendor/project/tools"]) {
       const result = checkImportSourceExact({
-        expected: "@vendor/*",
         context: createMockContext({ path: "src/index.ts" }),
+        expected: "@vendor/*",
         fileStructure: parseSource({
           source: `import { value } from '${source}';`,
         }),
@@ -109,8 +109,8 @@ describe("checkImportSourceExact", () => {
 
   it("does not match package roots with a trailing wildcard", () => {
     const result = checkImportSourceExact({
-      expected: "package/*",
       context: createMockContext({ path: "src/index.ts" }),
+      expected: "package/*",
       fileStructure: parseSource({
         source: "import { value } from 'package';",
       }),
@@ -121,8 +121,8 @@ describe("checkImportSourceExact", () => {
 
   it("does not match similarly named packages with a trailing wildcard", () => {
     const result = checkImportSourceExact({
-      expected: "react/*",
       context: createMockContext({ path: "src/index.ts" }),
+      expected: "react/*",
       fileStructure: parseSource({
         source: "import { render } from 'react-dom/client';",
       }),
@@ -132,26 +132,26 @@ describe("checkImportSourceExact", () => {
 
   it("matches type-only import statements", () => {
     const result = checkImportSourceExact({
-      expected: "@scope/pkg",
-      importKind: "type",
-      predicateName: "importTypesFrom",
       context: createMockContext({ path: "src/index.ts" }),
+      expected: "@scope/pkg",
       fileStructure: parseSource({
         source: "import type { Tool } from '@scope/pkg';",
       }),
+      importKind: "type",
+      predicateName: "importTypesFrom",
     });
     expect(result).toEqual([]);
   });
 
   it("importValuesFrom ignores type-only imports", () => {
     const result = checkImportSourceExact({
-      expected: "@scope/pkg",
-      importKind: "value",
-      predicateName: "importValuesFrom",
       context: createMockContext({ path: "src/index.ts" }),
+      expected: "@scope/pkg",
       fileStructure: parseSource({
         source: "import type { Tool } from '@scope/pkg';",
       }),
+      importKind: "value",
+      predicateName: "importValuesFrom",
     });
     expect(result).toHaveLength(1);
     expect(result[0].predicateName).toBe("importValuesFrom");
@@ -160,13 +160,13 @@ describe("checkImportSourceExact", () => {
 
   it("importTypesFrom ignores value imports", () => {
     const result = checkImportSourceExact({
-      expected: "@scope/pkg",
-      importKind: "type",
-      predicateName: "importTypesFrom",
       context: createMockContext({ path: "src/index.ts" }),
+      expected: "@scope/pkg",
       fileStructure: parseSource({
         source: "import { tool } from '@scope/pkg';",
       }),
+      importKind: "type",
+      predicateName: "importTypesFrom",
     });
     expect(result).toHaveLength(1);
     expect(result[0].predicateName).toBe("importTypesFrom");
@@ -181,20 +181,20 @@ describe("checkImportSourceExact", () => {
 
     expect(
       checkImportSourceExact({
+        context,
         expected: "@scope/pkg",
+        fileStructure,
         importKind: "value",
         predicateName: "importValuesFrom",
-        context,
-        fileStructure,
       })
     ).toEqual([]);
     expect(
       checkImportSourceExact({
+        context,
         expected: "@scope/pkg",
+        fileStructure,
         importKind: "type",
         predicateName: "importTypesFrom",
-        context,
-        fileStructure,
       })
     ).toEqual([]);
   });
@@ -205,31 +205,31 @@ describe("checkImportSourceExact", () => {
 
     expect(
       checkImportSourceExact({
+        context,
         expected: "./setup",
+        fileStructure,
         importKind: "value",
         predicateName: "importValuesFrom",
-        context,
-        fileStructure,
       })
     ).toEqual([]);
     expect(
       checkImportSourceExact({
+        context,
         expected: "./setup",
+        fileStructure,
         importKind: "type",
         predicateName: "importTypesFrom",
-        context,
-        fileStructure,
       })
     ).toHaveLength(1);
   });
 
   it("resolves template placeholders in the source", () => {
     const result = checkImportSourceExact({
-      expected: "@scope/${packageName}/*",
       context: createMockContext({
         path: "src/index.ts",
         placeholders: { packageName: { toString: () => "pkg" } },
       }),
+      expected: "@scope/${packageName}/*",
       fileStructure: parseSource({
         source: "import { tool } from '@scope/pkg/tools';",
       }),
@@ -239,15 +239,15 @@ describe("checkImportSourceExact", () => {
 
   it("resolves template placeholders in selector exclusions", () => {
     const result = checkImportSourceExact({
+      context: createMockContext({
+        path: "src/index.ts",
+        placeholders: { vendor: { toString: () => "ai-sdk" } },
+      }),
       expected: [
         "@${vendor}/*",
         "!@${vendor}/harness/*",
         "@${vendor}/harness/bridge",
       ],
-      context: createMockContext({
-        path: "src/index.ts",
-        placeholders: { vendor: { toString: () => "ai-sdk" } },
-      }),
       fileStructure: parseSource({
         source: "import { bridge } from '@ai-sdk/harness/bridge';",
       }),
@@ -266,8 +266,8 @@ describe("checkImportSourceExact", () => {
 
     expect(
       checkImportSourceExact({
-        expected,
         context,
+        expected,
         fileStructure: parseSource({
           source: "import { generate } from '@ai-sdk/core';",
         }),
@@ -275,8 +275,8 @@ describe("checkImportSourceExact", () => {
     ).toEqual([]);
     expect(
       checkImportSourceExact({
-        expected,
         context,
+        expected,
         fileStructure: parseSource({
           source: "import { harness } from '@ai-sdk/harness';",
         }),
@@ -284,8 +284,8 @@ describe("checkImportSourceExact", () => {
     ).toEqual(['Missing import from "@ai-sdk/*"']);
     expect(
       checkImportSourceExact({
-        expected,
         context,
+        expected,
         fileStructure: parseSource({
           source: "import { bridge } from '@ai-sdk/harness/bridge';",
         }),
@@ -299,32 +299,32 @@ describe("checkImportSourceExact", () => {
 
     expect(
       checkImportSourceExact({
-        expected,
-        importKind: "type",
-        predicateName: "importTypesFrom",
         context,
+        expected,
         fileStructure: parseSource({
           source: "import type { Tool } from '@vendor/project';",
         }),
+        importKind: "type",
+        predicateName: "importTypesFrom",
       })
     ).toEqual([]);
     expect(
       checkImportSourceExact({
-        expected,
-        importKind: "type",
-        predicateName: "importTypesFrom",
         context,
+        expected,
         fileStructure: parseSource({
           source: "import { tool } from '@vendor/project';",
         }),
+        importKind: "type",
+        predicateName: "importTypesFrom",
       }).map((diagnostic) => diagnostic.message)
     ).toEqual(['Missing type import from "@vendor/*"']);
   });
 
   it("requires every import source in an array", () => {
     const result = checkImportSourceExact({
-      expected: ["react", "package/*"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["react", "package/*"],
       fileStructure: parseSource({
         source: [
           "import React from 'react';",
@@ -337,8 +337,8 @@ describe("checkImportSourceExact", () => {
 
   it("returns diagnostics for missing import sources in an array", () => {
     const result = checkImportSourceExact({
-      expected: ["react", "package"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["react", "package"],
       fileStructure: parseSource({
         source: "import { value } from 'package/v4';",
       }),
@@ -352,8 +352,8 @@ describe("checkImportSourceExact", () => {
 
   it("keeps exact entries and a wildcard selector as MUST-ALL constraints", () => {
     const result = checkImportSourceExact({
-      expected: ["react", "zod", "@ai-sdk/*", "!@ai-sdk/harness"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["react", "zod", "@ai-sdk/*", "!@ai-sdk/harness"],
       fileStructure: parseSource({
         source: [
           "import React from 'react';",
@@ -370,10 +370,10 @@ describe("checkImportSourceExact", () => {
 
   it("includes conventionName when provided", () => {
     const result = checkImportSourceExact({
-      expected: "react",
       context: createMockContext({ path: "src/index.ts" }),
-      fileStructure: parseSource({ source: "" }),
       conventionName: "react-files",
+      expected: "react",
+      fileStructure: parseSource({ source: "" }),
     });
     expect(result[0].conventionName).toBe("react-files");
   });

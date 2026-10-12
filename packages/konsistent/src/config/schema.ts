@@ -78,17 +78,17 @@ const ConventionMustSchema = z.union([
 ]);
 
 const ConventionV1Shape = {
+  description: z.string().optional(),
+  excludeFiles: z.array(z.string()).optional(),
+  if: IfConditionV1Schema.optional(),
+  ifNot: IfConditionV1Schema.optional(),
   name: z
     .string()
     .regex(/^[a-z0-9-]+$/, "Convention name must match [a-z0-9-]+")
     .optional(),
-  description: z.string().optional(),
-  severity: z.enum(["error", "warning"]).default("error").optional(),
-  excludeFiles: z.array(z.string()).optional(),
   paths: z.union([z.string(), z.array(z.string())]),
   placeholders: PlaceholdersMapSchema.optional(),
-  if: IfConditionV1Schema.optional(),
-  ifNot: IfConditionV1Schema.optional(),
+  severity: z.enum(["error", "warning"]).default("error").optional(),
 };
 
 export const ConventionV1Schema = z.union([
@@ -105,23 +105,23 @@ export const ConventionV1Schema = z.union([
 ]);
 
 export const MustBlockUseRefSchema = z.strictObject({
+  description: z.string().optional(),
+  excludeFiles: z.array(z.string()).optional(),
+  for: ForSchema.optional(),
+  if: IfConditionV1Schema.optional(),
+  ifNot: IfConditionV1Schema.optional(),
+  must: MustPredicatesV1Schema.optional(),
+  mustNot: MustPredicatesV1Schema.optional(),
+  name: z
+    .string()
+    .regex(/^[a-z0-9-]+$/, "Must block name must match [a-z0-9-]+")
+    .optional(),
   use: z
     .string()
     .regex(
       /^[a-z0-9-]+\/[a-z0-9-]+$/,
       'Must block "use" must match "<vendor>/<name>"'
     ),
-  name: z
-    .string()
-    .regex(/^[a-z0-9-]+$/, "Must block name must match [a-z0-9-]+")
-    .optional(),
-  description: z.string().optional(),
-  if: IfConditionV1Schema.optional(),
-  ifNot: IfConditionV1Schema.optional(),
-  for: ForSchema.optional(),
-  excludeFiles: z.array(z.string()).optional(),
-  must: MustPredicatesV1Schema.optional(),
-  mustNot: MustPredicatesV1Schema.optional(),
 });
 
 const ConventionStringRefSchema = z
@@ -143,15 +143,15 @@ const RawMustSchema = z.union([
 ]);
 
 const RawHandWrittenConventionV1Shape = {
+  description: z.string().optional(),
+  excludeFiles: z.array(z.string()).optional(),
   name: z
     .string()
     .regex(/^[a-z0-9-]+$/, "Convention name must match [a-z0-9-]+")
     .optional(),
-  description: z.string().optional(),
-  severity: z.enum(["error", "warning"]).default("error").optional(),
-  excludeFiles: z.array(z.string()).optional(),
   paths: z.union([z.string(), z.array(z.string())]),
   placeholders: PlaceholdersMapSchema.optional(),
+  severity: z.enum(["error", "warning"]).default("error").optional(),
 };
 
 const RawHandWrittenConventionV1Schema = z.union([
@@ -168,28 +168,25 @@ const RawHandWrittenConventionV1Schema = z.union([
 ]);
 
 export const ConventionUseRefSchema = z.strictObject({
+  excludeFiles: z.array(z.string()).optional(),
+  for: ForSchema.optional(),
+  if: IfConditionV1Schema.optional(),
+  ifNot: IfConditionV1Schema.optional(),
+  must: MustPredicatesV1Schema.optional(),
+  mustNot: MustPredicatesV1Schema.optional(),
+  paths: z.union([z.string(), z.array(z.string())]).optional(),
+  placeholders: PlaceholdersMapSchema.optional(),
+  severity: z.enum(["error", "warning"]).optional(),
   use: z
     .string()
     .regex(
       /^[a-z0-9-]+\/[a-z0-9-]+$/,
       'Convention reference "use" must match "<vendor>/<name>"'
     ),
-  severity: z.enum(["error", "warning"]).optional(),
-  paths: z.union([z.string(), z.array(z.string())]).optional(),
-  placeholders: PlaceholdersMapSchema.optional(),
-  excludeFiles: z.array(z.string()).optional(),
-  if: IfConditionV1Schema.optional(),
-  ifNot: IfConditionV1Schema.optional(),
-  for: ForSchema.optional(),
-  must: MustPredicatesV1Schema.optional(),
-  mustNot: MustPredicatesV1Schema.optional(),
 });
 
 export const ConfigV1Schema = z.strictObject({
   $schema: z.string().optional(),
-  version: z.literal("v1"),
-  kebabToPascalMap: z.record(z.string(), z.string()).optional(),
-  kebabToCamelMap: z.record(z.string(), z.string()).optional(),
   conventionSources: z
     .record(
       z.string().regex(/^[a-z0-9-]+$/, "Source prefix must match [a-z0-9-]+"),
@@ -203,6 +200,9 @@ export const ConfigV1Schema = z.strictObject({
       RawHandWrittenConventionV1Schema,
     ])
   ),
+  kebabToCamelMap: z.record(z.string(), z.string()).optional(),
+  kebabToPascalMap: z.record(z.string(), z.string()).optional(),
+  version: z.literal("v1"),
 });
 
 export type MustBlockUseRefV1 = z.infer<typeof MustBlockUseRefSchema>;

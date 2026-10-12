@@ -2,33 +2,33 @@ import { defineConfig } from "tsdown";
 
 export default defineConfig([
   {
-    entry: ["src/index.ts"],
-    format: ["esm"],
-    fixedExtension: false,
-    outDir: "dist",
-    target: "es2022",
     clean: true,
-    sourcemap: false,
-    outputOptions: {
-      codeSplitting: false,
-    },
     dts: {
       generator: "tsgo",
       sourcemap: false,
     },
-  },
-  {
-    entry: ["src/cli.ts"],
-    format: ["esm"],
+    entry: ["src/index.ts"],
     fixedExtension: false,
+    format: ["esm"],
     outDir: "dist",
-    target: "es2022",
-    clean: false,
-    sourcemap: false,
     outputOptions: {
       codeSplitting: false,
     },
-    dts: false,
+    sourcemap: false,
+    target: "es2022",
+  },
+  {
     banner: { js: "#!/usr/bin/env node" },
+    clean: false,
+    dts: false,
+    entry: ["src/cli.ts"],
+    fixedExtension: false,
+    format: ["esm"],
+    outDir: "dist",
+    outputOptions: {
+      codeSplitting: false,
+    },
+    sourcemap: false,
+    target: "es2022",
   },
 ]);

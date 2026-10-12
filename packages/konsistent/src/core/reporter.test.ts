@@ -16,8 +16,8 @@ function makeResult(opts: {
 }): RunResult {
   return {
     diagnostics: opts.diagnostics,
-    filesChecked: opts.filesChecked ?? 1,
     elapsed: opts.elapsed ?? 5,
+    filesChecked: opts.filesChecked ?? 1,
   };
 }
 
@@ -26,7 +26,7 @@ describe("createDefaultReporter", () => {
 
   it("returns summary for no diagnostics", () => {
     const output = reporter.format(
-      makeResult({ diagnostics: [], filesChecked: 3, elapsed: 5 })
+      makeResult({ diagnostics: [], elapsed: 5, filesChecked: 3 })
     );
     expect(output).toContain("Checked 3 files in 5ms.");
     expect(output).toContain("No violations found.");
@@ -35,26 +35,26 @@ describe("createDefaultReporter", () => {
   it("formats diagnostics grouped by file", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "Expected a file but found a directory",
+        predicateName: "haveType",
+        severity: "error",
       },
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "Another issue",
+        predicateName: "haveType",
+        severity: "error",
       },
       {
-        severity: "error",
         filePath: "src/bar.ts",
-        predicateName: "haveType",
         message: "Expected a directory",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(
-      makeResult({ diagnostics, filesChecked: 2, elapsed: 10 })
+      makeResult({ diagnostics, elapsed: 10, filesChecked: 2 })
     );
     expect(output).toContain(pc.bold("src/foo.ts"));
     expect(output).toContain(pc.bold("src/bar.ts"));
@@ -65,10 +65,10 @@ describe("createDefaultReporter", () => {
   it("uses dash for line number when line is undefined", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "test message",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -78,11 +78,11 @@ describe("createDefaultReporter", () => {
   it("uses line number when provided", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
-        message: "test message",
         line: 42,
+        message: "test message",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -92,11 +92,11 @@ describe("createDefaultReporter", () => {
   it("shows convention name in dim when present", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
-        filePath: "src/foo.ts",
-        predicateName: "haveType",
-        message: "Missing export",
         conventionName: "provider-packages",
+        filePath: "src/foo.ts",
+        message: "Missing export",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -108,10 +108,10 @@ describe("createDefaultReporter", () => {
   it("omits convention name bracket when conventionName is absent", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "Some problem",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -129,24 +129,24 @@ describe("createDefaultReporter", () => {
   it("sorts file-level violations before line-specific ones", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
-        message: "line 10 issue",
         line: 10,
+        message: "line 10 issue",
+        predicateName: "haveType",
+        severity: "error",
       },
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "file-level issue",
+        predicateName: "haveType",
+        severity: "error",
       },
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
-        message: "line 5 issue",
         line: 5,
+        message: "line 5 issue",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -159,18 +159,18 @@ describe("createDefaultReporter", () => {
   it("right-aligns line numbers to widest in group", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
-        message: "issue at 5",
         line: 5,
+        message: "issue at 5",
+        predicateName: "haveType",
+        severity: "error",
       },
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
-        message: "issue at 100",
         line: 100,
+        message: "issue at 100",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -181,17 +181,17 @@ describe("createDefaultReporter", () => {
   it("pads dash to match widest line number width", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "file-level",
+        predicateName: "haveType",
+        severity: "error",
       },
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
-        message: "at line 999",
         line: 999,
+        message: "at line 999",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -202,16 +202,16 @@ describe("createDefaultReporter", () => {
   it("separates file groups with blank lines", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/a.ts",
-        predicateName: "haveType",
         message: "problem a",
+        predicateName: "haveType",
+        severity: "error",
       },
       {
-        severity: "error",
         filePath: "src/b.ts",
-        predicateName: "haveType",
         message: "problem b",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -223,10 +223,10 @@ describe("createDefaultReporter", () => {
   it("renders root path as (project root)", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: ".",
-        predicateName: "haveFiles",
         message: "Missing required file: README.md",
+        predicateName: "haveFiles",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -237,10 +237,10 @@ describe("createDefaultReporter", () => {
   it("makes file paths bold", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "test",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -250,10 +250,10 @@ describe("createDefaultReporter", () => {
   it("colors error severity in red", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "test",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -263,14 +263,14 @@ describe("createDefaultReporter", () => {
   it("uses singular for 1 violation", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "a.ts",
-        predicateName: "haveType",
         message: "err1",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(
-      makeResult({ diagnostics, filesChecked: 1, elapsed: 2 })
+      makeResult({ diagnostics, elapsed: 2, filesChecked: 1 })
     );
     expect(output).toContain("Checked 1 file in 2ms. Found 1 error.");
   });
@@ -278,20 +278,20 @@ describe("createDefaultReporter", () => {
   it("uses plural for multiple violations", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "a.ts",
-        predicateName: "haveType",
         message: "err1",
+        predicateName: "haveType",
+        severity: "error",
       },
       {
-        severity: "error",
         filePath: "b.ts",
-        predicateName: "haveType",
         message: "err2",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(
-      makeResult({ diagnostics, filesChecked: 2, elapsed: 3 })
+      makeResult({ diagnostics, elapsed: 3, filesChecked: 2 })
     );
     expect(output).toContain("Checked 2 files in 3ms. Found 2 errors.");
   });
@@ -303,12 +303,12 @@ describe("createDefaultReporter with colors disabled", () => {
   it("does not include ANSI escape codes in output", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
-        filePath: "src/foo.ts",
-        predicateName: "haveType",
-        message: "Missing export",
         conventionName: "provider-packages",
+        filePath: "src/foo.ts",
         line: 5,
+        message: "Missing export",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -318,11 +318,11 @@ describe("createDefaultReporter with colors disabled", () => {
   it("still contains all diagnostic content", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
-        filePath: "src/bar.ts",
-        predicateName: "haveType",
-        message: "Something wrong",
         conventionName: "my-convention",
+        filePath: "src/bar.ts",
+        message: "Something wrong",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -336,10 +336,10 @@ describe("createDefaultReporter with colors disabled", () => {
   it("returns plain severity without red", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "test",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -357,11 +357,11 @@ describe("createJsonReporter", () => {
   it("returns valid JSON parseable by JSON.parse", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
-        filePath: "src/foo.ts",
-        predicateName: "haveType",
-        message: "Some problem",
         conventionName: "my-convention",
+        filePath: "src/foo.ts",
+        message: "Some problem",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -376,24 +376,24 @@ describe("createJsonReporter", () => {
   it("outputs correct fields for line-level diagnostic", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
-        filePath: "src/foo.ts",
-        predicateName: "exportInterfaces",
-        message: "Missing interface",
-        conventionName: "provider-interface",
-        line: 3,
         column: 5,
+        conventionName: "provider-interface",
+        filePath: "src/foo.ts",
+        line: 3,
+        message: "Missing interface",
+        predicateName: "exportInterfaces",
+        severity: "error",
       },
     ];
     const parsed = JSON.parse(reporter.format(makeResult({ diagnostics })));
     expect(parsed).toEqual([
       {
-        severity: "error",
         conventionName: "provider-interface",
         filePath: "src/foo.ts",
-        predicateName: "exportInterfaces",
-        message: "Missing interface",
         line: 3,
+        message: "Missing interface",
+        predicateName: "exportInterfaces",
+        severity: "error",
       },
     ]);
   });
@@ -401,11 +401,11 @@ describe("createJsonReporter", () => {
   it("omits line for file-level diagnostic", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
-        filePath: "src/foo.ts",
-        predicateName: "haveFiles",
-        message: "Missing required file",
         conventionName: "my-convention",
+        filePath: "src/foo.ts",
+        message: "Missing required file",
+        predicateName: "haveFiles",
+        severity: "error",
       },
     ];
     const parsed = JSON.parse(reporter.format(makeResult({ diagnostics })));
@@ -415,12 +415,12 @@ describe("createJsonReporter", () => {
   it("omits column from JSON output", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
-        filePath: "src/foo.ts",
-        predicateName: "exportInterfaces",
-        message: "test",
-        line: 10,
         column: 5,
+        filePath: "src/foo.ts",
+        line: 10,
+        message: "test",
+        predicateName: "exportInterfaces",
+        severity: "error",
       },
     ];
     const parsed = JSON.parse(reporter.format(makeResult({ diagnostics })));
@@ -430,17 +430,17 @@ describe("createJsonReporter", () => {
   it("includes multiple diagnostics as array elements", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/a.ts",
-        predicateName: "haveType",
         message: "problem a",
+        predicateName: "haveType",
+        severity: "error",
       },
       {
-        severity: "error",
         filePath: "src/b.ts",
-        predicateName: "haveType",
-        message: "problem b",
         line: 5,
+        message: "problem b",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const parsed = JSON.parse(reporter.format(makeResult({ diagnostics })));
@@ -461,11 +461,11 @@ describe("createGithubReporter", () => {
   it("formats file-level violation without line parameter", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
-        filePath: "packages/openai/src/index.ts",
-        predicateName: "exportValues",
-        message: 'Missing export "openai"',
         conventionName: "provider-packages",
+        filePath: "packages/openai/src/index.ts",
+        message: 'Missing export "openai"',
+        predicateName: "exportValues",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -477,12 +477,12 @@ describe("createGithubReporter", () => {
   it("includes line parameter for line-specific violations", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
-        filePath: "packages/openai/src/openai-provider.ts",
-        predicateName: "exportInterfaces",
-        message: 'Interface "OpenaiProvider" must extend "ProviderV1"',
         conventionName: "provider-interface",
+        filePath: "packages/openai/src/openai-provider.ts",
         line: 3,
+        message: 'Interface "OpenaiProvider" must extend "ProviderV1"',
+        predicateName: "exportInterfaces",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -494,12 +494,12 @@ describe("createGithubReporter", () => {
   it("omits column even when present on diagnostic", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
-        filePath: "src/foo.ts",
-        predicateName: "haveType",
-        message: "test",
-        line: 10,
         column: 5,
+        filePath: "src/foo.ts",
+        line: 10,
+        message: "test",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -511,10 +511,10 @@ describe("createGithubReporter", () => {
   it("omits title when conventionName is absent", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "Some problem",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -524,19 +524,19 @@ describe("createGithubReporter", () => {
   it("joins multiple diagnostics with newlines", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
-        filePath: "src/a.ts",
-        predicateName: "haveType",
-        message: "problem a",
         conventionName: "conv-a",
+        filePath: "src/a.ts",
+        message: "problem a",
+        predicateName: "haveType",
+        severity: "error",
       },
       {
-        severity: "error",
-        filePath: "src/b.ts",
-        predicateName: "haveType",
-        message: "problem b",
         conventionName: "conv-b",
+        filePath: "src/b.ts",
         line: 5,
+        message: "problem b",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -554,7 +554,7 @@ describe("createMarkdownReporter", () => {
 
   it("returns summary for no diagnostics", () => {
     const output = reporter.format(
-      makeResult({ diagnostics: [], filesChecked: 5, elapsed: 3 })
+      makeResult({ diagnostics: [], elapsed: 3, filesChecked: 5 })
     );
     expect(output).toContain("Checked 5 files in 3ms.");
     expect(output).toContain("No violations found.");
@@ -563,37 +563,37 @@ describe("createMarkdownReporter", () => {
   it("formats diagnostics as Markdown tables grouped by file", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
+        conventionName: "provider-packages",
         filePath: "packages/openai/src/index.ts",
-        predicateName: "exportValues",
         message: 'Missing export "openai"',
-        conventionName: "provider-packages",
-      },
-      {
-        severity: "error",
-        filePath: "packages/openai/src/index.ts",
         predicateName: "exportValues",
-        message: 'Missing export type "OpenaiProvider"',
+        severity: "error",
+      },
+      {
         conventionName: "provider-packages",
+        filePath: "packages/openai/src/index.ts",
+        message: 'Missing export type "OpenaiProvider"',
+        predicateName: "exportValues",
+        severity: "error",
       },
       {
-        severity: "error",
+        conventionName: "provider-interface",
         filePath: "packages/openai/src/openai-provider.ts",
-        predicateName: "importTypes",
         message: 'Missing import type "ProviderV1"',
-        conventionName: "provider-interface",
+        predicateName: "importTypes",
+        severity: "error",
       },
       {
-        severity: "error",
-        filePath: "packages/openai/src/openai-provider.ts",
-        predicateName: "exportInterfaces",
-        message: 'Interface "OpenaiProvider" must extend "ProviderV1"',
         conventionName: "provider-interface",
+        filePath: "packages/openai/src/openai-provider.ts",
         line: 3,
+        message: 'Interface "OpenaiProvider" must extend "ProviderV1"',
+        predicateName: "exportInterfaces",
+        severity: "error",
       },
     ];
     const output = reporter.format(
-      makeResult({ diagnostics, filesChecked: 2, elapsed: 8 })
+      makeResult({ diagnostics, elapsed: 8, filesChecked: 2 })
     );
     expect(output).toContain("**`packages/openai/src/index.ts`**");
     expect(output).toContain("**`packages/openai/src/openai-provider.ts`**");
@@ -611,10 +611,10 @@ describe("createMarkdownReporter", () => {
   it("uses dash in Line column for file-level violations", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "file-level issue",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -624,11 +624,11 @@ describe("createMarkdownReporter", () => {
   it("uses line number in Line column when provided", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
-        message: "line issue",
         line: 42,
+        message: "line issue",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -638,24 +638,24 @@ describe("createMarkdownReporter", () => {
   it("lists file-level violations before line-specific ones", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
-        message: "line 10 issue",
         line: 10,
+        message: "line 10 issue",
+        predicateName: "haveType",
+        severity: "error",
       },
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "file-level issue",
+        predicateName: "haveType",
+        severity: "error",
       },
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
-        message: "line 5 issue",
         line: 5,
+        message: "line 5 issue",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -673,10 +673,10 @@ describe("createMarkdownReporter", () => {
   it("shows empty convention column when conventionName is absent", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "Some problem",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -686,16 +686,16 @@ describe("createMarkdownReporter", () => {
   it("separates file groups with blank lines", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/a.ts",
-        predicateName: "haveType",
         message: "problem a",
+        predicateName: "haveType",
+        severity: "error",
       },
       {
-        severity: "error",
         filePath: "src/b.ts",
-        predicateName: "haveType",
         message: "problem b",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -705,10 +705,10 @@ describe("createMarkdownReporter", () => {
   it("renders root path as (project root)", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: ".",
-        predicateName: "haveFiles",
         message: "Missing required file: README.md",
+        predicateName: "haveFiles",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -718,10 +718,10 @@ describe("createMarkdownReporter", () => {
   it("wraps file paths in bold backticks", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "test",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -735,10 +735,10 @@ describe("createDefaultReporter warning formatting", () => {
   it("colors warning severity in yellow", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "warning",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "test warning",
+        predicateName: "haveType",
+        severity: "warning",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -748,14 +748,14 @@ describe("createDefaultReporter warning formatting", () => {
   it("shows warning-only summary", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "warning",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "test warning",
+        predicateName: "haveType",
+        severity: "warning",
       },
     ];
     const output = reporter.format(
-      makeResult({ diagnostics, filesChecked: 1, elapsed: 5 })
+      makeResult({ diagnostics, elapsed: 5, filesChecked: 1 })
     );
     expect(output).toContain("Found 1 warning.");
   });
@@ -763,14 +763,14 @@ describe("createDefaultReporter warning formatting", () => {
   it("shows error-only summary when all errors", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "test error",
+        predicateName: "haveType",
+        severity: "error",
       },
     ];
     const output = reporter.format(
-      makeResult({ diagnostics, filesChecked: 1, elapsed: 5 })
+      makeResult({ diagnostics, elapsed: 5, filesChecked: 1 })
     );
     expect(output).toContain("Found 1 error.");
   });
@@ -778,33 +778,33 @@ describe("createDefaultReporter warning formatting", () => {
   it("shows mixed summary with errors and warnings", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "test error",
+        predicateName: "haveType",
+        severity: "error",
       },
       {
-        severity: "warning",
         filePath: "src/bar.ts",
-        predicateName: "haveType",
         message: "test warning 1",
+        predicateName: "haveType",
+        severity: "warning",
       },
       {
-        severity: "warning",
         filePath: "src/baz.ts",
-        predicateName: "haveType",
         message: "test warning 2",
+        predicateName: "haveType",
+        severity: "warning",
       },
     ];
     const output = reporter.format(
-      makeResult({ diagnostics, filesChecked: 3, elapsed: 5 })
+      makeResult({ diagnostics, elapsed: 5, filesChecked: 3 })
     );
     expect(output).toContain("Found 1 error and 2 warnings.");
   });
 
   it("shows no violations summary when empty", () => {
     const output = reporter.format(
-      makeResult({ diagnostics: [], filesChecked: 1, elapsed: 5 })
+      makeResult({ diagnostics: [], elapsed: 5, filesChecked: 1 })
     );
     expect(output).toContain("No violations found.");
   });
@@ -816,11 +816,11 @@ describe("createGithubReporter warning formatting", () => {
   it("uses ::warning annotation for warning-severity diagnostics", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "warning",
-        filePath: "src/foo.ts",
-        predicateName: "haveFiles",
-        message: "Missing recommended file",
         conventionName: "should-have-readme",
+        filePath: "src/foo.ts",
+        message: "Missing recommended file",
+        predicateName: "haveFiles",
+        severity: "warning",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -832,18 +832,18 @@ describe("createGithubReporter warning formatting", () => {
   it("uses ::error for error-severity and ::warning for warning-severity in same output", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
-        filePath: "src/a.ts",
-        predicateName: "haveType",
-        message: "critical issue",
         conventionName: "conv-a",
+        filePath: "src/a.ts",
+        message: "critical issue",
+        predicateName: "haveType",
+        severity: "error",
       },
       {
-        severity: "warning",
-        filePath: "src/b.ts",
-        predicateName: "haveFiles",
-        message: "minor issue",
         conventionName: "conv-b",
+        filePath: "src/b.ts",
+        message: "minor issue",
+        predicateName: "haveFiles",
+        severity: "warning",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -855,12 +855,12 @@ describe("createGithubReporter warning formatting", () => {
   it("includes line parameter for warning-severity line-specific violations", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "warning",
-        filePath: "src/foo.ts",
-        predicateName: "exportInterfaces",
-        message: "Recommended interface missing",
         conventionName: "iface-convention",
+        filePath: "src/foo.ts",
         line: 7,
+        message: "Recommended interface missing",
+        predicateName: "exportInterfaces",
+        severity: "warning",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -876,11 +876,11 @@ describe("createJsonReporter warning formatting", () => {
   it('outputs severity "warning" for warning-severity diagnostics', () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "warning",
-        filePath: "src/foo.ts",
-        predicateName: "haveFiles",
-        message: "Missing recommended file",
         conventionName: "should-have-readme",
+        filePath: "src/foo.ts",
+        message: "Missing recommended file",
+        predicateName: "haveFiles",
+        severity: "warning",
       },
     ];
     const parsed = JSON.parse(reporter.format(makeResult({ diagnostics })));
@@ -890,16 +890,16 @@ describe("createJsonReporter warning formatting", () => {
   it("outputs mixed severity values correctly", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/a.ts",
-        predicateName: "haveType",
         message: "critical issue",
+        predicateName: "haveType",
+        severity: "error",
       },
       {
-        severity: "warning",
         filePath: "src/b.ts",
-        predicateName: "haveFiles",
         message: "minor issue",
+        predicateName: "haveFiles",
+        severity: "warning",
       },
     ];
     const parsed = JSON.parse(reporter.format(makeResult({ diagnostics })));
@@ -914,11 +914,11 @@ describe("createMarkdownReporter warning formatting", () => {
   it('shows "warning" in severity column for warning-severity diagnostics', () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "warning",
-        filePath: "src/foo.ts",
-        predicateName: "haveFiles",
-        message: "Missing recommended file",
         conventionName: "should-have-readme",
+        filePath: "src/foo.ts",
+        message: "Missing recommended file",
+        predicateName: "haveFiles",
+        severity: "warning",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -930,16 +930,16 @@ describe("createMarkdownReporter warning formatting", () => {
   it("shows mixed severity values in table rows", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "critical issue",
+        predicateName: "haveType",
+        severity: "error",
       },
       {
-        severity: "warning",
         filePath: "src/foo.ts",
-        predicateName: "haveFiles",
         message: "minor issue",
+        predicateName: "haveFiles",
+        severity: "warning",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));
@@ -950,14 +950,14 @@ describe("createMarkdownReporter warning formatting", () => {
   it("shows warning-only summary", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "warning",
         filePath: "src/foo.ts",
-        predicateName: "haveFiles",
         message: "minor issue",
+        predicateName: "haveFiles",
+        severity: "warning",
       },
     ];
     const output = reporter.format(
-      makeResult({ diagnostics, filesChecked: 1, elapsed: 5 })
+      makeResult({ diagnostics, elapsed: 5, filesChecked: 1 })
     );
     expect(output).toContain("Found 1 warning.**");
   });
@@ -965,20 +965,20 @@ describe("createMarkdownReporter warning formatting", () => {
   it("shows mixed summary with errors and warnings", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "error",
         filePath: "src/a.ts",
-        predicateName: "haveType",
         message: "critical",
+        predicateName: "haveType",
+        severity: "error",
       },
       {
-        severity: "warning",
         filePath: "src/b.ts",
-        predicateName: "haveFiles",
         message: "minor",
+        predicateName: "haveFiles",
+        severity: "warning",
       },
     ];
     const output = reporter.format(
-      makeResult({ diagnostics, filesChecked: 2, elapsed: 5 })
+      makeResult({ diagnostics, elapsed: 5, filesChecked: 2 })
     );
     expect(output).toContain("Found 1 error and 1 warning.**");
   });
@@ -990,10 +990,10 @@ describe("createDefaultReporter with colors disabled and warnings", () => {
   it("shows plain warning severity without color", () => {
     const diagnostics: Diagnostic[] = [
       {
-        severity: "warning",
         filePath: "src/foo.ts",
-        predicateName: "haveType",
         message: "test warning",
+        predicateName: "haveType",
+        severity: "warning",
       },
     ];
     const output = reporter.format(makeResult({ diagnostics }));

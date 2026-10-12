@@ -46,8 +46,8 @@ export function resolveCommandInvocation(opts) {
     (opts.platform ?? process.platform) === "win32" &&
     (opts.command === "pnpm" || opts.command === "npm");
   return {
-    command: opts.command,
     args: shell ? opts.args.map((argument) => `"${argument}"`) : opts.args,
+    command: opts.command,
     shell,
   };
 }
@@ -56,14 +56,14 @@ function runCommand(opts) {
   const invocation = resolveCommandInvocation(opts);
   return execFile(invocation.command, invocation.args, {
     cwd: opts.cwd,
-    shell: invocation.shell,
-    timeout: 120_000,
-    maxBuffer: 2 * 1024 * 1024,
     env: {
       ...process.env,
-      KONSISTENT_NO_UPDATE_CHECK: "true",
       GITHUB_ACTIONS: "",
+      KONSISTENT_NO_UPDATE_CHECK: "true",
     },
+    maxBuffer: 2 * 1024 * 1024,
+    shell: invocation.shell,
+    timeout: 120_000,
   });
 }
 
@@ -80,17 +80,15 @@ export async function verifyPackage() {
     hadDocs = false;
   }
   try {
-    for (const directory of [
-      "convention",
-      "common-conventions",
-      "konsistent",
-    ]) {
-      await runCommand({
-        command: "pnpm",
-        args: ["pack", "--pack-destination", temporaryDirectory],
-        cwd: join(repositoryDirectory, "packages", directory),
-      });
-    }
+    await Promise.all(
+      ["convention", "common-conventions", "konsistent"].map((directory) =>
+        runCommand({
+          args: ["pack", "--pack-destination", temporaryDirectory],
+          command: "pnpm",
+          cwd: join(repositoryDirectory, "packages", directory),
+        })
+      )
+    );
     const tarballs = (await readdir(temporaryDirectory)).filter((name) =>
       name.endsWith(".tgz")
     );
@@ -104,7 +102,6 @@ export async function verifyPackage() {
       })
     );
     await runCommand({
-      command: "npm",
       args: [
         "install",
         "--ignore-scripts",
@@ -112,6 +109,7 @@ export async function verifyPackage() {
         "--no-fund",
         ...tarballs.map((name) => join(temporaryDirectory, name)),
       ],
+      command: "npm",
       cwd: temporaryDirectory,
     });
 
@@ -194,36 +192,39 @@ export async function verifyPackage() {
       false
     );
 
-    for (const fixture of [
-      "typescript-runtime",
-      "typescript-runtime-filesystem",
-    ]) {
-      const cwd = join(temporaryDirectory, fixture);
-      await cp(join(repositoryDirectory, "e2e", "fixtures", fixture), cwd, {
-        recursive: true,
-      });
-      const checked = await runCommand({
+    await Promise.all(
+      ["typescript-runtime", "typescript-runtime-filesystem"].map(
+        async (fixture) => {
+          const cwd = join(temporaryDirectory, fixture);
+          await cp(join(repositoryDirectory, "e2e", "fixtures", fixture), cwd, {
+            recursive: true,
+          });
+          const checked = await runCommand({
+            args: [installedCli, "check", "--format=json"],
+            command: process.execPath,
+            cwd,
+          });
+          assert.deepEqual(JSON.parse(checked.stdout), []);
+          await runCommand({
+            args: [installedCli, "validate"],
+            command: process.execPath,
+            cwd,
+          });
+        }
+      )
+    );
+    const [versionResult] = await Promise.all([
+      runCommand({
+        args: [installedCli, "help"],
         command: process.execPath,
-        args: [installedCli, "check", "--format=json"],
-        cwd,
-      });
-      assert.deepEqual(JSON.parse(checked.stdout), []);
-      await runCommand({
+        cwd: temporaryDirectory,
+      }),
+      runCommand({
+        args: [installedCli, "--version"],
         command: process.execPath,
-        args: [installedCli, "validate"],
-        cwd,
-      });
-    }
-    await runCommand({
-      command: process.execPath,
-      args: [installedCli, "help"],
-      cwd: temporaryDirectory,
-    });
-    const versionResult = await runCommand({
-      command: process.execPath,
-      args: [installedCli, "--version"],
-      cwd: temporaryDirectory,
-    });
+        cwd: temporaryDirectory,
+      }),
+    ]);
     assert.equal(versionResult.stdout.trim(), cliManifest.version);
 
     const consumerPath = join(temporaryDirectory, "consumer.ts");
@@ -232,7 +233,6 @@ export async function verifyPackage() {
       'import { defineConventions, type ReusableConventionV1 } from "@konsistent/convention";\nexport const conventions = defineConventions([{ name: "consumer", description: "Require the source directory", paths: "src", must: { haveType: "directory" } }] satisfies ReusableConventionV1[]);\n'
     );
     await runCommand({
-      command: process.execPath,
       args: [
         installedConventionCli,
         "emit",
@@ -241,30 +241,31 @@ export async function verifyPackage() {
         "--output",
         "consumer-conventions.json",
       ],
+      command: process.execPath,
       cwd: temporaryDirectory,
     });
     await writeFile(
       join(temporaryDirectory, "tsconfig.json"),
       JSON.stringify({
         compilerOptions: {
-          strict: true,
-          noEmit: true,
-          skipLibCheck: false,
-          target: "es2022",
           module: "esnext",
           moduleResolution: "bundler",
+          noEmit: true,
+          skipLibCheck: false,
+          strict: true,
+          target: "es2022",
           types: [],
         },
         files: ["consumer.ts"],
       })
     );
     await runCommand({
-      command: process.execPath,
       args: [
         join(installedDirectory, "typescript", "bin", "tsc"),
         "-p",
         "tsconfig.json",
       ],
+      command: process.execPath,
       cwd: temporaryDirectory,
     });
     const commonPath = join(
@@ -288,22 +289,20 @@ export async function verifyPackage() {
     await rename(nativeDirectory, disabledDirectory);
     try {
       const cwd = join(temporaryDirectory, "typescript-runtime-filesystem");
-      for (const args of [
-        ["check", "--format=json"],
-        ["validate"],
-        ["help"],
-        ["--version"],
-      ]) {
-        await runCommand({
-          command: process.execPath,
-          args: [installedCli, ...args],
-          cwd,
-        });
-      }
+      await Promise.all(
+        [["check", "--format=json"], ["validate"], ["help"], ["--version"]].map(
+          (args) =>
+            runCommand({
+              args: [installedCli, ...args],
+              command: process.execPath,
+              cwd,
+            })
+        )
+      );
       await assert.rejects(
         runCommand({
-          command: process.execPath,
           args: [installedCli, "check", "--format=json"],
+          command: process.execPath,
           cwd: join(temporaryDirectory, "typescript-runtime"),
         }),
         (error) =>
@@ -319,9 +318,9 @@ export async function verifyPackage() {
       `Packed packages verified on Node ${process.versions.node} (${process.platform}-${process.arch}).`
     );
   } finally {
-    await rm(temporaryDirectory, { recursive: true, force: true });
+    await rm(temporaryDirectory, { force: true, recursive: true });
     if (!hadDocs) {
-      await rm(docsDirectory, { recursive: true, force: true });
+      await rm(docsDirectory, { force: true, recursive: true });
     }
   }
 }

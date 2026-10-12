@@ -8,13 +8,13 @@ import { parseFileStructure } from "./parser.js";
 
 function createContext(): PredicateContext {
   return {
-    path: "src/index.ts",
-    placeholders: {},
-    resolveTemplate: (template) =>
-      template.replace("${scope}", "ModuleSettings"),
     directoryExists: () => false,
     fileExists: () => false,
+    path: "src/index.ts",
+    placeholders: {},
     readDir: () => [],
+    resolveTemplate: (template) =>
+      template.replace("${scope}", "ModuleSettings"),
   };
 }
 
@@ -80,8 +80,8 @@ describe("definition type constraints", () => {
       context: createContext(),
       definition: {
         schema: {
-          type: "object",
           properties: { enabled: { type: "boolean" } },
+          type: "object",
         },
       },
       fileStructure: parseFileStructure({

@@ -17,12 +17,12 @@ export function checkHaveType(opts: {
   if (expected === "file" && !isFile) {
     return [
       createDiagnostic({
+        conventionName,
         filePath: context.path,
-        predicateName: "haveType",
         message: isDir
           ? "Expected a file but found a directory"
           : "Expected a file but path does not exist",
-        conventionName,
+        predicateName: "haveType",
         severity,
       }),
     ];
@@ -31,12 +31,12 @@ export function checkHaveType(opts: {
   if (expected === "directory" && !isDir) {
     return [
       createDiagnostic({
+        conventionName,
         filePath: context.path,
-        predicateName: "haveType",
         message: isFile
           ? "Expected a directory but found a file"
           : "Expected a directory but path does not exist",
-        conventionName,
+        predicateName: "haveType",
         severity,
       }),
     ];

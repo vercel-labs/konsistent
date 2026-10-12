@@ -15,18 +15,18 @@ describe("emit command", () => {
   });
 
   afterEach(async () => {
-    await rm(temporaryDirectory, { recursive: true, force: true });
+    await rm(temporaryDirectory, { force: true, recursive: true });
     vi.restoreAllMocks();
   });
 
   it("defines its metadata and arguments", () => {
     expect(emitCommand).toMatchObject({
-      meta: { name: "emit" },
       args: {
+        cwd: { type: "string" },
         input: { default: "src/index.ts", type: "string" },
         output: { default: "dist/conventions.json", type: "string" },
-        cwd: { type: "string" },
       },
+      meta: { name: "emit" },
     });
   });
 
@@ -56,22 +56,18 @@ describe("emit command", () => {
     });
 
     const outputPath = join(temporaryDirectory, "artifacts/conventions.json");
-    await expect(readFile(outputPath, "utf8")).resolves.toBe(
-      `${JSON.stringify(
+    const output = await readFile(outputPath, "utf8");
+    expect(output.endsWith("\n")).toBe(true);
+    expect(JSON.parse(output)).toEqual({
+      conventionSpecVersion: "v1",
+      conventions: [
         {
-          conventionSpecVersion: "v1",
-          conventions: [
-            {
-              name: "package-readme",
-              description: "Packages must include a README.",
-              must: { haveFiles: ["README.md"] },
-            },
-          ],
+          description: "Packages must include a README.",
+          must: { haveFiles: ["README.md"] },
+          name: "package-readme",
         },
-        null,
-        2
-      )}\n`
-    );
+      ],
+    });
     expect(logSpy).toHaveBeenCalledWith(`Generated: ${outputPath}`);
   });
 });

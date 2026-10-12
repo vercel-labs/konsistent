@@ -6,21 +6,21 @@ import { checkExportConstants } from "./export-constants.js";
 
 function createMockContext(opts: {
   path: string;
-  placeholders?: Record<string, { toString(): string }>;
+  placeholders?: Record<string, { toString: () => string }>;
 }): PredicateContext {
   const placeholders = opts.placeholders ?? {};
   return {
+    directoryExists: () => false,
+    fileExists: () => false,
     path: opts.path,
     placeholders: placeholders as PredicateContext["placeholders"],
+    readDir: () => [],
     resolveTemplate(t: string): string {
       return t.replace(/\$\{(\w+)\}/g, (_match, name) => {
         const ph = placeholders[name];
         return ph ? ph.toString() : _match;
       });
     },
-    directoryExists: () => false,
-    fileExists: () => false,
-    readDir: () => [],
   };
 }
 
@@ -28,16 +28,16 @@ function createMockFileStructure(opts: {
   exports?: FileStructure["exports"];
 }): FileStructure {
   return {
-    exports: opts.exports ?? [],
-    imports: [],
-    interfaces: [],
-    classes: [],
     calls: [],
-    functions: [],
+    classes: [],
     constants: [],
     declarationSymbols: [],
     defaultExportSymbols: [],
+    exports: opts.exports ?? [],
+    functions: [],
     importSources: [],
+    imports: [],
+    interfaces: [],
     namedExportSymbols: [],
     nonBarrelStatements: [],
     typeAliases: [],
@@ -47,15 +47,15 @@ function createMockFileStructure(opts: {
 describe("checkExportConstants", () => {
   it("returns no diagnostics when exported constant is found", () => {
     const result = checkExportConstants({
-      expected: ["MY_CONST"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["MY_CONST"],
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: "MY_CONST",
-            kind: "const",
             isType: false,
-            pos: { line: 1, column: 1 },
+            kind: "const",
+            name: "MY_CONST",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -65,8 +65,8 @@ describe("checkExportConstants", () => {
 
   it("returns diagnostic when exported constant is missing", () => {
     const result = checkExportConstants({
-      expected: ["MY_CONST"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["MY_CONST"],
       fileStructure: createMockFileStructure({ exports: [] }),
     });
     expect(result).toHaveLength(1);
@@ -77,15 +77,15 @@ describe("checkExportConstants", () => {
 
   it("ignores non-const exports", () => {
     const result = checkExportConstants({
-      expected: ["myFunc"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["myFunc"],
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: "myFunc",
-            kind: "function",
             isType: false,
-            pos: { line: 1, column: 1 },
+            kind: "function",
+            name: "myFunc",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -96,15 +96,15 @@ describe("checkExportConstants", () => {
 
   it("ignores type exports of constants", () => {
     const result = checkExportConstants({
-      expected: ["MY_CONST"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["MY_CONST"],
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: "MY_CONST",
-            kind: "const",
             isType: true,
-            pos: { line: 1, column: 1 },
+            kind: "const",
+            name: "MY_CONST",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -115,18 +115,18 @@ describe("checkExportConstants", () => {
 
   it("resolves template placeholders", () => {
     const result = checkExportConstants({
-      expected: ["${prefix}_CONFIG"],
       context: createMockContext({
         path: "src/index.ts",
         placeholders: { prefix: { toString: () => "APP" } },
       }),
+      expected: ["${prefix}_CONFIG"],
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: "APP_CONFIG",
-            kind: "const",
             isType: false,
-            pos: { line: 1, column: 1 },
+            kind: "const",
+            name: "APP_CONFIG",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -136,11 +136,11 @@ describe("checkExportConstants", () => {
 
   it("returns diagnostic for template-expanded name when missing", () => {
     const result = checkExportConstants({
-      expected: ["${prefix}_CONFIG"],
       context: createMockContext({
         path: "src/index.ts",
         placeholders: { prefix: { toString: () => "APP" } },
       }),
+      expected: ["${prefix}_CONFIG"],
       fileStructure: createMockFileStructure({ exports: [] }),
     });
     expect(result).toHaveLength(1);
@@ -149,15 +149,15 @@ describe("checkExportConstants", () => {
 
   it("accepts ExportDefinition object form", () => {
     const result = checkExportConstants({
-      expected: [{ name: "MY_CONST" }],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ name: "MY_CONST" }],
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: "MY_CONST",
-            kind: "const",
             isType: false,
-            pos: { line: 1, column: 1 },
+            kind: "const",
+            name: "MY_CONST",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -167,26 +167,26 @@ describe("checkExportConstants", () => {
 
   it("includes conventionName when provided", () => {
     const result = checkExportConstants({
-      expected: ["missing"],
       context: createMockContext({ path: "src/index.ts" }),
-      fileStructure: createMockFileStructure({ exports: [] }),
       conventionName: "const-exports",
+      expected: ["missing"],
+      fileStructure: createMockFileStructure({ exports: [] }),
     });
     expect(result[0].conventionName).toBe("const-exports");
   });
 
   it("validates a configured constant schema", () => {
     const result = checkExportConstants({
+      context: createMockContext({ path: "src/index.ts" }),
       expected: [
         {
           name: "mode",
           schema: {
-            type: "string",
             enum: ["development", "production"],
+            type: "string",
           },
         },
       ],
-      context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseFileStructure({
         source:
           'export const mode: "development" | "production" = "development";',
@@ -197,22 +197,22 @@ describe("checkExportConstants", () => {
 
   it("validates type references in an object schema", () => {
     const result = checkExportConstants({
-      expected: [
-        {
-          name: "settings",
-          schema: {
-            type: "object",
-            properties: { auth: "${authType}" },
-            required: ["auth"],
-          },
-        },
-      ],
       context: createMockContext({
         path: "src/index.ts",
         placeholders: {
           authType: { toString: () => "Readonly<MyAuth>" },
         },
       }),
+      expected: [
+        {
+          name: "settings",
+          schema: {
+            properties: { auth: "${authType}" },
+            required: ["auth"],
+            type: "object",
+          },
+        },
+      ],
       fileStructure: parseFileStructure({
         source:
           "export const settings: { auth: Readonly<MyAuth> } = { auth: {} };",
@@ -223,18 +223,18 @@ describe("checkExportConstants", () => {
 
   it("reports an object schema mismatch", () => {
     const result = checkExportConstants({
+      context: createMockContext({ path: "src/index.ts" }),
       expected: [
         {
           name: "options",
           schema: {
-            type: "object",
+            additionalProperties: false,
             properties: { endpoint: { type: "string" } },
             required: ["endpoint"],
-            additionalProperties: false,
+            type: "object",
           },
         },
       ],
-      context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseFileStructure({
         source:
           'export const options: { endpoint: string; retries: number } = { endpoint: "", retries: 1 };',
@@ -248,11 +248,11 @@ describe("checkExportConstants", () => {
 
   it("validates an exact template-expanded type annotation", () => {
     const result = checkExportConstants({
-      expected: [{ name: "settings", type: "${name}Settings<'public'>" }],
       context: createMockContext({
         path: "src/index.ts",
         placeholders: { name: { toString: () => "Module" } },
       }),
+      expected: [{ name: "settings", type: "${name}Settings<'public'>" }],
       fileStructure: parseFileStructure({
         source:
           "export const settings: ModuleSettings<'public'> = { enabled: true };",
@@ -263,8 +263,8 @@ describe("checkExportConstants", () => {
 
   it("reports a mismatched exact type annotation", () => {
     const result = checkExportConstants({
-      expected: [{ name: "settings", type: "Readonly<ModuleSettings>" }],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ name: "settings", type: "Readonly<ModuleSettings>" }],
       fileStructure: parseFileStructure({
         source: "export const settings: ModuleSettings = {};",
       }),

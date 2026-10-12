@@ -5,12 +5,12 @@ import { checkHaveType } from "./have-type.js";
 
 function createMockContext(opts: { path: string }): PredicateContext {
   return {
-    path: opts.path,
-    placeholders: {},
-    resolveTemplate: (t: string) => t,
     directoryExists: () => false,
     fileExists: () => false,
+    path: opts.path,
+    placeholders: {},
     readDir: () => [],
+    resolveTemplate: (t: string) => t,
   };
 }
 
@@ -21,11 +21,11 @@ function createMockFileSystem(opts: {
   const files = opts.files ?? new Set<string>();
   const directories = opts.directories ?? new Set<string>();
   return {
+    directoryExists: (p: string) => directories.has(p),
+    fileExists: (p: string) => files.has(p) || directories.has(p),
     glob: async () => [],
     isDirectory: (p: string) => directories.has(p),
     isFile: (p: string) => files.has(p),
-    directoryExists: (p: string) => directories.has(p),
-    fileExists: (p: string) => files.has(p) || directories.has(p),
     readDir: () => [],
     readFile: () => "",
   };
@@ -34,8 +34,8 @@ function createMockFileSystem(opts: {
 describe("checkHaveType", () => {
   it("returns no diagnostics when file matches expected type 'file'", () => {
     const result = checkHaveType({
-      expected: "file",
       context: createMockContext({ path: "src/index.ts" }),
+      expected: "file",
       fileSystem: createMockFileSystem({ files: new Set(["src/index.ts"]) }),
     });
     expect(result).toEqual([]);
@@ -43,8 +43,8 @@ describe("checkHaveType", () => {
 
   it("returns no diagnostics when directory matches expected type 'directory'", () => {
     const result = checkHaveType({
-      expected: "directory",
       context: createMockContext({ path: "src" }),
+      expected: "directory",
       fileSystem: createMockFileSystem({ directories: new Set(["src"]) }),
     });
     expect(result).toEqual([]);
@@ -52,8 +52,8 @@ describe("checkHaveType", () => {
 
   it("returns diagnostic when expected file but found directory", () => {
     const result = checkHaveType({
-      expected: "file",
       context: createMockContext({ path: "src" }),
+      expected: "file",
       fileSystem: createMockFileSystem({ directories: new Set(["src"]) }),
     });
     expect(result).toHaveLength(1);
@@ -63,8 +63,8 @@ describe("checkHaveType", () => {
 
   it("returns diagnostic when expected directory but found file", () => {
     const result = checkHaveType({
-      expected: "directory",
       context: createMockContext({ path: "src/index.ts" }),
+      expected: "directory",
       fileSystem: createMockFileSystem({ files: new Set(["src/index.ts"]) }),
     });
     expect(result).toHaveLength(1);
@@ -73,8 +73,8 @@ describe("checkHaveType", () => {
 
   it("returns diagnostic when path does not exist (expected file)", () => {
     const result = checkHaveType({
-      expected: "file",
       context: createMockContext({ path: "missing.ts" }),
+      expected: "file",
       fileSystem: createMockFileSystem({}),
     });
     expect(result).toHaveLength(1);
@@ -83,8 +83,8 @@ describe("checkHaveType", () => {
 
   it("returns diagnostic when path does not exist (expected directory)", () => {
     const result = checkHaveType({
-      expected: "directory",
       context: createMockContext({ path: "missing" }),
+      expected: "directory",
       fileSystem: createMockFileSystem({}),
     });
     expect(result).toHaveLength(1);
@@ -95,10 +95,10 @@ describe("checkHaveType", () => {
 
   it("includes conventionName when provided", () => {
     const result = checkHaveType({
-      expected: "file",
       context: createMockContext({ path: "missing.ts" }),
-      fileSystem: createMockFileSystem({}),
       conventionName: "test-convention",
+      expected: "file",
+      fileSystem: createMockFileSystem({}),
     });
     expect(result[0].conventionName).toBe("test-convention");
   });

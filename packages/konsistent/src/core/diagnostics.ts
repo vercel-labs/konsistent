@@ -20,12 +20,12 @@ export function createDiagnostic(opts: {
   severity?: DiagnosticSeverity;
 }): Diagnostic {
   return {
-    severity: opts.severity ?? "error",
-    filePath: opts.filePath,
-    predicateName: opts.predicateName,
-    message: opts.message,
-    conventionName: opts.conventionName,
-    line: opts.line,
     column: opts.column,
+    conventionName: opts.conventionName,
+    filePath: opts.filePath,
+    line: opts.line,
+    message: opts.message,
+    predicateName: opts.predicateName,
+    severity: opts.severity ?? "error",
   };
 }

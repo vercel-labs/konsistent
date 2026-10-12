@@ -5,11 +5,11 @@ import type { FileStructure, NonBarrelStatementInfo } from "../types.js";
 
 const MESSAGES: Record<NonBarrelStatementInfo["kind"], string> = {
   declaration: "Barrel file must not contain declarations",
-  expression: "Barrel file must not contain top-level expression statements",
   "default-expression":
     "Barrel file default export must re-export an imported identifier",
-  "named-export-local": "Barrel file must only re-export imported identifiers",
   "export-equals": "Barrel file must not use `export =`",
+  expression: "Barrel file must not contain top-level expression statements",
+  "named-export-local": "Barrel file must only re-export imported identifiers",
 };
 
 export function checkAreBarrelFiles(opts: {
@@ -26,12 +26,12 @@ export function checkAreBarrelFiles(opts: {
 
   return fileStructure.nonBarrelStatements.map((entry) =>
     createDiagnostic({
-      filePath: context.path,
-      predicateName: "areBarrelFiles",
-      message: MESSAGES[entry.kind],
-      conventionName,
-      line: entry.pos.line,
       column: entry.pos.column,
+      conventionName,
+      filePath: context.path,
+      line: entry.pos.line,
+      message: MESSAGES[entry.kind],
+      predicateName: "areBarrelFiles",
       severity,
     })
   );

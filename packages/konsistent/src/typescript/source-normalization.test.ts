@@ -6,11 +6,11 @@ describe("source normalization", () => {
     const source = '/* e\u0301 café 😀 漢 */ const text = "😀";';
     const normalized = normalizeSource({ source });
     expect(normalized.text).toBe(source);
-    for (let offset = 0; offset <= source.length; offset++) {
+    for (let offset = 0; offset <= source.length; offset += 1) {
       expect(normalized.getOriginalOffset({ offset })).toBe(offset);
       expect(normalized.getPosition({ offset })).toEqual({
-        line: 1,
         column: offset + 1,
+        line: 1,
       });
     }
   });
@@ -33,8 +33,8 @@ describe("source normalization", () => {
       normalized.getOriginalOffset({ offset: normalized.text.length })
     ).toBe(source.length);
     expect(normalized.getPosition({ offset: 0 })).toEqual({
-      line: 1,
       column: 2,
+      line: 1,
     });
   });
 
@@ -49,17 +49,17 @@ describe("source normalization", () => {
       ["end", 6],
     ] as const) {
       expect(normalized.getPosition({ offset: source.indexOf(text) })).toEqual({
-        line,
         column: 1,
+        line,
       });
     }
     expect(normalized.getPosition({ offset: 2 })).toEqual({
-      line: 1,
       column: 3,
+      line: 1,
     });
     expect(normalizeSource({ source: "" }).getPosition({ offset: 0 })).toEqual({
-      line: 1,
       column: 1,
+      line: 1,
     });
   });
 });

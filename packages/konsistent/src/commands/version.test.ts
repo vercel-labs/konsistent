@@ -13,8 +13,8 @@ afterEach(() => {
 describe("version command", () => {
   it("defines metadata and arguments", () => {
     expect(versionCommand).toMatchObject({
-      meta: { name: "version" },
       args: {},
+      meta: { name: "version" },
     });
   });
 

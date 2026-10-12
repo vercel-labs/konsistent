@@ -32,34 +32,40 @@ afterEach(() => {
 
 describe("check command", () => {
   it.each([
-    { signal: "SIGINT" as const, exitCode: 130 },
-    { signal: "SIGTERM" as const, exitCode: 143 },
-  ])("closes the session before exiting on $signal", async ({
-    signal,
-    exitCode,
-  }) => {
-    vi.spyOn(process, "cwd").mockReturnValue(emptyConfigPath);
-    const session = nativeSession.createTypeScriptSession();
-    const close = vi.spyOn(session, "close");
-    vi.spyOn(nativeSession, "createTypeScriptSession").mockReturnValue(session);
-    const exit = vi
-      .spyOn(process, "exit")
-      .mockImplementation(() => undefined as never);
-    const originalListeners = process.listenerCount(signal);
-    vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-    vi.spyOn(runner, "run").mockImplementation(() => {
-      const listener = process.listeners(signal).at(-1);
-      expect(listener).toBeDefined();
-      listener?.call(process, signal);
-      return Promise.resolve({ diagnostics: [], filesChecked: 0, elapsed: 0 });
-    });
-    await runCommand(checkCommand, { rawArgs: [] });
-    expect(exit).toHaveBeenCalledWith(exitCode);
-    expect(close.mock.invocationCallOrder[0]).toBeLessThan(
-      exit.mock.invocationCallOrder[0]
-    );
-    expect(process.listenerCount(signal)).toBe(originalListeners);
-  });
+    { exitCode: 130, signal: "SIGINT" as const },
+    { exitCode: 143, signal: "SIGTERM" as const },
+  ])(
+    "closes the session before exiting on $signal",
+    async ({ signal, exitCode }) => {
+      vi.spyOn(process, "cwd").mockReturnValue(emptyConfigPath);
+      const session = nativeSession.createTypeScriptSession();
+      const close = vi.spyOn(session, "close");
+      vi.spyOn(nativeSession, "createTypeScriptSession").mockReturnValue(
+        session
+      );
+      const exit = vi
+        .spyOn(process, "exit")
+        .mockImplementation(() => undefined as never);
+      const originalListeners = process.listenerCount(signal);
+      vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+      vi.spyOn(runner, "run").mockImplementation(() => {
+        const listener = process.listeners(signal).at(-1);
+        expect(listener).toBeDefined();
+        listener?.call(process, signal);
+        return Promise.resolve({
+          diagnostics: [],
+          elapsed: 0,
+          filesChecked: 0,
+        });
+      });
+      await runCommand(checkCommand, { rawArgs: [] });
+      expect(exit).toHaveBeenCalledWith(exitCode);
+      expect(close.mock.invocationCallOrder[0]).toBeLessThan(
+        exit.mock.invocationCallOrder[0]
+      );
+      expect(process.listenerCount(signal)).toBe(originalListeners);
+    }
+  );
 
   it("closes the session before reporting and removes scoped signal handlers", async () => {
     vi.spyOn(process, "cwd").mockReturnValue(emptyConfigPath);
@@ -103,7 +109,7 @@ describe("check command", () => {
   });
 
   it("defines metadata and arguments", () => {
-    expect(checkCommand).toMatchObject({ meta: { name: "check" }, args: {} });
+    expect(checkCommand).toMatchObject({ args: {}, meta: { name: "check" } });
   });
 
   it("runs without error on valid config", async () => {

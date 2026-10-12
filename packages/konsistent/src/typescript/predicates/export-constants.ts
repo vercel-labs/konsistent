@@ -27,10 +27,10 @@ export function checkExportConstants(opts: {
     if (!found) {
       diagnostics.push(
         createDiagnostic({
-          filePath: context.path,
-          predicateName: "exportConstants",
-          message: `Missing export constant "${resolvedName}"`,
           conventionName,
+          filePath: context.path,
+          message: `Missing export constant "${resolvedName}"`,
+          predicateName: "exportConstants",
           severity,
         })
       );

@@ -16,14 +16,14 @@ function createMockFileSystem(opts: {
   const files = opts.files ?? new Set<string>();
   const directories = opts.directories ?? new Set<string>();
   return {
+    directoryExists: (p: string) => directories.has(p),
+    fileExists: (p: string) => files.has(p) || directories.has(p),
     glob(patterns: string[]): Promise<string[]> {
       const key = patterns.sort().join(",");
       return Promise.resolve(globResults.get(key) ?? []);
     },
     isDirectory: (p: string) => directories.has(p),
     isFile: (p: string) => files.has(p),
-    directoryExists: (p: string) => directories.has(p),
-    fileExists: (p: string) => files.has(p) || directories.has(p),
     readDir: () => [],
     readFile: () => "",
   };
@@ -76,9 +76,9 @@ describe("matchPaths", () => {
     const fs = createMockFileSystem({});
     const globSpy = vi.spyOn(fs, "glob");
     const results = await matchPaths({
-      patterns: ["src/**/*.ts"],
-      fileSystem: fs,
       candidatePaths: ["src/index.ts", "src/nested/util.ts", "test/index.ts"],
+      fileSystem: fs,
+      patterns: ["src/**/*.ts"],
     });
 
     expect(results.map((result) => result.path)).toEqual([
@@ -105,13 +105,13 @@ describe("matchPaths", () => {
     ];
 
     const fullResults = await matchPaths({
-      patterns: ["components/[!B]*/**"],
       fileSystem: fs,
+      patterns: ["components/[!B]*/**"],
     });
     const boundedResults = await matchPaths({
-      patterns: ["components/[!B]*/**"],
-      fileSystem: fs,
       candidatePaths,
+      fileSystem: fs,
+      patterns: ["components/[!B]*/**"],
     });
 
     expect(boundedResults).toEqual(fullResults);
@@ -121,14 +121,14 @@ describe("matchPaths", () => {
     const fs = createMockFileSystem({});
     const globSpy = vi.spyOn(fs, "glob");
     const results = await matchPaths({
-      patterns: ["components/{componentName}"],
-      fileSystem: fs,
       candidatePaths: [
         ".",
         "components",
         "components/Button",
         "components/Button/Button.tsx",
       ],
+      fileSystem: fs,
+      patterns: ["components/{componentName}"],
     });
 
     expect(results).toHaveLength(1);
@@ -141,9 +141,9 @@ describe("matchPaths", () => {
     const fs = createMockFileSystem({});
     const globSpy = vi.spyOn(fs, "glob");
     const results = await matchPaths({
-      patterns: ["packages/**/*.ts", "!packages/generated"],
-      fileSystem: fs,
       candidatePaths: ["packages/core/index.ts", "packages/generated/index.ts"],
+      fileSystem: fs,
+      patterns: ["packages/**/*.ts", "!packages/generated"],
     });
 
     expect(results.map((result) => result.path)).toEqual([
@@ -155,12 +155,12 @@ describe("matchPaths", () => {
   it("applies POSIX character classes in bounded negative patterns", async () => {
     const fs = createMockFileSystem({});
     const results = await matchPaths({
-      patterns: ["components/**", "!components/[!B]*"],
-      fileSystem: fs,
       candidatePaths: [
         "components/Button/Button.tsx",
         "components/Input/Input.tsx",
       ],
+      fileSystem: fs,
+      patterns: ["components/**", "!components/[!B]*"],
     });
 
     expect(results.map((result) => result.path)).toEqual([
@@ -172,9 +172,9 @@ describe("matchPaths", () => {
     const fs = createMockFileSystem({});
     const globSpy = vi.spyOn(fs, "glob");
     const results = await matchPaths({
-      patterns: ["src/**/*.ts"],
-      fileSystem: fs,
       candidatePaths: [],
+      fileSystem: fs,
+      patterns: ["src/**/*.ts"],
     });
 
     expect(results).toEqual([]);
@@ -186,8 +186,8 @@ describe("matchPaths", () => {
       globResults: new Map([["src/**/*.ts", ["src/index.ts", "src/utils.ts"]]]),
     });
     const results = await matchPaths({
-      patterns: ["src/**/*.ts"],
       fileSystem: fs,
+      patterns: ["src/**/*.ts"],
     });
     expect(results).toHaveLength(2);
     expect(results[0].placeholders).toEqual({});
@@ -203,8 +203,8 @@ describe("matchPaths", () => {
       ]),
     });
     const results = await matchPaths({
-      patterns: ["plugins/{pluginName}/index.ts"],
       fileSystem: fs,
+      patterns: ["plugins/{pluginName}/index.ts"],
     });
     expect(results).toHaveLength(2);
     expect(results[0].placeholders.pluginName.toString()).toBe("auth");
@@ -216,8 +216,8 @@ describe("matchPaths", () => {
       globResults: new Map([["*/*/src", ["packages/openai/src"]]]),
     });
     const results = await matchPaths({
-      patterns: ["{scope}/{name}/src"],
       fileSystem: fs,
+      patterns: ["{scope}/{name}/src"],
     });
     expect(results).toHaveLength(1);
     expect(results[0].placeholders.scope.toString()).toBe("packages");
@@ -229,8 +229,8 @@ describe("matchPaths", () => {
       globResults: new Map([["plugins/*", ["plugins/auth.v2"]]]),
     });
     const results = await matchPaths({
-      patterns: ["plugins/{name}"],
       fileSystem: fs,
+      patterns: ["plugins/{name}"],
     });
     expect(results).toHaveLength(0);
   });
@@ -240,8 +240,8 @@ describe("matchPaths", () => {
       globResults: new Map([["*/*", ["foo/bar"]]]),
     });
     const results = await matchPaths({
-      patterns: ["{name}/{name}"],
       fileSystem: fs,
+      patterns: ["{name}/{name}"],
     });
     expect(results).toHaveLength(0);
   });
@@ -251,8 +251,8 @@ describe("matchPaths", () => {
       globResults: new Map([["*/*", ["auth/auth"]]]),
     });
     const results = await matchPaths({
-      patterns: ["{name}/{name}"],
       fileSystem: fs,
+      patterns: ["{name}/{name}"],
     });
     expect(results).toHaveLength(1);
     expect(results[0].placeholders.name.toString()).toBe("auth");
@@ -276,11 +276,11 @@ describe("matchPaths", () => {
       ]),
     });
     const results = await matchPaths({
+      fileSystem: fs,
       patterns: [
         "packages/{packageName}/src/index.ts",
         "!packages/test-utils/src/index.ts",
       ],
-      fileSystem: fs,
     });
     expect(results).toHaveLength(2);
     expect(results[0].path).toBe("packages/cli/src/index.ts");
@@ -302,11 +302,11 @@ describe("matchPaths", () => {
       ]),
     });
     const results = await matchPaths({
+      fileSystem: fs,
       patterns: [
         "plugins/{pluginName}/index.ts",
         "!plugins/{pluginName}/index.ts",
       ],
-      fileSystem: fs,
     });
     expect(results).toHaveLength(0);
   });
@@ -326,8 +326,8 @@ describe("matchPaths", () => {
       ]),
     });
     const results = await matchPaths({
-      patterns: ["packages/{providerId}/src/index.ts", "!packages/ai"],
       fileSystem: fs,
+      patterns: ["packages/{providerId}/src/index.ts", "!packages/ai"],
     });
     expect(results).toHaveLength(2);
     expect(results[0].path).toBe("packages/openai/src/index.ts");
@@ -339,8 +339,8 @@ describe("matchPaths", () => {
       globResults: new Map([["src/nothing.ts", ["src/nothing.ts"]]]),
     });
     const results = await matchPaths({
-      patterns: ["!src/nothing.ts"],
       fileSystem: fs,
+      patterns: ["!src/nothing.ts"],
     });
     expect(results).toHaveLength(0);
   });
@@ -359,8 +359,8 @@ describe("matchPaths", () => {
       ]),
     });
     const results = await matchPaths({
-      patterns: ["src/openai-{modelKind:segments(1)}-model.ts"],
       fileSystem: fs,
+      patterns: ["src/openai-{modelKind:segments(1)}-model.ts"],
     });
     expect(results).toHaveLength(2);
     expect(results[0].placeholders.modelKind.toString()).toBe("chat");
@@ -381,8 +381,8 @@ describe("matchPaths", () => {
       ]),
     });
     const results = await matchPaths({
-      patterns: ["src/openai-{modelKind:segments(2)}-model.ts"],
       fileSystem: fs,
+      patterns: ["src/openai-{modelKind:segments(2)}-model.ts"],
     });
     expect(results).toHaveLength(1);
     expect(results[0].placeholders.modelKind.toString()).toBe("chat-language");
@@ -395,8 +395,8 @@ describe("matchPaths", () => {
       ]),
     });
     const results = await matchPaths({
-      patterns: ["plugins/{pluginName}/models/{modelName:segments(2)}"],
       fileSystem: fs,
+      patterns: ["plugins/{pluginName}/models/{modelName:segments(2)}"],
     });
     expect(results).toHaveLength(1);
     expect(results[0].placeholders.pluginName.toString()).toBe("auth");
@@ -413,8 +413,8 @@ describe("matchPaths", () => {
       ]),
     });
     const results = await matchPaths({
-      patterns: ["packages/{providerId:matches(^[a-z]+ai$)}"],
       fileSystem: fs,
+      patterns: ["packages/{providerId:matches(^[a-z]+ai$)}"],
     });
     expect(results).toHaveLength(2);
     expect(results[0].placeholders.providerId.toString()).toBe("openai");
@@ -426,8 +426,8 @@ describe("matchPaths", () => {
       globResults: new Map([["packages/*", ["packages/google"]]]),
     });
     const results = await matchPaths({
-      patterns: ["packages/{providerId:matches(^[a-z]+ai$)}"],
       fileSystem: fs,
+      patterns: ["packages/{providerId:matches(^[a-z]+ai$)}"],
     });
     expect(results).toHaveLength(0);
   });
@@ -446,16 +446,16 @@ describe("matchPaths", () => {
       ]),
     });
     const seg1 = await matchPaths({
-      patterns: ["src/*/openai-{modelKind:segments(1)}-model.ts"],
       fileSystem: fs,
+      patterns: ["src/*/openai-{modelKind:segments(1)}-model.ts"],
     });
     expect(seg1).toHaveLength(2);
     expect(seg1[0].placeholders.modelKind.toString()).toBe("chat");
     expect(seg1[1].placeholders.modelKind.toString()).toBe("image");
 
     const seg2 = await matchPaths({
-      patterns: ["src/*/openai-{modelKind:segments(2)}-model.ts"],
       fileSystem: fs,
+      patterns: ["src/*/openai-{modelKind:segments(2)}-model.ts"],
     });
     expect(seg2).toHaveLength(1);
     expect(seg2[0].placeholders.modelKind.toString()).toBe(
@@ -470,8 +470,8 @@ describe("matchPaths", () => {
       ]),
     });
     const results = await matchPaths({
-      patterns: ["src/*/index.ts"],
       fileSystem: fs,
+      patterns: ["src/*/index.ts"],
     });
     expect(results).toHaveLength(2);
   });
@@ -486,8 +486,8 @@ describe("matchPaths", () => {
       ]),
     });
     const results = await matchPaths({
-      patterns: ["src/openai-{modelKind}-model.ts"],
       fileSystem: fs,
+      patterns: ["src/openai-{modelKind}-model.ts"],
     });
     expect(results).toHaveLength(2);
   });
@@ -499,8 +499,8 @@ describe("matchPaths", () => {
       ]),
     });
     const results = await matchPaths({
-      patterns: ["deep/**/*.ts"],
       fileSystem: fs,
+      patterns: ["deep/**/*.ts"],
     });
     expect(results).toHaveLength(3);
     expect(results.every((r) => Object.keys(r.placeholders).length === 0)).toBe(
@@ -515,8 +515,8 @@ describe("matchPaths", () => {
       ]),
     });
     const results = await matchPaths({
-      patterns: ["deep/**/{name}.ts"],
       fileSystem: fs,
+      patterns: ["deep/**/{name}.ts"],
     });
     expect(results).toHaveLength(3);
 
@@ -535,8 +535,8 @@ describe("matchPaths", () => {
       ]),
     });
     const results = await matchPaths({
-      patterns: ["deep/**/{name}/{name}.ts"],
       fileSystem: fs,
+      patterns: ["deep/**/{name}/{name}.ts"],
     });
     expect(results).toHaveLength(1);
     expect(results[0].path).toBe("deep/a/b/auth/auth.ts");
@@ -548,8 +548,8 @@ describe("matchPaths", () => {
       globResults: new Map([["*/**/*/**/*.ts", ["foo/bar/foo/nested/baz.ts"]]]),
     });
     const results = await matchPaths({
-      patterns: ["{name}/**/{name}/**/*.ts"],
       fileSystem: fs,
+      patterns: ["{name}/**/{name}/**/*.ts"],
     });
     expect(results).toHaveLength(1);
     expect(results[0].path).toBe("foo/bar/foo/nested/baz.ts");
@@ -561,8 +561,8 @@ describe("matchesPathPattern", () => {
   it("matches a **/ prefixed pattern against a nested file", () => {
     expect(
       matchesPathPattern({
-        pattern: "**/__test-env-tdd-state.ts",
         filePath: "foo/__test-env-tdd-state.ts",
+        pattern: "**/__test-env-tdd-state.ts",
       })
     ).toBe(true);
   });
@@ -570,8 +570,8 @@ describe("matchesPathPattern", () => {
   it("matches a **/ prefixed pattern regardless of nesting depth", () => {
     expect(
       matchesPathPattern({
-        pattern: "**/__test-env-tdd-state.ts",
         filePath: "foo/bar/baz/__test-env-tdd-state.ts",
+        pattern: "**/__test-env-tdd-state.ts",
       })
     ).toBe(true);
   });
@@ -579,8 +579,8 @@ describe("matchesPathPattern", () => {
   it("matches a **/ prefixed pattern at the root (zero intermediate segments)", () => {
     expect(
       matchesPathPattern({
-        pattern: "**/*.test.ts",
         filePath: "foo.test.ts",
+        pattern: "**/*.test.ts",
       })
     ).toBe(true);
   });
@@ -588,8 +588,8 @@ describe("matchesPathPattern", () => {
   it("matches a trailing ** pattern against any nested file", () => {
     expect(
       matchesPathPattern({
-        pattern: "src/internal/**",
         filePath: "src/internal/deep/file.ts",
+        pattern: "src/internal/**",
       })
     ).toBe(true);
   });
@@ -597,8 +597,8 @@ describe("matchesPathPattern", () => {
   it("does not match unrelated paths", () => {
     expect(
       matchesPathPattern({
-        pattern: "**/__test-env-tdd-state.ts",
         filePath: "foo/other.ts",
+        pattern: "**/__test-env-tdd-state.ts",
       })
     ).toBe(false);
   });
@@ -606,8 +606,8 @@ describe("matchesPathPattern", () => {
   it("still matches exact literal paths without wildcards", () => {
     expect(
       matchesPathPattern({
-        pattern: "src/internal.ts",
         filePath: "src/internal.ts",
+        pattern: "src/internal.ts",
       })
     ).toBe(true);
   });
@@ -615,14 +615,14 @@ describe("matchesPathPattern", () => {
   it("matches brace alternation against each listed branch", () => {
     expect(
       matchesPathPattern({
-        pattern: "src/{test,spec}.ts",
         filePath: "src/test.ts",
+        pattern: "src/{test,spec}.ts",
       })
     ).toBe(true);
     expect(
       matchesPathPattern({
-        pattern: "src/{test,spec}.ts",
         filePath: "src/spec.ts",
+        pattern: "src/{test,spec}.ts",
       })
     ).toBe(true);
   });
@@ -630,8 +630,8 @@ describe("matchesPathPattern", () => {
   it("does not match brace alternation against a branch not listed", () => {
     expect(
       matchesPathPattern({
-        pattern: "src/{test,spec}.ts",
         filePath: "src/other.ts",
+        pattern: "src/{test,spec}.ts",
       })
     ).toBe(false);
   });
@@ -639,14 +639,14 @@ describe("matchesPathPattern", () => {
   it("matches a character class against members of the class", () => {
     expect(
       matchesPathPattern({
-        pattern: "src/[ab]*.ts",
         filePath: "src/afile.ts",
+        pattern: "src/[ab]*.ts",
       })
     ).toBe(true);
     expect(
       matchesPathPattern({
-        pattern: "src/[ab]*.ts",
         filePath: "src/bfile.ts",
+        pattern: "src/[ab]*.ts",
       })
     ).toBe(true);
   });
@@ -654,8 +654,8 @@ describe("matchesPathPattern", () => {
   it("rejects a character class match outside the class", () => {
     expect(
       matchesPathPattern({
-        pattern: "src/[ab]*.ts",
         filePath: "src/cfile.ts",
+        pattern: "src/[ab]*.ts",
       })
     ).toBe(false);
   });
@@ -665,8 +665,8 @@ describe("matchesPathPattern", () => {
     // a wildcard, so this must not match a differing literal value.
     expect(
       matchesPathPattern({
-        pattern: "src/{file}.ts",
         filePath: "src/runner.ts",
+        pattern: "src/{file}.ts",
       })
     ).toBe(false);
   });
@@ -677,14 +677,14 @@ describe("matchesPathPattern", () => {
     // literal member of the class.
     expect(
       matchesPathPattern({
-        pattern: "src/[!ab]*.ts",
         filePath: "src/cfile.ts",
+        pattern: "src/[!ab]*.ts",
       })
     ).toBe(true);
     expect(
       matchesPathPattern({
-        pattern: "src/[!ab]*.ts",
         filePath: "src/afile.ts",
+        pattern: "src/[!ab]*.ts",
       })
     ).toBe(false);
   });

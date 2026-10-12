@@ -47,7 +47,7 @@ describe("cli-placeholder-override fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number;
+        code: number | null;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -74,7 +74,7 @@ describe("cli-placeholder-override fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number;
+        code: number | null;
         status: number;
       };
       expect(error.code ?? error.status).not.toBe(0);
@@ -93,7 +93,11 @@ describe("cli-placeholder-override fixture", () => {
       });
       expect.fail("Expected check to exit with a non-zero code");
     } catch (err: unknown) {
-      const error = err as { stderr: string; code: number; status: number };
+      const error = err as {
+        stderr: string;
+        code: number | null;
+        status: number;
+      };
       expect(error.code ?? error.status).not.toBe(0);
       expect(error.stderr).toContain('Invalid --placeholder "no-colon-here"');
     }
@@ -111,7 +115,7 @@ describe("convention-placeholders-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number;
+        code: number | null;
         status: number;
       };
       expect(error.code ?? error.status).not.toBe(0);

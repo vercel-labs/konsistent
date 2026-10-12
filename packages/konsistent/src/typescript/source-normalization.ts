@@ -1,18 +1,18 @@
 import type { SourcePosition } from "./types.js";
 
 export interface NormalizedSource {
-  getOriginalOffset(opts: { offset: number }): number;
-  getPosition(opts: { offset: number }): SourcePosition;
+  getOriginalOffset: (opts: { offset: number }) => number;
+  getPosition: (opts: { offset: number }) => SourcePosition;
   text: string;
 }
 
 function getLineStarts(source: string): number[] {
   const lineStarts = [0];
-  for (let index = 0; index < source.length; index++) {
+  for (let index = 0; index < source.length; index += 1) {
     const code = source.charCodeAt(index);
     if (code === 13 && source.charCodeAt(index + 1) === 10) {
       lineStarts.push(index + 2);
-      index++;
+      index += 1;
     } else if (
       code === 10 ||
       code === 13 ||
@@ -38,7 +38,7 @@ export function normalizeSource(opts: { source: string }): NormalizedSource {
   const parts: string[] = [];
   const lineStarts = getLineStarts(source);
 
-  for (let index = start; index < source.length; index++) {
+  for (let index = start; index < source.length; index += 1) {
     const code = source.charCodeAt(index);
     const next = source.charCodeAt(index + 1);
     const previous = source.charCodeAt(index - 1);
@@ -53,7 +53,7 @@ export function normalizeSource(opts: { source: string }): NormalizedSource {
     const replacement =
       loneHigh || loneLow ? `\\u${code.toString(16)}` : source[index];
     parts.push(replacement);
-    for (let part = 0; part < replacement.length; part++) {
+    for (let part = 0; part < replacement.length; part += 1) {
       offsets.push(part === replacement.length - 1 ? index + 1 : index);
     }
   }
@@ -63,7 +63,6 @@ export function normalizeSource(opts: { source: string }): NormalizedSource {
   }
 
   return {
-    text: parts.join(""),
     getOriginalOffset,
     getPosition({ offset }): SourcePosition {
       const originalOffset = getOriginalOffset({ offset });
@@ -77,7 +76,8 @@ export function normalizeSource(opts: { source: string }): NormalizedSource {
           high = middle;
         }
       }
-      return { line: low + 1, column: originalOffset - lineStarts[low] + 1 };
+      return { column: originalOffset - lineStarts[low] + 1, line: low + 1 };
     },
+    text: parts.join(""),
   };
 }

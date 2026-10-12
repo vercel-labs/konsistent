@@ -9,14 +9,14 @@ export function parseRepeatedStringOption(opts: {
   const values: string[] = [];
   const assignmentPrefix = `${opts.name}=`;
 
-  for (let index = 0; index < opts.rawArgs.length; index++) {
+  for (let index = 0; index < opts.rawArgs.length; index += 1) {
     const arg = opts.rawArgs[index];
     if (arg.startsWith(assignmentPrefix)) {
       const value = arg.slice(assignmentPrefix.length);
       if (value.length === 0) {
         return {
-          success: false,
           error: `${opts.name} requires a non-empty value`,
+          success: false,
         };
       }
       values.push(value);
@@ -30,12 +30,12 @@ export function parseRepeatedStringOption(opts: {
     const value = opts.rawArgs[index + 1];
     if (value === undefined || value.length === 0 || value.startsWith("-")) {
       return {
-        success: false,
         error: `${opts.name} requires a non-empty value`,
+        success: false,
       };
     }
     values.push(value);
-    index++;
+    index += 1;
   }
 
   return { success: true, values };

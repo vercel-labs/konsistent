@@ -37,15 +37,15 @@ async function createFixtureCopy(): Promise<string> {
 
 async function createGitFixture(opts: { commit: boolean }): Promise<string> {
   const cwd = await createFixtureCopy();
-  await runGit({ cwd, args: ["init", "--quiet"] });
-  await runGit({ cwd, args: ["config", "user.email", "test@example.com"] });
-  await runGit({ cwd, args: ["config", "user.name", "Konsistent Tests"] });
-  await runGit({ cwd, args: ["config", "commit.gpgSign", "false"] });
+  await runGit({ args: ["init", "--quiet"], cwd });
+  await runGit({ args: ["config", "user.email", "test@example.com"], cwd });
+  await runGit({ args: ["config", "user.name", "Konsistent Tests"], cwd });
+  await runGit({ args: ["config", "commit.gpgSign", "false"], cwd });
   if (opts.commit) {
-    await runGit({ cwd, args: ["add", "."] });
+    await runGit({ args: ["add", "."], cwd });
     await runGit({
-      cwd,
       args: ["commit", "--quiet", "-m", "Initial fixture"],
+      cwd,
     });
   }
   return cwd;
@@ -54,7 +54,7 @@ async function createGitFixture(opts: { commit: boolean }): Promise<string> {
 afterEach(async () => {
   await Promise.all(
     [...temporaryDirectories].map((path) =>
-      rm(path, { recursive: true, force: true })
+      rm(path, { force: true, recursive: true })
     )
   );
   temporaryDirectories.clear();
@@ -63,8 +63,8 @@ afterEach(async () => {
 describe("--paths", () => {
   it("restricts directory conventions to selected file descendants", async () => {
     const result = await runCli({
-      cwd: fixturePath,
       args: ["--paths", "components/Button/Button.tsx"],
+      cwd: fixturePath,
     });
 
     expect(result.stdout).toContain("No violations found");
@@ -74,13 +74,13 @@ describe("--paths", () => {
   it("accepts repeated concrete paths and glob patterns", async () => {
     await expect(
       runCli({
-        cwd: fixturePath,
         args: [
           "check",
           "--paths",
           "components/Button/Button.tsx",
           "--paths=components/Input/*.test.tsx",
         ],
+        cwd: fixturePath,
       })
     ).rejects.toMatchObject({
       stdout: expect.stringContaining("components/Input/Input.test.tsx"),
@@ -89,15 +89,15 @@ describe("--paths", () => {
 
   it("matches bounded conventions with POSIX character classes", async () => {
     const buttonResult = await runCli({
-      cwd: fixturePath,
       args: ["check", "--paths", "components/Button/Button.tsx"],
+      cwd: fixturePath,
     });
 
     expect(buttonResult.stdout).toContain("No violations found");
     await expect(
       runCli({
-        cwd: fixturePath,
         args: ["check", "--paths", "components/Input/Input.tsx"],
+        cwd: fixturePath,
       })
     ).rejects.toMatchObject({
       stdout: expect.stringContaining("[non-button-component]"),
@@ -107,7 +107,6 @@ describe("--paths", () => {
   it("applies POSIX character classes in negative selectors", async () => {
     try {
       await runCli({
-        cwd: fixturePath,
         args: [
           "check",
           "--paths",
@@ -115,6 +114,7 @@ describe("--paths", () => {
           "--paths",
           "!components/[!B]*/**",
         ],
+        cwd: fixturePath,
       });
       expect.fail(
         "Expected the selected Button test file to report violations"
@@ -128,7 +128,7 @@ describe("--paths", () => {
 
   it("rejects a separately supplied empty path", async () => {
     await expect(
-      runCli({ cwd: fixturePath, args: ["check", "--paths", ""] })
+      runCli({ args: ["check", "--paths", ""], cwd: fixturePath })
     ).rejects.toMatchObject({
       stderr: expect.stringContaining("--paths requires a non-empty value"),
     });
@@ -136,8 +136,8 @@ describe("--paths", () => {
 
   it("warns without failing when no paths match", async () => {
     const result = await runCli({
-      cwd: fixturePath,
       args: ["check", "--paths", "missing/**/*.ts"],
+      cwd: fixturePath,
     });
 
     expect(result.stderr).toContain("No paths matched --paths");
@@ -146,7 +146,6 @@ describe("--paths", () => {
 
   it("keeps empty-selection warnings out of JSON stdout", async () => {
     const result = await runCli({
-      cwd: fixturePath,
       args: [
         "check",
         "--paths",
@@ -155,6 +154,7 @@ describe("--paths", () => {
         "json",
         "--error-on-warnings",
       ],
+      cwd: fixturePath,
     });
 
     expect(JSON.parse(result.stdout)).toEqual([]);
@@ -168,7 +168,7 @@ describe("Git path selection", () => {
     ["--modified", "No modified files found"],
   ])("warns without failing when %s selects nothing", async (flag, warning) => {
     const cwd = await createGitFixture({ commit: true });
-    const result = await runCli({ cwd, args: ["check", flag] });
+    const result = await runCli({ args: ["check", flag], cwd });
 
     expect(result.stderr).toContain(warning);
     expect(result.stdout).toContain("Checked 0 files");
@@ -178,7 +178,7 @@ describe("Git path selection", () => {
     const cwd = await createFixtureCopy();
 
     await expect(
-      runCli({ cwd, args: ["check", "--staged"] })
+      runCli({ args: ["check", "--staged"], cwd })
     ).rejects.toMatchObject({
       stderr: expect.stringContaining("not a git repository"),
     });
@@ -188,14 +188,14 @@ describe("Git path selection", () => {
     const cwd = await createGitFixture({ commit: false });
 
     await expect(
-      runCli({ cwd, args: ["check", "--modified"] })
+      runCli({ args: ["check", "--modified"], cwd })
     ).rejects.toMatchObject({
       stdout: expect.stringContaining("components/Button/Button.test.tsx"),
     });
 
-    await runGit({ cwd, args: ["add", "components/Button/Button.test.tsx"] });
+    await runGit({ args: ["add", "components/Button/Button.test.tsx"], cwd });
     await expect(
-      runCli({ cwd, args: ["check", "--staged"] })
+      runCli({ args: ["check", "--staged"], cwd })
     ).rejects.toMatchObject({
       stdout: expect.stringContaining("components/Button/Button.test.tsx"),
     });
@@ -210,7 +210,7 @@ describe("Git path selection", () => {
     );
 
     await expect(
-      runCli({ cwd: componentsCwd, args: ["check", "--modified"] })
+      runCli({ args: ["check", "--modified"], cwd: componentsCwd })
     ).rejects.toMatchObject({
       stdout: expect.stringContaining("Input/Input.test.tsx"),
     });
@@ -221,7 +221,7 @@ describe("Git path selection", () => {
     const buttonTest = join(cwd, "components/Button/Button.test.tsx");
     const inputTest = join(cwd, "components/Input/Input.test.tsx");
     await writeFile(buttonTest, "export const describe = true;\n");
-    await runGit({ cwd, args: ["add", "components/Button/Button.test.tsx"] });
+    await runGit({ args: ["add", "components/Button/Button.test.tsx"], cwd });
     await writeFile(buttonTest, "export const test = false;\n");
     await writeFile(inputTest, "export const inputTest = true;\n");
 
@@ -246,13 +246,13 @@ describe("Git path selection", () => {
     );
 
     await expect(
-      runCli({ cwd, args: ["check", "--staged"] })
+      runCli({ args: ["check", "--staged"], cwd })
     ).rejects.toMatchObject({
       stdout: expect.stringContaining("components/Button/Button.test.tsx"),
     });
 
     try {
-      await runCli({ cwd, args: ["check", "--modified"] });
+      await runCli({ args: ["check", "--modified"], cwd });
       expect.fail("Expected modified files to report violations");
     } catch (error: unknown) {
       const result = error as { stdout: string };

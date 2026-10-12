@@ -16,10 +16,10 @@ export function checkHaveFiles(opts: {
     if (!context.fileExists(resolved)) {
       diagnostics.push(
         createDiagnostic({
-          filePath: context.path,
-          predicateName: "haveFiles",
-          message: `Missing required file: ${resolved}`,
           conventionName,
+          filePath: context.path,
+          message: `Missing required file: ${resolved}`,
+          predicateName: "haveFiles",
           severity,
         })
       );

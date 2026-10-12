@@ -4,8 +4,8 @@ import { z } from "zod";
 import { ConfigV1Schema } from "../src/config/schema.js";
 
 const jsonSchema = z.toJSONSchema(ConfigV1Schema, {
-  target: "draft-7",
   reused: "inline",
+  target: "draft-7",
 }) as Record<string, unknown>;
 
 jsonSchema.$schema = "http://json-schema.org/draft-07/schema#";

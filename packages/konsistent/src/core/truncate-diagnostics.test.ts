@@ -7,10 +7,10 @@ import {
 
 function makeDiag(msg: string): Diagnostic {
   return {
-    severity: "error",
     filePath: "src/foo.ts",
-    predicateName: "haveType",
     message: msg,
+    predicateName: "haveType",
+    severity: "error",
   };
 }
 

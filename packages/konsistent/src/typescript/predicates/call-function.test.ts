@@ -8,29 +8,29 @@ function createContext(opts: {
 }): PredicateContext {
   const placeholders = opts.placeholders ?? {};
   return {
+    directoryExists: () => false,
+    fileExists: () => false,
     path: "src/index.ts",
     placeholders: {} as PredicateContext["placeholders"],
+    readDir: () => [],
     resolveTemplate(template: string): string {
       return template.replace(
         /\$\{(\w+)\}/g,
         (match, name: string) => placeholders[name] ?? match
       );
     },
-    directoryExists: () => false,
-    fileExists: () => false,
-    readDir: () => [],
   };
 }
 
 function parseSource(opts: { source: string }) {
-  return parseFileStructure({ source: opts.source, filePath: "src/index.ts" });
+  return parseFileStructure({ filePath: "src/index.ts", source: opts.source });
 }
 
 describe("checkCallFunction", () => {
   it("matches local, imported, and member calls by local call spelling", () => {
     const result = checkCallFunction({
-      expected: ["initialize", "dispatch", "send"],
       context: createContext({}),
+      expected: ["initialize", "dispatch", "send"],
       fileStructure: parseSource({
         source: [
           'import { send as dispatch } from "./api";',
@@ -48,28 +48,28 @@ describe("checkCallFunction", () => {
 
   it("reports a missing call", () => {
     const result = checkCallFunction({
-      expected: ["initialize"],
       context: createContext({}),
+      expected: ["initialize"],
       fileStructure: parseSource({ source: "other();" }),
     });
 
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject({
+      filePath: "src/index.ts",
       message: 'Missing call to function "initialize"',
       predicateName: "callFunction",
-      filePath: "src/index.ts",
     });
   });
 
   it("matches configured argument expressions by position and allows extras", () => {
     const result = checkCallFunction({
+      context: createContext({}),
       expected: [
         {
-          name: "send",
           arguments: ["'email'", "options"],
+          name: "send",
         },
       ],
-      context: createContext({}),
       fileStructure: parseSource({
         source: 'send("email", options, callback);',
       }),
@@ -80,13 +80,13 @@ describe("checkCallFunction", () => {
 
   it("does not combine arguments from separate calls", () => {
     const result = checkCallFunction({
+      context: createContext({}),
       expected: [
         {
-          name: "send",
           arguments: ["'email'", "expectedOptions"],
+          name: "send",
         },
       ],
-      context: createContext({}),
       fileStructure: parseSource({
         source: [
           'send("wrong", expectedOptions);',
@@ -103,15 +103,15 @@ describe("checkCallFunction", () => {
 
   it("resolves templates in names and arguments", () => {
     const result = checkCallFunction({
-      expected: [
-        {
-          name: "${functionName}",
-          arguments: ["'${eventName}'"],
-        },
-      ],
       context: createContext({
         placeholders: { eventName: "email", functionName: "send" },
       }),
+      expected: [
+        {
+          arguments: ["'${eventName}'"],
+          name: "${functionName}",
+        },
+      ],
       fileStructure: parseSource({ source: 'send("email");' }),
     });
 

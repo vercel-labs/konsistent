@@ -6,21 +6,21 @@ import { checkExportValues } from "./export-values.js";
 
 function createMockContext(opts: {
   path: string;
-  placeholders?: Record<string, { toString(): string }>;
+  placeholders?: Record<string, { toString: () => string }>;
 }): PredicateContext {
   const placeholders = opts.placeholders ?? {};
   return {
+    directoryExists: () => false,
+    fileExists: () => false,
     path: opts.path,
     placeholders: placeholders as PredicateContext["placeholders"],
+    readDir: () => [],
     resolveTemplate(t: string): string {
       return t.replace(/\$\{(\w+)\}/g, (_match, name) => {
         const ph = placeholders[name];
         return ph ? ph.toString() : _match;
       });
     },
-    directoryExists: () => false,
-    fileExists: () => false,
-    readDir: () => [],
   };
 }
 
@@ -28,16 +28,16 @@ function createMockFileStructure(opts: {
   exports?: FileStructure["exports"];
 }): FileStructure {
   return {
-    exports: opts.exports ?? [],
-    imports: [],
-    interfaces: [],
-    classes: [],
     calls: [],
-    functions: [],
+    classes: [],
     constants: [],
     declarationSymbols: [],
     defaultExportSymbols: [],
+    exports: opts.exports ?? [],
+    functions: [],
     importSources: [],
+    imports: [],
+    interfaces: [],
     namedExportSymbols: [],
     nonBarrelStatements: [],
     typeAliases: [],
@@ -47,15 +47,15 @@ function createMockFileStructure(opts: {
 describe("checkExportValues", () => {
   it("returns no diagnostics when export is found", () => {
     const result = checkExportValues({
-      expected: ["myFunc"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["myFunc"],
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: "myFunc",
-            kind: "function",
             isType: false,
-            pos: { line: 1, column: 1 },
+            kind: "function",
+            name: "myFunc",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -65,8 +65,8 @@ describe("checkExportValues", () => {
 
   it("returns diagnostic when export is missing", () => {
     const result = checkExportValues({
-      expected: ["missingExport"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["missingExport"],
       fileStructure: createMockFileStructure({ exports: [] }),
     });
     expect(result).toHaveLength(1);
@@ -79,18 +79,18 @@ describe("checkExportValues", () => {
 
   it("resolves template placeholders in export names", () => {
     const result = checkExportValues({
-      expected: ["${providerId}"],
       context: createMockContext({
         path: "src/index.ts",
         placeholders: { providerId: { toString: () => "openai" } },
       }),
+      expected: ["${providerId}"],
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: "openai",
-            kind: "re-export",
             isType: false,
-            pos: { line: 1, column: 1 },
+            kind: "re-export",
+            name: "openai",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -100,11 +100,11 @@ describe("checkExportValues", () => {
 
   it("returns diagnostic for template-expanded name when missing", () => {
     const result = checkExportValues({
-      expected: ["${providerId}"],
       context: createMockContext({
         path: "src/index.ts",
         placeholders: { providerId: { toString: () => "openai" } },
       }),
+      expected: ["${providerId}"],
       fileStructure: createMockFileStructure({ exports: [] }),
     });
     expect(result).toHaveLength(1);
@@ -113,15 +113,15 @@ describe("checkExportValues", () => {
 
   it("accepts ExportDefinition object form", () => {
     const result = checkExportValues({
-      expected: [{ name: "myConst" }],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ name: "myConst" }],
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: "myConst",
-            kind: "const",
             isType: false,
-            pos: { line: 1, column: 1 },
+            kind: "const",
+            name: "myConst",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -131,15 +131,15 @@ describe("checkExportValues", () => {
 
   it("ignores type-only exports when checking", () => {
     const result = checkExportValues({
-      expected: ["MyInterface"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["MyInterface"],
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: "MyInterface",
-            kind: "interface",
             isType: true,
-            pos: { line: 1, column: 1 },
+            kind: "interface",
+            name: "MyInterface",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -150,16 +150,16 @@ describe("checkExportValues", () => {
 
   it("returns no diagnostics when re-export with matching from is found", () => {
     const result = checkExportValues({
-      expected: [{ name: "helper", from: "./utils" }],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ from: "./utils", name: "helper" }],
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: "helper",
-            kind: "re-export",
             from: "./utils",
             isType: false,
-            pos: { line: 1, column: 1 },
+            kind: "re-export",
+            name: "helper",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -169,16 +169,16 @@ describe("checkExportValues", () => {
 
   it("returns diagnostic when from does not match", () => {
     const result = checkExportValues({
-      expected: [{ name: "helper", from: "./utils" }],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ from: "./utils", name: "helper" }],
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: "helper",
-            kind: "re-export",
             from: "./other",
             isType: false,
-            pos: { line: 1, column: 1 },
+            kind: "re-export",
+            name: "helper",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -189,19 +189,19 @@ describe("checkExportValues", () => {
 
   it("resolves template placeholders in from", () => {
     const result = checkExportValues({
-      expected: [{ name: "helper", from: "./${name}" }],
       context: createMockContext({
         path: "src/index.ts",
         placeholders: { name: { toString: () => "utils" } },
       }),
+      expected: [{ from: "./${name}", name: "helper" }],
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: "helper",
-            kind: "re-export",
             from: "./utils",
             isType: false,
-            pos: { line: 1, column: 1 },
+            kind: "re-export",
+            name: "helper",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -211,16 +211,16 @@ describe("checkExportValues", () => {
 
   it("does not require from when not specified in object form", () => {
     const result = checkExportValues({
-      expected: [{ name: "helper" }],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ name: "helper" }],
       fileStructure: createMockFileStructure({
         exports: [
           {
-            name: "helper",
-            kind: "re-export",
             from: "./anywhere",
             isType: false,
-            pos: { line: 1, column: 1 },
+            kind: "re-export",
+            name: "helper",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -230,8 +230,8 @@ describe("checkExportValues", () => {
 
   it("matches an aliased named export by its original name", () => {
     const result = checkExportValues({
-      expected: ["localValue"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["localValue"],
       fileStructure: parseFileStructure({
         source: "const localValue = 1; export { localValue as publicValue };",
       }),
@@ -246,15 +246,15 @@ describe("checkExportValues", () => {
 
     expect(
       checkExportValues({
-        expected: [{ name: "localValue", alias: "publicValue" }],
         context,
+        expected: [{ alias: "publicValue", name: "localValue" }],
         fileStructure: parseFileStructure({ source }),
       })
     ).toEqual([]);
     expect(
       checkExportValues({
-        expected: [{ name: "localValue", alias: "otherValue" }],
         context,
+        expected: [{ alias: "otherValue", name: "localValue" }],
         fileStructure: parseFileStructure({ source }),
       })[0].message
     ).toBe('Missing export "localValue" as "otherValue"');
@@ -262,10 +262,10 @@ describe("checkExportValues", () => {
 
   it("matches an aliased re-export with a from constraint", () => {
     const result = checkExportValues({
-      expected: [
-        { name: "sourceValue", alias: "publicValue", from: "./source" },
-      ],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: [
+        { alias: "publicValue", from: "./source", name: "sourceValue" },
+      ],
       fileStructure: parseFileStructure({
         source: 'export { sourceValue as publicValue } from "./source";',
       }),
@@ -275,11 +275,11 @@ describe("checkExportValues", () => {
 
   it("resolves template placeholders in aliases", () => {
     const result = checkExportValues({
-      expected: [{ name: "localValue", alias: "public${name}" }],
       context: createMockContext({
         path: "src/index.ts",
         placeholders: { name: { toString: () => "Value" } },
       }),
+      expected: [{ alias: "public${name}", name: "localValue" }],
       fileStructure: parseFileStructure({
         source: "const localValue = 1; export { localValue as publicValue };",
       }),
@@ -289,8 +289,8 @@ describe("checkExportValues", () => {
 
   it("allows an alias equal to the source name for a named export", () => {
     const result = checkExportValues({
-      expected: [{ name: "localValue", alias: "localValue" }],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ alias: "localValue", name: "localValue" }],
       fileStructure: parseFileStructure({
         source: "const localValue = 1; export { localValue };",
       }),
@@ -302,24 +302,24 @@ describe("checkExportValues", () => {
     const context = createMockContext({ path: "src/index.ts" });
     const cases = [
       {
+        expected: { alias: "localValue", name: "localValue" },
         source: "export const localValue = 1;",
-        expected: { name: "localValue", alias: "localValue" },
       },
       {
+        expected: { alias: "PublicValue", name: "default" },
         source: 'export { default as PublicValue } from "./source";',
-        expected: { name: "default", alias: "PublicValue" },
       },
       {
+        expected: { alias: "PublicNamespace", name: "*" },
         source: 'export * as PublicNamespace from "./source";',
-        expected: { name: "*", alias: "PublicNamespace" },
       },
     ];
 
     for (const entry of cases) {
       expect(
         checkExportValues({
-          expected: [entry.expected],
           context,
+          expected: [entry.expected],
           fileStructure: parseFileStructure({ source: entry.source }),
         })
       ).toHaveLength(1);
@@ -328,10 +328,10 @@ describe("checkExportValues", () => {
 
   it("includes conventionName when provided", () => {
     const result = checkExportValues({
-      expected: ["missing"],
       context: createMockContext({ path: "src/index.ts" }),
-      fileStructure: createMockFileStructure({ exports: [] }),
       conventionName: "barrel-exports",
+      expected: ["missing"],
+      fileStructure: createMockFileStructure({ exports: [] }),
     });
     expect(result[0].conventionName).toBe("barrel-exports");
   });

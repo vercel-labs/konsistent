@@ -45,12 +45,12 @@ function createConstraintDiagnostic(opts: {
   severity?: DiagnosticSeverity;
 }): Diagnostic {
   return createDiagnostic({
-    filePath: opts.context.path,
-    predicateName: opts.predicateName,
-    message: `${opts.label} "${opts.name}" ${opts.reason}`,
-    conventionName: opts.conventionName,
-    line: opts.line,
     column: opts.column,
+    conventionName: opts.conventionName,
+    filePath: opts.context.path,
+    line: opts.line,
+    message: `${opts.label} "${opts.name}" ${opts.reason}`,
+    predicateName: opts.predicateName,
     severity: opts.severity,
   });
 }
@@ -75,16 +75,16 @@ export function checkConstantDefinitionConstraint(opts: {
     result = matchConstantTypeSchema({
       actual: constantInfo?.typeInfo,
       schema: resolveConstantValueSchema({
-        schema,
         resolveTemplate: opts.context.resolveTemplate,
+        schema,
       }),
     });
   } else if (configuredType) {
     result = matchTypeExpression({
       actual: constantInfo?.typeName?.text,
-      session: opts.context.typescriptSession,
       expected: opts.context.resolveTemplate(configuredType),
       missingReason: "must have an explicit type annotation",
+      session: opts.context.typescriptSession,
     });
   }
 
@@ -92,14 +92,14 @@ export function checkConstantDefinitionConstraint(opts: {
     return;
   }
   return createConstraintDiagnostic({
-    context: opts.context,
-    predicateName: opts.predicateName,
-    label: "Constant",
-    name: opts.name,
-    reason: result.reason,
-    conventionName: opts.conventionName,
-    line: constantInfo?.pos.line ?? opts.fallbackPosition?.line,
     column: constantInfo?.pos.column ?? opts.fallbackPosition?.column,
+    context: opts.context,
+    conventionName: opts.conventionName,
+    label: "Constant",
+    line: constantInfo?.pos.line ?? opts.fallbackPosition?.line,
+    name: opts.name,
+    predicateName: opts.predicateName,
+    reason: result.reason,
     severity: opts.severity,
   });
 }
@@ -130,16 +130,16 @@ export function checkTypeDefinitionConstraint(opts: {
     result = matchTypeDefinitionSchema({
       actual: typeDefinition?.typeInfo,
       schema: resolveConstantValueSchema({
-        schema,
         resolveTemplate: opts.context.resolveTemplate,
+        schema,
       }),
     });
   } else if (configuredType) {
     result = matchTypeExpression({
       actual: typeAlias?.typeName.text,
-      session: opts.context.typescriptSession,
       expected: opts.context.resolveTemplate(configuredType),
       missingReason: "must be a type alias",
+      session: opts.context.typescriptSession,
     });
   }
 
@@ -147,20 +147,20 @@ export function checkTypeDefinitionConstraint(opts: {
     return;
   }
   return createConstraintDiagnostic({
-    context: opts.context,
-    predicateName: opts.predicateName,
-    label: "Type",
-    name: opts.name,
-    reason: result.reason,
-    conventionName: opts.conventionName,
-    line:
-      typeDefinition?.pos.line ??
-      typeAlias?.pos.line ??
-      opts.fallbackPosition?.line,
     column:
       typeDefinition?.pos.column ??
       typeAlias?.pos.column ??
       opts.fallbackPosition?.column,
+    context: opts.context,
+    conventionName: opts.conventionName,
+    label: "Type",
+    line:
+      typeDefinition?.pos.line ??
+      typeAlias?.pos.line ??
+      opts.fallbackPosition?.line,
+    name: opts.name,
+    predicateName: opts.predicateName,
+    reason: result.reason,
     severity: opts.severity,
   });
 }

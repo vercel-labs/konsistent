@@ -13,9 +13,9 @@ vi.mock("./cache.js", async () => {
   const actual = await vi.importActual<typeof cache>("./cache.js");
   return {
     ...actual,
+    isCacheStale: vi.fn(),
     readCache: vi.fn(),
     writeCache: vi.fn(),
-    isCacheStale: vi.fn(),
   };
 });
 

@@ -52,10 +52,10 @@ describe("createRealFileSystem file pattern matching", () => {
     const fs = createRealFileSystem({ cwd: "/fake" });
     expect(fs.fileExists("instructions/*.{md,ts}")).toBe(true);
     expect(spy).toHaveBeenCalledWith({
-      patterns: "instructions/*.{md,ts}",
       cwd: "/fake",
       expandDirectories: false,
       onlyFiles: true,
+      patterns: "instructions/*.{md,ts}",
     });
   });
 
@@ -94,10 +94,10 @@ describe("createRealFileSystem directory pattern matching", () => {
     const fs = createRealFileSystem({ cwd: "/fake" });
     expect(fs.directoryExists("src/modules/*")).toBe(true);
     expect(spy).toHaveBeenCalledWith({
-      patterns: "src/modules/*",
       cwd: "/fake",
       expandDirectories: false,
       onlyDirectories: true,
+      patterns: "src/modules/*",
     });
   });
 

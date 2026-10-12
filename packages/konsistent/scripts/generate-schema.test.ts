@@ -17,7 +17,7 @@ function collectDeprecatedPropertySchemas(opts: {
   const into = opts.into ?? [];
   if (Array.isArray(opts.value)) {
     for (const value of opts.value) {
-      collectDeprecatedPropertySchemas({ value, into });
+      collectDeprecatedPropertySchemas({ into, value });
     }
     return into;
   }
@@ -26,7 +26,7 @@ function collectDeprecatedPropertySchemas(opts: {
   }
 
   const record = opts.value as Record<string, unknown>;
-  const properties = record.properties;
+  const { properties } = record;
   if (properties && typeof properties === "object") {
     for (const property of Object.values(properties)) {
       if (
@@ -39,7 +39,7 @@ function collectDeprecatedPropertySchemas(opts: {
     }
   }
   for (const value of Object.values(record)) {
-    collectDeprecatedPropertySchemas({ value, into });
+    collectDeprecatedPropertySchemas({ into, value });
   }
   return into;
 }
@@ -99,7 +99,7 @@ describe("konsistent.schema.json", () => {
         branch.required?.includes("must")
     );
     const mustSchema = objectBranch.properties.must;
-    const predicatesSchema = mustSchema.anyOf[0];
+    const [predicatesSchema] = mustSchema.anyOf;
     expect(predicatesSchema.additionalProperties).toBe(false);
   });
 
@@ -118,38 +118,38 @@ describe("konsistent.schema.json", () => {
 
   it("accepts value and type import conditions through if and ifNot", () => {
     const conditions = [
-      { hasValueImport: { name: "createClient", from: "./client" } },
+      { hasValueImport: { from: "./client", name: "createClient" } },
       { hasValueImportFrom: "./client" },
-      { hasTypeImport: { name: "Client", from: "./client" } },
+      { hasTypeImport: { from: "./client", name: "Client" } },
       { hasTypeImportFrom: "./client" },
     ];
     const valid = validate({
-      version: "v1",
       conventions: [
         {
-          paths: "src/index.ts",
           must: conditions.flatMap((condition) => [
             { if: condition, must: { haveType: "file" } },
             { ifNot: condition, must: { haveType: "file" } },
           ]),
+          paths: "src/index.ts",
         },
       ],
+      version: "v1",
     });
     expect(valid).toBe(true);
   });
 
   it("accepts a condition on a top-level use reference", () => {
     const valid = validate({
-      version: "v1",
       conventionSources: { common: "./conventions.json" },
       conventions: [
         {
-          use: "common/conditional-rule",
-          paths: "src/*.ts",
           if: { hasFile: "test.ts" },
           ifNot: { placeholderSatisfies: "name:segments(2)" },
+          paths: "src/*.ts",
+          use: "common/conditional-rule",
         },
       ],
+      version: "v1",
     });
 
     expect(valid).toBe(true);
@@ -157,23 +157,23 @@ describe("konsistent.schema.json", () => {
 
   it("rejects aliases in import conditions", () => {
     const valid = validate({
-      version: "v1",
       conventions: [
         {
-          paths: "src/index.ts",
           must: [
             {
               if: {
                 hasTypeImport: {
-                  name: "Client",
                   alias: "ApiClient",
+                  name: "Client",
                 },
               },
               must: { haveType: "file" },
             },
           ],
+          paths: "src/index.ts",
         },
       ],
+      version: "v1",
     });
     expect(valid).toBe(false);
   });
@@ -209,89 +209,89 @@ describe("konsistent.schema.json", () => {
 
   it("rejects exportTypes entries with both from and schema", () => {
     const valid = validate({
-      version: "v1",
       conventions: [
         {
-          paths: "src/settings.ts",
           must: {
             exportTypes: [
               {
-                name: "Settings",
                 from: "./settings",
-                schema: { type: "object", properties: {} },
+                name: "Settings",
+                schema: { properties: {}, type: "object" },
               },
             ],
           },
+          paths: "src/settings.ts",
         },
       ],
+      version: "v1",
     });
     expect(valid).toBe(false);
   });
 
   it("accepts exact top-level type constraints", () => {
     const valid = validate({
-      version: "v1",
       conventions: [
         {
-          paths: "src/settings.ts",
           must: {
-            declareTypes: [
-              { name: "InternalType", type: "SharedType<'internal'>" },
-            ],
             declareConstants: [
               { name: "internalValue", type: "SharedType<'internal'>" },
             ],
-            exportTypes: [{ name: "PublicType", type: "SharedType<'public'>" }],
+            declareTypes: [
+              { name: "InternalType", type: "SharedType<'internal'>" },
+            ],
             exportConstants: [
               { name: "publicValue", type: "SharedType<'public'>" },
             ],
+            exportTypes: [{ name: "PublicType", type: "SharedType<'public'>" }],
           },
+          paths: "src/settings.ts",
         },
       ],
+      version: "v1",
     });
     expect(valid).toBe(true);
   });
 
   it("rejects conflicting top-level type constraints", () => {
     const valid = validate({
-      version: "v1",
       conventions: [
         {
-          paths: "src/settings.ts",
           must: {
             exportTypes: [
               {
-                name: "Settings",
                 from: "./settings",
+                name: "Settings",
                 type: "SharedSettings",
               },
             ],
           },
+          paths: "src/settings.ts",
         },
       ],
+      version: "v1",
     });
     expect(valid).toBe(false);
   });
 
   it("rejects the legacy object form for inner type references", () => {
     const valid = validate({
-      version: "v1",
       conventions: [
         {
-          paths: "src/settings.ts",
           must: {
             exportTypes: [
               {
                 name: "Settings",
                 schema: {
-                  type: "object",
                   properties: { auth: { type: "MyAuth | null" } },
+                  type: "object",
                 },
               },
             ],
           },
+          paths: "src/settings.ts",
         },
       ],
+      version: "v1",
     });
     expect(valid).toBe(false);
   });

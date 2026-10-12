@@ -25,8 +25,8 @@ afterEach(() => {
 describe("validate command", () => {
   it("defines metadata and arguments", () => {
     expect(validateCommand).toMatchObject({
-      meta: { name: "validate" },
       args: {},
+      meta: { name: "validate" },
     });
   });
 

@@ -24,11 +24,11 @@ function resolveExtendConfig(opts: {
     return;
   }
   if (typeof extend === "string") {
-    return { type: context.resolveTemplate(extend), allowOmissions: false };
+    return { allowOmissions: false, type: context.resolveTemplate(extend) };
   }
   return {
-    type: context.resolveTemplate(extend.type),
     allowOmissions: extend.allowOmissions ?? false,
+    type: context.resolveTemplate(extend.type),
   };
 }
 
@@ -70,8 +70,8 @@ export function checkDeclareInterfaces(opts: {
     const resolvedName = context.resolveTemplate(definition.name);
     const symbol = findDeclarationSymbol({
       fileStructure,
-      name: resolvedName,
       kinds: ["interface"],
+      name: resolvedName,
     });
     const interfaceInfo = fileStructure.interfaces.find(
       (i) => i.name === resolvedName
@@ -100,24 +100,24 @@ export function checkDeclareInterfaces(opts: {
     }
 
     const extendConfig = resolveExtendConfig({
-      extend: definition.extend,
       context,
+      extend: definition.extend,
     });
     if (
       extendConfig &&
       !matchesExtend({
-        extendsClauses: interfaceInfo.extends,
         config: extendConfig,
+        extendsClauses: interfaceInfo.extends,
       })
     ) {
       diagnostics.push(
         createDiagnostic({
-          filePath: context.path,
-          predicateName: "declareInterfaces",
-          message: `Interface "${resolvedName}" must extend "${extendConfig.type}"`,
-          conventionName,
-          line: interfaceInfo.pos.line,
           column: interfaceInfo.pos.column,
+          conventionName,
+          filePath: context.path,
+          line: interfaceInfo.pos.line,
+          message: `Interface "${resolvedName}" must extend "${extendConfig.type}"`,
+          predicateName: "declareInterfaces",
           severity,
         })
       );

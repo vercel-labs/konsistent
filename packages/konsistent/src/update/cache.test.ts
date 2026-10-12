@@ -13,7 +13,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllEnvs();
-  fs.rmSync(tmpDir, { recursive: true, force: true });
+  fs.rmSync(tmpDir, { force: true, recursive: true });
 });
 
 describe("getCachePath", () => {

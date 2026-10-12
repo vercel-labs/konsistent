@@ -6,21 +6,21 @@ import { checkImportTypes } from "./import-types.js";
 
 function createMockContext(opts: {
   path: string;
-  placeholders?: Record<string, { toString(): string }>;
+  placeholders?: Record<string, { toString: () => string }>;
 }): PredicateContext {
   const placeholders = opts.placeholders ?? {};
   return {
+    directoryExists: () => false,
+    fileExists: () => false,
     path: opts.path,
     placeholders: placeholders as PredicateContext["placeholders"],
+    readDir: () => [],
     resolveTemplate(t: string): string {
       return t.replace(/\$\{(\w+)\}/g, (_match, name) => {
         const ph = placeholders[name];
         return ph ? ph.toString() : _match;
       });
     },
-    directoryExists: () => false,
-    fileExists: () => false,
-    readDir: () => [],
   };
 }
 
@@ -28,16 +28,16 @@ function createMockFileStructure(opts: {
   imports?: FileStructure["imports"];
 }): FileStructure {
   return {
-    exports: [],
-    imports: opts.imports ?? [],
-    interfaces: [],
-    classes: [],
     calls: [],
-    functions: [],
+    classes: [],
     constants: [],
     declarationSymbols: [],
     defaultExportSymbols: [],
+    exports: [],
+    functions: [],
     importSources: [],
+    imports: opts.imports ?? [],
+    interfaces: [],
     namedExportSymbols: [],
     nonBarrelStatements: [],
     typeAliases: [],
@@ -47,15 +47,15 @@ function createMockFileStructure(opts: {
 describe("checkImportTypes", () => {
   it("returns no diagnostics when type import is found", () => {
     const result = checkImportTypes({
-      expected: ["MyType"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["MyType"],
       fileStructure: createMockFileStructure({
         imports: [
           {
-            name: "MyType",
             from: "./types",
             isType: true,
-            pos: { line: 1, column: 1 },
+            name: "MyType",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -65,8 +65,8 @@ describe("checkImportTypes", () => {
 
   it("returns diagnostic when type import is missing", () => {
     const result = checkImportTypes({
-      expected: ["MyType"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["MyType"],
       fileStructure: createMockFileStructure({ imports: [] }),
     });
     expect(result).toHaveLength(1);
@@ -77,15 +77,15 @@ describe("checkImportTypes", () => {
 
   it("ignores non-type imports", () => {
     const result = checkImportTypes({
-      expected: ["MyType"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["MyType"],
       fileStructure: createMockFileStructure({
         imports: [
           {
-            name: "MyType",
             from: "./types",
             isType: false,
-            pos: { line: 1, column: 1 },
+            name: "MyType",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -96,15 +96,15 @@ describe("checkImportTypes", () => {
 
   it("checks from constraint when specified", () => {
     const result = checkImportTypes({
-      expected: [{ name: "MyType", from: "./correct-module" }],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ from: "./correct-module", name: "MyType" }],
       fileStructure: createMockFileStructure({
         imports: [
           {
-            name: "MyType",
             from: "./correct-module",
             isType: true,
-            pos: { line: 1, column: 1 },
+            name: "MyType",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -114,15 +114,15 @@ describe("checkImportTypes", () => {
 
   it("returns diagnostic when from does not match", () => {
     const result = checkImportTypes({
-      expected: [{ name: "MyType", from: "./correct-module" }],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ from: "./correct-module", name: "MyType" }],
       fileStructure: createMockFileStructure({
         imports: [
           {
-            name: "MyType",
             from: "./wrong-module",
             isType: true,
-            pos: { line: 1, column: 1 },
+            name: "MyType",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -133,18 +133,18 @@ describe("checkImportTypes", () => {
 
   it("resolves template placeholders in name", () => {
     const result = checkImportTypes({
-      expected: ["${name}Props"],
       context: createMockContext({
         path: "src/index.ts",
         placeholders: { name: { toString: () => "Button" } },
       }),
+      expected: ["${name}Props"],
       fileStructure: createMockFileStructure({
         imports: [
           {
-            name: "ButtonProps",
             from: "./types",
             isType: true,
-            pos: { line: 1, column: 1 },
+            name: "ButtonProps",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -154,18 +154,18 @@ describe("checkImportTypes", () => {
 
   it("resolves template placeholders in from", () => {
     const result = checkImportTypes({
-      expected: [{ name: "Config", from: "./${name}" }],
       context: createMockContext({
         path: "src/index.ts",
         placeholders: { name: { toString: () => "config" } },
       }),
+      expected: [{ from: "./${name}", name: "Config" }],
       fileStructure: createMockFileStructure({
         imports: [
           {
-            name: "Config",
             from: "./config",
             isType: true,
-            pos: { line: 1, column: 1 },
+            name: "Config",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -175,15 +175,15 @@ describe("checkImportTypes", () => {
 
   it("accepts string shorthand without from constraint", () => {
     const result = checkImportTypes({
-      expected: ["MyType"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["MyType"],
       fileStructure: createMockFileStructure({
         imports: [
           {
-            name: "MyType",
             from: "./any-module",
             isType: true,
-            pos: { line: 1, column: 1 },
+            name: "MyType",
+            pos: { column: 1, line: 1 },
           },
         ],
       }),
@@ -193,8 +193,8 @@ describe("checkImportTypes", () => {
 
   it("matches an aliased named type import by its original name", () => {
     const result = checkImportTypes({
-      expected: ["SourceType"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["SourceType"],
       fileStructure: parseFileStructure({
         source: 'import type { SourceType as LocalType } from "pkg";',
       }),
@@ -204,8 +204,8 @@ describe("checkImportTypes", () => {
 
   it("does not match an aliased named type import by only its local name", () => {
     const result = checkImportTypes({
-      expected: ["LocalType"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["LocalType"],
       fileStructure: parseFileStructure({
         source: 'import type { SourceType as LocalType } from "pkg";',
       }),
@@ -220,17 +220,17 @@ describe("checkImportTypes", () => {
 
     expect(
       checkImportTypes({
-        expected: [
-          { name: "SourceType", alias: "LocalType", from: "type-package" },
-        ],
         context,
+        expected: [
+          { alias: "LocalType", from: "type-package", name: "SourceType" },
+        ],
         fileStructure: parseFileStructure({ source }),
       })
     ).toEqual([]);
     expect(
       checkImportTypes({
-        expected: [{ name: "SourceType", alias: "OtherType" }],
         context,
+        expected: [{ alias: "OtherType", name: "SourceType" }],
         fileStructure: parseFileStructure({ source }),
       })[0].message
     ).toBe('Missing import type "SourceType" as "OtherType"');
@@ -238,8 +238,8 @@ describe("checkImportTypes", () => {
 
   it("allows an alias equal to the source name for a named type import", () => {
     const result = checkImportTypes({
-      expected: [{ name: "SourceType", alias: "SourceType" }],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ alias: "SourceType", name: "SourceType" }],
       fileStructure: parseFileStructure({
         source: 'import type { SourceType } from "pkg";',
       }),
@@ -249,11 +249,11 @@ describe("checkImportTypes", () => {
 
   it("resolves template placeholders in aliases", () => {
     const result = checkImportTypes({
-      expected: [{ name: "SourceType", alias: "${name}Type" }],
       context: createMockContext({
         path: "src/index.ts",
         placeholders: { name: { toString: () => "Local" } },
       }),
+      expected: [{ alias: "${name}Type", name: "SourceType" }],
       fileStructure: parseFileStructure({
         source: 'import type { SourceType as LocalType } from "pkg";',
       }),
@@ -263,35 +263,35 @@ describe("checkImportTypes", () => {
 
   it.each([
     {
+      expected: { alias: "DefaultType", name: "default" },
       source: 'import type DefaultType from "pkg";',
-      expected: { name: "default", alias: "DefaultType" },
     },
     {
+      expected: { alias: "NamespaceType", name: "*" },
       source: 'import type * as NamespaceType from "pkg";',
-      expected: { name: "*", alias: "NamespaceType" },
     },
     {
+      expected: { alias: "DefaultType", name: "default" },
       source: 'import type { default as DefaultType } from "pkg";',
-      expected: { name: "default", alias: "DefaultType" },
     },
-  ])("does not apply aliases to default or namespace type imports: $source", ({
-    source,
-    expected,
-  }) => {
-    const result = checkImportTypes({
-      expected: [expected],
-      context: createMockContext({ path: "src/index.ts" }),
-      fileStructure: parseFileStructure({ source }),
-    });
-    expect(result).toHaveLength(1);
-  });
+  ])(
+    "does not apply aliases to default or namespace type imports: $source",
+    ({ source, expected }) => {
+      const result = checkImportTypes({
+        context: createMockContext({ path: "src/index.ts" }),
+        expected: [expected],
+        fileStructure: parseFileStructure({ source }),
+      });
+      expect(result).toHaveLength(1);
+    }
+  );
 
   it("includes conventionName when provided", () => {
     const result = checkImportTypes({
-      expected: ["Missing"],
       context: createMockContext({ path: "src/index.ts" }),
-      fileStructure: createMockFileStructure({ imports: [] }),
       conventionName: "type-imports",
+      expected: ["Missing"],
+      fileStructure: createMockFileStructure({ imports: [] }),
     });
     expect(result[0].conventionName).toBe("type-imports");
   });

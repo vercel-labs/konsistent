@@ -35,7 +35,11 @@ describe("call-function-broken fixture", () => {
       await runCli({ cwd });
       expect.fail("Expected check to exit with code 1");
     } catch (err: unknown) {
-      const error = err as { stdout: string; code: number; status: number };
+      const error = err as {
+        stdout: string;
+        code: number | null;
+        status: number;
+      };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain('Missing call to function "initialize"');
       expect(error.stdout).toContain(
@@ -62,7 +66,11 @@ describe("declaration-predicates-broken fixture", () => {
       await runCli({ cwd });
       expect.fail("Expected check to exit with code 1");
     } catch (err: unknown) {
-      const error = err as { stdout: string; code: number; status: number };
+      const error = err as {
+        stdout: string;
+        code: number | null;
+        status: number;
+      };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain(
         'Local type declaration "LocalType" must not be exported'
@@ -91,7 +99,11 @@ describe("constant-schemas-broken fixture", () => {
       await runCli({ cwd });
       expect.fail("Expected check to exit with code 1");
     } catch (err: unknown) {
-      const error = err as { stdout: string; code: number; status: number };
+      const error = err as {
+        stdout: string;
+        code: number | null;
+        status: number;
+      };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain(
         'Constant "localPort" must have an explicit type annotation'
@@ -140,7 +152,11 @@ describe("type-schemas-broken fixture", () => {
       await runCli({ cwd });
       expect.fail("Expected check to exit with code 1");
     } catch (err: unknown) {
-      const error = err as { stdout: string; code: number; status: number };
+      const error = err as {
+        stdout: string;
+        code: number | null;
+        status: number;
+      };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain(
         'Type "ModuleSettings" must define property "timeout"'
@@ -178,7 +194,11 @@ describe("declaration-order-broken fixture", () => {
       await runCli({ cwd });
       expect.fail("Expected check to exit with code 1");
     } catch (err: unknown) {
-      const error = err as { stdout: string; code: number; status: number };
+      const error = err as {
+        stdout: string;
+        code: number | null;
+        status: number;
+      };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain(
         'Symbol "alpha" must be declared before "Beta"'
@@ -204,7 +224,11 @@ describe("import-source-groups-broken fixture", () => {
       await runCli({ cwd });
       expect.fail("Expected check to exit with code 1");
     } catch (err: unknown) {
-      const error = err as { stdout: string; code: number; status: number };
+      const error = err as {
+        stdout: string;
+        code: number | null;
+        status: number;
+      };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain("Missing import from current directory");
       expect(error.stdout).toContain(
@@ -254,7 +278,11 @@ describe("export-source-predicates-broken fixture", () => {
       });
       expect.fail("Expected check to exit with code 1");
     } catch (err: unknown) {
-      const error = err as { stdout: string; code: number; status: number };
+      const error = err as {
+        stdout: string;
+        code: number | null;
+        status: number;
+      };
       expect(error.code ?? error.status).toBe(1);
       for (const message of [
         'Missing export from "./value"',
@@ -285,7 +313,11 @@ describe("import-values-and-types-from-broken fixture", () => {
       await runCli({ cwd });
       expect.fail("Expected check to exit with code 1");
     } catch (err: unknown) {
-      const error = err as { stdout: string; code: number; status: number };
+      const error = err as {
+        stdout: string;
+        code: number | null;
+        status: number;
+      };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain('Missing import from "./helper"');
       expect(error.stdout).toContain('Missing type import from "@scope/pkg/*"');
@@ -322,12 +354,12 @@ describe("import-source-selectors-invalid fixture", () => {
 
   it("fails konsistent validate for an unrelated exclusion", async () => {
     try {
-      await runCli({ cwd, args: ["validate"] });
+      await runCli({ args: ["validate"], cwd });
       expect.fail("Expected validate to exit with code 1");
     } catch (err: unknown) {
       const error = err as {
         stderr: string;
-        code: number;
+        code: number | null;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -362,7 +394,11 @@ describe("import-conditions-for-broken fixture", () => {
       await runCli({ cwd });
       expect.fail("Expected check to exit with code 1");
     } catch (err: unknown) {
-      const error = err as { stdout: string; code: number; status: number };
+      const error = err as {
+        stdout: string;
+        code: number | null;
+        status: number;
+      };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain("value-import-condition");
       expect(error.stdout).toContain("type-import-condition");
@@ -381,7 +417,11 @@ describe("import-conditions-broken fixture", () => {
       await runCli({ cwd });
       expect.fail("Expected check to exit with code 1");
     } catch (err: unknown) {
-      const error = err as { stdout: string; code: number; status: number };
+      const error = err as {
+        stdout: string;
+        code: number | null;
+        status: number;
+      };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain("value-import-condition");
       expect(error.stdout).toContain("type-import-condition");
@@ -408,7 +448,11 @@ describe("symbol-aliases-broken fixture", () => {
       await runCli({ cwd });
       expect.fail("Expected check to exit with code 1");
     } catch (err: unknown) {
-      const error = err as { stdout: string; code: number; status: number };
+      const error = err as {
+        stdout: string;
+        code: number | null;
+        status: number;
+      };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain(
         'Missing import "createClient" as "createApiClient"'

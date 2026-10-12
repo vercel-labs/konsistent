@@ -46,22 +46,27 @@ export function extractPackageName(specifier: string): string {
   return slash === -1 ? specifier : specifier.slice(0, slash);
 }
 
-export async function findPackageDir(opts: {
+export function findPackageDir(opts: {
   packageName: string;
   fromDir: string;
 }): Promise<string | null> {
-  const { packageName, fromDir } = opts;
+  return findPackageDirUpward({
+    dir: resolvePath(opts.fromDir),
+    packageName: opts.packageName,
+  });
+}
 
-  let dir = resolvePath(fromDir);
-  for (;;) {
-    const candidate = join(dir, "node_modules", packageName);
-    if (await pathExists(join(candidate, "package.json"))) {
-      return candidate;
-    }
-    const parent = dirname(dir);
-    if (parent === dir) {
-      return null;
-    }
-    dir = parent;
+async function findPackageDirUpward(opts: {
+  dir: string;
+  packageName: string;
+}): Promise<string | null> {
+  const candidate = join(opts.dir, "node_modules", opts.packageName);
+  if (await pathExists(join(candidate, "package.json"))) {
+    return candidate;
   }
+
+  const parent = dirname(opts.dir);
+  return parent === opts.dir
+    ? null
+    : findPackageDirUpward({ dir: parent, packageName: opts.packageName });
 }

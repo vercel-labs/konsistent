@@ -5,8 +5,8 @@ import type { FileSystem } from "./filesystem.js";
 type RunGit = (opts: { args: string[]; cwd: string }) => Promise<Buffer>;
 
 export interface GitClient {
-  listModifiedPaths(): Promise<string[]>;
-  listStagedPaths(): Promise<string[]>;
+  listModifiedPaths: () => Promise<string[]>;
+  listStagedPaths: () => Promise<string[]>;
 }
 
 function runGitCommand(opts: { args: string[]; cwd: string }): Promise<Buffer> {
@@ -42,7 +42,7 @@ function runGitCommand(opts: { args: string[]; cwd: string }): Promise<Buffer> {
 export function parseNullDelimitedPaths(output: Buffer): string[] {
   const paths: string[] = [];
   let start = 0;
-  for (let index = 0; index < output.length; index++) {
+  for (let index = 0; index < output.length; index += 1) {
     if (output[index] !== 0) {
       continue;
     }
@@ -102,15 +102,15 @@ export function createGitClient(opts: {
   ];
 
   return {
-    listStagedPaths(): Promise<string[]> {
-      return listPaths([stagedCommand]);
-    },
     listModifiedPaths(): Promise<string[]> {
       return listPaths([
         stagedCommand,
         ["diff", "--name-only", "--relative", "-z", "--diff-filter=ACMR", "--"],
         ["ls-files", "--others", "--exclude-standard", "-z", "--"],
       ]);
+    },
+    listStagedPaths(): Promise<string[]> {
+      return listPaths([stagedCommand]);
     },
   };
 }

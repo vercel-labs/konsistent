@@ -85,11 +85,10 @@ function normalizeTypeExpressionPair(opts: {
 ;type __KonsistentExpected = ${opts.expected}
 ;`;
   return withTypeScriptSession({
-    session: opts.session,
     run: (session) =>
       session.withSourceFile({
-        source: sourceText,
         filePath: "type-expression.ts",
+        source: sourceText,
         visit(source) {
           if (
             source
@@ -123,6 +122,7 @@ function normalizeTypeExpressionPair(opts: {
           };
         },
       }),
+    session: opts.session,
   });
 }
 
@@ -201,7 +201,6 @@ function innerTypeConstraintText(
   if (Object.hasOwn(constraint, "type")) {
     return (constraint as { type: ConstantScalarTypeV1 }).type;
   }
-  return;
 }
 
 function parseScalarType(
@@ -254,7 +253,6 @@ function parseLiteralValue(node: TypeNode): ConstantScalarValue | undefined {
   ) {
     return -Number(literal.operand.text);
   }
-  return;
 }
 
 function getScalarValueType(value: ConstantScalarValue): ConstantScalarTypeV1 {
@@ -288,7 +286,7 @@ function parseArrayType(opts: {
   const { node, source } = opts;
   if (isArrayTypeNode(node)) {
     const itemType = parseInnerType({ node: node.elementType, source });
-    return itemType ? { kind: "array", itemType } : undefined;
+    return itemType ? { itemType, kind: "array" } : undefined;
   }
 
   if (
@@ -297,7 +295,7 @@ function parseArrayType(opts: {
     isArrayTypeNode(node.type)
   ) {
     const itemType = parseInnerType({ node: node.type.elementType, source });
-    return itemType ? { kind: "array", itemType } : undefined;
+    return itemType ? { itemType, kind: "array" } : undefined;
   }
 
   if (isTypeReferenceNode(node)) {
@@ -307,11 +305,9 @@ function parseArrayType(opts: {
       node.typeArguments?.length === 1
     ) {
       const itemType = parseInnerType({ node: node.typeArguments[0], source });
-      return itemType ? { kind: "array", itemType } : undefined;
+      return itemType ? { itemType, kind: "array" } : undefined;
     }
   }
-
-  return;
 }
 
 function parseInnerType(opts: {
@@ -329,7 +325,6 @@ function getPropertyName(name: PropertyName): string | undefined {
   if (isIdentifier(name) || isStringLiteral(name)) {
     return name.text;
   }
-  return;
 }
 
 function parseObjectType(opts: {

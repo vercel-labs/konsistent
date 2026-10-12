@@ -47,11 +47,11 @@ describe("loadConfig", () => {
 
   it("merges cliPlaceholders into every convention's placeholders map", async () => {
     const result = await loadConfig({
+      cliPlaceholders: { providerId: "anthropic" },
       configPath: resolve(
         fixturesDir,
         "convention-placeholders/konsistent.json"
       ),
-      cliPlaceholders: { providerId: "anthropic" },
     });
     expect(result.success).toBe(true);
     if (result.success) {
@@ -63,8 +63,8 @@ describe("loadConfig", () => {
 
   it("rejects a CLI placeholder that collides with a path-captured name", async () => {
     const result = await loadConfig({
-      configPath: resolve(fixturesDir, "placeholder-satisfies/konsistent.json"),
       cliPlaceholders: { providerId: "openai" },
+      configPath: resolve(fixturesDir, "placeholder-satisfies/konsistent.json"),
     });
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -86,7 +86,7 @@ describe("loadConfig --config-package", () => {
   });
 
   afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
+    rmSync(tmpDir, { force: true, recursive: true });
     vi.restoreAllMocks();
   });
 
@@ -111,13 +111,13 @@ describe("loadConfig --config-package", () => {
     writeFileSync(
       join(pkgDir, "package.json"),
       JSON.stringify(
-        packageJson ?? { name: packageName, version: "0.0.0", type: "module" }
+        packageJson ?? { name: packageName, type: "module", version: "0.0.0" }
       )
     );
 
     const validConfig = JSON.stringify({
-      version: "v1",
       conventions: [],
+      version: "v1",
     });
 
     if (configAtRoot) {
@@ -137,7 +137,7 @@ describe("loadConfig --config-package", () => {
   }
 
   it("loads konsistent.json from the package root", async () => {
-    setupPackage({ packageName: "@scope/root-config", configAtRoot: true });
+    setupPackage({ configAtRoot: true, packageName: "@scope/root-config" });
 
     const result = await loadConfig({ configPackage: "@scope/root-config" });
     expect(result.success).toBe(true);
@@ -147,7 +147,7 @@ describe("loadConfig --config-package", () => {
   });
 
   it("loads konsistent.json from the dist folder", async () => {
-    setupPackage({ packageName: "@scope/dist-config", configAtDist: true });
+    setupPackage({ configAtDist: true, packageName: "@scope/dist-config" });
 
     const result = await loadConfig({ configPackage: "@scope/dist-config" });
     expect(result.success).toBe(true);
@@ -155,27 +155,27 @@ describe("loadConfig --config-package", () => {
 
   it("prefers dist/ over root when both are present", async () => {
     const pkgDir = setupPackage({
-      packageName: "@scope/both",
-      configAtRoot: true,
       configAtDist: true,
+      configAtRoot: true,
+      packageName: "@scope/both",
     });
 
     writeFileSync(
       join(pkgDir, "konsistent.json"),
-      JSON.stringify({ version: "v1", conventions: [] })
+      JSON.stringify({ conventions: [], version: "v1" })
     );
     writeFileSync(
       join(pkgDir, "dist", "konsistent.json"),
       JSON.stringify({
-        version: "v1",
         conventions: [
           {
-            name: "from-dist",
             description: "Loaded from dist.",
-            paths: "src/*.ts",
             must: { haveType: "file" },
+            name: "from-dist",
+            paths: "src/*.ts",
           },
         ],
+        version: "v1",
       })
     );
 
@@ -189,14 +189,14 @@ describe("loadConfig --config-package", () => {
 
   it('respects an explicit package.json "konsistent" field', async () => {
     setupPackage({
-      packageName: "@scope/explicit-field",
-      packageJson: {
-        name: "@scope/explicit-field",
-        version: "0.0.0",
-        type: "module",
-        konsistent: "./build/my-config.json",
-      },
       configAtCustomPath: "build/my-config.json",
+      packageJson: {
+        konsistent: "./build/my-config.json",
+        name: "@scope/explicit-field",
+        type: "module",
+        version: "0.0.0",
+      },
+      packageName: "@scope/explicit-field",
     });
 
     const result = await loadConfig({
@@ -232,8 +232,8 @@ describe("loadConfig --config-package", () => {
 
   it("errors when both --config-path and --config-package are passed", async () => {
     const result = await loadConfig({
-      configPath: "/some/path/konsistent.json",
       configPackage: "@scope/some-pkg",
+      configPath: "/some/path/konsistent.json",
     });
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -287,13 +287,13 @@ describe("loadConfig --config-package", () => {
 
   it('rejects a package.json "konsistent" field that escapes the package via ..', async () => {
     setupPackage({
-      packageName: "@scope/escape-relative",
       packageJson: {
-        name: "@scope/escape-relative",
-        version: "0.0.0",
-        type: "module",
         konsistent: "../../../../../../../etc/konsistent.json",
+        name: "@scope/escape-relative",
+        type: "module",
+        version: "0.0.0",
       },
+      packageName: "@scope/escape-relative",
     });
 
     const result = await loadConfig({
@@ -307,13 +307,13 @@ describe("loadConfig --config-package", () => {
 
   it('rejects a package.json "konsistent" field that is an absolute path', async () => {
     setupPackage({
-      packageName: "@scope/escape-absolute",
       packageJson: {
-        name: "@scope/escape-absolute",
-        version: "0.0.0",
-        type: "module",
         konsistent: "/etc/konsistent.json",
+        name: "@scope/escape-absolute",
+        type: "module",
+        version: "0.0.0",
       },
+      packageName: "@scope/escape-absolute",
     });
 
     const result = await loadConfig({

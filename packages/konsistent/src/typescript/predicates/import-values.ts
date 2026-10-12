@@ -32,23 +32,23 @@ export function checkImportValues(opts: {
         : context.resolveTemplate(definition.alias);
 
     const found = hasImport({
+      context,
       expected: entry,
+      fileStructure,
       importKind: "value",
       matchLocalName: predicateName === "import",
-      context,
-      fileStructure,
     });
 
     if (!found) {
       diagnostics.push(
         createDiagnostic({
+          conventionName,
           filePath: context.path,
-          predicateName,
           message:
             resolvedAlias === undefined
               ? `Missing import "${resolvedName}"`
               : `Missing import "${resolvedName}" as "${resolvedAlias}"`,
-          conventionName,
+          predicateName,
           severity,
         })
       );

@@ -17,7 +17,7 @@ function collectDeprecatedPropertySchemas(opts: {
   const into = opts.into ?? [];
   if (Array.isArray(opts.value)) {
     for (const value of opts.value) {
-      collectDeprecatedPropertySchemas({ value, into });
+      collectDeprecatedPropertySchemas({ into, value });
     }
     return into;
   }
@@ -26,7 +26,7 @@ function collectDeprecatedPropertySchemas(opts: {
   }
 
   const record = opts.value as Record<string, unknown>;
-  const properties = record.properties;
+  const { properties } = record;
   if (properties && typeof properties === "object") {
     for (const property of Object.values(properties)) {
       if (
@@ -39,7 +39,7 @@ function collectDeprecatedPropertySchemas(opts: {
     }
   }
   for (const value of Object.values(record)) {
-    collectDeprecatedPropertySchemas({ value, into });
+    collectDeprecatedPropertySchemas({ into, value });
   }
   return into;
 }
@@ -51,12 +51,12 @@ describe("reusable-convention-package.schema.json", () => {
         conventionSpecVersion: "v1",
         conventions: [
           {
-            name: "directories",
             description: "Require directory structure.",
             if: { hasDirectory: "instructions.{md,ts}" },
             ifNot: { hasDirectory: "skip" },
             must: { haveDirectories: ["instructions/*"] },
             mustNot: { haveDirectories: ["secret/*"] },
+            name: "directories",
           },
         ],
       })
@@ -68,16 +68,16 @@ describe("reusable-convention-package.schema.json", () => {
         conventionSpecVersion: "v1",
         conventions: [
           {
-            name: "sources",
             description: "Re-export source checks.",
             must: {
-              exportValuesFrom: ["pkg/*", "!pkg/private/*"],
               exportTypesFromParents: true,
+              exportValuesFrom: ["pkg/*", "!pkg/private/*"],
             },
             mustNot: {
               exportTypesFrom: "./internal",
               exportValuesFromExternals: true,
             },
+            name: "sources",
           },
         ],
       })
@@ -104,22 +104,22 @@ describe("reusable-convention-package.schema.json", () => {
       conventionSpecVersion: "v1",
       conventions: [
         {
-          name: "settings",
           description: "Settings exports.",
           must: {
             exportTypes: [
               {
                 name: "LocalSettings",
                 schema: {
-                  type: "object",
                   properties: {
                     auth: "Readonly<MyAuth>",
                   },
+                  type: "object",
                 },
               },
-              { name: "SharedSettings", from: "./settings" },
+              { from: "./settings", name: "SharedSettings" },
             ],
           },
+          name: "settings",
         },
       ],
     });
@@ -131,20 +131,20 @@ describe("reusable-convention-package.schema.json", () => {
       conventionSpecVersion: "v1",
       conventions: [
         {
-          name: "exact-types",
           description: "Exact declaration types.",
           must: {
-            declareTypes: [
-              { name: "InternalType", type: "SharedType<'internal'>" },
-            ],
             declareConstants: [
               { name: "internalValue", type: "SharedType<'internal'>" },
             ],
-            exportTypes: [{ name: "PublicType", type: "SharedType<'public'>" }],
+            declareTypes: [
+              { name: "InternalType", type: "SharedType<'internal'>" },
+            ],
             exportConstants: [
               { name: "publicValue", type: "SharedType<'public'>" },
             ],
+            exportTypes: [{ name: "PublicType", type: "SharedType<'public'>" }],
           },
+          name: "exact-types",
         },
       ],
     });
@@ -156,19 +156,19 @@ describe("reusable-convention-package.schema.json", () => {
       conventionSpecVersion: "v1",
       conventions: [
         {
-          name: "settings",
           description: "Settings exports.",
           must: {
             exportTypes: [
               {
                 name: "Settings",
                 schema: {
-                  type: "object",
                   properties: { auth: { type: "MyAuth | null" } },
+                  type: "object",
                 },
               },
             ],
           },
+          name: "settings",
         },
       ],
     });
@@ -180,14 +180,14 @@ describe("reusable-convention-package.schema.json", () => {
       conventionSpecVersion: "v1",
       conventions: [
         {
-          name: "aliases",
           description: "Symbol aliases.",
           must: {
-            importValues: [{ name: "sourceValue", alias: "localValue" }],
-            importTypes: [{ name: "SourceType", alias: "LocalType" }],
-            exportValues: [{ name: "localValue", alias: "publicValue" }],
-            exportTypes: [{ name: "LocalType", alias: "PublicType" }],
+            exportTypes: [{ alias: "PublicType", name: "LocalType" }],
+            exportValues: [{ alias: "publicValue", name: "localValue" }],
+            importTypes: [{ alias: "LocalType", name: "SourceType" }],
+            importValues: [{ alias: "localValue", name: "sourceValue" }],
           },
+          name: "aliases",
         },
       ],
     });
@@ -196,9 +196,9 @@ describe("reusable-convention-package.schema.json", () => {
 
   it("accepts value and type import conditions through if and ifNot", () => {
     const conditions = [
-      { hasValueImport: { name: "createClient", from: "./client" } },
+      { hasValueImport: { from: "./client", name: "createClient" } },
       { hasValueImportFrom: "./client" },
-      { hasTypeImport: { name: "Client", from: "./client" } },
+      { hasTypeImport: { from: "./client", name: "Client" } },
       { hasTypeImportFrom: "./client" },
     ];
 
@@ -208,8 +208,8 @@ describe("reusable-convention-package.schema.json", () => {
           conventionSpecVersion: "v1",
           conventions: [
             {
-              name: `import-condition-${index}`,
               description: "Import condition.",
+              name: `import-condition-${index}`,
               [conditionField]: condition,
               must: { haveType: "file" },
             },
@@ -225,56 +225,56 @@ describe("reusable-convention-package.schema.json", () => {
       conventionSpecVersion: "v1",
       conventions: [
         {
-          name: "import-condition",
           description: "Import condition.",
           if: {
             hasValueImport: {
-              name: "createClient",
               alias: "createApiClient",
+              name: "createClient",
             },
           },
           must: { haveType: "file" },
+          name: "import-condition",
         },
       ],
     });
     expect(valid).toBe(false);
   });
 
-  it.each([
-    "import",
-    "export",
-  ])("rejects aliases for the deprecated %s predicate", (predicate) => {
-    const valid = validate({
-      conventionSpecVersion: "v1",
-      conventions: [
-        {
-          name: "legacy",
-          description: "Legacy predicate.",
-          must: {
-            [predicate]: [{ name: "source", alias: "publicName" }],
+  it.each(["import", "export"])(
+    "rejects aliases for the deprecated %s predicate",
+    (predicate) => {
+      const valid = validate({
+        conventionSpecVersion: "v1",
+        conventions: [
+          {
+            description: "Legacy predicate.",
+            must: {
+              [predicate]: [{ alias: "publicName", name: "source" }],
+            },
+            name: "legacy",
           },
-        },
-      ],
-    });
-    expect(valid).toBe(false);
-  });
+        ],
+      });
+      expect(valid).toBe(false);
+    }
+  );
 
   it("rejects exportTypes entries with both from and schema", () => {
     const valid = validate({
       conventionSpecVersion: "v1",
       conventions: [
         {
-          name: "settings",
           description: "Settings exports.",
           must: {
             exportTypes: [
               {
-                name: "Settings",
                 from: "./settings",
-                schema: { type: "object", properties: {} },
+                name: "Settings",
+                schema: { properties: {}, type: "object" },
               },
             ],
           },
+          name: "settings",
         },
       ],
     });
@@ -286,17 +286,17 @@ describe("reusable-convention-package.schema.json", () => {
       conventionSpecVersion: "v1",
       conventions: [
         {
-          name: "settings",
           description: "Settings exports.",
           must: {
             exportTypes: [
               {
                 name: "Settings",
+                schema: { properties: {}, type: "object" },
                 type: "SharedSettings",
-                schema: { type: "object", properties: {} },
               },
             ],
           },
+          name: "settings",
         },
       ],
     });

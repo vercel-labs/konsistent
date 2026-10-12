@@ -62,22 +62,23 @@ export function normalizeArgumentExpression(opts: {
   session?: TypeScriptSession;
 }): string | undefined {
   return withTypeScriptSession({
-    session: opts.session,
     run: (session) =>
       session.withSourceFile({
-        source: `(${opts.text});`,
         filePath: "konsistent-expression.ts",
+        source: `(${opts.text});`,
         visit(source) {
-          const statement = source.sourceFile.statements[0];
+          const [statement] = source.sourceFile.statements;
           if (!(statement && isExpressionStatement(statement))) {
             return;
           }
-          let expression = statement.expression;
+          let { expression } = statement;
           while (isParenthesizedExpression(expression)) {
-            expression = expression.expression;
+            const { expression: innerExpression } = expression;
+            expression = innerExpression;
           }
           return expressionFingerprint({ node: expression, source });
         },
       }),
+    session: opts.session,
   });
 }

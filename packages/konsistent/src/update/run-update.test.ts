@@ -11,10 +11,10 @@ vi.mock("./package-manager.js", async () => {
   const actual = await vi.importActual<typeof pm>("./package-manager.js");
   return {
     ...actual,
+    detectPackageManager: vi.fn(),
     isGlobalInstall: vi.fn(),
     isMonorepo: vi.fn().mockReturnValue(false),
     isPackageInDeps: vi.fn(),
-    detectPackageManager: vi.fn(),
     updatePackageJsonVersion: vi.fn(),
   };
 });

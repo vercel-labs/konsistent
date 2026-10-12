@@ -47,7 +47,7 @@ describe("reusable-convention-string-ref-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number;
+        code: number | null;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -83,7 +83,7 @@ describe("reusable-convention-object-ref-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number;
+        code: number | null;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -105,7 +105,7 @@ describe("reusable-convention-top-level-if fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number;
+        code: number | null;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -149,7 +149,7 @@ describe("reusable-convention-must-block-ref-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number;
+        code: number | null;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -187,7 +187,7 @@ describe("reusable-convention-merge-overrides-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number;
+        code: number | null;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -223,7 +223,7 @@ describe("reusable-convention-string-ref-pkg-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number;
+        code: number | null;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -259,7 +259,7 @@ describe("reusable-convention-object-ref-pkg-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number;
+        code: number | null;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -298,7 +298,7 @@ describe("reusable-convention-merge-overrides-pkg-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number;
+        code: number | null;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -321,7 +321,7 @@ describe("reusable-convention-unknown-source fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number;
+        code: number | null;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -345,7 +345,7 @@ describe("reusable-convention-placeholder-mismatch fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number;
+        code: number | null;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -365,7 +365,7 @@ describe("reusable-convention-placeholder-mismatch fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number;
+        code: number | null;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);

@@ -13,7 +13,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  rmSync(tmpDir, { recursive: true, force: true });
+  rmSync(tmpDir, { force: true, recursive: true });
 });
 
 function setupNpmFixture(opts: {
@@ -50,18 +50,18 @@ describe("resolveSources", () => {
         conventionSpecVersion: "v1",
         conventions: [
           {
-            name: "must-have-readme",
             description: "Every package must have a README.md.",
-            paths: ["packages/{packageName}"],
             must: { haveFiles: ["README.md"] },
+            name: "must-have-readme",
+            paths: ["packages/{packageName}"],
           },
         ],
       })
     );
 
     const result = await resolveSources({
-      conventionSources: { common: "./common.json" },
       configDir: tmpDir,
+      conventionSources: { common: "./common.json" },
     });
 
     expect(result.success).toBe(true);
@@ -82,18 +82,18 @@ describe("resolveSources", () => {
         conventionSpecVersion: "v1",
         conventions: [
           {
-            name: "x",
             description: "y",
-            paths: "src/*.ts",
             must: { haveType: "file" },
+            name: "x",
+            paths: "src/*.ts",
           },
         ],
       })
     );
 
     const result = await resolveSources({
-      conventionSources: { common: absPath },
       configDir: tmpDir,
+      conventionSources: { common: absPath },
     });
 
     expect(result.success).toBe(true);
@@ -101,8 +101,8 @@ describe("resolveSources", () => {
 
   it("returns error with the failing path when file is missing", async () => {
     const result = await resolveSources({
-      conventionSources: { common: "./missing.json" },
       configDir: tmpDir,
+      conventionSources: { common: "./missing.json" },
     });
 
     expect(result.success).toBe(false);
@@ -117,8 +117,8 @@ describe("resolveSources", () => {
     writeFileSync(join(tmpDir, "bad.json"), "{ not json");
 
     const result = await resolveSources({
-      conventionSources: { common: "./bad.json" },
       configDir: tmpDir,
+      conventionSources: { common: "./bad.json" },
     });
 
     expect(result.success).toBe(false);
@@ -138,8 +138,8 @@ describe("resolveSources", () => {
     );
 
     const result = await resolveSources({
-      conventionSources: { common: "./bad-shape.json" },
       configDir: tmpDir,
+      conventionSources: { common: "./bad-shape.json" },
     });
 
     expect(result.success).toBe(false);
@@ -151,8 +151,8 @@ describe("resolveSources", () => {
 
   it("returns an empty source map for empty conventionSources", async () => {
     const result = await resolveSources({
-      conventionSources: {},
       configDir: tmpDir,
+      conventionSources: {},
     });
 
     expect(result.success).toBe(true);
@@ -163,8 +163,8 @@ describe("resolveSources", () => {
 
   it("rejects empty-string source values with a precise error", async () => {
     const result = await resolveSources({
-      conventionSources: { common: "" },
       configDir: tmpDir,
+      conventionSources: { common: "" },
     });
 
     expect(result.success).toBe(false);
@@ -176,8 +176,8 @@ describe("resolveSources", () => {
 
   it("rejects whitespace-only source values with a precise error", async () => {
     const result = await resolveSources({
-      conventionSources: { common: "   " },
       configDir: tmpDir,
+      conventionSources: { common: "   " },
     });
 
     expect(result.success).toBe(false);
@@ -189,31 +189,31 @@ describe("resolveSources", () => {
 
   it("resolves an npm-form specifier through the konsistent exports condition", async () => {
     const { configDir } = setupNpmFixture({
-      packageName: "@scope/sample-conventions",
-      packageJson: {
-        name: "@scope/sample-conventions",
-        version: "0.0.0",
-        type: "module",
-        exports: {
-          "./konsistent": "./conventions.json",
-        },
-      },
       conventionsContent: JSON.stringify({
         conventionSpecVersion: "v1",
         conventions: [
           {
-            name: "must-have-readme",
             description: "Every package must have a README.md.",
-            paths: ["packages/{packageName}"],
             must: { haveFiles: ["README.md"] },
+            name: "must-have-readme",
+            paths: ["packages/{packageName}"],
           },
         ],
       }),
+      packageJson: {
+        exports: {
+          "./konsistent": "./conventions.json",
+        },
+        name: "@scope/sample-conventions",
+        type: "module",
+        version: "0.0.0",
+      },
+      packageName: "@scope/sample-conventions",
     });
 
     const result = await resolveSources({
-      conventionSources: { common: "@scope/sample-conventions" },
       configDir,
+      conventionSources: { common: "@scope/sample-conventions" },
     });
 
     expect(result.success).toBe(true);
@@ -227,19 +227,19 @@ describe("resolveSources", () => {
   });
 
   it("prefers the konsistent condition over default in conditional exports", async () => {
+    const conditionalExports = Object.create(null) as Record<string, string>;
+    conditionalExports.konsistent = "./konsistent.json";
+    conditionalExports.default = "./default.json";
     const { configDir, pkgDir } = setupNpmFixture({
-      packageName: "@scope/conditional-conventions",
       packageJson: {
-        name: "@scope/conditional-conventions",
-        version: "0.0.0",
-        type: "module",
         exports: {
-          "./konsistent": {
-            konsistent: "./konsistent.json",
-            default: "./default.json",
-          },
+          "./konsistent": conditionalExports,
         },
+        name: "@scope/conditional-conventions",
+        type: "module",
+        version: "0.0.0",
       },
+      packageName: "@scope/conditional-conventions",
     });
 
     writeFileSync(
@@ -248,10 +248,10 @@ describe("resolveSources", () => {
         conventionSpecVersion: "v1",
         conventions: [
           {
-            name: "from-konsistent",
             description: "Loaded from the konsistent condition.",
-            paths: "src/*.ts",
             must: { haveType: "file" },
+            name: "from-konsistent",
+            paths: "src/*.ts",
           },
         ],
       })
@@ -265,8 +265,8 @@ describe("resolveSources", () => {
     );
 
     const result = await resolveSources({
-      conventionSources: { common: "@scope/conditional-conventions" },
       configDir,
+      conventionSources: { common: "@scope/conditional-conventions" },
     });
 
     expect(result.success).toBe(true);
@@ -281,10 +281,10 @@ describe("resolveSources", () => {
     mkdirSync(configDir, { recursive: true });
 
     const result = await resolveSources({
+      configDir,
       conventionSources: {
         common: "@konsistent-test/definitely-not-installed",
       },
-      configDir,
     });
 
     expect(result.success).toBe(false);
@@ -300,20 +300,20 @@ describe("resolveSources", () => {
 
   it("errors clearly when the npm package lacks the './konsistent' export", async () => {
     const { configDir } = setupNpmFixture({
-      packageName: "@scope/no-konsistent-export",
       packageJson: {
-        name: "@scope/no-konsistent-export",
-        version: "0.0.0",
-        type: "module",
         exports: {
           ".": "./index.js",
         },
+        name: "@scope/no-konsistent-export",
+        type: "module",
+        version: "0.0.0",
       },
+      packageName: "@scope/no-konsistent-export",
     });
 
     const result = await resolveSources({
-      conventionSources: { common: "@scope/no-konsistent-export" },
       configDir,
+      conventionSources: { common: "@scope/no-konsistent-export" },
     });
 
     expect(result.success).toBe(false);
@@ -326,17 +326,17 @@ describe("resolveSources", () => {
 
   it("errors clearly when the npm package has no exports map at all", async () => {
     const { configDir } = setupNpmFixture({
-      packageName: "@scope/no-exports",
       packageJson: {
         name: "@scope/no-exports",
-        version: "0.0.0",
         type: "module",
+        version: "0.0.0",
       },
+      packageName: "@scope/no-exports",
     });
 
     const result = await resolveSources({
-      conventionSources: { common: "@scope/no-exports" },
       configDir,
+      conventionSources: { common: "@scope/no-exports" },
     });
 
     expect(result.success).toBe(false);
@@ -348,24 +348,24 @@ describe("resolveSources", () => {
 
   it("includes the npm specifier when the resolved JSON fails Zod validation", async () => {
     const { configDir } = setupNpmFixture({
-      packageName: "@scope/bad-shape",
-      packageJson: {
-        name: "@scope/bad-shape",
-        version: "0.0.0",
-        type: "module",
-        exports: {
-          "./konsistent": "./conventions.json",
-        },
-      },
       conventionsContent: JSON.stringify({
         conventionSpecVersion: "v2",
         conventions: [],
       }),
+      packageJson: {
+        exports: {
+          "./konsistent": "./conventions.json",
+        },
+        name: "@scope/bad-shape",
+        type: "module",
+        version: "0.0.0",
+      },
+      packageName: "@scope/bad-shape",
     });
 
     const result = await resolveSources({
-      conventionSources: { common: "@scope/bad-shape" },
       configDir,
+      conventionSources: { common: "@scope/bad-shape" },
     });
 
     expect(result.success).toBe(false);
@@ -378,20 +378,20 @@ describe("resolveSources", () => {
 
   it('rejects exports["./konsistent"] entries that escape the package via ..', async () => {
     const { configDir } = setupNpmFixture({
-      packageName: "@scope/escape-exports-relative",
       packageJson: {
-        name: "@scope/escape-exports-relative",
-        version: "0.0.0",
-        type: "module",
         exports: {
           "./konsistent": "../../../../../../etc/conventions.json",
         },
+        name: "@scope/escape-exports-relative",
+        type: "module",
+        version: "0.0.0",
       },
+      packageName: "@scope/escape-exports-relative",
     });
 
     const result = await resolveSources({
-      conventionSources: { common: "@scope/escape-exports-relative" },
       configDir,
+      conventionSources: { common: "@scope/escape-exports-relative" },
     });
 
     expect(result.success).toBe(false);
@@ -402,21 +402,21 @@ describe("resolveSources", () => {
 
   it("includes the npm specifier when the resolved JSON is malformed", async () => {
     const { configDir } = setupNpmFixture({
-      packageName: "@scope/malformed-json",
+      conventionsContent: "{ not json",
       packageJson: {
-        name: "@scope/malformed-json",
-        version: "0.0.0",
-        type: "module",
         exports: {
           "./konsistent": "./conventions.json",
         },
+        name: "@scope/malformed-json",
+        type: "module",
+        version: "0.0.0",
       },
-      conventionsContent: "{ not json",
+      packageName: "@scope/malformed-json",
     });
 
     const result = await resolveSources({
-      conventionSources: { common: "@scope/malformed-json" },
       configDir,
+      conventionSources: { common: "@scope/malformed-json" },
     });
 
     expect(result.success).toBe(false);
@@ -429,8 +429,8 @@ describe("resolveSources", () => {
   describe("auto-detection routing", () => {
     it("routes './local.json' to the path-form branch", async () => {
       const result = await resolveSources({
-        conventionSources: { common: "./local.json" },
         configDir: tmpDir,
+        conventionSources: { common: "./local.json" },
       });
 
       expect(result.success).toBe(false);
@@ -442,8 +442,8 @@ describe("resolveSources", () => {
 
     it("routes an absolute path to the path-form branch", async () => {
       const result = await resolveSources({
-        conventionSources: { common: "/abs/path.json" },
         configDir: tmpDir,
+        conventionSources: { common: "/abs/path.json" },
       });
 
       expect(result.success).toBe(false);
@@ -458,8 +458,8 @@ describe("resolveSources", () => {
       mkdirSync(configDir, { recursive: true });
 
       const result = await resolveSources({
-        conventionSources: { common: "@scope/pkg" },
         configDir,
+        conventionSources: { common: "@scope/pkg" },
       });
 
       expect(result.success).toBe(false);
@@ -475,8 +475,8 @@ describe("resolveSources", () => {
       mkdirSync(configDir, { recursive: true });
 
       const result = await resolveSources({
-        conventionSources: { common: "bare-pkg" },
         configDir,
+        conventionSources: { common: "bare-pkg" },
       });
 
       expect(result.success).toBe(false);
@@ -492,8 +492,8 @@ describe("resolveSources", () => {
       mkdirSync(configDir, { recursive: true });
 
       const result = await resolveSources({
-        conventionSources: { common: "pkg/subpath" },
         configDir,
+        conventionSources: { common: "pkg/subpath" },
       });
 
       expect(result.success).toBe(false);

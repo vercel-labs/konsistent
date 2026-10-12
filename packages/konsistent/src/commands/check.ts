@@ -30,65 +30,65 @@ import {
 } from "../typescript/native-session.js";
 
 const checkArgs = {
-  "config-path": {
-    type: "string" as const,
-    description: "Path to konsistent.json config file",
+  colors: {
+    description: "Enable or disable colored output",
+    type: "boolean" as const,
   },
   "config-package": {
-    type: "string" as const,
     description:
       "NPM package name to load konsistent.json from (alternative to --config-path)",
-  },
-  format: {
     type: "string" as const,
-    description: "Output format (default, json, github, markdown)",
-    default: "default",
   },
-  verbose: {
-    type: "boolean" as const,
-    description: "Show execution time and expanded details",
-    default: false,
-  },
-  "max-diagnostics": {
+  "config-path": {
+    description: "Path to konsistent.json config file",
     type: "string" as const,
-    description: "Maximum number of diagnostics to report",
-    default: "100",
-  },
-  colors: {
-    type: "boolean" as const,
-    description: "Enable or disable colored output",
-  },
-  "error-on-warnings": {
-    type: "boolean" as const,
-    description: "Treat warnings as errors for exit code purposes",
-    default: false,
   },
   "diagnostic-level": {
-    type: "string" as const,
+    default: "warning",
     description:
       'Minimum diagnostic severity to evaluate (warning or error). When set to "error", warning-severity conventions are skipped entirely.',
-    default: "warning",
-  },
-  placeholder: {
     type: "string" as const,
-    description:
-      'Inject a placeholder value into every convention\'s placeholders map (overriding any existing entry). Format: "name:value". May be passed multiple times.',
   },
-  paths: {
-    type: "string" as const,
-    description:
-      "Path or glob to check. May be passed multiple times. Mutually exclusive with --staged and --modified.",
-  },
-  staged: {
-    type: "boolean" as const,
-    description: "Check files currently staged in Git",
+  "error-on-warnings": {
     default: false,
+    description: "Treat warnings as errors for exit code purposes",
+    type: "boolean" as const,
+  },
+  format: {
+    default: "default",
+    description: "Output format (default, json, github, markdown)",
+    type: "string" as const,
+  },
+  "max-diagnostics": {
+    default: "100",
+    description: "Maximum number of diagnostics to report",
+    type: "string" as const,
   },
   modified: {
-    type: "boolean" as const,
+    default: false,
     description:
       "Check staged, unstaged, and untracked files that are not ignored by Git",
+    type: "boolean" as const,
+  },
+  paths: {
+    description:
+      "Path or glob to check. May be passed multiple times. Mutually exclusive with --staged and --modified.",
+    type: "string" as const,
+  },
+  placeholder: {
+    description:
+      'Inject a placeholder value into every convention\'s placeholders map (overriding any existing entry). Format: "name:value". May be passed multiple times.',
+    type: "string" as const,
+  },
+  staged: {
     default: false,
+    description: "Check files currently staged in Git",
+    type: "boolean" as const,
+  },
+  verbose: {
+    default: false,
+    description: "Show execution time and expanded details",
+    type: "boolean" as const,
   },
 };
 
@@ -108,8 +108,8 @@ function parsePathSelectionOptions(opts: {
   modified: boolean;
 }): PathSelectionOptionsResult {
   const pathArgsResult = parseRepeatedStringOption({
-    rawArgs: opts.rawArgs,
     name: "--paths",
+    rawArgs: opts.rawArgs,
   });
   if (!pathArgsResult.success) {
     return pathArgsResult;
@@ -121,18 +121,18 @@ function parsePathSelectionOptions(opts: {
     Number(opts.modified);
   if (selectionModeCount > 1) {
     return {
-      success: false,
       error: "--paths, --staged, and --modified are mutually exclusive",
+      success: false,
     };
   }
 
   return {
-    success: true,
     options: {
+      modified: opts.modified,
       paths: pathArgsResult.values,
       staged: opts.staged,
-      modified: opts.modified,
     },
+    success: true,
   };
 }
 
@@ -143,12 +143,12 @@ async function resolveCheckPathSelection(opts: {
 }): Promise<{ pathSelection: PathSelection; emptyWarning?: string }> {
   if (opts.options.paths.length > 0) {
     return {
+      emptyWarning: "No paths matched --paths. Nothing to check.",
       pathSelection: await resolvePathSelectors({
-        selectors: opts.options.paths,
         cwd: opts.cwd,
         fileSystem: opts.fileSystem,
+        selectors: opts.options.paths,
       }),
-      emptyWarning: "No paths matched --paths. Nothing to check.",
     };
   }
 
@@ -161,10 +161,10 @@ async function resolveCheckPathSelection(opts: {
       ? await gitClient.listStagedPaths()
       : await gitClient.listModifiedPaths();
     return {
-      pathSelection: createTargetedPathSelection({ selectedPaths }),
       emptyWarning: opts.options.staged
         ? "No staged files found. Nothing to check."
         : "No modified files found. Nothing to check.",
+      pathSelection: createTargetedPathSelection({ selectedPaths }),
     };
   }
 
@@ -237,16 +237,16 @@ async function runCheckWithSession(
 }
 
 export default defineCommand({
-  meta: {
-    name: "check",
-    description: "Check structural conventions",
-  },
   args: checkArgs,
+  meta: {
+    description: "Check structural conventions",
+    name: "check",
+  },
   async run({ args, rawArgs }) {
     const pathSelectionOptions = parsePathSelectionOptions({
+      modified: args.modified,
       rawArgs,
       staged: args.staged,
-      modified: args.modified,
     });
     if (!pathSelectionOptions.success) {
       console.error(pc.red(pathSelectionOptions.error));
@@ -264,9 +264,9 @@ export default defineCommand({
     }
 
     const result = await loadConfig({
-      configPath: args["config-path"],
-      configPackage: args["config-package"],
       cliPlaceholders: cliPlaceholdersResult.placeholders,
+      configPackage: args["config-package"],
+      configPath: args["config-path"],
     });
     if (!result.success) {
       console.error(pc.red(result.error));
@@ -294,9 +294,9 @@ export default defineCommand({
     >;
     try {
       resolvedPathSelection = await resolveCheckPathSelection({
-        options: pathSelectionOptions.options,
         cwd: process.cwd(),
         fileSystem,
+        options: pathSelectionOptions.options,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -333,7 +333,7 @@ export default defineCommand({
     });
 
     const format = resolveFormat({ format: args.format });
-    const reporter = createReporter({ format, colors: args.colors });
+    const reporter = createReporter({ colors: args.colors, format });
     const formatted = reporter.format({ ...runResult, diagnostics: reported });
 
     const output: string[] = [];

@@ -6,16 +6,16 @@ const SUBCOMMANDS = new Set(["check", "validate", "version", "help", "update"]);
 
 const main = defineCommand({
   meta: {
+    description: "Enforce structural conventions in TypeScript codebases",
     name: "konsistent",
     version: getVersion(),
-    description: "Enforce structural conventions in TypeScript codebases",
   },
   subCommands: {
     check: () => import("./commands/check.js").then((m) => m.default),
-    validate: () => import("./commands/validate.js").then((m) => m.default),
-    version: () => import("./commands/version.js").then((m) => m.default),
     help: () => import("./commands/help.js").then((m) => m.default),
     update: () => import("./commands/update.js").then((m) => m.default),
+    validate: () => import("./commands/validate.js").then((m) => m.default),
+    version: () => import("./commands/version.js").then((m) => m.default),
   },
 });
 

@@ -54,12 +54,12 @@ function checkSignature(opts: {
     if (!hasParam) {
       diagnostics.push(
         createDiagnostic({
-          filePath: checkContext.context.path,
-          predicateName: checkContext.predicateName,
-          message: `Function "${resolvedName}" must receive a parameter of type "${resolvedParamType}"`,
-          conventionName: checkContext.conventionName,
-          line: funcInfo.pos.line,
           column: funcInfo.pos.column,
+          conventionName: checkContext.conventionName,
+          filePath: checkContext.context.path,
+          line: funcInfo.pos.line,
+          message: `Function "${resolvedName}" must receive a parameter of type "${resolvedParamType}"`,
+          predicateName: checkContext.predicateName,
           severity: checkContext.severity,
         })
       );
@@ -74,12 +74,12 @@ function checkSignature(opts: {
       }
       diagnostics.push(
         createDiagnostic({
-          filePath: checkContext.context.path,
-          predicateName: checkContext.predicateName,
-          message: `Function "${resolvedName}" parameter ${index + 1} must be of type "${expectedType}"`,
-          conventionName: checkContext.conventionName,
-          line: funcInfo.pos.line,
           column: funcInfo.pos.column,
+          conventionName: checkContext.conventionName,
+          filePath: checkContext.context.path,
+          line: funcInfo.pos.line,
+          message: `Function "${resolvedName}" parameter ${index + 1} must be of type "${expectedType}"`,
+          predicateName: checkContext.predicateName,
           severity: checkContext.severity,
         })
       );
@@ -92,12 +92,12 @@ function checkSignature(opts: {
   ) {
     diagnostics.push(
       createDiagnostic({
-        filePath: checkContext.context.path,
-        predicateName: checkContext.predicateName,
-        message: `Function "${resolvedName}" must return value of type "${resolvedReturnType}"`,
-        conventionName: checkContext.conventionName,
-        line: funcInfo.pos.line,
         column: funcInfo.pos.column,
+        conventionName: checkContext.conventionName,
+        filePath: checkContext.context.path,
+        line: funcInfo.pos.line,
+        message: `Function "${resolvedName}" must return value of type "${resolvedReturnType}"`,
+        predicateName: checkContext.predicateName,
         severity: checkContext.severity,
       })
     );
@@ -138,8 +138,8 @@ export function checkDeclareFunctions(opts: {
 
     const symbol = findDeclarationSymbol({
       fileStructure,
-      name: resolvedName,
       kinds: ["function"],
+      name: resolvedName,
     });
     const funcInfo = fileStructure.functions.find(
       (f) => f.name === resolvedName
@@ -169,12 +169,12 @@ export function checkDeclareFunctions(opts: {
 
     diagnostics.push(
       ...checkSignature({
+        checkContext,
         funcInfo,
         resolvedName,
         resolvedParamType,
         resolvedParamTypes,
         resolvedReturnType,
-        checkContext,
       })
     );
   }

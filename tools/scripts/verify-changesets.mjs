@@ -34,30 +34,37 @@ async function getPackageVersions({ root }) {
     throw error;
   }
   const versions = new Map();
-  for (const packageDir of packageDirs) {
-    if (!packageDir.isDirectory()) {
-      continue;
-    }
-    const packageJsonPath = path.join(
-      packagesPath,
-      packageDir.name,
-      "package.json"
-    );
-    let packageJson;
-    try {
-      packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf8"));
-    } catch (error) {
-      if (error && typeof error === "object" && error.code === "ENOENT") {
-        continue;
-      }
-      throw error;
-    }
-    if (
-      packageJson &&
-      typeof packageJson.name === "string" &&
-      typeof packageJson.version === "string"
-    ) {
-      versions.set(packageJson.name, packageJson.version);
+  const packageEntries = await Promise.all(
+    packageDirs
+      .filter((packageDir) => packageDir.isDirectory())
+      .map(async (packageDir) => {
+        const packageJsonPath = path.join(
+          packagesPath,
+          packageDir.name,
+          "package.json"
+        );
+        let packageJson;
+        try {
+          packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf8"));
+        } catch (error) {
+          if (error && typeof error === "object" && error.code === "ENOENT") {
+            return null;
+          }
+          throw error;
+        }
+        if (
+          packageJson &&
+          typeof packageJson.name === "string" &&
+          typeof packageJson.version === "string"
+        ) {
+          return [packageJson.name, packageJson.version];
+        }
+        return null;
+      })
+  );
+  for (const entry of packageEntries) {
+    if (entry) {
+      versions.set(entry[0], entry[1]);
     }
   }
   return versions;
@@ -132,30 +139,32 @@ async function verifyChangesets({
     );
   }
 
-  for (const file of allChangedChangesets) {
-    if (!CHANGESET_PATH_RE.test(file)) {
-      errors.push(`Invalid changeset path: \`${file}\`.`);
-      continue;
-    }
-    try {
-      const bumps = await parseChangeset({ relativePath: file, root });
-      const invalid = Object.entries(bumps).filter(([pkg, bump]) =>
-        isInvalidBump({ bump, packageVersions, pkg })
-      );
-      if (invalid.length > 0) {
-        errors.push(
-          [
-            `Invalid changeset \`${file}\` — only \`patch\` bumps are allowed (this repo stays on \`0.0.1-alpha.*\`).`,
-            ...invalid.map(
-              ([pkg, bump]) => `- \`${pkg}\`: \`${bump}\` (use \`patch\`)`
-            ),
-          ].join("\n")
-        );
+  const changesetErrors = await Promise.all(
+    allChangedChangesets.map(async (file) => {
+      if (!CHANGESET_PATH_RE.test(file)) {
+        return [`Invalid changeset path: \`${file}\`.`];
       }
-    } catch (error) {
-      errors.push(error.message);
-    }
-  }
+      try {
+        const bumps = await parseChangeset({ relativePath: file, root });
+        const invalid = Object.entries(bumps).filter(([pkg, bump]) =>
+          isInvalidBump({ bump, packageVersions, pkg })
+        );
+        return invalid.length > 0
+          ? [
+              [
+                `Invalid changeset \`${file}\` — only \`patch\` bumps are allowed (this repo stays on \`0.0.1-alpha.*\`).`,
+                ...invalid.map(
+                  ([pkg, bump]) => `- \`${pkg}\`: \`${bump}\` (use \`patch\`)`
+                ),
+              ].join("\n"),
+            ]
+          : [];
+      } catch (error) {
+        return [error.message];
+      }
+    })
+  );
+  errors.push(...changesetErrors.flat());
 
   return errors;
 }

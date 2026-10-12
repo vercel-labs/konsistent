@@ -5,7 +5,7 @@ import type { ReusableConventionV1 } from "./schemas.js";
 describe("defineConventions", () => {
   it("passes input through unchanged", () => {
     const input = [
-      { name: "a", description: "d", must: { haveFiles: ["README.md"] } },
+      { description: "d", must: { haveFiles: ["README.md"] }, name: "a" },
     ] as const satisfies readonly ReusableConventionV1[];
     const out = defineConventions(input);
     expect(out).toBe(input);
@@ -13,7 +13,7 @@ describe("defineConventions", () => {
 
   it("preserves the literal tuple type", () => {
     const out = defineConventions([
-      { name: "a", description: "d", must: { haveFiles: ["README.md"] } },
+      { description: "d", must: { haveFiles: ["README.md"] }, name: "a" },
     ]);
     expectTypeOf(out).toEqualTypeOf<
       readonly [

@@ -71,10 +71,10 @@ export function createMissingDeclarationDiagnostic(opts: {
 }): Diagnostic {
   const { checkContext, label, name } = opts;
   return createDiagnostic({
-    filePath: checkContext.context.path,
-    predicateName: checkContext.predicateName,
-    message: `Missing local ${label} declaration "${name}"`,
     conventionName: checkContext.conventionName,
+    filePath: checkContext.context.path,
+    message: `Missing local ${label} declaration "${name}"`,
+    predicateName: checkContext.predicateName,
     severity: checkContext.severity,
   });
 }
@@ -86,12 +86,12 @@ export function createExportedDeclarationDiagnostic(opts: {
 }): Diagnostic {
   const { checkContext, label, symbol } = opts;
   return createDiagnostic({
-    filePath: checkContext.context.path,
-    predicateName: checkContext.predicateName,
-    message: `Local ${label} declaration "${symbol.name}" must not be exported`,
-    conventionName: checkContext.conventionName,
-    line: symbol.pos.line,
     column: symbol.pos.column,
+    conventionName: checkContext.conventionName,
+    filePath: checkContext.context.path,
+    line: symbol.pos.line,
+    message: `Local ${label} declaration "${symbol.name}" must not be exported`,
+    predicateName: checkContext.predicateName,
     severity: checkContext.severity,
   });
 }

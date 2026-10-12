@@ -20,7 +20,7 @@ export function validatePlaceholders(opts: {
   const { conventions, identifiers } = opts;
   const errors: string[] = [];
 
-  for (let i = 0; i < conventions.length; i++) {
+  for (let i = 0; i < conventions.length; i += 1) {
     const convention = conventions[i];
     if (!convention) {
       continue;
@@ -58,14 +58,14 @@ export function validatePlaceholders(opts: {
   if (errors.length === 0) {
     return { ok: true };
   }
-  return { ok: false, error: errors.join("\n") };
+  return { error: errors.join("\n"), ok: false };
 }
 
 function collectDeclarations(paths: string | string[]): Set<string> {
   const declared = new Set<string>();
   const entries = typeof paths === "string" ? [paths] : paths;
   for (const entry of entries) {
-    addDeclarationsFromString({ value: entry, into: declared });
+    addDeclarationsFromString({ into: declared, value: entry });
   }
   return declared;
 }
@@ -76,7 +76,7 @@ function addDeclarationsFromString(opts: {
 }): void {
   const { value, into } = opts;
   for (const match of value.matchAll(DECLARATION_REGEX)) {
-    const name = match[1];
+    const [, name] = match;
     if (name !== undefined) {
       into.add(name);
     }
@@ -97,24 +97,24 @@ function collectUsagesInConvention(opts: {
   if (convention.if) {
     collectUsagesInCondition({
       condition: convention.if,
-      keyPrefix: "if",
       declared,
+      keyPrefix: "if",
       usages,
     });
   }
   if (convention.ifNot) {
     collectUsagesInCondition({
       condition: convention.ifNot,
-      keyPrefix: "ifNot",
       declared,
+      keyPrefix: "ifNot",
       usages,
     });
   }
   usages.push(
     ...collectUsagesInAssertions({
+      declaredOuter: declared,
       must: convention.must,
       mustNot: convention.mustNot,
-      declaredOuter: declared,
     })
   );
   return usages;
@@ -129,28 +129,30 @@ function collectUsagesInCondition(opts: {
   const { condition, keyPrefix, declared, usages } = opts;
   if (Object.hasOwn(condition, "hasFile")) {
     pushStringUsages({
-      value: (condition as { hasFile: string }).hasFile,
-      key: `${keyPrefix}.hasFile`,
       declared,
+      key: `${keyPrefix}.hasFile`,
       usages,
+      value: (condition as { hasFile: string }).hasFile,
     });
   } else if (Object.hasOwn(condition, "hasDirectory")) {
     pushStringUsages({
-      value: (condition as { hasDirectory: string }).hasDirectory,
-      key: `${keyPrefix}.hasDirectory`,
       declared,
+      key: `${keyPrefix}.hasDirectory`,
       usages,
+      value: (condition as { hasDirectory: string }).hasDirectory,
     });
   } else if (Object.hasOwn(condition, "placeholderSatisfies")) {
     pushStringUsages({
+      declared,
+      key: `${keyPrefix}.placeholderSatisfies`,
+      usages,
       value: (condition as { placeholderSatisfies: string })
         .placeholderSatisfies,
-      key: `${keyPrefix}.placeholderSatisfies`,
-      declared,
-      usages,
     });
   } else if (Object.hasOwn(condition, "hasValueImport")) {
     collectUsagesInDefinitionList({
+      declared,
+      key: `${keyPrefix}.hasValueImport`,
       list: [
         (
           condition as {
@@ -158,13 +160,13 @@ function collectUsagesInCondition(opts: {
           }
         ).hasValueImport,
       ],
-      key: `${keyPrefix}.hasValueImport`,
       objectFields: ["name", "from"],
-      declared,
       usages,
     });
   } else if (Object.hasOwn(condition, "hasTypeImport")) {
     collectUsagesInDefinitionList({
+      declared,
+      key: `${keyPrefix}.hasTypeImport`,
       list: [
         (
           condition as {
@@ -172,24 +174,22 @@ function collectUsagesInCondition(opts: {
           }
         ).hasTypeImport,
       ],
-      key: `${keyPrefix}.hasTypeImport`,
       objectFields: ["name", "from"],
-      declared,
       usages,
     });
   } else if (Object.hasOwn(condition, "hasValueImportFrom")) {
     pushStringUsages({
-      value: (condition as { hasValueImportFrom: string }).hasValueImportFrom,
-      key: `${keyPrefix}.hasValueImportFrom`,
       declared,
+      key: `${keyPrefix}.hasValueImportFrom`,
       usages,
+      value: (condition as { hasValueImportFrom: string }).hasValueImportFrom,
     });
   } else if (Object.hasOwn(condition, "hasTypeImportFrom")) {
     pushStringUsages({
-      value: (condition as { hasTypeImportFrom: string }).hasTypeImportFrom,
-      key: `${keyPrefix}.hasTypeImportFrom`,
       declared,
+      key: `${keyPrefix}.hasTypeImportFrom`,
       usages,
+      value: (condition as { hasTypeImportFrom: string }).hasTypeImportFrom,
     });
   }
 }
@@ -207,17 +207,17 @@ function collectUsagesInAssertions(opts: {
     }
   } else if (must) {
     collectUsagesInPredicates({
+      declared: declaredOuter,
       predicates: must,
       prefix: "must",
-      declared: declaredOuter,
       usages,
     });
   }
   if (mustNot) {
     collectUsagesInPredicates({
+      declared: declaredOuter,
       predicates: mustNot,
       prefix: "mustNot",
-      declared: declaredOuter,
       usages,
     });
   }
@@ -233,15 +233,15 @@ function collectUsagesInBlock(opts: {
 
   const declaredHere = new Set(declaredOuter);
   if (block.for) {
-    const files = block.for.files;
+    const { files } = block.for;
     const filesArr = typeof files === "string" ? [files] : files;
     for (const f of filesArr) {
-      addDeclarationsFromString({ value: f, into: declaredHere });
+      addDeclarationsFromString({ into: declaredHere, value: f });
       pushStringUsages({
-        value: f,
-        key: "must.for.files",
         declared: declaredOuter,
+        key: "must.for.files",
         usages,
+        value: f,
       });
     }
   }
@@ -249,16 +249,16 @@ function collectUsagesInBlock(opts: {
   if (block.if) {
     collectUsagesInCondition({
       condition: block.if,
-      keyPrefix: "must.if",
       declared: declaredHere,
+      keyPrefix: "must.if",
       usages,
     });
   }
   if (block.ifNot) {
     collectUsagesInCondition({
       condition: block.ifNot,
-      keyPrefix: "must.ifNot",
       declared: declaredHere,
+      keyPrefix: "must.ifNot",
       usages,
     });
   }
@@ -266,27 +266,27 @@ function collectUsagesInBlock(opts: {
   if (block.excludeFiles) {
     for (const f of block.excludeFiles) {
       pushStringUsages({
-        value: f,
-        key: "must.excludeFiles",
         declared: declaredHere,
+        key: "must.excludeFiles",
         usages,
+        value: f,
       });
     }
   }
 
   if (block.must) {
     collectUsagesInPredicates({
+      declared: declaredHere,
       predicates: block.must,
       prefix: "must",
-      declared: declaredHere,
       usages,
     });
   }
   if (block.mustNot) {
     collectUsagesInPredicates({
+      declared: declaredHere,
       predicates: block.mustNot,
       prefix: "mustNot",
-      declared: declaredHere,
       usages,
     });
   }
@@ -303,10 +303,10 @@ function collectUsagesInPredicates(opts: {
   if (predicates.haveFiles) {
     for (const f of predicates.haveFiles) {
       pushStringUsages({
-        value: f,
-        key: `${prefix}.haveFiles`,
         declared,
+        key: `${prefix}.haveFiles`,
         usages,
+        value: f,
       });
     }
   }
@@ -314,178 +314,178 @@ function collectUsagesInPredicates(opts: {
   if (predicates.haveDirectories) {
     for (const directory of predicates.haveDirectories) {
       pushStringUsages({
-        value: directory,
-        key: `${prefix}.haveDirectories`,
         declared,
+        key: `${prefix}.haveDirectories`,
         usages,
+        value: directory,
       });
     }
   }
 
   collectUsagesInDefinitionList({
-    list: predicates.declareTypes,
+    declared,
     key: `${prefix}.declareTypes`,
+    list: predicates.declareTypes,
     objectFields: ["name", "type"],
     schemaField: true,
-    declared,
     usages,
   });
   collectUsagesInDefinitionList({
-    list: predicates.declareConstants,
+    declared,
     key: `${prefix}.declareConstants`,
+    list: predicates.declareConstants,
     objectFields: ["name", "type"],
     schemaField: true,
-    declared,
     usages,
   });
   collectUsagesInDefinitionList({
-    list: predicates.declareFunctions,
-    key: `${prefix}.declareFunctions`,
-    objectFields: ["name", "receiveParamOfType", "returnValueOfType"],
     arrayFields: ["receiveParamsOfTypes"],
     declared,
+    key: `${prefix}.declareFunctions`,
+    list: predicates.declareFunctions,
+    objectFields: ["name", "receiveParamOfType", "returnValueOfType"],
     usages,
   });
   collectUsagesInDefinitionList({
-    list: predicates.callFunction,
-    key: `${prefix}.callFunction`,
-    objectFields: ["name"],
     arrayFields: ["arguments"],
     declared,
+    key: `${prefix}.callFunction`,
+    list: predicates.callFunction,
+    objectFields: ["name"],
     usages,
   });
   collectUsagesInDefinitionList({
-    list: predicates.declareInterfaces,
-    key: `${prefix}.declareInterfaces`,
-    objectFields: ["name"],
-    extendField: true,
     declared,
+    extendField: true,
+    key: `${prefix}.declareInterfaces`,
+    list: predicates.declareInterfaces,
+    objectFields: ["name"],
     usages,
   });
   collectUsagesInDefinitionList({
-    list: predicates.declareClasses,
-    key: `${prefix}.declareClasses`,
-    objectFields: ["name"],
+    declared,
     extendField: true,
     implementField: true,
-    declared,
+    key: `${prefix}.declareClasses`,
+    list: predicates.declareClasses,
+    objectFields: ["name"],
     usages,
   });
   if (predicates.useDeclarationOrder) {
     for (const name of predicates.useDeclarationOrder) {
       pushStringUsages({
-        value: name,
-        key: `${prefix}.useDeclarationOrder`,
         declared,
+        key: `${prefix}.useDeclarationOrder`,
         usages,
+        value: name,
       });
     }
   }
 
   collectUsagesInDefinitionList({
-    list: predicates.exportValues,
+    declared,
     key: `${prefix}.exportValues`,
+    list: predicates.exportValues,
     objectFields: ["name", "alias", "from"],
-    declared,
     usages,
   });
   collectUsagesInDefinitionList({
-    list: predicates.export,
+    declared,
     key: `${prefix}.export`,
+    list: predicates.export,
     objectFields: ["name", "from"],
-    declared,
     usages,
   });
   collectUsagesInDefinitionList({
-    list: predicates.exportTypes,
+    declared,
     key: `${prefix}.exportTypes`,
+    list: predicates.exportTypes,
     objectFields: ["name", "alias", "from", "type"],
     schemaField: true,
-    declared,
     usages,
   });
   collectImportFromUsages({
-    sources: predicates.exportValuesFrom,
+    declared,
     key: `${prefix}.exportValuesFrom`,
-    declared,
+    sources: predicates.exportValuesFrom,
     usages,
   });
   collectImportFromUsages({
-    sources: predicates.exportTypesFrom,
-    key: `${prefix}.exportTypesFrom`,
     declared,
+    key: `${prefix}.exportTypesFrom`,
+    sources: predicates.exportTypesFrom,
     usages,
   });
   collectUsagesInDefinitionList({
-    list: predicates.exportConstants,
+    declared,
     key: `${prefix}.exportConstants`,
+    list: predicates.exportConstants,
     objectFields: ["name", "type"],
     schemaField: true,
-    declared,
     usages,
   });
   collectUsagesInDefinitionList({
-    list: predicates.exportFunctions,
-    key: `${prefix}.exportFunctions`,
-    objectFields: ["name", "receiveParamOfType", "returnValueOfType"],
     arrayFields: ["receiveParamsOfTypes"],
     declared,
+    key: `${prefix}.exportFunctions`,
+    list: predicates.exportFunctions,
+    objectFields: ["name", "receiveParamOfType", "returnValueOfType"],
     usages,
   });
   collectUsagesInDefinitionList({
-    list: predicates.exportInterfaces,
-    key: `${prefix}.exportInterfaces`,
-    objectFields: ["name"],
-    extendField: true,
     declared,
+    extendField: true,
+    key: `${prefix}.exportInterfaces`,
+    list: predicates.exportInterfaces,
+    objectFields: ["name"],
     usages,
   });
   collectUsagesInDefinitionList({
-    list: predicates.exportClasses,
-    key: `${prefix}.exportClasses`,
-    objectFields: ["name"],
+    declared,
     extendField: true,
     implementField: true,
-    declared,
+    key: `${prefix}.exportClasses`,
+    list: predicates.exportClasses,
+    objectFields: ["name"],
     usages,
   });
   collectUsagesInDefinitionList({
-    list: predicates.importValues,
+    declared,
     key: `${prefix}.importValues`,
+    list: predicates.importValues,
     objectFields: ["name", "alias", "from"],
-    declared,
     usages,
   });
   collectUsagesInDefinitionList({
-    list: predicates.import,
+    declared,
     key: `${prefix}.import`,
+    list: predicates.import,
     objectFields: ["name", "from"],
-    declared,
     usages,
   });
   collectImportFromUsages({
-    sources: predicates.importValuesFrom,
+    declared,
     key: `${prefix}.importValuesFrom`,
-    declared,
+    sources: predicates.importValuesFrom,
     usages,
   });
   collectImportFromUsages({
-    sources: predicates.importTypesFrom,
+    declared,
     key: `${prefix}.importTypesFrom`,
-    declared,
+    sources: predicates.importTypesFrom,
     usages,
   });
   collectImportFromUsages({
-    sources: predicates.importFrom,
-    key: `${prefix}.importFrom`,
     declared,
+    key: `${prefix}.importFrom`,
+    sources: predicates.importFrom,
     usages,
   });
   collectUsagesInDefinitionList({
-    list: predicates.importTypes,
-    key: `${prefix}.importTypes`,
-    objectFields: ["name", "alias", "from"],
     declared,
+    key: `${prefix}.importTypes`,
+    list: predicates.importTypes,
+    objectFields: ["name", "alias", "from"],
     usages,
   });
 }
@@ -502,7 +502,7 @@ function collectImportFromUsages(opts: {
   }
   const entries = typeof sources === "string" ? [sources] : sources;
   for (const source of entries) {
-    pushStringUsages({ value: source, key, declared, usages });
+    pushStringUsages({ declared, key, usages, value: source });
   }
 }
 
@@ -533,40 +533,40 @@ function collectUsagesInDefinitionList(opts: {
   }
   for (const entry of list) {
     if (typeof entry === "string") {
-      pushStringUsages({ value: entry, key, declared, usages });
+      pushStringUsages({ declared, key, usages, value: entry });
       continue;
     }
     collectObjectFieldUsages({
+      declared,
       entry,
       fields: objectFields,
       key,
-      declared,
       usages,
     });
     collectArrayFieldUsages({
+      declared,
       entry,
       fields: arrayFields ?? [],
       key,
-      declared,
       usages,
     });
     if (extendField) {
-      collectExtendUsages({ value: entry.extend, key, declared, usages });
+      collectExtendUsages({ declared, key, usages, value: entry.extend });
     }
     if (implementField && Array.isArray(entry.implement)) {
       collectImplementUsages({
-        values: entry.implement,
-        key,
         declared,
+        key,
         usages,
+        values: entry.implement,
       });
     }
     if (schemaField) {
       collectSchemaUsages({
-        value: entry.schema,
-        key,
         declared,
+        key,
         usages,
+        value: entry.schema,
       });
     }
   }
@@ -585,7 +585,7 @@ function collectSchemaUsages(opts: {
 
   const schema = value as Record<string, unknown>;
   if (schema.type === "array" && typeof schema.items === "string") {
-    pushStringUsages({ value: schema.items, key, declared, usages });
+    pushStringUsages({ declared, key, usages, value: schema.items });
   }
   if (
     schema.type === "object" &&
@@ -594,7 +594,7 @@ function collectSchemaUsages(opts: {
   ) {
     for (const constraint of Object.values(schema.properties)) {
       if (typeof constraint === "string") {
-        pushStringUsages({ value: constraint, key, declared, usages });
+        pushStringUsages({ declared, key, usages, value: constraint });
       }
     }
   }
@@ -611,7 +611,7 @@ function collectObjectFieldUsages(opts: {
   for (const field of fields) {
     const value = entry[field];
     if (typeof value === "string") {
-      pushStringUsages({ value, key, declared, usages });
+      pushStringUsages({ declared, key, usages, value });
     }
   }
 }
@@ -631,7 +631,7 @@ function collectArrayFieldUsages(opts: {
     }
     for (const item of value) {
       if (typeof item === "string") {
-        pushStringUsages({ value: item, key, declared, usages });
+        pushStringUsages({ declared, key, usages, value: item });
       }
     }
   }
@@ -645,7 +645,7 @@ function collectImplementUsages(opts: {
 }): void {
   const { values, key, declared, usages } = opts;
   for (const item of values) {
-    collectExtendUsages({ value: item, key, declared, usages });
+    collectExtendUsages({ declared, key, usages, value: item });
   }
 }
 
@@ -657,7 +657,7 @@ function collectExtendUsages(opts: {
 }): void {
   const { value, key, declared, usages } = opts;
   if (typeof value === "string") {
-    pushStringUsages({ value, key, declared, usages });
+    pushStringUsages({ declared, key, usages, value });
     return;
   }
   if (
@@ -667,10 +667,10 @@ function collectExtendUsages(opts: {
     typeof (value as { type: unknown }).type === "string"
   ) {
     pushStringUsages({
-      value: (value as { type: string }).type,
-      key,
       declared,
+      key,
       usages,
+      value: (value as { type: string }).type,
     });
   }
 }
@@ -683,9 +683,9 @@ function pushStringUsages(opts: {
 }): void {
   const { value, key, declared, usages } = opts;
   for (const match of value.matchAll(USAGE_REGEX)) {
-    const name = match[1];
+    const [, name] = match;
     if (name !== undefined && !declared.has(name)) {
-      usages.push({ name, key });
+      usages.push({ key, name });
     }
   }
 }

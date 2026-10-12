@@ -33,7 +33,7 @@ function pathDeclaredNames(paths: string | string[]): Set<string> {
   const entries = typeof paths === "string" ? [paths] : paths;
   for (const entry of entries) {
     for (const match of entry.matchAll(DECLARATION_REGEX)) {
-      const name = match[1];
+      const [, name] = match;
       if (name !== undefined) {
         declared.add(name);
       }
@@ -52,12 +52,12 @@ function applyCliPlaceholders(opts: {
   const { conventions, identifiers, cliPlaceholders } = opts;
   const cliNames = Object.keys(cliPlaceholders);
   if (cliNames.length === 0) {
-    return { success: true, conventions };
+    return { conventions, success: true };
   }
 
   const errors: string[] = [];
   const next: ConfigV1["conventions"] = [];
-  for (let i = 0; i < conventions.length; i++) {
+  for (let i = 0; i < conventions.length; i += 1) {
     const convention = conventions[i];
     const identifier = identifiers[i] ?? `conventions[${i}]`;
     const declared = pathDeclaredNames(convention.paths);
@@ -75,9 +75,9 @@ function applyCliPlaceholders(opts: {
   }
 
   if (errors.length > 0) {
-    return { success: false, error: errors.join("\n") };
+    return { error: errors.join("\n"), success: false };
   }
-  return { success: true, conventions: next };
+  return { conventions: next, success: true };
 }
 
 export async function loadConfig(
@@ -85,9 +85,9 @@ export async function loadConfig(
 ): Promise<LoadConfigResult> {
   if (opts.configPath !== undefined && opts.configPackage !== undefined) {
     return {
-      success: false,
       error:
         "Cannot use --config-path and --config-package together. Pass only one.",
+      success: false,
     };
   }
 
@@ -101,14 +101,14 @@ export async function loadConfig(
     if (!resolved.success) {
       return resolved;
     }
-    filePath = resolved.filePath;
+    ({ filePath } = resolved);
   }
 
   let raw: string;
   try {
     raw = await readFile(filePath, "utf-8");
   } catch {
-    return { success: false, error: `Could not read config file: ${filePath}` };
+    return { error: `Could not read config file: ${filePath}`, success: false };
   }
 
   let json: unknown;
@@ -116,8 +116,8 @@ export async function loadConfig(
     json = JSON.parse(raw);
   } catch {
     return {
-      success: false,
       error: `Invalid JSON in config file: ${filePath}`,
+      success: false,
     };
   }
 
@@ -126,18 +126,18 @@ export async function loadConfig(
     const issues = result.error.issues
       .map((issue) => `  - ${issue.path.join(".")}: ${issue.message}`)
       .join("\n");
-    return { success: false, error: `Invalid config:\n${issues}` };
+    return { error: `Invalid config:\n${issues}`, success: false };
   }
 
   const parsed = result.data;
   const configDir = dirname(filePath);
 
   const sourcesResult = await resolveSources({
-    conventionSources: parsed.conventionSources ?? {},
     configDir,
+    conventionSources: parsed.conventionSources ?? {},
   });
   if (!sourcesResult.success) {
-    return { success: false, error: sourcesResult.error };
+    return { error: sourcesResult.error, success: false };
   }
 
   const expansionResult = expandReferences({
@@ -145,16 +145,16 @@ export async function loadConfig(
     sourceMap: sourcesResult.sourceMap,
   });
   if (!expansionResult.success) {
-    return { success: false, error: expansionResult.error };
+    return { error: expansionResult.error, success: false };
   }
 
   const cliMerge = applyCliPlaceholders({
+    cliPlaceholders: opts.cliPlaceholders ?? {},
     conventions: expansionResult.conventions,
     identifiers: expansionResult.identifiers,
-    cliPlaceholders: opts.cliPlaceholders ?? {},
   });
   if (!cliMerge.success) {
-    return { success: false, error: cliMerge.error };
+    return { error: cliMerge.error, success: false };
   }
 
   const placeholderResult = validatePlaceholders({
@@ -162,15 +162,15 @@ export async function loadConfig(
     identifiers: expansionResult.identifiers,
   });
   if (!placeholderResult.ok) {
-    return { success: false, error: placeholderResult.error };
+    return { error: placeholderResult.error, success: false };
   }
 
   return {
-    success: true,
     config: {
       ...parsed,
       conventions: cliMerge.conventions,
     },
+    success: true,
   };
 }
 
@@ -186,30 +186,30 @@ async function resolveConfigPackagePath(opts: {
   const kind = classifySource(configPackage);
   if (kind === "empty") {
     return {
-      success: false,
       error: "--config-package value is empty. Pass an npm package name.",
+      success: false,
     };
   }
   if (kind === "path") {
     return {
-      success: false,
       error: `--config-package "${configPackage}" looks like a filesystem path. Use --config-path for filesystem paths.`,
+      success: false,
     };
   }
   if (!isBarePackageName(configPackage)) {
     return {
-      success: false,
       error: `--config-package "${configPackage}" includes a subpath. Pass only the package name (e.g. "${extractPackageName(configPackage)}").`,
+      success: false,
     };
   }
 
   const packageName = extractPackageName(configPackage);
   const fromDir = process.cwd();
-  const pkgDir = await findPackageDir({ packageName, fromDir });
+  const pkgDir = await findPackageDir({ fromDir, packageName });
   if (pkgDir === null) {
     return {
-      success: false,
       error: `--config-package "${configPackage}": package is not installed in any node_modules above ${fromDir}. Add it as a (dev) dependency.`,
+      success: false,
     };
   }
 
@@ -221,8 +221,8 @@ async function resolveConfigPackagePath(opts: {
     pkgJsonRaw = await readFile(pkgJsonPath, "utf-8");
   } catch {
     return {
-      success: false,
       error: `--config-package "${configPackage}": could not read package.json at ${pkgJsonPath}.`,
+      success: false,
     };
   }
 
@@ -231,8 +231,8 @@ async function resolveConfigPackagePath(opts: {
     pkgJson = JSON.parse(pkgJsonRaw);
   } catch {
     return {
-      success: false,
       error: `--config-package "${configPackage}": malformed package.json at ${pkgJsonPath}.`,
+      success: false,
     };
   }
 
@@ -241,33 +241,33 @@ async function resolveConfigPackagePath(opts: {
     const candidate = resolve(pkgDir, explicit);
     if (!isPathInside({ child: candidate, parent: pkgDir })) {
       return {
-        success: false,
         error: `--config-package "${configPackage}": package.json "konsistent" field "${explicit}" resolves outside the package directory (${pkgDir}). The field must point to a path inside the package.`,
+        success: false,
       };
     }
     attempted.push(`${candidate} (from package.json "konsistent" field)`);
     if (await pathExists(candidate)) {
-      return { success: true, filePath: candidate };
+      return { filePath: candidate, success: true };
     }
   }
 
   const distCandidate = join(pkgDir, "dist", CONFIG_FILENAME);
   attempted.push(distCandidate);
   if (await pathExists(distCandidate)) {
-    return { success: true, filePath: distCandidate };
+    return { filePath: distCandidate, success: true };
   }
 
   const rootCandidate = join(pkgDir, CONFIG_FILENAME);
   attempted.push(rootCandidate);
   if (await pathExists(rootCandidate)) {
-    return { success: true, filePath: rootCandidate };
+    return { filePath: rootCandidate, success: true };
   }
 
   return {
-    success: false,
     error: `--config-package "${configPackage}": no konsistent.json found in package. Looked at:\n${attempted
       .map((p) => `  - ${p}`)
       .join("\n")}`,
+    success: false,
   };
 }
 

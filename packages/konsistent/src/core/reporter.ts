@@ -4,7 +4,7 @@ import { formatTime } from "./format-time.js";
 import type { RunResult } from "./runner.js";
 
 export interface Reporter {
-  format(result: RunResult): string;
+  format: (result: RunResult) => string;
 }
 
 function sortDiagnostics(diagnostics: Diagnostic[]): Diagnostic[] {
@@ -30,7 +30,7 @@ function groupByFile(diagnostics: Diagnostic[]): Map<string, Diagnostic[]> {
 
 function maxLineWidth(diagnostics: Diagnostic[]): number {
   return diagnostics.reduce((max, d) => {
-    const w = d.line == null ? 1 : String(d.line).length;
+    const w = d.line === undefined ? 1 : String(d.line).length;
     return Math.max(max, w);
   }, 1);
 }
@@ -47,12 +47,12 @@ function formatDiagnosticLine(opts: {
   dim: ColorFn;
 }): string {
   const { diagnostic: d, lineWidth, red, yellow, dim } = opts;
-  const lineStr = d.line == null ? "-" : String(d.line);
+  const lineStr = d.line === undefined ? "-" : String(d.line);
   const paddedLine = lineStr.padStart(lineWidth);
   const colorFn = d.severity === "warning" ? yellow : red;
   const severity = colorFn(d.severity);
   const convention =
-    d.conventionName == null ? "" : `  ${dim(`[${d.conventionName}]`)}`;
+    d.conventionName === undefined ? "" : `  ${dim(`[${d.conventionName}]`)}`;
   return `  ${paddedLine}  ${severity}  ${d.message}${convention}`;
 }
 
@@ -74,7 +74,7 @@ function formatFileGroup(opts: {
   const lines: string[] = [bold(displayFilePath(opts.filePath))];
   for (const d of sorted) {
     lines.push(
-      formatDiagnosticLine({ diagnostic: d, lineWidth, red, yellow, dim })
+      formatDiagnosticLine({ diagnostic: d, dim, lineWidth, red, yellow })
     );
   }
   lines.push("");
@@ -110,13 +110,13 @@ export function createJsonReporter(): Reporter {
     format(result: RunResult): string {
       const output = result.diagnostics.map((d) => {
         const obj: Record<string, unknown> = {
-          severity: d.severity,
           conventionName: d.conventionName,
           filePath: d.filePath,
-          predicateName: d.predicateName,
           message: d.message,
+          predicateName: d.predicateName,
+          severity: d.severity,
         };
-        if (d.line != null) {
+        if (d.line !== undefined) {
           obj.line = d.line;
         }
         return obj;
@@ -132,7 +132,7 @@ export function createGithubReporter(): Reporter {
       return result.diagnostics
         .map((d) => {
           let annotation = `::${d.severity} file=${d.filePath}`;
-          if (d.line != null) {
+          if (d.line !== undefined) {
             annotation += `,line=${d.line}`;
           }
           if (d.conventionName) {
@@ -170,7 +170,7 @@ export function createMarkdownReporter(): Reporter {
             "|------|----------|---------|------------|",
           ];
           for (const d of sorted) {
-            const lineStr = d.line == null ? "-" : String(d.line);
+            const lineStr = d.line === undefined ? "-" : String(d.line);
             const convention = d.conventionName ?? "";
             lines.push(
               `| ${lineStr} | ${d.severity} | ${d.message} | ${convention} |`
@@ -181,7 +181,7 @@ export function createMarkdownReporter(): Reporter {
       }
 
       sections.push(
-        `**${formatSummary({ filesChecked, errorCount, warningCount, elapsed })}**`
+        `**${formatSummary({ elapsed, errorCount, filesChecked, warningCount })}**`
       );
 
       return sections.join("\n\n");
@@ -213,12 +213,12 @@ export function createDefaultReporter(opts?: { colors?: boolean }): Reporter {
         for (const [filePath, fileDiags] of grouped) {
           lines.push(
             ...formatFileGroup({
-              filePath,
-              diagnostics: fileDiags,
               bold,
+              diagnostics: fileDiags,
+              dim,
+              filePath,
               red,
               yellow,
-              dim,
             })
           );
         }
@@ -226,10 +226,10 @@ export function createDefaultReporter(opts?: { colors?: boolean }): Reporter {
 
       lines.push(
         formatSummary({
-          filesChecked,
-          errorCount,
-          warningCount,
           elapsed,
+          errorCount,
+          filesChecked,
+          warningCount,
         })
       );
 

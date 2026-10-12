@@ -46,9 +46,9 @@ function parsePattern(opts: {
 
   if (source.length === 0) {
     return {
-      success: false,
-      index: opts.index,
       error: `${opts.sourceLabel} source patterns must not be empty.`,
+      index: opts.index,
+      success: false,
     };
   }
 
@@ -58,27 +58,27 @@ function parsePattern(opts: {
     !(source.endsWith("/*") && firstAsterisk === source.length - 1)
   ) {
     return {
-      success: false,
-      index: opts.index,
       error: `${opts.sourceLabel} source pattern "${opts.configuredSource}" may only use "*" as a trailing "/*".`,
+      index: opts.index,
+      success: false,
     };
   }
 
   if (source === "/*") {
     return {
-      success: false,
-      index: opts.index,
       error: `${opts.sourceLabel} source pattern "${opts.configuredSource}" must include a prefix before "/*".`,
+      index: opts.index,
+      success: false,
     };
   }
 
   return {
-    success: true,
     negated,
     pattern: {
       source,
       wildcard: source.endsWith("/*"),
     },
+    success: true,
   };
 }
 
@@ -120,8 +120,8 @@ function patternsOverlap(opts: {
   right: ImportSourcePattern;
 }): boolean {
   return (
-    patternContains({ parent: opts.left, child: opts.right }) ||
-    patternContains({ parent: opts.right, child: opts.left })
+    patternContains({ child: opts.right, parent: opts.left }) ||
+    patternContains({ child: opts.left, parent: opts.right })
   );
 }
 
@@ -138,7 +138,7 @@ function selectorRules(
   constraint: ImportSourceSelectorConstraint
 ): ImportSourceSelectorRule[] {
   return [
-    { source: constraint.source, wildcard: true, selected: true },
+    { selected: true, source: constraint.source, wildcard: true },
     ...constraint.rules,
   ];
 }
@@ -151,11 +151,11 @@ function getUniformSelection(opts: {
   | { success: false } {
   const rules = selectorRules(opts.selector);
   const ancestors = rules.filter((rule) =>
-    patternContains({ parent: rule, child: opts.pattern })
+    patternContains({ child: opts.pattern, parent: rule })
   );
-  const ancestor = ancestors.sort(
+  const [ancestor] = ancestors.sort(
     (left, right) => right.source.length - left.source.length
-  )[0];
+  );
 
   if (!ancestor) {
     return { success: false };
@@ -163,8 +163,8 @@ function getUniformSelection(opts: {
 
   const hasDescendant = rules.some((rule) =>
     patternContains({
-      parent: opts.pattern,
       child: rule,
+      parent: opts.pattern,
       strict: true,
     })
   );
@@ -172,7 +172,7 @@ function getUniformSelection(opts: {
     return { success: false };
   }
 
-  return { success: true, selected: ancestor.selected, ancestor };
+  return { ancestor, selected: ancestor.selected, success: true };
 }
 
 function addSelectorRule(opts: {
@@ -184,47 +184,47 @@ function addSelectorRule(opts: {
 }): { success: true } | { success: false; index: number; error: string } {
   if (
     !patternContains({
-      parent: constraintPattern(opts.selector),
       child: opts.pattern,
+      parent: constraintPattern(opts.selector),
       strict: true,
     })
   ) {
     return {
-      success: false,
-      index: opts.index,
       error: `${opts.sourceLabel} source pattern "${opts.pattern.source}" must be strictly nested under wildcard selector "${opts.selector.source}".`,
+      index: opts.index,
+      success: false,
     };
   }
 
   const selection = getUniformSelection({
-    selector: opts.selector,
     pattern: opts.pattern,
+    selector: opts.selector,
   });
   if (!selection.success) {
     return {
-      success: false,
-      index: opts.index,
       error: `${opts.sourceLabel} source pattern "${opts.pattern.source}" overlaps both included and excluded branches of wildcard selector "${opts.selector.source}".`,
+      index: opts.index,
+      success: false,
     };
   }
   if (
     !patternContains({
-      parent: selection.ancestor,
       child: opts.pattern,
+      parent: selection.ancestor,
       strict: true,
     })
   ) {
     return {
-      success: false,
-      index: opts.index,
       error: `${opts.sourceLabel} source pattern "${opts.pattern.source}" must be more specific than the rule it modifies.`,
+      index: opts.index,
+      success: false,
     };
   }
   if (selection.selected === opts.selected) {
     return {
-      success: false,
-      index: opts.index,
       error: `${opts.sourceLabel} source pattern "${opts.pattern.source}" does not change wildcard selector "${opts.selector.source}".`,
+      index: opts.index,
+      success: false,
     };
   }
 
@@ -249,29 +249,29 @@ function addNegatedPattern(opts: {
 }): AddConfiguredPatternResult {
   if (!opts.expectedIsArray) {
     return {
-      success: false,
-      index: opts.index,
       error: `Negated ${opts.sourceLabel.toLowerCase()} source patterns may only be used in arrays.`,
+      index: opts.index,
+      success: false,
     };
   }
   if (!opts.activeSelector) {
     return {
-      success: false,
-      index: opts.index,
       error: `Negated ${opts.sourceLabel.toLowerCase()} source pattern "${opts.configuredSource}" must follow a wildcard selector.`,
+      index: opts.index,
+      success: false,
     };
   }
   const added = addSelectorRule({
-    selector: opts.activeSelector,
+    index: opts.index,
     pattern: opts.pattern,
     selected: false,
-    index: opts.index,
+    selector: opts.activeSelector,
     sourceLabel: opts.sourceLabel,
   });
   if (!added.success) {
     return added;
   }
-  return { success: true, activeSelector: opts.activeSelector };
+  return { activeSelector: opts.activeSelector, success: true };
 }
 
 function addPositivePattern(opts: {
@@ -284,19 +284,19 @@ function addPositivePattern(opts: {
   if (
     opts.activeSelector &&
     patternContains({
-      parent: constraintPattern(opts.activeSelector),
       child: opts.pattern,
+      parent: constraintPattern(opts.activeSelector),
     })
   ) {
     const added = addSelectorRule({
-      selector: opts.activeSelector,
+      index: opts.index,
       pattern: opts.pattern,
       selected: true,
-      index: opts.index,
+      selector: opts.activeSelector,
       sourceLabel: opts.sourceLabel,
     });
     return added.success
-      ? { success: true, activeSelector: opts.activeSelector }
+      ? { activeSelector: opts.activeSelector, success: true }
       : added;
   }
 
@@ -308,24 +308,24 @@ function addPositivePattern(opts: {
   );
   if (overlapping) {
     return {
-      success: false,
-      index: opts.index,
       error: `${opts.sourceLabel} source pattern "${opts.pattern.source}" overlaps independent constraint "${overlapping.source}".`,
+      index: opts.index,
+      success: false,
     };
   }
 
   if (!opts.pattern.wildcard) {
     opts.constraints.push({ kind: "exact", source: opts.pattern.source });
-    return { success: true, activeSelector: undefined };
+    return { activeSelector: undefined, success: true };
   }
 
   const selector: ImportSourceSelectorConstraint = {
     kind: "selector",
-    source: opts.pattern.source,
     rules: [],
+    source: opts.pattern.source,
   };
   opts.constraints.push(selector);
-  return { success: true, activeSelector: selector };
+  return { activeSelector: selector, success: true };
 }
 
 export function compileImportSourceConstraints(opts: {
@@ -338,7 +338,7 @@ export function compileImportSourceConstraints(opts: {
   const constraints: ImportSourceConstraint[] = [];
   let activeSelector: ImportSourceSelectorConstraint | undefined;
 
-  for (let index = 0; index < configuredSources.length; index++) {
+  for (let index = 0; index < configuredSources.length; index += 1) {
     const configuredSource = configuredSources[index];
     if (configuredSource === undefined) {
       continue;
@@ -350,27 +350,27 @@ export function compileImportSourceConstraints(opts: {
 
     const added = parsed.negated
       ? addNegatedPattern({
-          expectedIsArray: Array.isArray(opts.expected),
-          configuredSource,
-          pattern: parsed.pattern,
           activeSelector,
+          configuredSource,
+          expectedIsArray: Array.isArray(opts.expected),
           index,
+          pattern: parsed.pattern,
           sourceLabel,
         })
       : addPositivePattern({
-          pattern: parsed.pattern,
-          constraints,
           activeSelector,
+          constraints,
           index,
+          pattern: parsed.pattern,
           sourceLabel,
         });
     if (!added.success) {
       return added;
     }
-    activeSelector = added.activeSelector;
+    ({ activeSelector } = added);
   }
 
-  return { success: true, constraints };
+  return { constraints, success: true };
 }
 
 function doesPatternMatch(opts: {
@@ -397,8 +397,8 @@ export function doesImportSourceConstraintMatch(opts: {
 
   if (
     !doesPatternMatch({
-      source: opts.source,
       pattern: constraintPattern(opts.constraint),
+      source: opts.source,
     })
   ) {
     return false;
@@ -406,8 +406,8 @@ export function doesImportSourceConstraintMatch(opts: {
 
   let selected = true;
   for (const rule of opts.constraint.rules) {
-    if (doesPatternMatch({ source: opts.source, pattern: rule })) {
-      selected = rule.selected;
+    if (doesPatternMatch({ pattern: rule, source: opts.source })) {
+      ({ selected } = rule);
     }
   }
   return selected;

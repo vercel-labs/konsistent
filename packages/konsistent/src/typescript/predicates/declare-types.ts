@@ -31,11 +31,11 @@ export function checkDeclareTypes(opts: {
   for (const entry of expected) {
     const definition: TypeDefinitionV1 =
       typeof entry === "string" ? { name: entry } : entry;
-    const resolvedName = resolveDefinitionName({ entry, context });
+    const resolvedName = resolveDefinitionName({ context, entry });
     const symbol = findDeclarationSymbol({
       fileStructure,
-      name: resolvedName,
       kinds: ["interface", "type"],
+      name: resolvedName,
     });
 
     if (!symbol) {

@@ -8,28 +8,28 @@ import {
 import { printDeprecationWarnings } from "../core/command-utils/print-deprecation-warnings.js";
 
 const validateArgs = {
-  "config-path": {
-    type: "string" as const,
-    description: "Path to konsistent.json config file",
-  },
   "config-package": {
-    type: "string" as const,
     description:
       "NPM package name to load konsistent.json from (alternative to --config-path)",
+    type: "string" as const,
+  },
+  "config-path": {
+    description: "Path to konsistent.json config file",
+    type: "string" as const,
   },
   placeholder: {
-    type: "string" as const,
     description:
       'Inject a placeholder value into every convention\'s placeholders map (overriding any existing entry). Format: "name:value". May be passed multiple times.',
+    type: "string" as const,
   },
 };
 
 export default defineCommand({
-  meta: {
-    name: "validate",
-    description: "Validate configuration",
-  },
   args: validateArgs,
+  meta: {
+    description: "Validate configuration",
+    name: "validate",
+  },
   async run({ args }) {
     const cliPlaceholdersResult = parseCliPlaceholders({
       raw: normalizePlaceholderArg(args.placeholder),
@@ -40,9 +40,9 @@ export default defineCommand({
       return;
     }
     const result = await loadConfig({
-      configPath: args["config-path"],
-      configPackage: args["config-package"],
       cliPlaceholders: cliPlaceholdersResult.placeholders,
+      configPackage: args["config-package"],
+      configPath: args["config-path"],
     });
     if (!result.success) {
       console.error(pc.red(result.error));

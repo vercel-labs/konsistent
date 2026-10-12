@@ -37,11 +37,11 @@ Global options:
   --version               Print the version number`;
 
 export default defineCommand({
-  meta: {
-    name: "help",
-    description: "Show help message",
-  },
   args: helpArgs,
+  meta: {
+    description: "Show help message",
+    name: "help",
+  },
   run() {
     console.log(HELP_TEXT);
   },

@@ -5,26 +5,26 @@ import { checkDeclareTypes } from "./declare-types.js";
 
 function createMockContext(opts: {
   path: string;
-  placeholders?: Record<string, { toString(): string }>;
+  placeholders?: Record<string, { toString: () => string }>;
 }): PredicateContext {
   const placeholders = opts.placeholders ?? {};
   return {
+    directoryExists: () => false,
+    fileExists: () => false,
     path: opts.path,
     placeholders: placeholders as PredicateContext["placeholders"],
+    readDir: () => [],
     resolveTemplate(t: string): string {
       return t.replace(/\$\{(\w+)\}/g, (_match, name) => {
         const ph = placeholders[name];
         return ph ? ph.toString() : _match;
       });
     },
-    directoryExists: () => false,
-    fileExists: () => false,
-    readDir: () => [],
   };
 }
 
 function parseSource(opts: { source: string }) {
-  return parseFileStructure({ source: opts.source, filePath: "src/index.ts" });
+  return parseFileStructure({ filePath: "src/index.ts", source: opts.source });
 }
 
 describe("checkDeclareTypes", () => {
@@ -33,8 +33,8 @@ describe("checkDeclareTypes", () => {
       source: "interface Thing {}\ntype ThingInput = string;",
     });
     const result = checkDeclareTypes({
-      expected: ["Thing", "ThingInput"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["Thing", "ThingInput"],
       fileStructure,
     });
     expect(result).toEqual([]);
@@ -42,8 +42,8 @@ describe("checkDeclareTypes", () => {
 
   it("rejects exported local type declarations", () => {
     const result = checkDeclareTypes({
-      expected: ["ThingInput"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["ThingInput"],
       fileStructure: parseSource({
         source: "export type ThingInput = string;",
       }),
@@ -57,31 +57,31 @@ describe("checkDeclareTypes", () => {
 
   it("validates schemas for local type aliases and interfaces", () => {
     const result = checkDeclareTypes({
-      expected: [
-        {
-          name: "Settings",
-          schema: {
-            type: "object",
-            properties: { model: { type: "string" } },
-          },
-        },
-        {
-          name: "Options",
-          schema: {
-            type: "object",
-            properties: {
-              enabled: { type: "boolean" },
-              auth: "${authType}",
-            },
-          },
-        },
-      ],
       context: createMockContext({
         path: "src/index.ts",
         placeholders: {
           authType: { toString: () => "Namespace.MyAuth" },
         },
       }),
+      expected: [
+        {
+          name: "Settings",
+          schema: {
+            properties: { model: { type: "string" } },
+            type: "object",
+          },
+        },
+        {
+          name: "Options",
+          schema: {
+            properties: {
+              auth: "${authType}",
+              enabled: { type: "boolean" },
+            },
+            type: "object",
+          },
+        },
+      ],
       fileStructure: parseSource({
         source: [
           "type Settings = { model?: string; extra?: number };",
@@ -94,41 +94,41 @@ describe("checkDeclareTypes", () => {
 
   it("reports schema mismatches for local type definitions", () => {
     const result = checkDeclareTypes({
+      context: createMockContext({ path: "src/index.ts" }),
       expected: [
         {
           name: "Settings",
           schema: {
-            type: "object",
             properties: { timeout: { type: "number" } },
+            type: "object",
           },
         },
       ],
-      context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
         source: "type Settings = { model?: string };",
       }),
     });
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject({
+      column: 1,
+      line: 1,
       message: 'Type "Settings" must define property "timeout"',
       predicateName: "declareTypes",
-      line: 1,
-      column: 1,
     });
   });
 
   it("validates an exact template-expanded type alias expression", () => {
     const result = checkDeclareTypes({
+      context: createMockContext({
+        path: "src/index.ts",
+        placeholders: { name: { toString: () => "Shared" } },
+      }),
       expected: [
         {
           name: "Settings",
           type: "${name}Settings<'generic-value'> | undefined",
         },
       ],
-      context: createMockContext({
-        path: "src/index.ts",
-        placeholders: { name: { toString: () => "Shared" } },
-      }),
       fileStructure: parseSource({
         source: "type Settings = SharedSettings<'generic-value'> | undefined;",
       }),
@@ -138,8 +138,8 @@ describe("checkDeclareTypes", () => {
 
   it("reports a mismatched exact type alias expression", () => {
     const result = checkDeclareTypes({
-      expected: [{ name: "Settings", type: "SharedSettings<'public'>" }],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ name: "Settings", type: "SharedSettings<'public'>" }],
       fileStructure: parseSource({
         source: "type Settings = SharedSettings<'private'>;",
       }),
@@ -151,8 +151,8 @@ describe("checkDeclareTypes", () => {
 
   it("does not treat an interface as an exact type alias expression", () => {
     const result = checkDeclareTypes({
-      expected: [{ name: "Settings", type: "SharedSettings" }],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ name: "Settings", type: "SharedSettings" }],
       fileStructure: parseSource({ source: "interface Settings {}" }),
     });
     expect(result[0].message).toBe('Type "Settings" must be a type alias');

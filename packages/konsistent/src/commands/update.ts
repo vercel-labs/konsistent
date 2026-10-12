@@ -9,19 +9,19 @@ import { getVersion } from "../version.js";
 const updateArgs = {};
 
 export default defineCommand({
-  meta: {
-    name: "update",
-    description: "Update konsistent to the latest version",
-  },
   args: updateArgs,
+  meta: {
+    description: "Update konsistent to the latest version",
+    name: "update",
+  },
   async run() {
     const currentVersion = getVersion();
 
     console.error("Checking for updates...");
 
     const latestVersion = await fetchLatestVersion({
-      packageName: PACKAGE_NAME,
       currentVersion,
+      packageName: PACKAGE_NAME,
     });
 
     if (!latestVersion) {
@@ -32,7 +32,7 @@ export default defineCommand({
     }
 
     if (
-      !isNewerVersion({ current: currentVersion, candidate: latestVersion })
+      !isNewerVersion({ candidate: latestVersion, current: currentVersion })
     ) {
       console.error(
         `${pc.green("✓")} ${PACKAGE_NAME} is already up to date (v${currentVersion})`

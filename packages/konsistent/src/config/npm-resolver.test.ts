@@ -10,13 +10,13 @@ import {
 
 describe("classifySource", () => {
   it.each([
-    { value: "", expected: "empty" },
-    { value: "   ", expected: "empty" },
-    { value: "./conventions.json", expected: "path" },
-    { value: "../conventions.json", expected: "path" },
-    { value: resolve("/tmp/conventions.json"), expected: "path" },
-    { value: "@scope/conventions", expected: "npm" },
-    { value: "conventions/subpath", expected: "npm" },
+    { expected: "empty", value: "" },
+    { expected: "empty", value: "   " },
+    { expected: "path", value: "./conventions.json" },
+    { expected: "path", value: "../conventions.json" },
+    { expected: "path", value: resolve("/tmp/conventions.json") },
+    { expected: "npm", value: "@scope/conventions" },
+    { expected: "npm", value: "conventions/subpath" },
   ] as const)("classifies $value as $expected", ({ value, expected }) => {
     expect(classifySource(value)).toBe(expected);
   });
@@ -43,10 +43,10 @@ describe("isPathInside", () => {
 
 describe("npm package resolution", () => {
   it.each([
-    { specifier: "package", expected: "package" },
-    { specifier: "package/subpath", expected: "package" },
-    { specifier: "@scope/package", expected: "@scope/package" },
-    { specifier: "@scope/package/subpath", expected: "@scope/package" },
+    { expected: "package", specifier: "package" },
+    { expected: "package", specifier: "package/subpath" },
+    { expected: "@scope/package", specifier: "@scope/package" },
+    { expected: "@scope/package", specifier: "@scope/package/subpath" },
   ])("extracts $expected from $specifier", ({ specifier, expected }) => {
     expect(extractPackageName(specifier)).toBe(expected);
   });
@@ -61,8 +61,8 @@ describe("npm package resolution", () => {
   it("finds installed packages by walking parent directories", async () => {
     await expect(
       findPackageDir({
-        packageName: "zod",
         fromDir: join(import.meta.dirname, "nested/directory"),
+        packageName: "zod",
       })
     ).resolves.toBe(resolve(import.meta.dirname, "../../node_modules/zod"));
   });
@@ -70,8 +70,8 @@ describe("npm package resolution", () => {
   it("returns null when a package is not installed", async () => {
     await expect(
       findPackageDir({
-        packageName: "konsistent-definitely-missing-package",
         fromDir: import.meta.dirname,
+        packageName: "konsistent-definitely-missing-package",
       })
     ).resolves.toBeNull();
   });

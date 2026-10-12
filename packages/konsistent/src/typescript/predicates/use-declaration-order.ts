@@ -88,12 +88,12 @@ export function checkUseDeclarationOrder(opts: {
     if (currentIndex < maxSeenIndex) {
       diagnostics.push(
         createDiagnostic({
-          filePath: context.path,
-          predicateName: "useDeclarationOrder",
-          message: `Symbol "${occurrence.name}" must be declared before "${maxSeenName}"`,
-          conventionName,
-          line: occurrence.pos.line,
           column: occurrence.pos.column,
+          conventionName,
+          filePath: context.path,
+          line: occurrence.pos.line,
+          message: `Symbol "${occurrence.name}" must be declared before "${maxSeenName}"`,
+          predicateName: "useDeclarationOrder",
           severity,
         })
       );

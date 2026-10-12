@@ -5,24 +5,24 @@ import { checkDeclareFunctions } from "./declare-functions.js";
 
 function createMockContext(opts: { path: string }): PredicateContext {
   return {
-    path: opts.path,
-    placeholders: {} as PredicateContext["placeholders"],
-    resolveTemplate: (t: string) => t,
     directoryExists: () => false,
     fileExists: () => false,
+    path: opts.path,
+    placeholders: {} as PredicateContext["placeholders"],
     readDir: () => [],
+    resolveTemplate: (t: string) => t,
   };
 }
 
 function parseSource(opts: { source: string }) {
-  return parseFileStructure({ source: opts.source, filePath: "src/index.ts" });
+  return parseFileStructure({ filePath: "src/index.ts", source: opts.source });
 }
 
 describe("checkDeclareFunctions", () => {
   it("passes for local function declarations", () => {
     const result = checkDeclareFunctions({
-      expected: ["createThing"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["createThing"],
       fileStructure: parseSource({
         source: "function createThing() {}",
       }),
@@ -32,8 +32,8 @@ describe("checkDeclareFunctions", () => {
 
   it("rejects default exported local functions", () => {
     const result = checkDeclareFunctions({
-      expected: ["createThing"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["createThing"],
       fileStructure: parseSource({
         source: "function createThing() {}\nexport default createThing;",
       }),
@@ -46,6 +46,7 @@ describe("checkDeclareFunctions", () => {
 
   it("checks local function signatures", () => {
     const result = checkDeclareFunctions({
+      context: createMockContext({ path: "src/index.ts" }),
       expected: [
         {
           name: "createThing",
@@ -53,7 +54,6 @@ describe("checkDeclareFunctions", () => {
           returnValueOfType: "Thing",
         },
       ],
-      context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
         source:
           "function createThing(config: WrongConfig): WrongThing { return {} as WrongThing; }",
@@ -70,13 +70,13 @@ describe("checkDeclareFunctions", () => {
 
   it("checks ordered local function params", () => {
     const result = checkDeclareFunctions({
+      context: createMockContext({ path: "src/index.ts" }),
       expected: [
         {
           name: "createThing",
           receiveParamsOfTypes: ["ThingConfig", "ThingContext"],
         },
       ],
-      context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
         source:
           "function createThing(config: ThingConfig, ctx: WrongContext) {}",

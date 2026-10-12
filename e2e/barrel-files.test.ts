@@ -47,7 +47,7 @@ describe("barrel-files-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number;
+        code: number | null;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);

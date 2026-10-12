@@ -24,22 +24,22 @@ export function checkImportTypes(opts: {
         : context.resolveTemplate(definition.alias);
 
     const found = hasImport({
-      expected: entry,
-      importKind: "type",
       context,
+      expected: entry,
       fileStructure,
+      importKind: "type",
     });
 
     if (!found) {
       diagnostics.push(
         createDiagnostic({
+          conventionName,
           filePath: context.path,
-          predicateName: "importTypes",
           message:
             resolvedAlias === undefined
               ? `Missing import type "${resolvedName}"`
               : `Missing import type "${resolvedName}" as "${resolvedAlias}"`,
-          conventionName,
+          predicateName: "importTypes",
           severity,
         })
       );

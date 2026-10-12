@@ -16,8 +16,8 @@ export function parsePlaceholderConstraint(
     return null;
   }
   return {
-    name: match[1],
     arg: match[2],
+    name: match[1],
   };
 }
 
@@ -28,9 +28,9 @@ export function validatePlaceholderConstraint(opts: {
   const { value, constraint } = opts;
   switch (constraint.name) {
     case "segments":
-      return validateSegmentsConstraint({ value, arg: constraint.arg });
+      return validateSegmentsConstraint({ arg: constraint.arg, value });
     case "matches":
-      return validateMatchesConstraint({ value, arg: constraint.arg });
+      return validateMatchesConstraint({ arg: constraint.arg, value });
     default:
       return true;
   }

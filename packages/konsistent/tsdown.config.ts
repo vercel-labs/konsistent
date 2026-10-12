@@ -1,21 +1,21 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  entry: ["src/cli.ts"],
-  format: ["esm"],
-  fixedExtension: false,
-  outDir: "dist",
-  target: "es2022",
-  clean: true,
-  sourcemap: false,
-  dts: false,
-  deps: {
-    neverBundle: ["@konsistent/convention"],
-  },
-  outputOptions: {
-    codeSplitting: false,
-  },
   banner: {
     js: "#!/usr/bin/env node",
   },
+  clean: true,
+  deps: {
+    neverBundle: ["@konsistent/convention"],
+  },
+  dts: false,
+  entry: ["src/cli.ts"],
+  fixedExtension: false,
+  format: ["esm"],
+  outDir: "dist",
+  outputOptions: {
+    codeSplitting: false,
+  },
+  sourcemap: false,
+  target: "es2022",
 });

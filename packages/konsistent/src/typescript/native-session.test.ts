@@ -19,7 +19,7 @@ describe("native TypeScript session", () => {
     session.close();
     session.close();
     expect(close).not.toHaveBeenCalled();
-    expect(() => parseFileStructure({ source: "", session })).toThrow(
+    expect(() => parseFileStructure({ session, source: "" })).toThrow(
       TypeScriptRuntimeError
     );
   });
@@ -31,13 +31,13 @@ describe("native TypeScript session", () => {
     const clear = vi.spyOn(API.prototype, "clearSourceFileCache");
     const session = createTypeScriptSession();
     try {
-      for (let index = 0; index < 30; index++) {
+      for (let index = 0; index < 30; index += 1) {
         const source =
           index % 3 === 0 ? "" : `export const value${index}: string = "😀";`;
         const structure = parseFileStructure({
-          source,
           filePath: `src/${index}.ts`,
           session,
+          source,
         });
         expect(structure.constants.map((constant) => constant.name)).toEqual(
           source ? [`value${index}`] : []
@@ -63,20 +63,20 @@ describe("native TypeScript session", () => {
     const second = createTypeScriptSession();
     try {
       expect(
-        parseFileStructure({ source: "export const first = 1", session: first })
+        parseFileStructure({ session: first, source: "export const first = 1" })
           .constants[0].name
       ).toBe("first");
       expect(
         parseFileStructure({
-          source: "export const second = 2",
           session: second,
+          source: "export const second = 2",
         }).constants[0].name
       ).toBe("second");
       first.close();
       expect(
         parseFileStructure({
-          source: "export const third = 3",
           session: second,
+          source: "export const third = 3",
         }).constants[0].name
       ).toBe("third");
     } finally {
@@ -109,12 +109,12 @@ describe("native TypeScript session", () => {
       throw failure;
     });
     expect(() =>
-      parseFileStructure({ source: "", filePath: "source.ts" })
+      parseFileStructure({ filePath: "source.ts", source: "" })
     ).toThrow('while parsing "source.ts"');
     expect(close).toHaveBeenCalledTimes(1);
     const session = createTypeScriptSession();
     try {
-      expect(() => parseFileStructure({ source: "", session })).toThrow(
+      expect(() => parseFileStructure({ session, source: "" })).toThrow(
         "Ensure optional dependencies are installed"
       );
       expect(close).toHaveBeenCalledTimes(1);
@@ -141,14 +141,14 @@ describe("native TypeScript session", () => {
           "d.cts",
         ]) {
           const structure = parseFileStructure({
-            source: '\ufeff/* 😀 */\r\nexport const café: "\ud800" = "\ud800";',
             filePath: `src/value.${extension}`,
             session,
+            source: '\ufeff/* 😀 */\r\nexport const café: "\ud800" = "\ud800";',
           });
           expect(structure.constants[0]).toMatchObject({
             name: "café",
+            pos: { column: 1, line: 2 },
             typeName: { text: '"\ud800"' },
-            pos: { line: 2, column: 1 },
           });
         }
       },

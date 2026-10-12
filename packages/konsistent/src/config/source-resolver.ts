@@ -25,25 +25,35 @@ export async function resolveSources(opts: {
   const { conventionSources, configDir } = opts;
   const sourceMap: SourceMap = new Map();
 
-  for (const [prefix, value] of Object.entries(conventionSources)) {
-    const kind = classifySource(value);
+  const resolvedSources = await Promise.all(
+    Object.entries(conventionSources).map(
+      async ([prefix, value]): Promise<{
+        prefix: string;
+        loaded: LoadResult;
+      }> => {
+        const kind = classifySource(value);
+        if (kind === "empty") {
+          return {
+            loaded: {
+              error: `Convention source "${prefix}" has empty value.`,
+              success: false,
+            },
+            prefix,
+          };
+        }
 
-    if (kind === "empty") {
-      return {
-        success: false,
-        error: `Convention source "${prefix}" has empty value.`,
-      };
-    }
+        const loaded =
+          kind === "path"
+            ? await loadFromPath({ configDir, prefix, value })
+            : await loadFromNpm({ configDir, prefix, specifier: value });
+        return { loaded, prefix };
+      }
+    )
+  );
 
-    let loaded: LoadResult;
-    if (kind === "path") {
-      loaded = await loadFromPath({ prefix, value, configDir });
-    } else {
-      loaded = await loadFromNpm({ prefix, specifier: value, configDir });
-    }
-
+  for (const { prefix, loaded } of resolvedSources) {
     if (!loaded.success) {
-      return { success: false, error: loaded.error };
+      return { error: loaded.error, success: false };
     }
 
     const conventionMap = new Map<string, ReusableConventionV1>();
@@ -53,7 +63,7 @@ export async function resolveSources(opts: {
     sourceMap.set(prefix, conventionMap);
   }
 
-  return { success: true, sourceMap };
+  return { sourceMap, success: true };
 }
 
 type LoadResult =
@@ -76,16 +86,16 @@ async function loadFromPath(opts: {
     raw = await readFile(resolvedPath, "utf-8");
   } catch {
     return {
-      success: false,
       error: `Convention source "${prefix}" → "${value}": could not read file at ${resolvedPath}.`,
+      success: false,
     };
   }
 
   return parseAndValidate({
-    prefix,
-    sourceLabel: `"${value}"`,
     locationLabel: resolvedPath,
+    prefix,
     raw,
+    sourceLabel: `"${value}"`,
   });
 }
 
@@ -97,11 +107,11 @@ async function loadFromNpm(opts: {
   const { prefix, specifier, configDir } = opts;
 
   const packageName = extractPackageName(specifier);
-  const pkgDir = await findPackageDir({ packageName, fromDir: configDir });
+  const pkgDir = await findPackageDir({ fromDir: configDir, packageName });
   if (pkgDir === null) {
     return {
-      success: false,
       error: `Convention source "${prefix}" → "${specifier}": could not resolve npm package "${specifier}". The package may not be installed under the consumer's project.`,
+      success: false,
     };
   }
 
@@ -111,8 +121,8 @@ async function loadFromNpm(opts: {
     pkgJsonRaw = await readFile(pkgJsonPath, "utf-8");
   } catch {
     return {
-      success: false,
       error: `Convention source "${prefix}" → "${specifier}": could not read package.json at ${pkgJsonPath}.`,
+      success: false,
     };
   }
 
@@ -121,8 +131,8 @@ async function loadFromNpm(opts: {
     pkgJson = JSON.parse(pkgJsonRaw);
   } catch {
     return {
-      success: false,
       error: `Convention source "${prefix}" → "${specifier}": malformed package.json at ${pkgJsonPath}.`,
+      success: false,
     };
   }
 
@@ -140,8 +150,8 @@ async function loadFromNpm(opts: {
 
   if (!resolved || resolved.length === 0) {
     return {
-      success: false,
       error: `Convention source "${prefix}" → "${specifier}": package does not declare an exports["./konsistent"] entry.`,
+      success: false,
     };
   }
 
@@ -149,8 +159,8 @@ async function loadFromNpm(opts: {
 
   if (!isPathInside({ child: conventionsPath, parent: pkgDir })) {
     return {
-      success: false,
       error: `Convention source "${prefix}" → "${specifier}": exports["./konsistent"] entry "${resolved[0]}" resolves outside the package directory (${pkgDir}). The entry must point to a path inside the package.`,
+      success: false,
     };
   }
 
@@ -159,16 +169,16 @@ async function loadFromNpm(opts: {
     raw = await readFile(conventionsPath, "utf-8");
   } catch {
     return {
-      success: false,
       error: `Convention source "${prefix}" → "${specifier}": could not read file at ${conventionsPath} (resolved from exports["./konsistent"]).`,
+      success: false,
     };
   }
 
   return parseAndValidate({
-    prefix,
-    sourceLabel: `"${specifier}"`,
     locationLabel: conventionsPath,
+    prefix,
     raw,
+    sourceLabel: `"${specifier}"`,
   });
 }
 
@@ -185,8 +195,8 @@ function parseAndValidate(opts: {
     json = JSON.parse(raw);
   } catch {
     return {
-      success: false,
       error: `Convention source "${prefix}" → ${sourceLabel}: malformed JSON at ${locationLabel}.`,
+      success: false,
     };
   }
 
@@ -196,10 +206,10 @@ function parseAndValidate(opts: {
       .map((issue) => `  - ${issue.path.join(".")}: ${issue.message}`)
       .join("\n");
     return {
-      success: false,
       error: `Convention source "${prefix}" → ${sourceLabel}: invalid reusable-convention package at ${locationLabel}:\n${issues}`,
+      success: false,
     };
   }
 
-  return { success: true, pkg: parsed.data };
+  return { pkg: parsed.data, success: true };
 }

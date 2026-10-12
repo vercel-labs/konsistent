@@ -25,13 +25,13 @@ export function expandReferences(opts: {
   const expanded: ConventionV1[] = [];
   const identifiers: string[] = [];
 
-  for (let i = 0; i < conventions.length; i++) {
+  for (let i = 0; i < conventions.length; i += 1) {
     const entry = conventions[i];
 
     if (typeof entry === "string") {
       const expandedResult = expandStringReference({
-        ref: entry,
         index: i,
+        ref: entry,
         sourceMap,
       });
       if (!expandedResult.success) {
@@ -75,7 +75,7 @@ export function expandReferences(opts: {
     identifiers.push(handWrittenResult.convention.name ?? `conventions[${i}]`);
   }
 
-  return { success: true, conventions: expanded, identifiers };
+  return { conventions: expanded, identifiers, success: true };
 }
 
 function expandHandWritten(opts: {
@@ -94,18 +94,18 @@ function expandHandWritten(opts: {
   const { entry, index, sourceMap } = opts;
 
   if (!Array.isArray(entry.must)) {
-    return { success: true, convention: entry as ConventionV1 };
+    return { convention: entry as ConventionV1, success: true };
   }
 
   const resolvedBlocks: MustBlockV1[] = [];
-  for (let j = 0; j < entry.must.length; j++) {
+  for (let j = 0; j < entry.must.length; j += 1) {
     const block = entry.must[j];
     if (typeof block === "string") {
       const expandedBlock = expandMustBlockReference({
-        ref: block,
-        overrides: {},
-        conventionIndex: index,
         blockIndex: j,
+        conventionIndex: index,
+        overrides: {},
+        ref: block,
         sourceMap,
       });
       if (!expandedBlock.success) {
@@ -120,10 +120,10 @@ function expandHandWritten(opts: {
         unknown
       >;
       const expandedBlock = expandMustBlockReference({
-        ref: use,
-        overrides,
-        conventionIndex: index,
         blockIndex: j,
+        conventionIndex: index,
+        overrides,
+        ref: use,
         sourceMap,
       });
       if (!expandedBlock.success) {
@@ -136,8 +136,8 @@ function expandHandWritten(opts: {
   }
 
   return {
-    success: true,
     convention: { ...entry, must: resolvedBlocks } as ConventionV1,
+    success: true,
   };
 }
 
@@ -151,11 +151,11 @@ function expandMustBlockReference(opts: {
   const { ref, overrides, conventionIndex, blockIndex, sourceMap } = opts;
   const location = `conventions[${conventionIndex}].must[${blockIndex}]`;
 
-  const lookup = lookupReusable({ ref, index: conventionIndex, sourceMap });
+  const lookup = lookupReusable({ index: conventionIndex, ref, sourceMap });
   if (!lookup.success) {
     return {
-      success: false,
       error: lookup.error.replace(`conventions[${conventionIndex}]`, location),
+      success: false,
     };
   }
   const { reusable, prefix, name } = lookup;
@@ -169,12 +169,12 @@ function expandMustBlockReference(opts: {
   }
   if (topLevelOnly.length > 0) {
     return {
-      success: false,
       error: `Convention "${prefix}/${name}" referenced in ${location} declares top-level-only field(s) ${topLevelOnly
         .map((f) => `"${f}"`)
         .join(
           ", "
         )}. Such conventions can only be referenced at the top level of conventions[]. Either remove the field(s) from the source convention, or move the reference out of must[].`,
+      success: false,
     };
   }
 
@@ -210,12 +210,12 @@ function expandMustBlockReference(opts: {
       )
       .join("\n");
     return {
-      success: false,
       error: `Expanded must-block reference "${prefix}/${name}" failed validation at ${location}:\n${issues}`,
+      success: false,
     };
   }
 
-  return { success: true, block: validated.data };
+  return { block: validated.data, success: true };
 }
 
 function lookupReusable(opts: {
@@ -234,8 +234,8 @@ function lookupReusable(opts: {
 
   if (!STRING_REF_PATTERN.test(ref)) {
     return {
-      success: false,
       error: `Invalid convention reference "${ref}" in conventions[${index}]. Expected format "<vendor>/<name>".`,
+      success: false,
     };
   }
 
@@ -243,8 +243,8 @@ function lookupReusable(opts: {
   const conventionMap = sourceMap.get(prefix);
   if (!conventionMap) {
     return {
-      success: false,
       error: `Unknown convention source "${prefix}" referenced in conventions[${index}]. Declare it in conventionSources or fix the typo.`,
+      success: false,
     };
   }
 
@@ -252,12 +252,12 @@ function lookupReusable(opts: {
   if (!reusable) {
     const available = Array.from(conventionMap.keys()).join(", ");
     return {
-      success: false,
       error: `No convention "${name}" in source "${prefix}". The package exports: ${available}.`,
+      success: false,
     };
   }
 
-  return { success: true, reusable, prefix, name };
+  return { name, prefix, reusable, success: true };
 }
 
 function expandStringReference(opts: {
@@ -269,23 +269,23 @@ function expandStringReference(opts: {
   | { success: false; error: string } {
   const { ref, index, sourceMap } = opts;
 
-  const lookup = lookupReusable({ ref, index, sourceMap });
+  const lookup = lookupReusable({ index, ref, sourceMap });
   if (!lookup.success) {
     return lookup;
   }
   const { reusable, prefix, name } = lookup;
 
-  const paths = reusable.paths;
+  const { paths } = reusable;
   if (paths === undefined) {
     return {
-      success: false,
       error: `Convention "${prefix}/${name}" cannot be referenced by string; it has no "paths". Use { use: "${prefix}/${name}", paths: [...] } form.`,
+      success: false,
     };
   }
 
   const candidate: Record<string, unknown> = {
-    name: reusable.name,
     description: reusable.description,
+    name: reusable.name,
     paths,
   };
   if (reusable.must !== undefined) {
@@ -308,12 +308,12 @@ function expandStringReference(opts: {
       .map((issue) => `  - ${issue.path.join(".")}: ${issue.message}`)
       .join("\n");
     return {
-      success: false,
       error: `Expanded convention "${prefix}/${name}" failed validation at conventions[${index}]:\n${issues}`,
+      success: false,
     };
   }
 
-  return { success: true, convention: validated.data };
+  return { convention: validated.data, success: true };
 }
 
 function expandUseReference(opts: {
@@ -326,7 +326,7 @@ function expandUseReference(opts: {
   const { entry, index, sourceMap } = opts;
   const ref = entry.use;
 
-  const lookup = lookupReusable({ ref, index, sourceMap });
+  const lookup = lookupReusable({ index, ref, sourceMap });
   if (!lookup.success) {
     return lookup;
   }
@@ -338,14 +338,14 @@ function expandUseReference(opts: {
   const overridePaths = overrides.paths;
   if (inheritedPaths === undefined && overridePaths === undefined) {
     return {
-      success: false,
       error: `Convention "${prefix}/${name}" referenced in conventions[${index}] has no "paths". Either the reusable convention must declare paths, or the override must supply paths.`,
+      success: false,
     };
   }
 
   const base: Record<string, unknown> = {
-    name: reusable.name,
     description: reusable.description,
+    name: reusable.name,
   };
   if (reusable.must !== undefined) {
     base.must = reusable.must;
@@ -375,12 +375,12 @@ function expandUseReference(opts: {
       )
       .join("\n");
     return {
-      success: false,
       error: `Expanded convention "${prefix}/${name}" failed validation at conventions[${index}]:\n${issues}`,
+      success: false,
     };
   }
 
-  return { success: true, convention: validated.data };
+  return { convention: validated.data, success: true };
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {

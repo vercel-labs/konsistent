@@ -169,21 +169,21 @@ function buildContext(opts: {
     : dirname(matchedPath);
 
   return {
-    typescriptSession: opts.typescriptSession,
-    path: matchedPath,
-    placeholders,
-    resolveTemplate(template: string): string {
-      return resolveTemplate({ template, placeholders });
+    directoryExists(relativePath: string): boolean {
+      return fileSystem.directoryExists(posix.join(basePath, relativePath));
     },
     fileExists(relativePath: string): boolean {
       return fileSystem.fileExists(posix.join(basePath, relativePath));
     },
-    directoryExists(relativePath: string): boolean {
-      return fileSystem.directoryExists(posix.join(basePath, relativePath));
-    },
+    path: matchedPath,
+    placeholders,
     readDir(relativePath: string): string[] {
       return fileSystem.readDir(posix.join(basePath, relativePath));
     },
+    resolveTemplate(template: string): string {
+      return resolveTemplate({ placeholders, template });
+    },
+    typescriptSession: opts.typescriptSession,
   };
 }
 
@@ -228,7 +228,7 @@ function isFileExcluded(opts: {
     if (filePath === resolved || basename(filePath) === resolved) {
       return true;
     }
-    if (matchesPathPattern({ pattern: resolved, filePath })) {
+    if (matchesPathPattern({ filePath, pattern: resolved })) {
       return true;
     }
   }
@@ -255,8 +255,8 @@ function evaluatePlaceholderSatisfies(opts: {
     return false;
   }
   return validatePlaceholderConstraint({
-    value: placeholder.raw,
     constraint,
+    value: placeholder.raw,
   });
 }
 
@@ -281,8 +281,8 @@ function evaluateCondition(opts: {
   }
   if (Object.hasOwn(condition, "placeholderSatisfies")) {
     return evaluatePlaceholderSatisfies({
-      raw: (condition as { placeholderSatisfies: string }).placeholderSatisfies,
       context,
+      raw: (condition as { placeholderSatisfies: string }).placeholderSatisfies,
     });
   }
   if (!fileSystem.isFile(context.path)) {
@@ -290,44 +290,44 @@ function evaluateCondition(opts: {
   }
 
   const fileStructure = getOrParseFileStructure({
-    filePath: context.path,
-    session: context.typescriptSession,
-    fileSystem,
     cache: fileStructureCache,
+    filePath: context.path,
+    fileSystem,
+    session: context.typescriptSession,
   });
 
   if (Object.hasOwn(condition, "hasValueImport")) {
     return hasImport({
+      context,
       expected: (condition as { hasValueImport: string | ImportDefinitionV1 })
         .hasValueImport,
-      importKind: "value",
-      context,
       fileStructure,
+      importKind: "value",
     });
   }
   if (Object.hasOwn(condition, "hasTypeImport")) {
     return hasImport({
+      context,
       expected: (condition as { hasTypeImport: string | ImportDefinitionV1 })
         .hasTypeImport,
-      importKind: "type",
-      context,
       fileStructure,
+      importKind: "type",
     });
   }
   if (Object.hasOwn(condition, "hasValueImportFrom")) {
     return hasImportFrom({
+      context,
       expected: (condition as { hasValueImportFrom: string })
         .hasValueImportFrom,
-      importKind: "value",
-      context,
       fileStructure,
+      importKind: "value",
     });
   }
   return hasImportFrom({
-    expected: (condition as { hasTypeImportFrom: string }).hasTypeImportFrom,
-    importKind: "type",
     context,
+    expected: (condition as { hasTypeImportFrom: string }).hasTypeImportFrom,
     fileStructure,
+    importKind: "type",
   });
 }
 
@@ -350,8 +350,8 @@ function evaluateConditions(opts: {
     !evaluateCondition({
       condition: ifCondition,
       context,
-      fileSystem,
       fileStructureCache,
+      fileSystem,
     })
   ) {
     return false;
@@ -361,8 +361,8 @@ function evaluateConditions(opts: {
     evaluateCondition({
       condition: ifNotCondition,
       context,
-      fileSystem,
       fileStructureCache,
+      fileSystem,
     })
   ) {
     return false;
@@ -380,55 +380,29 @@ const TS_PREDICATE_HANDLERS: Record<
     severity?: DiagnosticSeverity;
   }) => Diagnostic[]
 > = {
-  declareTypes: ({ must, context, fileStructure, conventionName, severity }) =>
-    must.declareTypes
-      ? checkDeclareTypes({
-          expected: must.declareTypes,
-          context,
-          fileStructure,
-          conventionName,
-          severity,
-        })
-      : [],
-  declareConstants: ({
+  areBarrelFiles: ({
     must,
     context,
     fileStructure,
     conventionName,
     severity,
   }) =>
-    must.declareConstants
-      ? checkDeclareConstants({
-          expected: must.declareConstants,
+    must.areBarrelFiles
+      ? checkAreBarrelFiles({
           context,
-          fileStructure,
           conventionName,
-          severity,
-        })
-      : [],
-  declareFunctions: ({
-    must,
-    context,
-    fileStructure,
-    conventionName,
-    severity,
-  }) =>
-    must.declareFunctions
-      ? checkDeclareFunctions({
-          expected: must.declareFunctions,
-          context,
+          expected: must.areBarrelFiles,
           fileStructure,
-          conventionName,
           severity,
         })
       : [],
   callFunction: ({ must, context, fileStructure, conventionName, severity }) =>
     must.callFunction
       ? checkCallFunction({
-          expected: must.callFunction,
           context,
-          fileStructure,
           conventionName,
+          expected: must.callFunction,
+          fileStructure,
           severity,
         })
       : [],
@@ -441,10 +415,42 @@ const TS_PREDICATE_HANDLERS: Record<
   }) =>
     must.declareClasses
       ? checkDeclareClasses({
-          expected: must.declareClasses,
           context,
-          fileStructure,
           conventionName,
+          expected: must.declareClasses,
+          fileStructure,
+          severity,
+        })
+      : [],
+  declareConstants: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.declareConstants
+      ? checkDeclareConstants({
+          context,
+          conventionName,
+          expected: must.declareConstants,
+          fileStructure,
+          severity,
+        })
+      : [],
+  declareFunctions: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.declareFunctions
+      ? checkDeclareFunctions({
+          context,
+          conventionName,
+          expected: must.declareFunctions,
+          fileStructure,
           severity,
         })
       : [],
@@ -457,42 +463,195 @@ const TS_PREDICATE_HANDLERS: Record<
   }) =>
     must.declareInterfaces
       ? checkDeclareInterfaces({
-          expected: must.declareInterfaces,
           context,
-          fileStructure,
           conventionName,
+          expected: must.declareInterfaces,
+          fileStructure,
           severity,
         })
       : [],
-  exportValues: ({ must, context, fileStructure, conventionName, severity }) =>
-    must.exportValues
-      ? checkExportValues({
-          expected: must.exportValues,
-          predicateName: "exportValues",
+  declareTypes: ({ must, context, fileStructure, conventionName, severity }) =>
+    must.declareTypes
+      ? checkDeclareTypes({
           context,
-          fileStructure,
           conventionName,
+          expected: must.declareTypes,
+          fileStructure,
           severity,
         })
       : [],
   export: ({ must, context, fileStructure, conventionName, severity }) =>
     must.export
       ? checkExportValues({
-          expected: must.export,
-          predicateName: "export",
           context,
-          fileStructure,
           conventionName,
+          expected: must.export,
+          fileStructure,
+          predicateName: "export",
+          severity,
+        })
+      : [],
+  exportClasses: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.exportClasses
+      ? checkExportClasses({
+          context,
+          conventionName,
+          expected: must.exportClasses,
+          fileStructure,
+          severity,
+        })
+      : [],
+  exportConstants: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.exportConstants
+      ? checkExportConstants({
+          context,
+          conventionName,
+          expected: must.exportConstants,
+          fileStructure,
+          severity,
+        })
+      : [],
+  exportFunctions: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.exportFunctions
+      ? checkExportFunctions({
+          context,
+          conventionName,
+          expected: must.exportFunctions,
+          fileStructure,
+          severity,
+        })
+      : [],
+  exportInterfaces: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.exportInterfaces
+      ? checkExportInterfaces({
+          context,
+          conventionName,
+          expected: must.exportInterfaces,
+          fileStructure,
           severity,
         })
       : [],
   exportTypes: ({ must, context, fileStructure, conventionName, severity }) =>
     must.exportTypes
       ? checkExportTypes({
-          expected: must.exportTypes,
           context,
-          fileStructure,
           conventionName,
+          expected: must.exportTypes,
+          fileStructure,
+          severity,
+        })
+      : [],
+  exportTypesFrom: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.exportTypesFrom === undefined
+      ? []
+      : checkModuleSource({
+          context,
+          conventionName,
+          direction: "export",
+          expected: must.exportTypesFrom,
+          fileStructure,
+          kind: "type",
+          predicateName: "exportTypesFrom",
+          severity,
+        }),
+  exportTypesFromCurrentDir: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.exportTypesFromCurrentDir === undefined
+      ? []
+      : checkModuleSourceGroup({
+          context,
+          conventionName,
+          direction: "export",
+          expected: must.exportTypesFromCurrentDir,
+          fileStructure,
+          group: "currentDir",
+          kind: "type",
+          predicateName: "exportTypesFromCurrentDir",
+          severity,
+        }),
+  exportTypesFromExternals: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.exportTypesFromExternals === undefined
+      ? []
+      : checkModuleSourceGroup({
+          context,
+          conventionName,
+          direction: "export",
+          expected: must.exportTypesFromExternals,
+          fileStructure,
+          group: "externals",
+          kind: "type",
+          predicateName: "exportTypesFromExternals",
+          severity,
+        }),
+  exportTypesFromParents: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.exportTypesFromParents === undefined
+      ? []
+      : checkModuleSourceGroup({
+          context,
+          conventionName,
+          direction: "export",
+          expected: must.exportTypesFromParents,
+          fileStructure,
+          group: "parents",
+          kind: "type",
+          predicateName: "exportTypesFromParents",
+          severity,
+        }),
+  exportValues: ({ must, context, fileStructure, conventionName, severity }) =>
+    must.exportValues
+      ? checkExportValues({
+          context,
+          conventionName,
+          expected: must.exportValues,
+          fileStructure,
+          predicateName: "exportValues",
           severity,
         })
       : [],
@@ -506,32 +665,13 @@ const TS_PREDICATE_HANDLERS: Record<
     must.exportValuesFrom === undefined
       ? []
       : checkModuleSource({
-          expected: must.exportValuesFrom,
+          context,
+          conventionName,
           direction: "export",
+          expected: must.exportValuesFrom,
+          fileStructure,
           kind: "value",
           predicateName: "exportValuesFrom",
-          context,
-          fileStructure,
-          conventionName,
-          severity,
-        }),
-  exportTypesFrom: ({
-    must,
-    context,
-    fileStructure,
-    conventionName,
-    severity,
-  }) =>
-    must.exportTypesFrom === undefined
-      ? []
-      : checkModuleSource({
-          expected: must.exportTypesFrom,
-          direction: "export",
-          kind: "type",
-          predicateName: "exportTypesFrom",
-          context,
-          fileStructure,
-          conventionName,
           severity,
         }),
   exportValuesFromCurrentDir: ({
@@ -544,34 +684,14 @@ const TS_PREDICATE_HANDLERS: Record<
     must.exportValuesFromCurrentDir === undefined
       ? []
       : checkModuleSourceGroup({
+          context,
+          conventionName,
+          direction: "export",
           expected: must.exportValuesFromCurrentDir,
-          predicateName: "exportValuesFromCurrentDir",
-          direction: "export",
-          kind: "value",
+          fileStructure,
           group: "currentDir",
-          context,
-          fileStructure,
-          conventionName,
-          severity,
-        }),
-  exportValuesFromParents: ({
-    must,
-    context,
-    fileStructure,
-    conventionName,
-    severity,
-  }) =>
-    must.exportValuesFromParents === undefined
-      ? []
-      : checkModuleSourceGroup({
-          expected: must.exportValuesFromParents,
-          predicateName: "exportValuesFromParents",
-          direction: "export",
           kind: "value",
-          group: "parents",
-          context,
-          fileStructure,
-          conventionName,
+          predicateName: "exportValuesFromCurrentDir",
           severity,
         }),
   exportValuesFromExternals: ({
@@ -584,159 +704,210 @@ const TS_PREDICATE_HANDLERS: Record<
     must.exportValuesFromExternals === undefined
       ? []
       : checkModuleSourceGroup({
+          context,
+          conventionName,
+          direction: "export",
           expected: must.exportValuesFromExternals,
-          predicateName: "exportValuesFromExternals",
-          direction: "export",
+          fileStructure,
+          group: "externals",
           kind: "value",
-          group: "externals",
-          context,
-          fileStructure,
-          conventionName,
+          predicateName: "exportValuesFromExternals",
           severity,
         }),
-  exportTypesFromCurrentDir: ({
+  exportValuesFromParents: ({
     must,
     context,
     fileStructure,
     conventionName,
     severity,
   }) =>
-    must.exportTypesFromCurrentDir === undefined
+    must.exportValuesFromParents === undefined
       ? []
       : checkModuleSourceGroup({
-          expected: must.exportTypesFromCurrentDir,
-          predicateName: "exportTypesFromCurrentDir",
-          direction: "export",
-          kind: "type",
-          group: "currentDir",
           context,
-          fileStructure,
           conventionName,
-          severity,
-        }),
-  exportTypesFromParents: ({
-    must,
-    context,
-    fileStructure,
-    conventionName,
-    severity,
-  }) =>
-    must.exportTypesFromParents === undefined
-      ? []
-      : checkModuleSourceGroup({
-          expected: must.exportTypesFromParents,
-          predicateName: "exportTypesFromParents",
           direction: "export",
-          kind: "type",
+          expected: must.exportValuesFromParents,
+          fileStructure,
           group: "parents",
-          context,
-          fileStructure,
-          conventionName,
+          kind: "value",
+          predicateName: "exportValuesFromParents",
           severity,
         }),
-  exportTypesFromExternals: ({
-    must,
-    context,
-    fileStructure,
-    conventionName,
-    severity,
-  }) =>
-    must.exportTypesFromExternals === undefined
-      ? []
-      : checkModuleSourceGroup({
-          expected: must.exportTypesFromExternals,
-          predicateName: "exportTypesFromExternals",
-          direction: "export",
-          kind: "type",
-          group: "externals",
-          context,
-          fileStructure,
-          conventionName,
-          severity,
-        }),
-  exportConstants: ({
-    must,
-    context,
-    fileStructure,
-    conventionName,
-    severity,
-  }) =>
-    must.exportConstants
-      ? checkExportConstants({
-          expected: must.exportConstants,
-          context,
-          fileStructure,
-          conventionName,
-          severity,
-        })
-      : [],
-  exportFunctions: ({
-    must,
-    context,
-    fileStructure,
-    conventionName,
-    severity,
-  }) =>
-    must.exportFunctions
-      ? checkExportFunctions({
-          expected: must.exportFunctions,
-          context,
-          fileStructure,
-          conventionName,
-          severity,
-        })
-      : [],
-  exportClasses: ({
-    must,
-    context,
-    fileStructure,
-    conventionName,
-    severity,
-  }) =>
-    must.exportClasses
-      ? checkExportClasses({
-          expected: must.exportClasses,
-          context,
-          fileStructure,
-          conventionName,
-          severity,
-        })
-      : [],
-  exportInterfaces: ({
-    must,
-    context,
-    fileStructure,
-    conventionName,
-    severity,
-  }) =>
-    must.exportInterfaces
-      ? checkExportInterfaces({
-          expected: must.exportInterfaces,
-          context,
-          fileStructure,
-          conventionName,
-          severity,
-        })
-      : [],
-  importValues: ({ must, context, fileStructure, conventionName, severity }) =>
-    must.importValues
-      ? checkImportValues({
-          expected: must.importValues,
-          predicateName: "importValues",
-          context,
-          fileStructure,
-          conventionName,
-          severity,
-        })
-      : [],
   import: ({ must, context, fileStructure, conventionName, severity }) =>
     must.import
       ? checkImportValues({
-          expected: must.import,
-          predicateName: "import",
           context,
-          fileStructure,
           conventionName,
+          expected: must.import,
+          fileStructure,
+          predicateName: "import",
+          severity,
+        })
+      : [],
+  importFrom: ({ must, context, fileStructure, conventionName, severity }) =>
+    must.importFrom === undefined
+      ? []
+      : checkImportSourceExact({
+          context,
+          conventionName,
+          expected: must.importFrom,
+          fileStructure,
+          importKind: "either",
+          predicateName: "importFrom",
+          selectorSyntax: false,
+          severity,
+        }),
+  importFromCurrentDir: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.importFromCurrentDir === undefined
+      ? []
+      : checkImportSource({
+          context,
+          conventionName,
+          expected: must.importFromCurrentDir,
+          fileStructure,
+          group: "currentDir",
+          importKind: "value",
+          predicateName: "importFromCurrentDir",
+          severity,
+        }),
+  importFromExternals: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.importFromExternals === undefined
+      ? []
+      : checkImportSource({
+          context,
+          conventionName,
+          expected: must.importFromExternals,
+          fileStructure,
+          group: "externals",
+          importKind: "value",
+          predicateName: "importFromExternals",
+          severity,
+        }),
+  importFromParents: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.importFromParents === undefined
+      ? []
+      : checkImportSource({
+          context,
+          conventionName,
+          expected: must.importFromParents,
+          fileStructure,
+          group: "parents",
+          importKind: "value",
+          predicateName: "importFromParents",
+          severity,
+        }),
+  importTypes: ({ must, context, fileStructure, conventionName, severity }) =>
+    must.importTypes
+      ? checkImportTypes({
+          context,
+          conventionName,
+          expected: must.importTypes,
+          fileStructure,
+          severity,
+        })
+      : [],
+  importTypesFrom: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.importTypesFrom === undefined
+      ? []
+      : checkImportSourceExact({
+          context,
+          conventionName,
+          expected: must.importTypesFrom,
+          fileStructure,
+          importKind: "type",
+          predicateName: "importTypesFrom",
+          severity,
+        }),
+  importTypesFromCurrentDir: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.importTypesFromCurrentDir === undefined
+      ? []
+      : checkImportSource({
+          context,
+          conventionName,
+          expected: must.importTypesFromCurrentDir,
+          fileStructure,
+          group: "currentDir",
+          importKind: "type",
+          predicateName: "importTypesFromCurrentDir",
+          severity,
+        }),
+  importTypesFromExternals: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.importTypesFromExternals === undefined
+      ? []
+      : checkImportSource({
+          context,
+          conventionName,
+          expected: must.importTypesFromExternals,
+          fileStructure,
+          group: "externals",
+          importKind: "type",
+          predicateName: "importTypesFromExternals",
+          severity,
+        }),
+  importTypesFromParents: ({
+    must,
+    context,
+    fileStructure,
+    conventionName,
+    severity,
+  }) =>
+    must.importTypesFromParents === undefined
+      ? []
+      : checkImportSource({
+          context,
+          conventionName,
+          expected: must.importTypesFromParents,
+          fileStructure,
+          group: "parents",
+          importKind: "type",
+          predicateName: "importTypesFromParents",
+          severity,
+        }),
+  importValues: ({ must, context, fileStructure, conventionName, severity }) =>
+    must.importValues
+      ? checkImportValues({
+          context,
+          conventionName,
+          expected: must.importValues,
+          fileStructure,
+          predicateName: "importValues",
           severity,
         })
       : [],
@@ -750,55 +921,14 @@ const TS_PREDICATE_HANDLERS: Record<
     must.importValuesFrom === undefined
       ? []
       : checkImportSourceExact({
+          context,
+          conventionName,
           expected: must.importValuesFrom,
+          fileStructure,
           importKind: "value",
           predicateName: "importValuesFrom",
-          context,
-          fileStructure,
-          conventionName,
           severity,
         }),
-  importTypesFrom: ({
-    must,
-    context,
-    fileStructure,
-    conventionName,
-    severity,
-  }) =>
-    must.importTypesFrom === undefined
-      ? []
-      : checkImportSourceExact({
-          expected: must.importTypesFrom,
-          importKind: "type",
-          predicateName: "importTypesFrom",
-          context,
-          fileStructure,
-          conventionName,
-          severity,
-        }),
-  importFrom: ({ must, context, fileStructure, conventionName, severity }) =>
-    must.importFrom === undefined
-      ? []
-      : checkImportSourceExact({
-          expected: must.importFrom,
-          importKind: "either",
-          predicateName: "importFrom",
-          selectorSyntax: false,
-          context,
-          fileStructure,
-          conventionName,
-          severity,
-        }),
-  importTypes: ({ must, context, fileStructure, conventionName, severity }) =>
-    must.importTypes
-      ? checkImportTypes({
-          expected: must.importTypes,
-          context,
-          fileStructure,
-          conventionName,
-          severity,
-        })
-      : [],
   importValuesFromCurrentDir: ({
     must,
     context,
@@ -809,70 +939,13 @@ const TS_PREDICATE_HANDLERS: Record<
     must.importValuesFromCurrentDir === undefined
       ? []
       : checkImportSource({
+          context,
+          conventionName,
           expected: must.importValuesFromCurrentDir,
+          fileStructure,
+          group: "currentDir",
+          importKind: "value",
           predicateName: "importValuesFromCurrentDir",
-          group: "currentDir",
-          importKind: "value",
-          context,
-          fileStructure,
-          conventionName,
-          severity,
-        }),
-  importFromCurrentDir: ({
-    must,
-    context,
-    fileStructure,
-    conventionName,
-    severity,
-  }) =>
-    must.importFromCurrentDir === undefined
-      ? []
-      : checkImportSource({
-          expected: must.importFromCurrentDir,
-          predicateName: "importFromCurrentDir",
-          group: "currentDir",
-          importKind: "value",
-          context,
-          fileStructure,
-          conventionName,
-          severity,
-        }),
-  importValuesFromParents: ({
-    must,
-    context,
-    fileStructure,
-    conventionName,
-    severity,
-  }) =>
-    must.importValuesFromParents === undefined
-      ? []
-      : checkImportSource({
-          expected: must.importValuesFromParents,
-          predicateName: "importValuesFromParents",
-          group: "parents",
-          importKind: "value",
-          context,
-          fileStructure,
-          conventionName,
-          severity,
-        }),
-  importFromParents: ({
-    must,
-    context,
-    fileStructure,
-    conventionName,
-    severity,
-  }) =>
-    must.importFromParents === undefined
-      ? []
-      : checkImportSource({
-          expected: must.importFromParents,
-          predicateName: "importFromParents",
-          group: "parents",
-          importKind: "value",
-          context,
-          fileStructure,
-          conventionName,
           severity,
         }),
   importValuesFromExternals: ({
@@ -885,89 +958,32 @@ const TS_PREDICATE_HANDLERS: Record<
     must.importValuesFromExternals === undefined
       ? []
       : checkImportSource({
+          context,
+          conventionName,
           expected: must.importValuesFromExternals,
+          fileStructure,
+          group: "externals",
+          importKind: "value",
           predicateName: "importValuesFromExternals",
-          group: "externals",
-          importKind: "value",
-          context,
-          fileStructure,
-          conventionName,
           severity,
         }),
-  importFromExternals: ({
+  importValuesFromParents: ({
     must,
     context,
     fileStructure,
     conventionName,
     severity,
   }) =>
-    must.importFromExternals === undefined
+    must.importValuesFromParents === undefined
       ? []
       : checkImportSource({
-          expected: must.importFromExternals,
-          predicateName: "importFromExternals",
-          group: "externals",
-          importKind: "value",
           context,
-          fileStructure,
           conventionName,
-          severity,
-        }),
-  importTypesFromCurrentDir: ({
-    must,
-    context,
-    fileStructure,
-    conventionName,
-    severity,
-  }) =>
-    must.importTypesFromCurrentDir === undefined
-      ? []
-      : checkImportSource({
-          expected: must.importTypesFromCurrentDir,
-          predicateName: "importTypesFromCurrentDir",
-          group: "currentDir",
-          importKind: "type",
-          context,
+          expected: must.importValuesFromParents,
           fileStructure,
-          conventionName,
-          severity,
-        }),
-  importTypesFromParents: ({
-    must,
-    context,
-    fileStructure,
-    conventionName,
-    severity,
-  }) =>
-    must.importTypesFromParents === undefined
-      ? []
-      : checkImportSource({
-          expected: must.importTypesFromParents,
-          predicateName: "importTypesFromParents",
           group: "parents",
-          importKind: "type",
-          context,
-          fileStructure,
-          conventionName,
-          severity,
-        }),
-  importTypesFromExternals: ({
-    must,
-    context,
-    fileStructure,
-    conventionName,
-    severity,
-  }) =>
-    must.importTypesFromExternals === undefined
-      ? []
-      : checkImportSource({
-          expected: must.importTypesFromExternals,
-          predicateName: "importTypesFromExternals",
-          group: "externals",
-          importKind: "type",
-          context,
-          fileStructure,
-          conventionName,
+          importKind: "value",
+          predicateName: "importValuesFromParents",
           severity,
         }),
   useDeclarationOrder: ({
@@ -979,26 +995,10 @@ const TS_PREDICATE_HANDLERS: Record<
   }) =>
     must.useDeclarationOrder
       ? checkUseDeclarationOrder({
+          context,
+          conventionName,
           expected: must.useDeclarationOrder,
-          context,
           fileStructure,
-          conventionName,
-          severity,
-        })
-      : [],
-  areBarrelFiles: ({
-    must,
-    context,
-    fileStructure,
-    conventionName,
-    severity,
-  }) =>
-    must.areBarrelFiles
-      ? checkAreBarrelFiles({
-          expected: must.areBarrelFiles,
-          context,
-          fileStructure,
-          conventionName,
           severity,
         })
       : [],
@@ -1032,9 +1032,9 @@ function getOrParseFileStructure(opts: {
 
   const source = opts.fileSystem.readFile(opts.filePath);
   const structure = parseFileStructure({
-    source,
     filePath: opts.filePath,
     session: opts.session,
+    source,
   });
   opts.cache.set(opts.filePath, structure);
   return structure;
@@ -1121,7 +1121,6 @@ function resolveEntryAlias(opts: {
   ) {
     return context.resolveTemplate((value as { alias: string }).alias);
   }
-  return;
 }
 
 function formatForbiddenMessage(opts: {
@@ -1130,8 +1129,8 @@ function formatForbiddenMessage(opts: {
   context: PredicateContext;
 }): string {
   const { key, value, context } = opts;
-  const name = resolveEntryName({ value, context });
-  const alias = resolveEntryAlias({ value, context });
+  const name = resolveEntryName({ context, value });
+  const alias = resolveEntryAlias({ context, value });
   const aliasSuffix = alias === undefined ? "" : ` as "${alias}"`;
 
   switch (key) {
@@ -1319,10 +1318,10 @@ function checkMustPredicates(opts: {
   const needsTs = keys.some((k) => TS_PREDICATES.has(k));
   if (needsTs) {
     fileStructure = getOrParseFileStructure({
-      filePath: context.path,
-      session: context.typescriptSession,
-      fileSystem,
       cache: fileStructureCache,
+      filePath: context.path,
+      fileSystem,
+      session: context.typescriptSession,
     });
   }
 
@@ -1330,10 +1329,10 @@ function checkMustPredicates(opts: {
     if (key === "haveType" && must.haveType) {
       diagnostics.push(
         ...checkHaveType({
-          expected: must.haveType,
           context,
-          fileSystem,
           conventionName,
+          expected: must.haveType,
+          fileSystem,
           severity,
         })
       );
@@ -1341,9 +1340,9 @@ function checkMustPredicates(opts: {
     if (key === "haveFiles" && must.haveFiles) {
       diagnostics.push(
         ...checkHaveFiles({
-          expected: must.haveFiles,
           context,
           conventionName,
+          expected: must.haveFiles,
           severity,
         })
       );
@@ -1351,9 +1350,9 @@ function checkMustPredicates(opts: {
     if (key === "haveDirectories" && must.haveDirectories) {
       diagnostics.push(
         ...checkHaveDirectories({
-          expected: must.haveDirectories,
           context,
           conventionName,
+          expected: must.haveDirectories,
           severity,
         })
       );
@@ -1361,11 +1360,11 @@ function checkMustPredicates(opts: {
     if (fileStructure && TS_PREDICATES.has(key)) {
       diagnostics.push(
         ...checkTsPredicate({
+          context,
+          conventionName,
+          fileStructure,
           key,
           must,
-          conventionName,
-          context,
-          fileStructure,
           severity,
         })
       );
@@ -1388,11 +1387,11 @@ function checkMustNotPredicates(opts: {
 
   for (const check of checks) {
     const normalDiagnostics = checkMustPredicates({
-      must: check.predicate,
-      conventionName: opts.conventionName,
       context: opts.context,
-      fileSystem: opts.fileSystem,
+      conventionName: opts.conventionName,
       fileStructureCache: opts.fileStructureCache,
+      fileSystem: opts.fileSystem,
+      must: check.predicate,
       severity: opts.severity,
     });
     if (normalDiagnostics.length > 0) {
@@ -1400,14 +1399,14 @@ function checkMustNotPredicates(opts: {
     }
     diagnostics.push(
       createDiagnostic({
+        conventionName: opts.conventionName,
         filePath: opts.context.path,
-        predicateName: `mustNot.${check.key}`,
         message: formatForbiddenMessage({
+          context: opts.context,
           key: check.key,
           value: check.value,
-          context: opts.context,
         }),
-        conventionName: opts.conventionName,
+        predicateName: `mustNot.${check.key}`,
         severity: opts.severity,
       })
     );
@@ -1429,11 +1428,11 @@ function checkPredicates(opts: {
   if (opts.must) {
     diagnostics.push(
       ...checkMustPredicates({
-        must: opts.must,
-        conventionName: opts.conventionName,
         context: opts.context,
-        fileSystem: opts.fileSystem,
+        conventionName: opts.conventionName,
         fileStructureCache: opts.fileStructureCache,
+        fileSystem: opts.fileSystem,
+        must: opts.must,
         severity: opts.severity,
       })
     );
@@ -1441,11 +1440,11 @@ function checkPredicates(opts: {
   if (opts.mustNot) {
     diagnostics.push(
       ...checkMustNotPredicates({
-        mustNot: opts.mustNot,
-        conventionName: opts.conventionName,
         context: opts.context,
-        fileSystem: opts.fileSystem,
+        conventionName: opts.conventionName,
         fileStructureCache: opts.fileStructureCache,
+        fileSystem: opts.fileSystem,
+        mustNot: opts.mustNot,
         severity: opts.severity,
       })
     );
@@ -1489,31 +1488,31 @@ async function evaluateForBlock(opts: {
   if (!block.for) {
     if (
       !evaluateConditions({
+        context: parentContext,
+        fileStructureCache,
+        fileSystem,
         ifCondition: block.if,
         ifNotCondition: block.ifNot,
-        context: parentContext,
-        fileSystem,
-        fileStructureCache,
       })
     ) {
       return [];
     }
     if (
       isFileExcluded({
-        filePath: parentContext.path,
-        excludeFiles: block.excludeFiles,
         context: parentContext,
+        excludeFiles: block.excludeFiles,
+        filePath: parentContext.path,
       })
     ) {
       return [];
     }
     return checkPredicates({
+      context: parentContext,
+      conventionName,
+      fileStructureCache,
+      fileSystem,
       must: block.must,
       mustNot: block.mustNot,
-      conventionName,
-      context: parentContext,
-      fileSystem,
-      fileStructureCache,
       severity,
     });
   }
@@ -1530,18 +1529,18 @@ async function evaluateForBlock(opts: {
     posix.join(basePath, parentContext.resolveTemplate(f))
   );
   const matched = await matchPaths({
-    patterns: fullPatterns,
-    fileSystem,
+    camelToKebabMap,
+    camelToPascalMap,
     candidatePaths:
       pathSelection?.mode === "targeted"
         ? pathSelection.selectedPaths
         : undefined,
-    kebabToPascalMap,
+    fileSystem,
     kebabToCamelMap,
-    pascalToKebabMap,
-    camelToKebabMap,
-    camelToPascalMap,
+    kebabToPascalMap,
     pascalToCamelMap,
+    pascalToKebabMap,
+    patterns: fullPatterns,
   });
 
   if (matched.length === 0) {
@@ -1557,21 +1556,21 @@ async function evaluateForBlock(opts: {
     }
 
     const forContext = buildContext({
-      typescriptSession: parentContext.typescriptSession,
+      fileSystem,
       matched: {
         path: entry.path,
         placeholders: mergedPlaceholders,
       },
-      fileSystem,
+      typescriptSession: parentContext.typescriptSession,
     });
 
     if (
       !evaluateConditions({
+        context: forContext,
+        fileStructureCache,
+        fileSystem,
         ifCondition: block.if,
         ifNotCondition: block.ifNot,
-        context: forContext,
-        fileSystem,
-        fileStructureCache,
       })
     ) {
       continue;
@@ -1579,9 +1578,9 @@ async function evaluateForBlock(opts: {
 
     if (
       isFileExcluded({
-        filePath: entry.path,
-        excludeFiles: block.excludeFiles,
         context: forContext,
+        excludeFiles: block.excludeFiles,
+        filePath: entry.path,
       })
     ) {
       continue;
@@ -1589,12 +1588,12 @@ async function evaluateForBlock(opts: {
 
     diagnostics.push(
       ...checkPredicates({
+        context: forContext,
+        conventionName,
+        fileStructureCache,
+        fileSystem,
         must: block.must,
         mustNot: block.mustNot,
-        conventionName,
-        context: forContext,
-        fileSystem,
-        fileStructureCache,
         severity,
       })
     );
@@ -1639,8 +1638,8 @@ async function runWithSession(opts: {
   const pascalToKebabMap = invertMap(kebabToPascalMap);
   const camelToKebabMap = invertMap(kebabToCamelMap);
   const camelToPascalMap = deriveCamelToPascalMap({
-    kebabToPascalMap,
     kebabToCamelMap,
+    kebabToPascalMap,
   });
   const pascalToCamelMap = invertMap(camelToPascalMap);
 
@@ -1650,35 +1649,35 @@ async function runWithSession(opts: {
         ? convention.paths
         : [convention.paths];
       return matchPaths({
-        patterns,
-        fileSystem,
+        camelToKebabMap,
+        camelToPascalMap,
         candidatePaths:
           pathSelection?.mode === "targeted"
             ? pathSelection.structuralPaths
             : undefined,
-        kebabToPascalMap,
+        fileSystem,
         kebabToCamelMap,
-        pascalToKebabMap,
-        camelToKebabMap,
-        camelToPascalMap,
+        kebabToPascalMap,
         pascalToCamelMap,
+        pascalToKebabMap,
+        patterns,
       });
     })
   );
 
   const checkedPaths = new Set<string>();
-  const diagnostics: Diagnostic[] = [];
+  const diagnosticTasks: Promise<Diagnostic[]>[] = [];
 
   const caseMaps: CaseMaps = {
-    kebabToPascalMap,
-    kebabToCamelMap,
-    pascalToKebabMap,
     camelToKebabMap,
     camelToPascalMap,
+    kebabToCamelMap,
+    kebabToPascalMap,
     pascalToCamelMap,
+    pascalToKebabMap,
   };
 
-  for (let i = 0; i < config.conventions.length; i++) {
+  for (let i = 0; i < config.conventions.length; i += 1) {
     const convention = config.conventions[i];
     const matched = matchResults[i];
     const blocks = normalizeMustBlocks({
@@ -1693,8 +1692,8 @@ async function runWithSession(opts: {
       });
     const severity: DiagnosticSeverity = convention.severity ?? "error";
     const staticPlaceholders = buildStaticPlaceholders({
-      raw: convention.placeholders,
       caseMaps,
+      raw: convention.placeholders,
     });
 
     for (const entry of matched) {
@@ -1704,16 +1703,16 @@ async function runWithSession(opts: {
         placeholders: { ...staticPlaceholders, ...entry.placeholders },
       };
       const context = buildContext({
-        matched: mergedEntry,
         fileSystem,
+        matched: mergedEntry,
         typescriptSession: opts.typescriptSession,
       });
 
       if (
         isFileExcluded({
-          filePath: entry.path,
-          excludeFiles: convention.excludeFiles,
           context,
+          excludeFiles: convention.excludeFiles,
+          filePath: entry.path,
         })
       ) {
         continue;
@@ -1721,45 +1720,47 @@ async function runWithSession(opts: {
 
       if (
         !evaluateConditions({
+          context,
+          fileStructureCache,
+          fileSystem,
           ifCondition: convention.if,
           ifNotCondition: convention.ifNot,
-          context,
-          fileSystem,
-          fileStructureCache,
         })
       ) {
         continue;
       }
 
       for (const block of blocks) {
-        diagnostics.push(
-          ...(await evaluateForBlock({
+        diagnosticTasks.push(
+          evaluateForBlock({
             block,
-            parentContext: context,
-            fileSystem,
+            camelToKebabMap,
+            camelToPascalMap,
+            checkedPaths,
             conventionName: resolveBlockConventionName({
               block,
               conventionName,
             }),
             fileStructureCache,
-            severity,
-            checkedPaths,
-            pathSelection,
-            kebabToPascalMap,
+            fileSystem,
             kebabToCamelMap,
-            pascalToKebabMap,
-            camelToKebabMap,
-            camelToPascalMap,
+            kebabToPascalMap,
+            parentContext: context,
             pascalToCamelMap,
-          }))
+            pascalToKebabMap,
+            pathSelection,
+            severity,
+          })
         );
       }
     }
   }
 
+  const diagnostics = (await Promise.all(diagnosticTasks)).flat();
+
   return {
     diagnostics,
-    filesChecked: checkedPaths.size,
     elapsed: performance.now() - startTime,
+    filesChecked: checkedPaths.size,
   };
 }

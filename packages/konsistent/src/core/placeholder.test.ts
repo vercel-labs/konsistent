@@ -64,8 +64,8 @@ describe("PlaceholderValue", () => {
     it("uses kebabToPascalMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: "openai",
           kebabToPascalMap: { openai: "OpenAI" },
+          value: "openai",
         }).toPascalCase()
       ).toBe("OpenAI");
     });
@@ -73,8 +73,8 @@ describe("PlaceholderValue", () => {
     it("falls back to default when kebabToPascalMap has no entry", () => {
       expect(
         new PlaceholderValue({
-          value: "cache",
           kebabToPascalMap: { openai: "OpenAI" },
+          value: "cache",
         }).toPascalCase()
       ).toBe("Cache");
     });
@@ -82,8 +82,8 @@ describe("PlaceholderValue", () => {
     it("uses camelToPascalMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: "openAI",
           camelToPascalMap: { openAI: "OpenAI" },
+          value: "openAI",
         }).toPascalCase()
       ).toBe("OpenAI");
     });
@@ -91,9 +91,9 @@ describe("PlaceholderValue", () => {
     it("prefers kebabToPascalMap over camelToPascalMap", () => {
       expect(
         new PlaceholderValue({
-          value: "openai",
-          kebabToPascalMap: { openai: "OpenAI" },
           camelToPascalMap: { openai: "Openai" },
+          kebabToPascalMap: { openai: "OpenAI" },
+          value: "openai",
         }).toPascalCase()
       ).toBe("OpenAI");
     });
@@ -101,8 +101,8 @@ describe("PlaceholderValue", () => {
     it("falls back to default when camelToPascalMap has no entry", () => {
       expect(
         new PlaceholderValue({
-          value: "testUtils",
           camelToPascalMap: { openAI: "OpenAI" },
+          value: "testUtils",
         }).toPascalCase()
       ).toBe("TestUtils");
     });
@@ -134,8 +134,8 @@ describe("PlaceholderValue", () => {
     it("uses kebabToCamelMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: "openai",
           kebabToCamelMap: { openai: "openAI" },
+          value: "openai",
         }).toCamelCase()
       ).toBe("openAI");
     });
@@ -143,8 +143,8 @@ describe("PlaceholderValue", () => {
     it("falls back to kebabToPascalMap with lowercased first char", () => {
       expect(
         new PlaceholderValue({
-          value: "graphql",
           kebabToPascalMap: { graphql: "GraphQL" },
+          value: "graphql",
         }).toCamelCase()
       ).toBe("graphQL");
     });
@@ -152,9 +152,9 @@ describe("PlaceholderValue", () => {
     it("prefers kebabToCamelMap over kebabToPascalMap", () => {
       expect(
         new PlaceholderValue({
-          value: "openai",
-          kebabToPascalMap: { openai: "OpenAI" },
           kebabToCamelMap: { openai: "openAI" },
+          kebabToPascalMap: { openai: "OpenAI" },
+          value: "openai",
         }).toCamelCase()
       ).toBe("openAI");
     });
@@ -162,8 +162,8 @@ describe("PlaceholderValue", () => {
     it("falls back to default when no map entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: "cache",
           kebabToPascalMap: { openai: "OpenAI" },
+          value: "cache",
         }).toCamelCase()
       ).toBe("cache");
     });
@@ -171,8 +171,8 @@ describe("PlaceholderValue", () => {
     it("uses pascalToCamelMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: "OpenAI",
           pascalToCamelMap: { OpenAI: "openAI" },
+          value: "OpenAI",
         }).toCamelCase()
       ).toBe("openAI");
     });
@@ -180,9 +180,9 @@ describe("PlaceholderValue", () => {
     it("prefers kebabToCamelMap over pascalToCamelMap", () => {
       expect(
         new PlaceholderValue({
-          value: "openai",
           kebabToCamelMap: { openai: "openAI" },
           pascalToCamelMap: { openai: "openai" },
+          value: "openai",
         }).toCamelCase()
       ).toBe("openAI");
     });
@@ -190,8 +190,8 @@ describe("PlaceholderValue", () => {
     it("falls back to default when pascalToCamelMap has no entry", () => {
       expect(
         new PlaceholderValue({
-          value: "TestUtils",
           pascalToCamelMap: { OpenAI: "openAI" },
+          value: "TestUtils",
         }).toCamelCase()
       ).toBe("testUtils");
     });
@@ -225,8 +225,8 @@ describe("PlaceholderValue", () => {
     it("uses pascalToKebabMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: "OpenAI",
           pascalToKebabMap: { OpenAI: "openai" },
+          value: "OpenAI",
         }).toKebabCase()
       ).toBe("openai");
     });
@@ -234,8 +234,8 @@ describe("PlaceholderValue", () => {
     it("uses camelToKebabMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: "openAI",
           camelToKebabMap: { openAI: "openai" },
+          value: "openAI",
         }).toKebabCase()
       ).toBe("openai");
     });
@@ -243,9 +243,9 @@ describe("PlaceholderValue", () => {
     it("prefers pascalToKebabMap over camelToKebabMap", () => {
       expect(
         new PlaceholderValue({
-          value: "OpenAI",
-          pascalToKebabMap: { OpenAI: "openai" },
           camelToKebabMap: { OpenAI: "open-ai" },
+          pascalToKebabMap: { OpenAI: "openai" },
+          value: "OpenAI",
         }).toKebabCase()
       ).toBe("openai");
     });
@@ -253,8 +253,8 @@ describe("PlaceholderValue", () => {
     it("falls back to default when no map entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: "cache",
           pascalToKebabMap: { OpenAI: "openai" },
+          value: "cache",
         }).toKebabCase()
       ).toBe("cache");
     });
@@ -350,8 +350,8 @@ describe("PlaceholderValue", () => {
     it("uses kebabToPascalMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: "openai-graphql",
           kebabToPascalMap: { openai: "OpenAI" },
+          value: "openai-graphql",
         }).toNthSegmentPascalCase(0)
       ).toBe("OpenAI");
     });
@@ -359,8 +359,8 @@ describe("PlaceholderValue", () => {
     it("falls back to default when no map entry", () => {
       expect(
         new PlaceholderValue({
-          value: "openai-graphql",
           kebabToPascalMap: { graphql: "GraphQL" },
+          value: "openai-graphql",
         }).toNthSegmentPascalCase(0)
       ).toBe("Openai");
     });
@@ -382,8 +382,8 @@ describe("PlaceholderValue", () => {
     it("uses kebabToCamelMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: "openai-graphql",
           kebabToCamelMap: { openai: "openAI" },
+          value: "openai-graphql",
         }).toNthSegmentCamelCase(0)
       ).toBe("openAI");
     });
@@ -391,8 +391,8 @@ describe("PlaceholderValue", () => {
     it("falls back to kebabToPascalMap with lowercased first char", () => {
       expect(
         new PlaceholderValue({
-          value: "openai-graphql",
           kebabToPascalMap: { graphql: "GraphQL" },
+          value: "openai-graphql",
         }).toNthSegmentCamelCase(1)
       ).toBe("graphQL");
     });
@@ -432,8 +432,8 @@ describe("PlaceholderValue", () => {
     it("uses pascalToKebabMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: "OpenAI",
           pascalToKebabMap: { OpenAI: "openai" },
+          value: "OpenAI",
         }).toSnakeCase()
       ).toBe("openai");
     });
@@ -441,8 +441,8 @@ describe("PlaceholderValue", () => {
     it("uses camelToKebabMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: "openAI",
           camelToKebabMap: { openAI: "openai" },
+          value: "openAI",
         }).toSnakeCase()
       ).toBe("openai");
     });
@@ -450,8 +450,8 @@ describe("PlaceholderValue", () => {
     it("converts hyphens in mapped value to underscores", () => {
       expect(
         new PlaceholderValue({
-          value: "GraphQL",
           pascalToKebabMap: { GraphQL: "graph-ql" },
+          value: "GraphQL",
         }).toSnakeCase()
       ).toBe("graph_ql");
     });
@@ -459,8 +459,8 @@ describe("PlaceholderValue", () => {
     it("falls back to default when no map entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: "cache",
           pascalToKebabMap: { OpenAI: "openai" },
+          value: "cache",
         }).toSnakeCase()
       ).toBe("cache");
     });
@@ -494,8 +494,8 @@ describe("PlaceholderValue", () => {
     it("uses pascalToKebabMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: "GraphQL",
           pascalToKebabMap: { GraphQL: "graphql" },
+          value: "GraphQL",
         }).toConstantCase()
       ).toBe("GRAPHQL");
     });
@@ -503,8 +503,8 @@ describe("PlaceholderValue", () => {
     it("uses camelToKebabMap when entry exists", () => {
       expect(
         new PlaceholderValue({
-          value: "graphQL",
           camelToKebabMap: { graphQL: "graphql" },
+          value: "graphQL",
         }).toConstantCase()
       ).toBe("GRAPHQL");
     });
@@ -512,8 +512,8 @@ describe("PlaceholderValue", () => {
     it("converts hyphens in mapped value to underscores", () => {
       expect(
         new PlaceholderValue({
-          value: "GraphQL",
           pascalToKebabMap: { GraphQL: "graph-ql" },
+          value: "GraphQL",
         }).toConstantCase()
       ).toBe("GRAPH_QL");
     });

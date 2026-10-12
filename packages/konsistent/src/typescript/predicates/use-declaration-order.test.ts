@@ -5,33 +5,33 @@ import { checkUseDeclarationOrder } from "./use-declaration-order.js";
 
 function createMockContext(opts: {
   path: string;
-  placeholders?: Record<string, { toString(): string }>;
+  placeholders?: Record<string, { toString: () => string }>;
 }): PredicateContext {
   const placeholders = opts.placeholders ?? {};
   return {
+    directoryExists: () => false,
+    fileExists: () => false,
     path: opts.path,
     placeholders: placeholders as PredicateContext["placeholders"],
+    readDir: () => [],
     resolveTemplate(t: string): string {
       return t.replace(/\$\{(\w+)\}/g, (_match, name) => {
         const ph = placeholders[name];
         return ph ? ph.toString() : _match;
       });
     },
-    directoryExists: () => false,
-    fileExists: () => false,
-    readDir: () => [],
   };
 }
 
 function parseSource(opts: { source: string }) {
-  return parseFileStructure({ source: opts.source, filePath: "src/index.ts" });
+  return parseFileStructure({ filePath: "src/index.ts", source: opts.source });
 }
 
 describe("checkUseDeclarationOrder", () => {
   it("passes when present declaration symbols follow the configured order", () => {
     const result = checkUseDeclarationOrder({
-      expected: ["alpha", "beta", "gamma"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["alpha", "beta", "gamma"],
       fileStructure: parseSource({
         source: "const alpha = 1;\nconst gamma = 3;",
       }),
@@ -41,8 +41,8 @@ describe("checkUseDeclarationOrder", () => {
 
   it("does not require missing symbols", () => {
     const result = checkUseDeclarationOrder({
-      expected: ["alpha", "beta", "gamma"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["alpha", "beta", "gamma"],
       fileStructure: parseSource({
         source: "const beta = 2;",
       }),
@@ -52,8 +52,8 @@ describe("checkUseDeclarationOrder", () => {
 
   it("reports declarations that appear after a later configured symbol", () => {
     const result = checkUseDeclarationOrder({
-      expected: ["alpha", "beta", "gamma"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["alpha", "beta", "gamma"],
       fileStructure: parseSource({
         source: "const beta = 2;\nconst alpha = 1;",
       }),
@@ -68,8 +68,8 @@ describe("checkUseDeclarationOrder", () => {
 
   it("considers named re-exports when no local declaration exists", () => {
     const result = checkUseDeclarationOrder({
-      expected: ["Alpha", "Beta", "Gamma"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["Alpha", "Beta", "Gamma"],
       fileStructure: parseSource({
         source:
           "export { Beta } from './beta';\nexport { default as Alpha } from './alpha';",
@@ -83,8 +83,8 @@ describe("checkUseDeclarationOrder", () => {
 
   it("uses local declaration position before matching named export position", () => {
     const result = checkUseDeclarationOrder({
-      expected: ["alpha", "beta"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["alpha", "beta"],
       fileStructure: parseSource({
         source:
           "const alpha = 1;\nexport { beta } from './beta';\nexport { alpha };",
@@ -95,8 +95,8 @@ describe("checkUseDeclarationOrder", () => {
 
   it("ignores default export assignments", () => {
     const result = checkUseDeclarationOrder({
-      expected: ["alpha", "beta"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["alpha", "beta"],
       fileStructure: parseSource({
         source: "const beta = 2;\nexport default alpha;",
       }),
@@ -106,11 +106,11 @@ describe("checkUseDeclarationOrder", () => {
 
   it("resolves templates in configured symbols", () => {
     const result = checkUseDeclarationOrder({
-      expected: ["${prefix}Alpha", "${prefix}Beta"],
       context: createMockContext({
         path: "src/index.ts",
         placeholders: { prefix: { toString: () => "Thing" } },
       }),
+      expected: ["${prefix}Alpha", "${prefix}Beta"],
       fileStructure: parseSource({
         source: "const ThingAlpha = 1;\nconst ThingBeta = 2;",
       }),

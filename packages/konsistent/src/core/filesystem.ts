@@ -3,13 +3,13 @@ import { resolve } from "node:path";
 import { glob, globSync, isDynamicPattern } from "tinyglobby";
 
 export interface FileSystem {
-  directoryExists(path: string): boolean;
-  fileExists(path: string): boolean;
-  glob(patterns: string[]): Promise<string[]>;
-  isDirectory(path: string): boolean;
-  isFile(path: string): boolean;
-  readDir(path: string): string[];
-  readFile(path: string): string;
+  directoryExists: (path: string) => boolean;
+  fileExists: (path: string) => boolean;
+  glob: (patterns: string[]) => Promise<string[]>;
+  isDirectory: (path: string) => boolean;
+  isFile: (path: string) => boolean;
+  readDir: (path: string) => string[];
+  readFile: (path: string) => string;
 }
 
 export function createRealFileSystem(opts: { cwd: string }): FileSystem {
@@ -26,6 +26,52 @@ export function createRealFileSystem(opts: { cwd: string }): FileSystem {
   }
 
   return {
+    directoryExists(path: string): boolean {
+      if (isDirectory(path)) {
+        return true;
+      }
+      if (!isDynamicPattern(path)) {
+        return false;
+      }
+
+      const cached = directoryPatternCache.get(path);
+      if (cached !== undefined) {
+        return cached;
+      }
+
+      const matched =
+        globSync({
+          cwd: opts.cwd,
+          expandDirectories: false,
+          onlyDirectories: true,
+          patterns: path,
+        }).length > 0;
+      directoryPatternCache.set(path, matched);
+      return matched;
+    },
+    fileExists(path: string): boolean {
+      if (existsSync(resolve(opts.cwd, path))) {
+        return true;
+      }
+      if (!isDynamicPattern(path)) {
+        return false;
+      }
+
+      const cached = filePatternCache.get(path);
+      if (cached !== undefined) {
+        return cached;
+      }
+
+      const matched =
+        globSync({
+          cwd: opts.cwd,
+          expandDirectories: false,
+          onlyFiles: true,
+          patterns: path,
+        }).length > 0;
+      filePatternCache.set(path, matched);
+      return matched;
+    },
     glob(patterns: string[]): Promise<string[]> {
       const key = patterns.join("\x00");
       const cached = globCache.get(key);
@@ -48,52 +94,6 @@ export function createRealFileSystem(opts: { cwd: string }): FileSystem {
       } catch {
         return false;
       }
-    },
-    fileExists(path: string): boolean {
-      if (existsSync(resolve(opts.cwd, path))) {
-        return true;
-      }
-      if (!isDynamicPattern(path)) {
-        return false;
-      }
-
-      const cached = filePatternCache.get(path);
-      if (cached !== undefined) {
-        return cached;
-      }
-
-      const matched =
-        globSync({
-          patterns: path,
-          cwd: opts.cwd,
-          expandDirectories: false,
-          onlyFiles: true,
-        }).length > 0;
-      filePatternCache.set(path, matched);
-      return matched;
-    },
-    directoryExists(path: string): boolean {
-      if (isDirectory(path)) {
-        return true;
-      }
-      if (!isDynamicPattern(path)) {
-        return false;
-      }
-
-      const cached = directoryPatternCache.get(path);
-      if (cached !== undefined) {
-        return cached;
-      }
-
-      const matched =
-        globSync({
-          patterns: path,
-          cwd: opts.cwd,
-          expandDirectories: false,
-          onlyDirectories: true,
-        }).length > 0;
-      directoryPatternCache.set(path, matched);
-      return matched;
     },
     readDir(path: string): string[] {
       try {

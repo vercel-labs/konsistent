@@ -79,8 +79,8 @@ async function expandPositiveSelector(opts: {
     return [
       opts.selector,
       ...(await expandDirectory({
-        path: opts.selector,
         fileSystem: opts.fileSystem,
+        path: opts.selector,
       })),
     ];
   }
@@ -95,7 +95,7 @@ async function expandPositiveSelector(opts: {
     );
   const descendants = await Promise.all(
     directories.map((path) =>
-      expandDirectory({ path, fileSystem: opts.fileSystem })
+      expandDirectory({ fileSystem: opts.fileSystem, path })
     )
   );
   return [...matches, ...descendants.flat()];
@@ -153,7 +153,7 @@ export async function resolvePathSelectors(opts: {
 
   const matches = await Promise.all(
     [...positiveSelectors].map((selector) =>
-      expandPositiveSelector({ selector, fileSystem: opts.fileSystem })
+      expandPositiveSelector({ fileSystem: opts.fileSystem, selector })
     )
   );
   const negativeMatchers = [...negativeSelectors].map((pattern) => {
@@ -164,7 +164,7 @@ export async function resolvePathSelectors(opts: {
     matches
       .flat()
       .map((path) => (path.endsWith("/") ? path.slice(0, -1) : path))
-      .filter((path) => !isExcluded({ path, matchers: negativeMatchers }))
+      .filter((path) => !isExcluded({ matchers: negativeMatchers, path }))
   );
 
   return createTargetedPathSelection({ selectedPaths });

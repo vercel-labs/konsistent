@@ -19,7 +19,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  fs.rmSync(tmpDir, { recursive: true, force: true });
+  fs.rmSync(tmpDir, { force: true, recursive: true });
 });
 
 describe("detectPackageManager", () => {
@@ -108,7 +108,7 @@ describe("getInstallCommand", () => {
         packageName: "konsistent",
         version: "1.0.0",
       })
-    ).toEqual({ command: "npm", args: ["install", "konsistent@1.0.0"] });
+    ).toEqual({ args: ["install", "konsistent@1.0.0"], command: "npm" });
   });
 
   it("returns pnpm add command", () => {
@@ -118,7 +118,7 @@ describe("getInstallCommand", () => {
         packageName: "konsistent",
         version: "1.0.0",
       })
-    ).toEqual({ command: "pnpm", args: ["add", "konsistent@1.0.0"] });
+    ).toEqual({ args: ["add", "konsistent@1.0.0"], command: "pnpm" });
   });
 
   it("returns yarn add command", () => {
@@ -128,7 +128,7 @@ describe("getInstallCommand", () => {
         packageName: "konsistent",
         version: "1.0.0",
       })
-    ).toEqual({ command: "yarn", args: ["add", "konsistent@1.0.0"] });
+    ).toEqual({ args: ["add", "konsistent@1.0.0"], command: "yarn" });
   });
 
   it("returns bun add command", () => {
@@ -138,7 +138,7 @@ describe("getInstallCommand", () => {
         packageName: "konsistent",
         version: "1.0.0",
       })
-    ).toEqual({ command: "bun", args: ["add", "konsistent@1.0.0"] });
+    ).toEqual({ args: ["add", "konsistent@1.0.0"], command: "bun" });
   });
 
   it("adds -w flag for pnpm in workspace root", () => {
@@ -149,7 +149,7 @@ describe("getInstallCommand", () => {
         version: "1.0.0",
         workspaceRoot: true,
       })
-    ).toEqual({ command: "pnpm", args: ["add", "-w", "konsistent@1.0.0"] });
+    ).toEqual({ args: ["add", "-w", "konsistent@1.0.0"], command: "pnpm" });
   });
 
   it("adds -W flag for yarn in workspace root", () => {
@@ -160,7 +160,7 @@ describe("getInstallCommand", () => {
         version: "1.0.0",
         workspaceRoot: true,
       })
-    ).toEqual({ command: "yarn", args: ["add", "-W", "konsistent@1.0.0"] });
+    ).toEqual({ args: ["add", "-W", "konsistent@1.0.0"], command: "yarn" });
   });
 
   it("does not add workspace flag for npm or bun", () => {
@@ -171,7 +171,7 @@ describe("getInstallCommand", () => {
         version: "1.0.0",
         workspaceRoot: true,
       })
-    ).toEqual({ command: "npm", args: ["install", "konsistent@1.0.0"] });
+    ).toEqual({ args: ["install", "konsistent@1.0.0"], command: "npm" });
 
     expect(
       getInstallCommand({
@@ -180,7 +180,7 @@ describe("getInstallCommand", () => {
         version: "1.0.0",
         workspaceRoot: true,
       })
-    ).toEqual({ command: "bun", args: ["add", "konsistent@1.0.0"] });
+    ).toEqual({ args: ["add", "konsistent@1.0.0"], command: "bun" });
   });
 });
 
@@ -192,7 +192,7 @@ describe("getGlobalInstallCommand", () => {
         packageName: "konsistent",
         version: "1.0.0",
       })
-    ).toEqual({ command: "npm", args: ["install", "-g", "konsistent@1.0.0"] });
+    ).toEqual({ args: ["install", "-g", "konsistent@1.0.0"], command: "npm" });
   });
 
   it("returns yarn global add", () => {
@@ -203,8 +203,8 @@ describe("getGlobalInstallCommand", () => {
         version: "1.0.0",
       })
     ).toEqual({
-      command: "yarn",
       args: ["global", "add", "konsistent@1.0.0"],
+      command: "yarn",
     });
   });
 
@@ -216,15 +216,15 @@ describe("getGlobalInstallCommand", () => {
         version: "1.0.0",
       })
     ).toEqual({
-      command: "bun",
       args: ["add", "--global", "konsistent@1.0.0"],
+      command: "bun",
     });
   });
 });
 
 describe("isGlobalInstall", () => {
   it("returns true when argv[1] is outside cwd node_modules", () => {
-    const original = process.argv[1];
+    const [, original] = process.argv;
     process.argv[1] = "/usr/local/bin/konsistent";
     expect(isGlobalInstall()).toBe(true);
     process.argv[1] = original;
@@ -280,8 +280,8 @@ describe("updatePackageJsonVersion", () => {
 
     const changed = updatePackageJsonVersion({
       cwd: tmpDir,
-      packageName: "konsistent",
       newVersion: "0.0.2-alpha.1",
+      packageName: "konsistent",
     });
     expect(changed).toBe(true);
 
@@ -299,8 +299,8 @@ describe("updatePackageJsonVersion", () => {
 
     const changed = updatePackageJsonVersion({
       cwd: tmpDir,
-      packageName: "konsistent",
       newVersion: "0.0.1-alpha.5",
+      packageName: "konsistent",
     });
     expect(changed).toBe(false);
   });
@@ -312,8 +312,8 @@ describe("updatePackageJsonVersion", () => {
 
     updatePackageJsonVersion({
       cwd: tmpDir,
-      packageName: "konsistent",
       newVersion: "2.0.0",
+      packageName: "konsistent",
     });
 
     const updated = fs.readFileSync(path.join(tmpDir, "package.json"), "utf-8");
@@ -328,8 +328,8 @@ describe("updatePackageJsonVersion", () => {
 
     const changed = updatePackageJsonVersion({
       cwd: tmpDir,
-      packageName: "konsistent",
       newVersion: "2.0.0",
+      packageName: "konsistent",
     });
     expect(changed).toBe(false);
   });

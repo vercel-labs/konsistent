@@ -37,7 +37,7 @@ function readPackageManagerField(cwd: string): PackageManager | null {
       return null;
     }
 
-    const name = pkg.packageManager.split("@")[0];
+    const [name] = pkg.packageManager.split("@");
     if (
       name === "pnpm" ||
       name === "yarn" ||
@@ -77,19 +77,19 @@ export function getInstallCommand(opts: {
   // biome-ignore lint/style/useDefaultSwitchClause: PackageManager is exhaustive
   switch (opts.packageManager) {
     case "bun":
-      return { command: "bun", args: ["add", spec] };
+      return { args: ["add", spec], command: "bun" };
     case "pnpm":
       return {
-        command: "pnpm",
         args: opts.workspaceRoot ? ["add", "-w", spec] : ["add", spec],
+        command: "pnpm",
       };
     case "yarn":
       return {
-        command: "yarn",
         args: opts.workspaceRoot ? ["add", "-W", spec] : ["add", spec],
+        command: "yarn",
       };
     case "npm":
-      return { command: "npm", args: ["install", spec] };
+      return { args: ["install", spec], command: "npm" };
   }
 }
 
@@ -103,18 +103,18 @@ export function getGlobalInstallCommand(opts: {
   // biome-ignore lint/style/useDefaultSwitchClause: PackageManager is exhaustive
   switch (opts.packageManager) {
     case "bun":
-      return { command: "bun", args: ["add", "--global", spec] };
+      return { args: ["add", "--global", spec], command: "bun" };
     case "pnpm":
-      return { command: "pnpm", args: ["add", "-g", spec] };
+      return { args: ["add", "-g", spec], command: "pnpm" };
     case "yarn":
-      return { command: "yarn", args: ["global", "add", spec] };
+      return { args: ["global", "add", spec], command: "yarn" };
     case "npm":
-      return { command: "npm", args: ["install", "-g", spec] };
+      return { args: ["install", "-g", spec], command: "npm" };
   }
 }
 
 export function isGlobalInstall(): boolean {
-  const execPath = process.argv[1];
+  const [, execPath] = process.argv;
   if (!execPath) {
     return false;
   }

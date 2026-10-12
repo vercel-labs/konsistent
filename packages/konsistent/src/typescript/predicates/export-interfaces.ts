@@ -17,11 +17,11 @@ function resolveExtendConfig(opts: {
     return;
   }
   if (typeof extend === "string") {
-    return { type: context.resolveTemplate(extend), allowOmissions: false };
+    return { allowOmissions: false, type: context.resolveTemplate(extend) };
   }
   return {
-    type: context.resolveTemplate(extend.type),
     allowOmissions: extend.allowOmissions ?? false,
+    type: context.resolveTemplate(extend.type),
   };
 }
 
@@ -69,10 +69,10 @@ export function checkExportInterfaces(opts: {
     if (!(isExported || interfaceInfo)) {
       diagnostics.push(
         createDiagnostic({
-          filePath: context.path,
-          predicateName: "exportInterfaces",
-          message: `Missing export interface "${resolvedName}"`,
           conventionName,
+          filePath: context.path,
+          message: `Missing export interface "${resolvedName}"`,
+          predicateName: "exportInterfaces",
           severity,
         })
       );
@@ -82,10 +82,10 @@ export function checkExportInterfaces(opts: {
     if (!isExported) {
       diagnostics.push(
         createDiagnostic({
-          filePath: context.path,
-          predicateName: "exportInterfaces",
-          message: `Missing export interface "${resolvedName}"`,
           conventionName,
+          filePath: context.path,
+          message: `Missing export interface "${resolvedName}"`,
+          predicateName: "exportInterfaces",
           severity,
         })
       );
@@ -93,25 +93,25 @@ export function checkExportInterfaces(opts: {
     }
 
     const extendConfig = resolveExtendConfig({
-      extend: definition.extend,
       context,
+      extend: definition.extend,
     });
     if (
       extendConfig &&
       interfaceInfo &&
       !matchesExtend({
-        extendsClauses: interfaceInfo.extends,
         config: extendConfig,
+        extendsClauses: interfaceInfo.extends,
       })
     ) {
       diagnostics.push(
         createDiagnostic({
-          filePath: context.path,
-          predicateName: "exportInterfaces",
-          message: `Interface "${resolvedName}" must extend "${extendConfig.type}"`,
-          conventionName,
-          line: interfaceInfo.pos.line,
           column: interfaceInfo.pos.column,
+          conventionName,
+          filePath: context.path,
+          line: interfaceInfo.pos.line,
+          message: `Interface "${resolvedName}" must extend "${extendConfig.type}"`,
+          predicateName: "exportInterfaces",
           severity,
         })
       );

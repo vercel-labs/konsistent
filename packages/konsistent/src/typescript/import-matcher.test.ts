@@ -4,21 +4,21 @@ import { hasImport, hasImportFrom } from "./import-matcher.js";
 import { parseFileStructure } from "./parser.js";
 
 function createContext(opts: {
-  placeholders?: Record<string, { toString(): string }>;
+  placeholders?: Record<string, { toString: () => string }>;
 }): PredicateContext {
   const placeholders = opts.placeholders ?? {};
   return {
+    directoryExists: () => false,
+    fileExists: () => false,
     path: "src/index.ts",
     placeholders: placeholders as PredicateContext["placeholders"],
+    readDir: () => [],
     resolveTemplate(template: string): string {
       return template.replace(
         /\$\{(\w+)\}/g,
         (match, name) => placeholders[name]?.toString() ?? match
       );
     },
-    directoryExists: () => false,
-    fileExists: () => false,
-    readDir: () => [],
   };
 }
 
@@ -34,18 +34,18 @@ describe("import matcher", () => {
   it("matches value imports by their original name regardless of alias", () => {
     expect(
       hasImport({
-        expected: { name: "sourceValue", from: "pkg" },
-        importKind: "value",
         context,
+        expected: { from: "pkg", name: "sourceValue" },
         fileStructure,
+        importKind: "value",
       })
     ).toBe(true);
     expect(
       hasImport({
-        expected: "localValue",
-        importKind: "value",
         context,
+        expected: "localValue",
         fileStructure,
+        importKind: "value",
       })
     ).toBe(false);
   });
@@ -53,18 +53,18 @@ describe("import matcher", () => {
   it("keeps value and type imports separate", () => {
     expect(
       hasImport({
-        expected: "SourceType",
-        importKind: "type",
         context,
+        expected: "SourceType",
         fileStructure,
+        importKind: "type",
       })
     ).toBe(true);
     expect(
       hasImport({
-        expected: "SourceType",
-        importKind: "value",
         context,
+        expected: "SourceType",
         fileStructure,
+        importKind: "value",
       })
     ).toBe(false);
   });
@@ -72,16 +72,16 @@ describe("import matcher", () => {
   it("resolves placeholders in names and sources", () => {
     const placeholderContext = createContext({
       placeholders: {
-        symbol: { toString: () => "sourceValue" },
         source: { toString: () => "pkg" },
+        symbol: { toString: () => "sourceValue" },
       },
     });
     expect(
       hasImport({
-        expected: { name: "${symbol}", from: "${source}" },
-        importKind: "value",
         context: placeholderContext,
+        expected: { from: "${source}", name: "${symbol}" },
         fileStructure,
+        importKind: "value",
       })
     ).toBe(true);
   });
@@ -89,26 +89,26 @@ describe("import matcher", () => {
   it("matches exact value and type import sources", () => {
     expect(
       hasImportFrom({
-        expected: "pkg",
-        importKind: "value",
         context,
+        expected: "pkg",
         fileStructure,
+        importKind: "value",
       })
     ).toBe(true);
     expect(
       hasImportFrom({
+        context,
         expected: "pkg",
+        fileStructure,
         importKind: "type",
-        context,
-        fileStructure,
       })
     ).toBe(true);
     expect(
       hasImportFrom({
-        expected: "pkg/*",
-        importKind: "value",
         context,
+        expected: "pkg/*",
         fileStructure,
+        importKind: "value",
       })
     ).toBe(false);
   });
@@ -116,18 +116,18 @@ describe("import matcher", () => {
   it("treats side-effect imports as value sources only", () => {
     expect(
       hasImportFrom({
-        expected: "./setup",
-        importKind: "value",
         context,
+        expected: "./setup",
         fileStructure,
+        importKind: "value",
       })
     ).toBe(true);
     expect(
       hasImportFrom({
-        expected: "./setup",
-        importKind: "type",
         context,
+        expected: "./setup",
         fileStructure,
+        importKind: "type",
       })
     ).toBe(false);
   });

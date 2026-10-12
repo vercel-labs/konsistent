@@ -40,14 +40,14 @@ export function collectDeprecationWarnings(opts: {
       }
     } else {
       collectPredicateWarnings({
-        predicates: convention.must,
         path: `${prefix}.must`,
+        predicates: convention.must,
         warnings,
       });
     }
     collectPredicateWarnings({
-      predicates: convention.mustNot,
       path: `${prefix}.mustNot`,
+      predicates: convention.mustNot,
       warnings,
     });
   }
@@ -61,13 +61,13 @@ function collectBlockWarnings(opts: {
 }): void {
   const { block, path, warnings } = opts;
   collectPredicateWarnings({
-    predicates: block.must,
     path: `${path}.must`,
+    predicates: block.must,
     warnings,
   });
   collectPredicateWarnings({
-    predicates: block.mustNot,
     path: `${path}.mustNot`,
+    predicates: block.mustNot,
     warnings,
   });
 }

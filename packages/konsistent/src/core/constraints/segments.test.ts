@@ -4,22 +4,22 @@ import { validateSegmentsConstraint } from "./segments.js";
 describe("validateSegmentsConstraint", () => {
   it("returns true when value has exactly the expected number of segments", () => {
     expect(
-      validateSegmentsConstraint({ value: "chat-language", arg: "2" })
+      validateSegmentsConstraint({ arg: "2", value: "chat-language" })
     ).toBe(true);
   });
 
   it("returns false when value has fewer segments than expected", () => {
-    expect(validateSegmentsConstraint({ value: "chat", arg: "2" })).toBe(false);
+    expect(validateSegmentsConstraint({ arg: "2", value: "chat" })).toBe(false);
   });
 
   it("returns false when value has more segments than expected", () => {
     expect(
-      validateSegmentsConstraint({ value: "chat-language-model", arg: "2" })
+      validateSegmentsConstraint({ arg: "2", value: "chat-language-model" })
     ).toBe(false);
   });
 
   it("returns true for single segment with arg 1", () => {
-    expect(validateSegmentsConstraint({ value: "chat", arg: "1" })).toBe(true);
+    expect(validateSegmentsConstraint({ arg: "1", value: "chat" })).toBe(true);
   });
 
   it("returns false when arg is undefined", () => {
@@ -27,30 +27,30 @@ describe("validateSegmentsConstraint", () => {
   });
 
   it("returns false when arg is not a valid number", () => {
-    expect(validateSegmentsConstraint({ value: "chat", arg: "abc" })).toBe(
+    expect(validateSegmentsConstraint({ arg: "abc", value: "chat" })).toBe(
       false
     );
   });
 
   it("returns false when arg is zero", () => {
-    expect(validateSegmentsConstraint({ value: "chat", arg: "0" })).toBe(false);
+    expect(validateSegmentsConstraint({ arg: "0", value: "chat" })).toBe(false);
   });
 
   it("returns false when arg is negative", () => {
-    expect(validateSegmentsConstraint({ value: "chat", arg: "-1" })).toBe(
+    expect(validateSegmentsConstraint({ arg: "-1", value: "chat" })).toBe(
       false
     );
   });
 
   it("handles underscore-separated values", () => {
     expect(
-      validateSegmentsConstraint({ value: "chat_language", arg: "2" })
+      validateSegmentsConstraint({ arg: "2", value: "chat_language" })
     ).toBe(true);
   });
 
   it("handles camelCase values", () => {
     expect(
-      validateSegmentsConstraint({ value: "chatLanguage", arg: "2" })
+      validateSegmentsConstraint({ arg: "2", value: "chatLanguage" })
     ).toBe(true);
   });
 });

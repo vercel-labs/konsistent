@@ -24,10 +24,10 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "package-must-have-readme",
           description: "Every package must have a README.md.",
-          paths: ["packages/{packageName}"],
           must: { haveFiles: ["README.md"] },
+          name: "package-must-have-readme",
+          paths: ["packages/{packageName}"],
         },
       ],
     });
@@ -40,7 +40,7 @@ describe("expandReferences", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.conventions).toHaveLength(1);
-      const expanded = result.conventions[0];
+      const [expanded] = result.conventions;
       expect(expanded?.name).toBe("package-must-have-readme");
       expect(expanded?.paths).toEqual(["packages/{packageName}"]);
       expect(expanded?.must).toEqual({ haveFiles: ["README.md"] });
@@ -51,10 +51,10 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "no-debug",
           description: "Do not export debug helpers.",
-          paths: ["packages/{packageName}"],
           mustNot: { exportConstants: ["debug"] },
+          name: "no-debug",
+          paths: ["packages/{packageName}"],
         },
       ],
     });
@@ -76,12 +76,12 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "conditional-string",
           description: "Runs only for matching packages.",
-          paths: "packages/{packageName}",
           if: { hasFile: "${packageName}.test.ts" },
           ifNot: { hasFile: "${packageName}.skip.ts" },
           must: { haveFiles: ["index.ts"] },
+          name: "conditional-string",
+          paths: "packages/{packageName}",
         },
       ],
     });
@@ -122,16 +122,16 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "available-one",
           description: "x",
-          paths: "src/*.ts",
           must: { haveType: "file" },
+          name: "available-one",
+          paths: "src/*.ts",
         },
         {
-          name: "available-two",
           description: "x",
-          paths: "src/*.ts",
           must: { haveType: "file" },
+          name: "available-two",
+          paths: "src/*.ts",
         },
       ],
     });
@@ -153,9 +153,9 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "no-paths",
           description: "x",
           must: { haveType: "file" },
+          name: "no-paths",
         },
       ],
     });
@@ -175,9 +175,9 @@ describe("expandReferences", () => {
 
   it("passes hand-written entries through unchanged", () => {
     const handWritten: ConventionV1 = {
+      must: { haveType: "file" },
       name: "manual",
       paths: "src/*.ts",
-      must: { haveType: "file" },
     };
 
     const result = expandReferences({
@@ -196,23 +196,23 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "first",
           description: "x",
-          paths: "src/*.ts",
           must: { haveType: "file" },
+          name: "first",
+          paths: "src/*.ts",
         },
         {
-          name: "third",
           description: "x",
-          paths: "src/*.ts",
           must: { haveType: "directory" },
+          name: "third",
+          paths: "src/*.ts",
         },
       ],
     });
     const handWritten: ConventionV1 = {
+      must: { haveType: "file" },
       name: "second",
       paths: "lib/*.ts",
-      must: { haveType: "file" },
     };
 
     const result = expandReferences({
@@ -232,8 +232,8 @@ describe("expandReferences", () => {
 
   it("includes the conventions[i] index in the unknown-vendor error", () => {
     const handWritten: ConventionV1 = {
-      paths: "src/*.ts",
       must: { haveType: "file" },
+      paths: "src/*.ts",
     };
 
     const result = expandReferences({
@@ -251,9 +251,9 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "no-paths",
           description: "x",
           must: { haveFiles: ["README.md"] },
+          name: "no-paths",
         },
       ],
     });
@@ -261,8 +261,8 @@ describe("expandReferences", () => {
     const result = expandReferences({
       conventions: [
         {
-          use: "common/no-paths",
           paths: ["packages/{packageName}"],
+          use: "common/no-paths",
         },
       ],
       sourceMap,
@@ -271,7 +271,7 @@ describe("expandReferences", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.conventions).toHaveLength(1);
-      const expanded = result.conventions[0];
+      const [expanded] = result.conventions;
       expect(expanded?.name).toBe("no-paths");
       expect(expanded?.paths).toEqual(["packages/{packageName}"]);
       expect(expanded?.must).toEqual({ haveFiles: ["README.md"] });
@@ -282,9 +282,9 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "provider-barrel",
           description: "x",
           must: { exportValues: ["${providerId}"] },
+          name: "provider-barrel",
         },
       ],
     });
@@ -292,9 +292,9 @@ describe("expandReferences", () => {
     const result = expandReferences({
       conventions: [
         {
-          use: "common/provider-barrel",
           paths: "packages/openai/src/index.ts",
           placeholders: { providerId: "openai" },
+          use: "common/provider-barrel",
         },
       ],
       sourceMap,
@@ -312,11 +312,11 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "conditional-object",
           description: "Runs only when a marker exists.",
           if: { hasFile: "marker.ts" },
           ifNot: { hasFile: "skip.ts" },
           must: { haveFiles: ["index.ts"] },
+          name: "conditional-object",
         },
       ],
     });
@@ -324,8 +324,8 @@ describe("expandReferences", () => {
     const result = expandReferences({
       conventions: [
         {
-          use: "common/conditional-object",
           paths: "packages/*",
+          use: "common/conditional-object",
         },
       ],
       sourceMap,
@@ -342,12 +342,12 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "conditional-override",
           description: "Uses a consumer-specific gate.",
-          paths: "packages/{packageName}",
           if: { hasFile: "inherited-marker.ts" },
           ifNot: { hasFile: "inherited-skip.ts" },
           must: { haveFiles: ["index.ts"] },
+          name: "conditional-override",
+          paths: "packages/{packageName}",
         },
       ],
     });
@@ -355,10 +355,10 @@ describe("expandReferences", () => {
     const result = expandReferences({
       conventions: [
         {
-          use: "common/conditional-override",
           if: {
             placeholderSatisfies: "packageName:matches(^public-)",
           },
+          use: "common/conditional-override",
         },
       ],
       sourceMap,
@@ -379,12 +379,12 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "negative-condition-override",
           description: "Uses a consumer-specific negative gate.",
-          paths: "packages/{packageName}",
           if: { hasFile: "required-marker.ts" },
           ifNot: { hasFile: "inherited-skip.ts" },
           must: { haveFiles: ["index.ts"] },
+          name: "negative-condition-override",
+          paths: "packages/{packageName}",
         },
       ],
     });
@@ -392,10 +392,10 @@ describe("expandReferences", () => {
     const result = expandReferences({
       conventions: [
         {
-          use: "common/negative-condition-override",
           ifNot: {
             placeholderSatisfies: "packageName:matches(^internal-)",
           },
+          use: "common/negative-condition-override",
         },
       ],
       sourceMap,
@@ -416,12 +416,12 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "conditional-placeholders",
           description: "Uses condition placeholders.",
-          paths: "packages/*",
           if: { hasFile: "${missingInherited}.ts" },
           ifNot: { hasFile: "${missingInheritedNegative}.ts" },
           must: { haveFiles: ["index.ts"] },
+          name: "conditional-placeholders",
+          paths: "packages/*",
         },
       ],
     });
@@ -430,9 +430,9 @@ describe("expandReferences", () => {
       conventions: [
         "common/conditional-placeholders",
         {
-          use: "common/conditional-placeholders",
           if: { hasValueImportFrom: "${missingOverride}" },
           ifNot: { hasTypeImportFrom: "${missingOverrideNegative}" },
+          use: "common/conditional-placeholders",
         },
       ],
       sourceMap,
@@ -467,11 +467,11 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "with-excludes",
           description: "x",
-          paths: "src/*.ts",
           excludeFiles: ["src/inherited.ts"],
           must: { haveType: "file" },
+          name: "with-excludes",
+          paths: "src/*.ts",
         },
       ],
     });
@@ -479,8 +479,8 @@ describe("expandReferences", () => {
     const result = expandReferences({
       conventions: [
         {
-          use: "common/with-excludes",
           excludeFiles: ["src/override.ts"],
+          use: "common/with-excludes",
         },
       ],
       sourceMap,
@@ -496,11 +496,11 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "with-excludes",
           description: "x",
-          paths: "src/*.ts",
           excludeFiles: ["src/inherited.ts"],
           must: { haveType: "file" },
+          name: "with-excludes",
+          paths: "src/*.ts",
         },
       ],
     });
@@ -508,8 +508,8 @@ describe("expandReferences", () => {
     const result = expandReferences({
       conventions: [
         {
-          use: "common/with-excludes",
           excludeFiles: [],
+          use: "common/with-excludes",
         },
       ],
       sourceMap,
@@ -525,10 +525,10 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "merge-must",
           description: "x",
-          paths: "src/*.ts",
           must: { exportValues: ["foo"] },
+          name: "merge-must",
+          paths: "src/*.ts",
         },
       ],
     });
@@ -536,8 +536,8 @@ describe("expandReferences", () => {
     const result = expandReferences({
       conventions: [
         {
-          use: "common/merge-must",
           must: { exportTypes: ["Bar"] },
+          use: "common/merge-must",
         },
       ],
       sourceMap,
@@ -546,8 +546,8 @@ describe("expandReferences", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.conventions[0]?.must).toEqual({
-        exportValues: ["foo"],
         exportTypes: ["Bar"],
+        exportValues: ["foo"],
       });
     }
   });
@@ -556,10 +556,10 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "merge-must-not",
           description: "x",
-          paths: "src/*.ts",
           mustNot: { exportValues: ["debug"] },
+          name: "merge-must-not",
+          paths: "src/*.ts",
         },
       ],
     });
@@ -567,8 +567,8 @@ describe("expandReferences", () => {
     const result = expandReferences({
       conventions: [
         {
-          use: "common/merge-must-not",
           mustNot: { exportTypes: ["Internal"] },
+          use: "common/merge-must-not",
         },
       ],
       sourceMap,
@@ -577,8 +577,8 @@ describe("expandReferences", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.conventions[0]?.mustNot).toEqual({
-        exportValues: ["debug"],
         exportTypes: ["Internal"],
+        exportValues: ["debug"],
       });
     }
   });
@@ -587,11 +587,11 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "primitive-replace",
           description: "x",
+          must: { haveType: "file" },
+          name: "primitive-replace",
           paths: "src/*.ts",
           severity: "error",
-          must: { haveType: "file" },
         },
       ],
     });
@@ -599,8 +599,8 @@ describe("expandReferences", () => {
     const result = expandReferences({
       conventions: [
         {
-          use: "common/primitive-replace",
           severity: "warning",
+          use: "common/primitive-replace",
         },
       ],
       sourceMap,
@@ -616,27 +616,27 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "first",
           description: "x",
-          paths: "src/*.ts",
           must: { haveType: "file" },
+          name: "first",
+          paths: "src/*.ts",
         },
         {
-          name: "third",
           description: "x",
-          paths: "src/*.ts",
           must: { haveType: "file" },
+          name: "third",
+          paths: "src/*.ts",
         },
       ],
     });
     const handWritten: ConventionV1 = {
+      must: { haveType: "file" },
       name: "second",
       paths: "lib/*.ts",
-      must: { haveType: "file" },
     };
     const useForm = {
-      use: "common/third",
       severity: "warning" as const,
+      use: "common/third",
     };
 
     const result = expandReferences({
@@ -673,10 +673,10 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "available-one",
           description: "x",
-          paths: "src/*.ts",
           must: { haveType: "file" },
+          name: "available-one",
+          paths: "src/*.ts",
         },
       ],
     });
@@ -698,9 +698,9 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "no-paths",
           description: "x",
           must: { haveType: "file" },
+          name: "no-paths",
         },
       ],
     });
@@ -722,9 +722,9 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "no-paths",
           description: "x",
           must: { haveType: "file" },
+          name: "no-paths",
         },
       ],
     });
@@ -732,8 +732,8 @@ describe("expandReferences", () => {
     const result = expandReferences({
       conventions: [
         {
-          use: "common/no-paths",
           paths: "src/*.ts",
+          use: "common/no-paths",
         },
       ],
       sourceMap,
@@ -749,16 +749,16 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "needs-readme",
           description: "Block requiring a README.md.",
           must: { haveFiles: ["README.md"] },
+          name: "needs-readme",
         },
       ],
     });
 
     const handWritten = {
-      paths: "packages/{packageName}",
       must: [{ must: { haveType: "directory" } }, "common/needs-readme"],
+      paths: "packages/{packageName}",
     } as Parameters<typeof expandReferences>[0]["conventions"][number];
 
     const result = expandReferences({
@@ -772,9 +772,9 @@ describe("expandReferences", () => {
       if (Array.isArray(must)) {
         expect(must).toHaveLength(2);
         expect(must[1]).toEqual({
-          name: "needs-readme",
           description: "Block requiring a README.md.",
           must: { haveFiles: ["README.md"] },
+          name: "needs-readme",
         });
       }
     }
@@ -784,16 +784,16 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "no-debug",
           description: "Block forbidding debug exports.",
           mustNot: { exportConstants: ["debug"] },
+          name: "no-debug",
         },
       ],
     });
 
     const handWritten = {
-      paths: "packages/{packageName}",
       must: ["common/no-debug"],
+      paths: "packages/{packageName}",
     } as Parameters<typeof expandReferences>[0]["conventions"][number];
 
     const result = expandReferences({
@@ -806,9 +806,9 @@ describe("expandReferences", () => {
       const must = result.conventions[0]?.must;
       if (Array.isArray(must)) {
         expect(must[0]).toEqual({
-          name: "no-debug",
           description: "Block forbidding debug exports.",
           mustNot: { exportConstants: ["debug"] },
+          name: "no-debug",
         });
       }
     }
@@ -818,17 +818,17 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "with-paths",
           description: "x",
-          paths: "src/*.ts",
           must: { haveType: "file" },
+          name: "with-paths",
+          paths: "src/*.ts",
         },
       ],
     });
 
     const handWritten = {
-      paths: "packages/{packageName}",
       must: ["common/with-paths"],
+      paths: "packages/{packageName}",
     } as Parameters<typeof expandReferences>[0]["conventions"][number];
 
     const result = expandReferences({
@@ -847,19 +847,19 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "needs-readme",
           description: "Block requiring a README.md.",
           must: { haveFiles: ["README.md"] },
+          name: "needs-readme",
         },
       ],
     });
 
     const handWritten = {
-      paths: "packages/{packageName}",
       must: [
         { must: { haveType: "directory" } },
         { use: "common/needs-readme" },
       ],
+      paths: "packages/{packageName}",
     } as Parameters<typeof expandReferences>[0]["conventions"][number];
 
     const result = expandReferences({
@@ -874,9 +874,9 @@ describe("expandReferences", () => {
       if (Array.isArray(must)) {
         expect(must).toHaveLength(2);
         expect(must[1]).toEqual({
-          name: "needs-readme",
           description: "Block requiring a README.md.",
           must: { haveFiles: ["README.md"] },
+          name: "needs-readme",
         });
       }
     }
@@ -886,24 +886,24 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "conditional-block",
           description: "Conditionally requires an index.",
           if: { hasFile: "inherited-marker.ts" },
           ifNot: { hasFile: "inherited-skip.ts" },
           must: { haveFiles: ["index.ts"] },
+          name: "conditional-block",
         },
       ],
     });
 
     const handWritten = {
-      paths: "packages/{packageName}",
       must: [
         "common/conditional-block",
         {
-          use: "common/conditional-block",
           if: { placeholderSatisfies: "packageName:segments(1)" },
+          use: "common/conditional-block",
         },
       ],
+      paths: "packages/{packageName}",
     } as Parameters<typeof expandReferences>[0]["conventions"][number];
 
     const result = expandReferences({
@@ -929,22 +929,22 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "base-block",
           description: "x",
           must: { haveFiles: ["README.md"] },
+          name: "base-block",
         },
       ],
     });
 
     const handWritten = {
-      paths: "packages/{packageName}",
       must: [
         {
-          use: "common/base-block",
           for: { files: "{packageName}/index.ts" },
           must: { exportTypes: ["Public"] },
+          use: "common/base-block",
         },
       ],
+      paths: "packages/{packageName}",
     } as Parameters<typeof expandReferences>[0]["conventions"][number];
 
     const result = expandReferences({
@@ -957,10 +957,10 @@ describe("expandReferences", () => {
       const must = result.conventions[0]?.must;
       if (Array.isArray(must)) {
         expect(must[0]).toEqual({
-          name: "base-block",
           description: "x",
           for: { files: "{packageName}/index.ts" },
-          must: { haveFiles: ["README.md"], exportTypes: ["Public"] },
+          must: { exportTypes: ["Public"], haveFiles: ["README.md"] },
+          name: "base-block",
         });
       }
     }
@@ -970,21 +970,21 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "base-block",
           description: "x",
           mustNot: { exportValues: ["debug"] },
+          name: "base-block",
         },
       ],
     });
 
     const handWritten = {
-      paths: "packages/{packageName}",
       must: [
         {
-          use: "common/base-block",
           mustNot: { exportTypes: ["Internal"] },
+          use: "common/base-block",
         },
       ],
+      paths: "packages/{packageName}",
     } as Parameters<typeof expandReferences>[0]["conventions"][number];
 
     const result = expandReferences({
@@ -997,9 +997,9 @@ describe("expandReferences", () => {
       const must = result.conventions[0]?.must;
       if (Array.isArray(must)) {
         expect(must[0]).toEqual({
-          name: "base-block",
           description: "x",
-          mustNot: { exportValues: ["debug"], exportTypes: ["Internal"] },
+          mustNot: { exportTypes: ["Internal"], exportValues: ["debug"] },
+          name: "base-block",
         });
       }
     }
@@ -1009,17 +1009,17 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "with-paths",
           description: "x",
-          paths: "src/*.ts",
           must: { haveType: "file" },
+          name: "with-paths",
+          paths: "src/*.ts",
         },
       ],
     });
 
     const handWritten = {
-      paths: "packages/{packageName}",
       must: [{ use: "common/with-paths" }],
+      paths: "packages/{packageName}",
     } as Parameters<typeof expandReferences>[0]["conventions"][number];
 
     const result = expandReferences({
@@ -1039,17 +1039,17 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "with-severity",
           description: "x",
-          severity: "warning",
           must: { haveType: "file" },
+          name: "with-severity",
+          severity: "warning",
         },
       ],
     });
 
     const handWritten = {
-      paths: "packages/{packageName}",
       must: [{ use: "common/with-severity" }],
+      paths: "packages/{packageName}",
     } as Parameters<typeof expandReferences>[0]["conventions"][number];
 
     const result = expandReferences({
@@ -1065,8 +1065,8 @@ describe("expandReferences", () => {
 
   it("emits an unknown-source error scoped to conventions[i].must[j]", () => {
     const handWritten = {
-      paths: "packages/{packageName}",
       must: [{ use: "missing/foo" }],
+      paths: "packages/{packageName}",
     } as Parameters<typeof expandReferences>[0]["conventions"][number];
 
     const result = expandReferences({
@@ -1085,10 +1085,10 @@ describe("expandReferences", () => {
     const sourceMap = buildSourceMap({
       common: [
         {
-          name: "ok",
           description: "x",
-          paths: "src/*.ts",
           must: { haveType: "file" },
+          name: "ok",
+          paths: "src/*.ts",
         },
       ],
     });

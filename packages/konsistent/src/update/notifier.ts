@@ -42,8 +42,8 @@ export async function checkAndPrompt(opts: {
 
   if (isCacheStale({ cache })) {
     latestVersion = await fetchLatestVersion({
-      packageName: PACKAGE_NAME,
       currentVersion: opts.currentVersion,
+      packageName: PACKAGE_NAME,
     });
 
     if (latestVersion) {
@@ -57,8 +57,8 @@ export async function checkAndPrompt(opts: {
     !(
       latestVersion &&
       isNewerVersion({
-        current: opts.currentVersion,
         candidate: latestVersion,
+        current: opts.currentVersion,
       })
     )
   ) {

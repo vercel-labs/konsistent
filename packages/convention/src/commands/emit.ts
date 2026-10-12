@@ -7,31 +7,31 @@ import type { ReusableConventionV1 } from "../schemas.js";
 import { ReusableConventionsPackageV1Schema } from "../schemas.js";
 
 const emitArgs = {
-  input: {
-    type: "string" as const,
-    description:
-      "Path to the source module exporting `conventions` (default or named export).",
-    default: "src/index.ts",
-  },
-  output: {
-    type: "string" as const,
-    description: "Path where the JSON artifact will be written.",
-    default: "dist/conventions.json",
-  },
   cwd: {
-    type: "string" as const,
     description:
       "Working directory paths are resolved against (default: process.cwd()).",
+    type: "string" as const,
+  },
+  input: {
+    default: "src/index.ts",
+    description:
+      "Path to the source module exporting `conventions` (default or named export).",
+    type: "string" as const,
+  },
+  output: {
+    default: "dist/conventions.json",
+    description: "Path where the JSON artifact will be written.",
+    type: "string" as const,
   },
 };
 
 export default defineCommand({
+  args: emitArgs,
   meta: {
-    name: "emit",
     description:
       "Compile a TypeScript module exporting a `conventions` array into a validated reusable-convention-package JSON artifact.",
+    name: "emit",
   },
-  args: emitArgs,
   async run({ args }) {
     const cwd = resolve(process.cwd(), args.cwd ?? ".");
     const inputPath = resolve(cwd, args.input);

@@ -17,14 +17,14 @@ function createMockFileSystem(opts: {
   const directories = opts.directories ?? new Set<string>();
   const fileContents = opts.fileContents ?? new Map<string, string>();
   return {
+    directoryExists: (p: string) => directories.has(p),
+    fileExists: (p: string) => files.has(p) || directories.has(p),
     glob(patterns: string[]): Promise<string[]> {
       const key = patterns.sort().join(",");
       return Promise.resolve(globResults.get(key) ?? []);
     },
     isDirectory: (p: string) => directories.has(p),
     isFile: (p: string) => files.has(p),
-    directoryExists: (p: string) => directories.has(p),
-    fileExists: (p: string) => files.has(p) || directories.has(p),
     readDir: () => [],
     readFile: (p: string) => fileContents.get(p) ?? "",
   };
@@ -36,8 +36,8 @@ function createMatchingConditions(): IfConditionV1[] {
     { placeholderSatisfies: "moduleName:matches(^client$)" },
     {
       hasValueImport: {
-        name: "create${moduleName.toPascalCase()}",
         from: "./${moduleName}",
+        name: "create${moduleName.toPascalCase()}",
       },
     },
     { hasValueImportFrom: "./${moduleName}" },
@@ -53,41 +53,41 @@ describe("run", () => {
     const updates = vi.spyOn(API.prototype, "updateSnapshot");
     const fs = createMockFileSystem({
       directories: new Set(["src"]),
-      files: new Set(["src/value.ts"]),
-      globResults: new Map([
-        ["src", ["src"]],
-        ["src/*.ts", ["src/value.ts"]],
-      ]),
       fileContents: new Map([
         [
           "src/value.ts",
           'import type { Foo } from "./missing"; export type Value = Array< Foo >; send("email", 1_000);',
         ],
       ]),
+      files: new Set(["src/value.ts"]),
+      globResults: new Map([
+        ["src", ["src"]],
+        ["src/*.ts", ["src/value.ts"]],
+      ]),
     });
     const read = vi.spyOn(fs, "readFile");
     try {
       const result = await run({
-        typescriptSession: session,
-        fileSystem: fs,
         config: {
-          version: "v1",
           conventions: [
             {
-              paths: "src",
               must: [
                 {
                   for: { files: "*.ts" },
                   if: { hasTypeImport: "Foo" },
                   must: {
+                    callFunction: [{ arguments: ["'email'"], name: "send" }],
                     exportTypes: [{ name: "Value", type: "Array<Foo>" }],
-                    callFunction: [{ name: "send", arguments: ["'email'"] }],
                   },
                 },
               ],
+              paths: "src",
             },
           ],
+          version: "v1",
         },
+        fileSystem: fs,
+        typescriptSession: session,
       });
       expect(result.diagnostics).toEqual([]);
       expect(read).toHaveBeenCalledTimes(1);
@@ -95,7 +95,7 @@ describe("run", () => {
       expect(new Set(updates.mock.instances).size).toBe(1);
       expect(close).not.toHaveBeenCalled();
       expect(
-        parseFileStructure({ source: "export const next = 1;", session })
+        parseFileStructure({ session, source: "export const next = 1;" })
           .constants[0].name
       ).toBe("next");
     } finally {
@@ -108,9 +108,9 @@ describe("run", () => {
     const close = vi.spyOn(API.prototype, "close");
     const error = new Error("Read failed");
     const fs = createMockFileSystem({
+      fileContents: new Map([["src/first.ts", "export const value = 1;"]]),
       files: new Set(["src/first.ts", "src/second.ts"]),
       globResults: new Map([["src/*.ts", ["src/first.ts", "src/second.ts"]]]),
-      fileContents: new Map([["src/first.ts", "export const value = 1;"]]),
     });
     vi.spyOn(fs, "readFile").mockImplementation((path) => {
       if (path === "src/second.ts") {
@@ -121,13 +121,13 @@ describe("run", () => {
     try {
       await expect(
         run({
-          fileSystem: fs,
           config: {
-            version: "v1",
             conventions: [
-              { paths: "src/*.ts", must: { exportValues: ["value"] } },
+              { must: { exportValues: ["value"] }, paths: "src/*.ts" },
             ],
+            version: "v1",
           },
+          fileSystem: fs,
         })
       ).rejects.toThrow(error);
       expect(close).toHaveBeenCalledTimes(1);
@@ -138,28 +138,28 @@ describe("run", () => {
 
   it("bounds ancestor conventions and nested file blocks to selected paths", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "components/{componentName}",
           must: [
             {
               for: { files: "${componentName}.test.tsx" },
               must: { exportValues: ["describe"] },
             },
           ],
+          paths: "components/{componentName}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
       directories: new Set(["components/Button", "components/Input"]),
-      files: new Set([
-        "components/Button/Button.test.tsx",
-        "components/Input/Input.test.tsx",
-      ]),
       fileContents: new Map([
         ["components/Button/Button.test.tsx", "export const describe = true;"],
         ["components/Input/Input.test.tsx", "export const invalid = true;"],
+      ]),
+      files: new Set([
+        "components/Button/Button.test.tsx",
+        "components/Input/Input.test.tsx",
       ]),
     });
     const globSpy = vi.spyOn(fs, "glob");
@@ -188,7 +188,7 @@ describe("run", () => {
   });
 
   it("returns empty diagnostics for empty conventions", async () => {
-    const config: ConfigV1 = { version: "v1", conventions: [] };
+    const config: ConfigV1 = { conventions: [], version: "v1" };
     const { diagnostics, filesChecked } = await run({
       config,
       fileSystem: createMockFileSystem({}),
@@ -199,18 +199,18 @@ describe("run", () => {
 
   it("returns diagnostics when haveType fails", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
+          must: { haveType: "file" },
           name: "source-files",
           paths: "src/**/*.ts",
-          must: { haveType: "file" },
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/**/*.ts", ["src/utils"]]]),
       directories: new Set(["src/utils"]),
+      globResults: new Map([["src/**/*.ts", ["src/utils"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -222,17 +222,17 @@ describe("run", () => {
 
   it("returns no diagnostics when haveType matches", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/**/*.ts",
           must: { haveType: "file" },
+          paths: "src/**/*.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/**/*.ts", ["src/index.ts"]]]),
       files: new Set(["src/index.ts"]),
+      globResults: new Map([["src/**/*.ts", ["src/index.ts"]]]),
     });
     const { diagnostics, filesChecked } = await run({
       config,
@@ -244,17 +244,17 @@ describe("run", () => {
 
   it("normalizes paths string to array", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/**",
           must: { haveType: "directory" },
+          paths: "src/**",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/**", ["src/components"]]]),
       directories: new Set(["src/components"]),
+      globResults: new Map([["src/**", ["src/components"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -262,19 +262,19 @@ describe("run", () => {
 
   it("handles array paths", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: ["src/**/*.ts", "lib/**/*.ts"],
           must: { haveType: "file" },
+          paths: ["src/**/*.ts", "lib/**/*.ts"],
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
+      files: new Set(["src/a.ts", "lib/b.ts"]),
       globResults: new Map([
         ["lib/**/*.ts,src/**/*.ts", ["src/a.ts", "lib/b.ts"]],
       ]),
-      files: new Set(["src/a.ts", "lib/b.ts"]),
     });
     const { diagnostics, filesChecked } = await run({
       config,
@@ -286,17 +286,17 @@ describe("run", () => {
 
   it("silently skips unrecognized predicate keys", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/**",
           must: {} as ConfigV1["conventions"][0]["must"],
+          paths: "src/**",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/**", ["src/index.ts"]]]),
       files: new Set(["src/index.ts"]),
+      globResults: new Map([["src/**", ["src/index.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -304,18 +304,18 @@ describe("run", () => {
 
   it("reports diagnostics when mustNot scalar predicates pass", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
+          mustNot: { haveType: "file" },
           name: "not-files",
           paths: "src/**/*.ts",
-          mustNot: { haveType: "file" },
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/**/*.ts", ["src/index.ts"]]]),
       files: new Set(["src/index.ts"]),
+      globResults: new Map([["src/**/*.ts", ["src/index.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -326,17 +326,17 @@ describe("run", () => {
 
   it("returns no diagnostics when mustNot scalar predicates fail", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/**/*.ts",
           mustNot: { haveType: "file" },
+          paths: "src/**/*.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/**/*.ts", ["src/utils"]]]),
       directories: new Set(["src/utils"]),
+      globResults: new Map([["src/**/*.ts", ["src/utils"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -344,18 +344,18 @@ describe("run", () => {
 
   it("negates list predicates per item", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/module.ts",
           mustNot: { exportConstants: ["debug", "missing"] },
+          paths: "src/module.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
-      files: new Set(["src/module.ts"]),
       fileContents: new Map([["src/module.ts", "export const debug = true;"]]),
+      files: new Set(["src/module.ts"]),
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -365,22 +365,20 @@ describe("run", () => {
 
   it("forbids exact import and export alias pairs", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/module.ts",
           mustNot: {
-            importValues: [{ name: "sourceValue", alias: "localValue" }],
-            importTypes: [{ name: "SourceType", alias: "LocalType" }],
-            exportValues: [{ name: "sourceExport", alias: "publicValue" }],
-            exportTypes: [{ name: "SourceExportType", alias: "PublicType" }],
+            exportTypes: [{ alias: "PublicType", name: "SourceExportType" }],
+            exportValues: [{ alias: "publicValue", name: "sourceExport" }],
+            importTypes: [{ alias: "LocalType", name: "SourceType" }],
+            importValues: [{ alias: "localValue", name: "sourceValue" }],
           },
+          paths: "src/module.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
-      files: new Set(["src/module.ts"]),
       fileContents: new Map([
         [
           "src/module.ts",
@@ -394,36 +392,38 @@ describe("run", () => {
           ].join("\n"),
         ],
       ]),
+      files: new Set(["src/module.ts"]),
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
-    expect(diagnostics.map((diagnostic) => diagnostic.message)).toEqual([
-      'Forbidden import "sourceValue" as "localValue"',
-      'Forbidden type import "SourceType" as "LocalType"',
-      'Forbidden export "sourceExport" as "publicValue"',
-      'Forbidden type export "SourceExportType" as "PublicType"',
-    ]);
+    expect(diagnostics.map((diagnostic) => diagnostic.message).sort()).toEqual(
+      [
+        'Forbidden import "sourceValue" as "localValue"',
+        'Forbidden type import "SourceType" as "LocalType"',
+        'Forbidden export "sourceExport" as "publicValue"',
+        'Forbidden type export "SourceExportType" as "PublicType"',
+      ].sort()
+    );
   });
 
   it("allows a different alias when mustNot configures an exact pair", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/module.ts",
           mustNot: {
-            importValues: [{ name: "sourceValue", alias: "blockedValue" }],
-            importTypes: [{ name: "SourceType", alias: "BlockedType" }],
-            exportValues: [{ name: "sourceExport", alias: "blockedExport" }],
             exportTypes: [
-              { name: "SourceExportType", alias: "BlockedExportType" },
+              { alias: "BlockedExportType", name: "SourceExportType" },
             ],
+            exportValues: [{ alias: "blockedExport", name: "sourceExport" }],
+            importTypes: [{ alias: "BlockedType", name: "SourceType" }],
+            importValues: [{ alias: "blockedValue", name: "sourceValue" }],
           },
+          paths: "src/module.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
-      files: new Set(["src/module.ts"]),
       fileContents: new Map([
         [
           "src/module.ts",
@@ -437,6 +437,8 @@ describe("run", () => {
           ].join("\n"),
         ],
       ]),
+      files: new Set(["src/module.ts"]),
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -444,22 +446,20 @@ describe("run", () => {
 
   it("forbids original names under any named alias when alias is omitted", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/module.ts",
           mustNot: {
-            importValues: ["sourceValue"],
-            importTypes: ["SourceType"],
-            exportValues: ["sourceExport"],
             exportTypes: ["SourceExportType"],
+            exportValues: ["sourceExport"],
+            importTypes: ["SourceType"],
+            importValues: ["sourceValue"],
           },
+          paths: "src/module.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
-      files: new Set(["src/module.ts"]),
       fileContents: new Map([
         [
           "src/module.ts",
@@ -473,34 +473,38 @@ describe("run", () => {
           ].join("\n"),
         ],
       ]),
+      files: new Set(["src/module.ts"]),
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
-    expect(diagnostics.map((diagnostic) => diagnostic.message)).toEqual([
-      'Forbidden import "sourceValue"',
-      'Forbidden type import "SourceType"',
-      'Forbidden export "sourceExport"',
-      'Forbidden type export "SourceExportType"',
-    ]);
+    expect(diagnostics.map((diagnostic) => diagnostic.message).sort()).toEqual(
+      [
+        'Forbidden import "sourceValue"',
+        'Forbidden type import "SourceType"',
+        'Forbidden export "sourceExport"',
+        'Forbidden type export "SourceExportType"',
+      ].sort()
+    );
   });
 
   it("forbids a constant matching a mustNot schema", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/module.ts",
           mustNot: {
             exportConstants: [{ name: "debug", schema: { type: "boolean" } }],
           },
+          paths: "src/module.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
-      files: new Set(["src/module.ts"]),
       fileContents: new Map([
         ["src/module.ts", "export const debug: boolean = true;"],
       ]),
+      files: new Set(["src/module.ts"]),
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -510,22 +514,22 @@ describe("run", () => {
 
   it("allows a mustNot constant with a different schema", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/module.ts",
           mustNot: {
             exportConstants: [{ name: "debug", schema: { type: "boolean" } }],
           },
+          paths: "src/module.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
-      files: new Set(["src/module.ts"]),
       fileContents: new Map([
         ["src/module.ts", 'export const debug: string = "true";'],
       ]),
+      files: new Set(["src/module.ts"]),
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -533,25 +537,25 @@ describe("run", () => {
 
   it("forbids a constant matching a mustNot exact type", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/module.ts",
           mustNot: {
             exportConstants: [{ name: "debug", type: "DebugSettings" }],
           },
+          paths: "src/module.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
-      files: new Set(["src/module.ts"]),
       fileContents: new Map([
         [
           "src/module.ts",
           "export const debug: DebugSettings = { enabled: true };",
         ],
       ]),
+      files: new Set(["src/module.ts"]),
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -560,25 +564,25 @@ describe("run", () => {
 
   it("allows a mustNot constant with a different exact type", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/module.ts",
           mustNot: {
             exportConstants: [{ name: "debug", type: "DebugSettings" }],
           },
+          paths: "src/module.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
-      files: new Set(["src/module.ts"]),
       fileContents: new Map([
         [
           "src/module.ts",
           "export const debug: OtherSettings = { enabled: true };",
         ],
       ]),
+      files: new Set(["src/module.ts"]),
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -586,30 +590,30 @@ describe("run", () => {
 
   it("forbids an exported type matching a mustNot schema", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/module.ts",
           mustNot: {
             exportTypes: [
               {
                 name: "DebugSettings",
                 schema: {
-                  type: "object",
                   properties: { enabled: { type: "boolean" } },
+                  type: "object",
                 },
               },
             ],
           },
+          paths: "src/module.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
-      files: new Set(["src/module.ts"]),
       fileContents: new Map([
         ["src/module.ts", "export type DebugSettings = { enabled?: boolean };"],
       ]),
+      files: new Set(["src/module.ts"]),
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -621,30 +625,30 @@ describe("run", () => {
 
   it("allows a mustNot exported type with different optionality", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/module.ts",
           mustNot: {
             exportTypes: [
               {
                 name: "DebugSettings",
                 schema: {
-                  type: "object",
                   properties: { enabled: { type: "boolean" } },
+                  type: "object",
                 },
               },
             ],
           },
+          paths: "src/module.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
-      files: new Set(["src/module.ts"]),
       fileContents: new Map([
         ["src/module.ts", "export type DebugSettings = { enabled: boolean };"],
       ]),
+      files: new Set(["src/module.ts"]),
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -652,27 +656,27 @@ describe("run", () => {
 
   it("forbids an exported type matching a mustNot exact type", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/module.ts",
           mustNot: {
             exportTypes: [
               { name: "DebugSettings", type: "SharedSettings<'debug'>" },
             ],
           },
+          paths: "src/module.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
-      files: new Set(["src/module.ts"]),
       fileContents: new Map([
         [
           "src/module.ts",
           "export type DebugSettings = SharedSettings<'debug'>;",
         ],
       ]),
+      files: new Set(["src/module.ts"]),
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -681,27 +685,27 @@ describe("run", () => {
 
   it("allows a mustNot exported type with a different exact type", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/module.ts",
           mustNot: {
             exportTypes: [
               { name: "DebugSettings", type: "SharedSettings<'debug'>" },
             ],
           },
+          paths: "src/module.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
-      files: new Set(["src/module.ts"]),
       fileContents: new Map([
         [
           "src/module.ts",
           "export type DebugSettings = SharedSettings<'public'>;",
         ],
       ]),
+      files: new Set(["src/module.ts"]),
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -709,20 +713,20 @@ describe("run", () => {
 
   it("returns no diagnostics when mustNot importValuesFrom does not match a subpath", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/module.ts",
           mustNot: { importValuesFrom: "package" },
+          paths: "src/module.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
-      files: new Set(["src/module.ts"]),
       fileContents: new Map([
         ["src/module.ts", "import { value } from 'package/v4';"],
       ]),
+      files: new Set(["src/module.ts"]),
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -730,20 +734,20 @@ describe("run", () => {
 
   it("reports diagnostics when mustNot importValuesFrom wildcard matches a subpath", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/module.ts",
           mustNot: { importValuesFrom: "package/*" },
+          paths: "src/module.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
-      files: new Set(["src/module.ts"]),
       fileContents: new Map([
         ["src/module.ts", "import { value } from 'package/v4';"],
       ]),
+      files: new Set(["src/module.ts"]),
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -753,17 +757,15 @@ describe("run", () => {
 
   it("reports diagnostics per matching mustNot importValuesFrom array item", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/module.ts",
           mustNot: { importValuesFrom: ["react", "package/*", "never"] },
+          paths: "src/module.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
-      files: new Set(["src/module.ts"]),
       fileContents: new Map([
         [
           "src/module.ts",
@@ -773,6 +775,8 @@ describe("run", () => {
           ].join("\n"),
         ],
       ]),
+      files: new Set(["src/module.ts"]),
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics.map((d) => d.message)).toEqual([
@@ -783,10 +787,8 @@ describe("run", () => {
 
   it("allows excluded value imports in a mustNot selector", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/module.ts",
           mustNot: {
             importValuesFrom: [
               "@ai-sdk/*",
@@ -795,12 +797,12 @@ describe("run", () => {
               "@ai-sdk/harness/bridge",
             ],
           },
+          paths: "src/module.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
-      files: new Set(["src/module.ts"]),
       fileContents: new Map([
         [
           "src/module.ts",
@@ -810,6 +812,8 @@ describe("run", () => {
           ].join("\n"),
         ],
       ]),
+      files: new Set(["src/module.ts"]),
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
     });
 
     const { diagnostics } = await run({ config, fileSystem: fs });
@@ -818,10 +822,8 @@ describe("run", () => {
 
   it("forbids selected and re-included value imports as one selector", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/module.ts",
           mustNot: {
             importValuesFrom: [
               "@ai-sdk/*",
@@ -830,12 +832,12 @@ describe("run", () => {
               "@ai-sdk/harness/bridge",
             ],
           },
+          paths: "src/module.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
-      files: new Set(["src/module.ts"]),
       fileContents: new Map([
         [
           "src/module.ts",
@@ -845,6 +847,8 @@ describe("run", () => {
           ].join("\n"),
         ],
       ]),
+      files: new Set(["src/module.ts"]),
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
     });
 
     const { diagnostics } = await run({ config, fileSystem: fs });
@@ -855,19 +859,17 @@ describe("run", () => {
 
   it("groups type import selectors while keeping exact constraints additive", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "src/module.ts",
           mustNot: {
             importTypesFrom: ["react", "@vendor/*", "!@vendor/allowed"],
           },
+          paths: "src/module.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
-      files: new Set(["src/module.ts"]),
       fileContents: new Map([
         [
           "src/module.ts",
@@ -877,6 +879,8 @@ describe("run", () => {
           ].join("\n"),
         ],
       ]),
+      files: new Set(["src/module.ts"]),
+      globResults: new Map([["src/module.ts", ["src/module.ts"]]]),
     });
 
     const { diagnostics } = await run({ config, fileSystem: fs });
@@ -888,25 +892,34 @@ describe("run", () => {
 
   it("applies block metadata to mustNot predicates", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
+          must: [
+            {
+              excludeFiles: ["helpers.test.ts"],
+              for: { files: "*.test.ts" },
+              if: { hasFile: "${name}.test.ts" },
+              mustNot: { exportConstants: ["debug"] },
+              name: "no-debug-tests",
+            },
+          ],
           name: "components",
           paths: "components/{name}",
           severity: "warning",
-          must: [
-            {
-              name: "no-debug-tests",
-              if: { hasFile: "${name}.test.ts" },
-              for: { files: "*.test.ts" },
-              excludeFiles: ["helpers.test.ts"],
-              mustNot: { exportConstants: ["debug"] },
-            },
-          ],
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
+      directories: new Set(["components/Button"]),
+      fileContents: new Map([
+        ["components/Button/Button.test.ts", "export const debug = true;"],
+        ["components/Button/helpers.test.ts", "export const debug = true;"],
+      ]),
+      files: new Set([
+        "components/Button/Button.test.ts",
+        "components/Button/helpers.test.ts",
+      ]),
       globResults: new Map([
         ["components/*", ["components/Button"]],
         [
@@ -916,15 +929,6 @@ describe("run", () => {
             "components/Button/helpers.test.ts",
           ],
         ],
-      ]),
-      directories: new Set(["components/Button"]),
-      files: new Set([
-        "components/Button/Button.test.ts",
-        "components/Button/helpers.test.ts",
-      ]),
-      fileContents: new Map([
-        ["components/Button/Button.test.ts", "export const debug = true;"],
-        ["components/Button/helpers.test.ts", "export const debug = true;"],
       ]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
@@ -936,23 +940,23 @@ describe("run", () => {
 
   it("evaluates must block when if.hasFile condition is met", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "conditional-rule",
-          paths: "src/**/*.ts",
           must: [
             {
               if: { hasFile: "schema.ts" },
               must: { haveType: "directory" },
             },
           ],
+          name: "conditional-rule",
+          paths: "src/**/*.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/**/*.ts", ["src/models/index.ts"]]]),
       files: new Set(["src/models/index.ts", "src/models/schema.ts"]),
+      globResults: new Map([["src/**/*.ts", ["src/models/index.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -964,40 +968,40 @@ describe("run", () => {
 
   it("evaluates a top-level condition per matched path and gates every block", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "conditional-convention",
-          paths: "packages/{packageName}",
           if: { hasFile: "gate.ts" },
           must: [
             {
-              name: "matching-block-condition",
               if: { hasFile: "block-gate.ts" },
               must: { haveFiles: ["required.ts"] },
+              name: "matching-block-condition",
             },
             {
-              name: "non-matching-block-condition",
               if: { hasFile: "absent.ts" },
               must: { haveFiles: ["also-required.ts"] },
+              name: "non-matching-block-condition",
             },
             {
-              name: "gated-must-not",
               mustNot: { haveType: "directory" },
+              name: "gated-must-not",
             },
           ],
+          name: "conditional-convention",
+          paths: "packages/{packageName}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([
-        ["packages/*", ["packages/matching", "packages/non-matching"]],
-      ]),
       directories: new Set(["packages/matching", "packages/non-matching"]),
       files: new Set([
         "packages/matching/gate.ts",
         "packages/matching/block-gate.ts",
         "packages/non-matching/block-gate.ts",
+      ]),
+      globResults: new Map([
+        ["packages/*", ["packages/matching", "packages/non-matching"]],
       ]),
     });
 
@@ -1016,23 +1020,23 @@ describe("run", () => {
 
   it("skips must block when if.hasFile condition is not met", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "conditional-rule",
-          paths: "src/**/*.ts",
           must: [
             {
               if: { hasFile: "schema.ts" },
               must: { haveType: "directory" },
             },
           ],
+          name: "conditional-rule",
+          paths: "src/**/*.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/**/*.ts", ["src/models/index.ts"]]]),
       files: new Set(["src/models/index.ts"]),
+      globResults: new Map([["src/**/*.ts", ["src/models/index.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -1040,10 +1044,8 @@ describe("run", () => {
 
   it("applies file patterns to positive and negative gates and forbidden files", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "modules/{module}",
           must: [
             {
               if: { hasFile: "instructions.{md,ts}" },
@@ -1057,12 +1059,14 @@ describe("run", () => {
             },
             { mustNot: { haveFiles: ["secret/*.{md,ts}"] } },
           ],
+          paths: "modules/{module}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["modules/*", ["modules/root", "modules/nested"]]]),
       directories: new Set(["modules/root", "modules/nested"]),
+      globResults: new Map([["modules/*", ["modules/root", "modules/nested"]]]),
     });
     const matchingPatterns = new Set([
       "modules/root/instructions.{md,ts}",
@@ -1088,10 +1092,8 @@ describe("run", () => {
 
   it("checks directory patterns in if, ifNot, must, and mustNot", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          paths: "modules/{module}",
           must: [
             {
               if: { hasDirectory: "instructions.{md,ts}" },
@@ -1107,12 +1109,14 @@ describe("run", () => {
               mustNot: { haveDirectories: ["secret/*", "forbidden/*"] },
             },
           ],
+          paths: "modules/{module}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["modules/*", ["modules/root", "modules/nested"]]]),
       directories: new Set(["modules/root", "modules/nested"]),
+      globResults: new Map([["modules/*", ["modules/root", "modules/nested"]]]),
     });
     const matches = new Set([
       "modules/root/instructions.{md,ts}",
@@ -1138,18 +1142,18 @@ describe("run", () => {
 
   it("evaluates must block unconditionally when no if is present", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
+          must: [{ must: { haveType: "file" } }],
           name: "unconditional-rule",
           paths: "src/**/*.ts",
-          must: [{ must: { haveType: "file" } }],
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/**/*.ts", ["src/utils"]]]),
       directories: new Set(["src/utils"]),
+      globResults: new Map([["src/**/*.ts", ["src/utils"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -1160,23 +1164,23 @@ describe("run", () => {
 
   it("evaluates must block when if.placeholderSatisfies is met", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "satisfies-rule",
-          paths: "packages/{providerId}",
           must: [
             {
               if: { placeholderSatisfies: "providerId:matches(^[a-z]+ai$)" },
               must: { haveType: "file" },
             },
           ],
+          name: "satisfies-rule",
+          paths: "packages/{providerId}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["packages/*", ["packages/openai"]]]),
       directories: new Set(["packages/openai"]),
+      globResults: new Map([["packages/*", ["packages/openai"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -1188,23 +1192,23 @@ describe("run", () => {
 
   it("skips must block when if.placeholderSatisfies is not met", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "satisfies-rule",
-          paths: "packages/{providerId}",
           must: [
             {
               if: { placeholderSatisfies: "providerId:matches(^[a-z]+ai$)" },
               must: { haveType: "file" },
             },
           ],
+          name: "satisfies-rule",
+          paths: "packages/{providerId}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["packages/*", ["packages/google"]]]),
       directories: new Set(["packages/google"]),
+      globResults: new Map([["packages/*", ["packages/google"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -1212,23 +1216,23 @@ describe("run", () => {
 
   it("skips must block when if.placeholderSatisfies references unknown placeholder", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "satisfies-rule",
-          paths: "packages/{providerId}",
           must: [
             {
               if: { placeholderSatisfies: "typo:matches(^[a-z]+ai$)" },
               must: { haveType: "file" },
             },
           ],
+          name: "satisfies-rule",
+          paths: "packages/{providerId}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["packages/*", ["packages/openai"]]]),
       directories: new Set(["packages/openai"]),
+      globResults: new Map([["packages/*", ["packages/openai"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -1236,23 +1240,23 @@ describe("run", () => {
 
   it("skips must block when if.placeholderSatisfies has malformed constraint", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "satisfies-rule",
-          paths: "packages/{providerId}",
           must: [
             {
               if: { placeholderSatisfies: "providerId:matches(" },
               must: { haveType: "file" },
             },
           ],
+          name: "satisfies-rule",
+          paths: "packages/{providerId}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["packages/*", ["packages/openai"]]]),
       directories: new Set(["packages/openai"]),
+      globResults: new Map([["packages/*", ["packages/openai"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -1260,23 +1264,23 @@ describe("run", () => {
 
   it("supports template expansion in if.hasFile", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "template-rule",
-          paths: "src/{name}/index.ts",
           must: [
             {
               if: { hasFile: "${name}.test.ts" },
               must: { haveType: "directory" },
             },
           ],
+          name: "template-rule",
+          paths: "src/{name}/index.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/*/index.ts", ["src/utils/index.ts"]]]),
       files: new Set(["src/utils/index.ts", "src/utils/utils.test.ts"]),
+      globResults: new Map([["src/*/index.ts", ["src/utils/index.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -1285,47 +1289,47 @@ describe("run", () => {
 
   it("evaluates value and type import conditions by original names", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "import-name-conditions",
-          paths: "src/index.ts",
           must: [
             {
-              name: "value-import-match",
               if: {
-                hasValueImport: { name: "sourceValue", from: "pkg" },
+                hasValueImport: { from: "pkg", name: "sourceValue" },
               },
               must: { haveType: "directory" },
+              name: "value-import-match",
             },
             {
-              name: "type-import-match",
-              if: { hasTypeImport: { name: "SourceType", from: "pkg" } },
+              if: { hasTypeImport: { from: "pkg", name: "SourceType" } },
               must: { haveType: "directory" },
+              name: "type-import-match",
             },
             {
-              name: "local-alias-does-not-match",
               if: { hasValueImport: "localValue" },
               must: { haveType: "directory" },
+              name: "local-alias-does-not-match",
             },
             {
-              name: "wrong-import-kind-does-not-match",
               if: { hasValueImport: "SourceType" },
               must: { haveType: "directory" },
+              name: "wrong-import-kind-does-not-match",
             },
           ],
+          name: "import-name-conditions",
+          paths: "src/index.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/index.ts", ["src/index.ts"]]]),
-      files: new Set(["src/index.ts"]),
       fileContents: new Map([
         [
           "src/index.ts",
           'import { sourceValue as localValue, type SourceType as LocalType } from "pkg";',
         ],
       ]),
+      files: new Set(["src/index.ts"]),
+      globResults: new Map([["src/index.ts", ["src/index.ts"]]]),
     });
 
     const { diagnostics } = await run({ config, fileSystem: fs });
@@ -1338,44 +1342,42 @@ describe("run", () => {
 
   it("evaluates exact value and type import source conditions", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "import-source-conditions",
-          paths: "src/index.ts",
           must: [
             {
-              name: "value-source-match",
               if: { hasValueImportFrom: "pkg" },
               must: { haveType: "directory" },
+              name: "value-source-match",
             },
             {
-              name: "type-source-match",
               if: { hasTypeImportFrom: "pkg" },
               must: { haveType: "directory" },
+              name: "type-source-match",
             },
             {
-              name: "side-effect-value-source-match",
               if: { hasValueImportFrom: "./setup" },
               must: { haveType: "directory" },
+              name: "side-effect-value-source-match",
             },
             {
-              name: "side-effect-type-source-does-not-match",
               if: { hasTypeImportFrom: "./setup" },
               must: { haveType: "directory" },
+              name: "side-effect-type-source-does-not-match",
             },
             {
-              name: "wildcard-is-not-a-selector",
               if: { hasValueImportFrom: "pkg/*" },
               must: { haveType: "directory" },
+              name: "wildcard-is-not-a-selector",
             },
           ],
+          name: "import-source-conditions",
+          paths: "src/index.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/index.ts", ["src/index.ts"]]]),
-      files: new Set(["src/index.ts"]),
       fileContents: new Map([
         [
           "src/index.ts",
@@ -1385,6 +1387,8 @@ describe("run", () => {
           ].join("\n"),
         ],
       ]),
+      files: new Set(["src/index.ts"]),
+      globResults: new Map([["src/index.ts", ["src/index.ts"]]]),
     });
 
     const { diagnostics } = await run({ config, fileSystem: fs });
@@ -1398,17 +1402,14 @@ describe("run", () => {
 
   it("expands import condition templates and reuses the parsed file", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "templated-import-conditions",
-          paths: "src/{moduleName}.ts",
           must: [
             {
               if: {
                 hasValueImport: {
-                  name: "create${moduleName.toPascalCase()}",
                   from: "./${moduleName}",
+                  name: "create${moduleName.toPascalCase()}",
                 },
               },
               must: { exportConstants: ["missingValue"] },
@@ -1418,18 +1419,21 @@ describe("run", () => {
               must: { exportConstants: ["missingType"] },
             },
           ],
+          name: "templated-import-conditions",
+          paths: "src/{moduleName}.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/*.ts", ["src/client.ts"]]]),
-      files: new Set(["src/client.ts"]),
       fileContents: new Map([
         [
           "src/client.ts",
           'import { createClient as createApiClient, type Client } from "./client";',
         ],
       ]),
+      files: new Set(["src/client.ts"]),
+      globResults: new Map([["src/*.ts", ["src/client.ts"]]]),
     });
     const readSpy = vi.spyOn(fs, "readFile");
 
@@ -1442,31 +1446,31 @@ describe("run", () => {
   it("supports every condition at the top level and reuses parsed files", async () => {
     const conditions = createMatchingConditions();
     const config: ConfigV1 = {
-      version: "v1",
       conventions: conditions.flatMap((condition, index) => [
         {
-          name: `top-level-condition-${index}`,
-          paths: "src/{moduleName}.ts",
           if: condition,
           must: { exportConstants: [`missing${index}`] },
+          name: `top-level-condition-${index}`,
+          paths: "src/{moduleName}.ts",
         },
         {
-          name: `top-level-negative-condition-${index}`,
-          paths: "src/{moduleName}.ts",
           ifNot: condition,
           must: { exportConstants: [`missingNegative${index}`] },
+          name: `top-level-negative-condition-${index}`,
+          paths: "src/{moduleName}.ts",
         },
       ]),
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/*.ts", ["src/client.ts"]]]),
-      files: new Set(["src/client.ts", "src/marker.ts"]),
       fileContents: new Map([
         [
           "src/client.ts",
           'import { createClient, type Client } from "./client";',
         ],
       ]),
+      files: new Set(["src/client.ts", "src/marker.ts"]),
+      globResults: new Map([["src/*.ts", ["src/client.ts"]]]),
     });
     const readSpy = vi.spyOn(fs, "readFile");
 
@@ -1482,35 +1486,35 @@ describe("run", () => {
   it("supports every condition through ifNot in nested blocks", async () => {
     const conditions = createMatchingConditions();
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "nested-conditions",
-          paths: "src/{moduleName}.ts",
           must: conditions.flatMap((condition, index) => [
             {
-              name: `positive-condition-${index}`,
               if: condition,
               must: { exportConstants: [`missing${index}`] },
+              name: `positive-condition-${index}`,
             },
             {
-              name: `negative-condition-${index}`,
               ifNot: condition,
               must: { exportConstants: [`missingNegative${index}`] },
+              name: `negative-condition-${index}`,
             },
           ]),
+          name: "nested-conditions",
+          paths: "src/{moduleName}.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/*.ts", ["src/client.ts"]]]),
-      files: new Set(["src/client.ts", "src/marker.ts"]),
       fileContents: new Map([
         [
           "src/client.ts",
           'import { createClient, type Client } from "./client";',
         ],
       ]),
+      files: new Set(["src/client.ts", "src/marker.ts"]),
+      globResults: new Map([["src/*.ts", ["src/client.ts"]]]),
     });
     const readSpy = vi.spyOn(fs, "readFile");
 
@@ -1525,45 +1529,45 @@ describe("run", () => {
 
   it("combines if and ifNot gates at the top level and in nested blocks", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "top-level-runs",
-          paths: "src/index.ts",
           if: { hasFile: "marker.ts" },
           ifNot: { hasFile: "skip.ts" },
           must: { haveType: "directory" },
+          name: "top-level-runs",
+          paths: "src/index.ts",
         },
         {
-          name: "top-level-skips",
-          paths: "src/index.ts",
           if: { hasFile: "marker.ts" },
           ifNot: { hasFile: "marker.ts" },
           must: { haveType: "directory" },
+          name: "top-level-skips",
+          paths: "src/index.ts",
         },
         {
-          name: "nested-gates",
-          paths: "src/index.ts",
           must: [
             {
-              name: "nested-runs",
               if: { hasFile: "marker.ts" },
               ifNot: { hasFile: "skip.ts" },
               must: { haveType: "directory" },
+              name: "nested-runs",
             },
             {
-              name: "nested-skips",
               if: { hasFile: "marker.ts" },
               ifNot: { hasFile: "marker.ts" },
               must: { haveType: "directory" },
+              name: "nested-skips",
             },
           ],
+          name: "nested-gates",
+          paths: "src/index.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/index.ts", ["src/index.ts"]]]),
       files: new Set(["src/index.ts", "src/marker.ts"]),
+      globResults: new Map([["src/index.ts", ["src/index.ts"]]]),
     });
 
     const { diagnostics } = await run({ config, fileSystem: fs });
@@ -1576,11 +1580,8 @@ describe("run", () => {
 
   it("exactly inverts non-matching placeholder and directory import conditions", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "negative-edge-cases",
-          paths: "src/module",
           ifNot: { placeholderSatisfies: "unknown:matches(" },
           must: [
             {
@@ -1588,12 +1589,15 @@ describe("run", () => {
               must: { haveType: "file" },
             },
           ],
+          name: "negative-edge-cases",
+          paths: "src/module",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module", ["src/module"]]]),
       directories: new Set(["src/module"]),
+      globResults: new Map([["src/module", ["src/module"]]]),
     });
     const readSpy = vi.spyOn(fs, "readFile");
 
@@ -1606,23 +1610,23 @@ describe("run", () => {
 
   it("skips import conditions when the matched path is a directory", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "directory-import-condition",
-          paths: "src/module",
           must: [
             {
               if: { hasValueImportFrom: "pkg" },
               must: { haveType: "file" },
             },
           ],
+          name: "directory-import-condition",
+          paths: "src/module",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/module", ["src/module"]]]),
       directories: new Set(["src/module"]),
+      globResults: new Map([["src/module", ["src/module"]]]),
     });
     const readSpy = vi.spyOn(fs, "readFile");
 
@@ -1634,28 +1638,28 @@ describe("run", () => {
 
   it("injects static placeholders into the predicate context", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "static-placeholders",
-          paths: "packages/openai/src/index.ts",
-          placeholders: { providerId: "openai" },
           must: [
             {
               if: { hasFile: "${providerId}.test.ts" },
               must: { haveType: "directory" },
             },
           ],
+          name: "static-placeholders",
+          paths: "packages/openai/src/index.ts",
+          placeholders: { providerId: "openai" },
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([
-        ["packages/openai/src/index.ts", ["packages/openai/src/index.ts"]],
-      ]),
       files: new Set([
         "packages/openai/src/index.ts",
         "packages/openai/src/openai.test.ts",
+      ]),
+      globResults: new Map([
+        ["packages/openai/src/index.ts", ["packages/openai/src/index.ts"]],
       ]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
@@ -1665,27 +1669,27 @@ describe("run", () => {
 
   it("iterates over for.files matches and evaluates predicates", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "for-iteration",
-          paths: "components/{name}",
           must: [
             {
               for: { files: "*.test.tsx" },
               must: { haveType: "file" },
             },
           ],
+          name: "for-iteration",
+          paths: "components/{name}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
+      directories: new Set(["components/Button"]),
+      files: new Set(["components/Button/Button.test.tsx"]),
       globResults: new Map([
         ["components/*", ["components/Button"]],
         ["components/Button/*.test.tsx", ["components/Button/Button.test.tsx"]],
       ]),
-      directories: new Set(["components/Button"]),
-      files: new Set(["components/Button/Button.test.tsx"]),
     });
     const { diagnostics, filesChecked } = await run({
       config,
@@ -1697,26 +1701,26 @@ describe("run", () => {
 
   it("silently skips when for.files matches zero files", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "for-skip",
-          paths: "components/{name}",
           must: [
             {
               for: { files: "{storyFile}.stories.tsx" },
               must: { haveType: "directory" },
             },
           ],
+          name: "for-skip",
+          paths: "components/{name}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
+      directories: new Set(["components/Input"]),
       globResults: new Map([
         ["components/*", ["components/Input"]],
         ["components/Input/*.stories.tsx", []],
       ]),
-      directories: new Set(["components/Input"]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -1724,21 +1728,23 @@ describe("run", () => {
 
   it("merges placeholders from for.files with parent placeholders", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "for-placeholders",
-          paths: "components/{name}",
           must: [
             {
               for: { files: "{storyFile}.stories.tsx" },
               must: { haveType: "file" },
             },
           ],
+          name: "for-placeholders",
+          paths: "components/{name}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
+      directories: new Set(["components/Button"]),
+      files: new Set(["components/Button/Button.stories.tsx"]),
       globResults: new Map([
         ["components/*", ["components/Button"]],
         [
@@ -1746,8 +1752,6 @@ describe("run", () => {
           ["components/Button/Button.stories.tsx"],
         ],
       ]),
-      directories: new Set(["components/Button"]),
-      files: new Set(["components/Button/Button.stories.tsx"]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -1755,27 +1759,27 @@ describe("run", () => {
 
   it("parent placeholder values take precedence over for.files placeholders", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "for-parent-precedence",
-          paths: "components/{name}",
           must: [
             {
               for: { files: "{name}.test.tsx" },
               must: { haveType: "file" },
             },
           ],
+          name: "for-parent-precedence",
+          paths: "components/{name}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
+      directories: new Set(["components/Button"]),
+      files: new Set(["components/Button/Button.test.tsx"]),
       globResults: new Map([
         ["components/*", ["components/Button"]],
         ["components/Button/*.test.tsx", ["components/Button/Button.test.tsx"]],
       ]),
-      directories: new Set(["components/Button"]),
-      files: new Set(["components/Button/Button.test.tsx"]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -1783,21 +1787,26 @@ describe("run", () => {
 
   it("iterates over for.files array matches from multiple patterns", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "for-array",
-          paths: "components/{name}",
           must: [
             {
               for: { files: ["*.test.tsx", "*.spec.tsx"] },
               must: { haveType: "file" },
             },
           ],
+          name: "for-array",
+          paths: "components/{name}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
+      directories: new Set(["components/Button"]),
+      files: new Set([
+        "components/Button/Button.test.tsx",
+        "components/Button/Button.spec.tsx",
+      ]),
       globResults: new Map([
         ["components/*", ["components/Button"]],
         [
@@ -1808,11 +1817,6 @@ describe("run", () => {
           ],
         ],
       ]),
-      directories: new Set(["components/Button"]),
-      files: new Set([
-        "components/Button/Button.test.tsx",
-        "components/Button/Button.spec.tsx",
-      ]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -1820,21 +1824,23 @@ describe("run", () => {
 
   it("reports diagnostics from for.files array when file type is wrong", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "for-array-fail",
-          paths: "components/{name}",
           must: [
             {
               for: { files: ["*.test.tsx", "*.spec.tsx"] },
               must: { haveType: "directory" },
             },
           ],
+          name: "for-array-fail",
+          paths: "components/{name}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
+      directories: new Set(["components/Button"]),
+      files: new Set(["components/Button/Button.test.tsx"]),
       globResults: new Map([
         ["components/*", ["components/Button"]],
         [
@@ -1842,8 +1848,6 @@ describe("run", () => {
           ["components/Button/Button.test.tsx"],
         ],
       ]),
-      directories: new Set(["components/Button"]),
-      files: new Set(["components/Button/Button.test.tsx"]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -1852,76 +1856,61 @@ describe("run", () => {
 
   it("evaluates every if predicate against each for file", async () => {
     const matchingImport = {
-      hasValueImport: { name: "createClient", from: "./dependencies" },
+      hasValueImport: { from: "./dependencies", name: "createClient" },
     } satisfies IfConditionV1;
     const conditions: Array<{
       name: string;
       condition: IfConditionV1;
     }> = [
-      { name: "has-file", condition: { hasFile: "marker.ts" } },
+      { condition: { hasFile: "marker.ts" }, name: "has-file" },
       {
-        name: "placeholder-satisfies",
         condition: { placeholderSatisfies: "variant:matches(^matching$)" },
+        name: "placeholder-satisfies",
       },
-      { name: "has-value-import", condition: matchingImport },
+      { condition: matchingImport, name: "has-value-import" },
       {
-        name: "has-type-import",
         condition: {
-          hasTypeImport: { name: "Client", from: "./dependencies" },
+          hasTypeImport: { from: "./dependencies", name: "Client" },
         },
+        name: "has-type-import",
       },
       {
-        name: "has-value-import-from",
         condition: { hasValueImportFrom: "./side-effect" },
+        name: "has-value-import-from",
       },
       {
-        name: "has-type-import-from",
         condition: { hasTypeImportFrom: "./dependencies" },
+        name: "has-type-import-from",
       },
     ];
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "if-and-for",
-          paths: "components/{name}",
           must: [
             ...conditions.map(({ name, condition }) => ({
-              name,
-              if: condition,
               for: { files: "{variant}/*.ts" },
+              if: condition,
               must: { haveType: "directory" },
+              name,
             })),
             {
-              name: "if-not",
-              ifNot: matchingImport,
               for: { files: "{variant}/*.ts" },
+              ifNot: matchingImport,
               must: { haveType: "directory" },
+              name: "if-not",
             },
           ],
+          name: "if-and-for",
+          paths: "components/{name}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([
-        ["components/*", ["components/Button"]],
-        [
-          "components/Button/*/*.ts",
-          [
-            "components/Button/matching/matching.ts",
-            "components/Button/skipped/skipped.ts",
-          ],
-        ],
-      ]),
       directories: new Set([
         "components/Button",
         "components/Button/matching",
         "components/Button/skipped",
-      ]),
-      files: new Set([
-        "components/Button/matching/matching.ts",
-        "components/Button/matching/marker.ts",
-        "components/Button/skipped/skipped.ts",
       ]),
       fileContents: new Map([
         [
@@ -1930,6 +1919,21 @@ describe("run", () => {
             'import { createClient, type Client } from "./dependencies";',
             'import "./side-effect";',
           ].join("\n"),
+        ],
+      ]),
+      files: new Set([
+        "components/Button/matching/matching.ts",
+        "components/Button/matching/marker.ts",
+        "components/Button/skipped/skipped.ts",
+      ]),
+      globResults: new Map([
+        ["components/*", ["components/Button"]],
+        [
+          "components/Button/*/*.ts",
+          [
+            "components/Button/matching/matching.ts",
+            "components/Button/skipped/skipped.ts",
+          ],
         ],
       ]),
     });
@@ -1951,24 +1955,24 @@ describe("run", () => {
 
   it("skips for block when if condition is not met", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "if-and-for-skip",
-          paths: "components/{name}",
           must: [
             {
-              if: { hasFile: "${name}.test.tsx" },
               for: { files: "${name}.test.tsx" },
+              if: { hasFile: "${name}.test.tsx" },
               must: { haveType: "directory" },
             },
           ],
+          name: "if-and-for-skip",
+          paths: "components/{name}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["components/*", ["components/Button"]]]),
       directories: new Set(["components/Button"]),
+      globResults: new Map([["components/*", ["components/Button"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -1976,11 +1980,8 @@ describe("run", () => {
 
   it("evaluates multiple must blocks independently", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "multi-block",
-          paths: "src/**/*.ts",
           must: [
             { must: { haveType: "file" } },
             {
@@ -1988,12 +1989,15 @@ describe("run", () => {
               must: { haveType: "directory" },
             },
           ],
+          name: "multi-block",
+          paths: "src/**/*.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/**/*.ts", ["src/a.ts"]]]),
       files: new Set(["src/a.ts"]),
+      globResults: new Map([["src/**/*.ts", ["src/a.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -2003,19 +2007,19 @@ describe("run", () => {
 describe("severity propagation", () => {
   it("produces warning diagnostics when convention severity is warning", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "warn-rule",
-          severity: "warning",
-          paths: "src/**/*.ts",
           must: { haveType: "file" },
+          name: "warn-rule",
+          paths: "src/**/*.ts",
+          severity: "warning",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/**/*.ts", ["src/utils"]]]),
       directories: new Set(["src/utils"]),
+      globResults: new Map([["src/**/*.ts", ["src/utils"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -2024,18 +2028,18 @@ describe("severity propagation", () => {
 
   it("defaults to error severity when convention omits severity", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
+          must: { haveType: "file" },
           name: "error-rule",
           paths: "src/**/*.ts",
-          must: { haveType: "file" },
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/**/*.ts", ["src/utils"]]]),
       directories: new Set(["src/utils"]),
+      globResults: new Map([["src/**/*.ts", ["src/utils"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -2044,28 +2048,28 @@ describe("severity propagation", () => {
 
   it("produces mixed severities from different conventions", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "error-rule",
-          severity: "error",
-          paths: "src/**/*.ts",
           must: { haveType: "file" },
+          name: "error-rule",
+          paths: "src/**/*.ts",
+          severity: "error",
         },
         {
-          name: "warn-rule",
-          severity: "warning",
-          paths: "lib/**/*.ts",
           must: { haveType: "file" },
+          name: "warn-rule",
+          paths: "lib/**/*.ts",
+          severity: "warning",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
+      directories: new Set(["src/dir", "lib/dir"]),
       globResults: new Map([
         ["src/**/*.ts", ["src/dir"]],
         ["lib/**/*.ts", ["lib/dir"]],
       ]),
-      directories: new Set(["src/dir", "lib/dir"]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(2);
@@ -2077,22 +2081,22 @@ describe("severity propagation", () => {
 describe("excludeFiles", () => {
   it("convention-level excludeFiles skips matching file", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "source-files",
-          paths: "src/**/*.ts",
           excludeFiles: ["src/internal.ts"],
           must: { haveType: "file" },
+          name: "source-files",
+          paths: "src/**/*.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
+      directories: new Set(["src/internal.ts"]),
+      files: new Set(["src/utils.ts"]),
       globResults: new Map([
         ["src/**/*.ts", ["src/internal.ts", "src/utils.ts"]],
       ]),
-      directories: new Set(["src/internal.ts"]),
-      files: new Set(["src/utils.ts"]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -2100,22 +2104,22 @@ describe("excludeFiles", () => {
 
   it("convention-level excludeFiles with a **/ prefixed pattern skips matching file (#57 regression)", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "source-files",
-          paths: "foo/**/*.ts",
           excludeFiles: ["**/__test-env-tdd-state.ts"],
           must: { haveType: "file" },
+          name: "source-files",
+          paths: "foo/**/*.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
+      directories: new Set(["foo/__test-env-tdd-state.ts"]),
+      files: new Set(["foo/utils.ts"]),
       globResults: new Map([
         ["foo/**/*.ts", ["foo/__test-env-tdd-state.ts", "foo/utils.ts"]],
       ]),
-      directories: new Set(["foo/__test-env-tdd-state.ts"]),
-      files: new Set(["foo/utils.ts"]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -2123,19 +2127,19 @@ describe("excludeFiles", () => {
 
   it("convention-level excludeFiles does not skip non-matching file", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "source-files",
-          paths: "src/**/*.ts",
           excludeFiles: ["src/other.ts"],
           must: { haveType: "file" },
+          name: "source-files",
+          paths: "src/**/*.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/**/*.ts", ["src/utils"]]]),
       directories: new Set(["src/utils"]),
+      globResults: new Map([["src/**/*.ts", ["src/utils"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -2143,21 +2147,21 @@ describe("excludeFiles", () => {
 
   it("convention-level excludeFiles with template placeholder", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "provider-files",
-          paths: "packages/{name}/src/index.ts",
           excludeFiles: ["packages/${name}/src/index.ts"],
           must: { haveType: "directory" },
+          name: "provider-files",
+          paths: "packages/{name}/src/index.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
+      files: new Set(["packages/openai/src/index.ts"]),
       globResults: new Map([
         ["packages/*/src/index.ts", ["packages/openai/src/index.ts"]],
       ]),
-      files: new Set(["packages/openai/src/index.ts"]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -2165,23 +2169,23 @@ describe("excludeFiles", () => {
 
   it("block-level excludeFiles without for skips matching file", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "block-exclude",
-          paths: "src/**/*.ts",
           must: [
             {
               excludeFiles: ["src/special.ts"],
               must: { haveType: "file" },
             },
           ],
+          name: "block-exclude",
+          paths: "src/**/*.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/**/*.ts", ["src/special.ts"]]]),
       directories: new Set(["src/special.ts"]),
+      globResults: new Map([["src/**/*.ts", ["src/special.ts"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toEqual([]);
@@ -2189,33 +2193,33 @@ describe("excludeFiles", () => {
 
   it("block-level excludeFiles with for excludes specific iterated files", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "for-exclude",
-          paths: "components/{name}",
           must: [
             {
-              for: { files: "*.ts" },
               excludeFiles: ["components/Button/helpers.ts"],
+              for: { files: "*.ts" },
               must: { haveType: "directory" },
             },
           ],
+          name: "for-exclude",
+          paths: "components/{name}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
+      directories: new Set(["components/Button"]),
+      files: new Set([
+        "components/Button/helpers.ts",
+        "components/Button/Button.ts",
+      ]),
       globResults: new Map([
         ["components/*", ["components/Button"]],
         [
           "components/Button/*.ts",
           ["components/Button/helpers.ts", "components/Button/Button.ts"],
         ],
-      ]),
-      directories: new Set(["components/Button"]),
-      files: new Set([
-        "components/Button/helpers.ts",
-        "components/Button/Button.ts",
       ]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
@@ -2225,33 +2229,33 @@ describe("excludeFiles", () => {
 
   it("block-level excludeFiles with for excludes by filename only", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "for-exclude-filename",
-          paths: "components/{name}",
           must: [
             {
-              for: { files: "*.ts" },
               excludeFiles: ["helpers.ts"],
+              for: { files: "*.ts" },
               must: { haveType: "directory" },
             },
           ],
+          name: "for-exclude-filename",
+          paths: "components/{name}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
+      directories: new Set(["components/Button"]),
+      files: new Set([
+        "components/Button/helpers.ts",
+        "components/Button/Button.ts",
+      ]),
       globResults: new Map([
         ["components/*", ["components/Button"]],
         [
           "components/Button/*.ts",
           ["components/Button/helpers.ts", "components/Button/Button.ts"],
         ],
-      ]),
-      directories: new Set(["components/Button"]),
-      files: new Set([
-        "components/Button/helpers.ts",
-        "components/Button/Button.ts",
       ]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
@@ -2261,22 +2265,27 @@ describe("excludeFiles", () => {
 
   it("block-level excludeFiles with for and template resolving to filename", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "for-exclude-template",
-          paths: "providers/{providerId}",
           must: [
             {
-              for: { files: "${providerId}-{modelKind}-model.ts" },
               excludeFiles: ["${providerId}-video-model.ts"],
+              for: { files: "${providerId}-{modelKind}-model.ts" },
               must: { haveType: "directory" },
             },
           ],
+          name: "for-exclude-template",
+          paths: "providers/{providerId}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
+      directories: new Set(["providers/openai"]),
+      files: new Set([
+        "providers/openai/openai-chat-model.ts",
+        "providers/openai/openai-video-model.ts",
+      ]),
       globResults: new Map([
         ["providers/*", ["providers/openai"]],
         [
@@ -2286,11 +2295,6 @@ describe("excludeFiles", () => {
             "providers/openai/openai-video-model.ts",
           ],
         ],
-      ]),
-      directories: new Set(["providers/openai"]),
-      files: new Set([
-        "providers/openai/openai-chat-model.ts",
-        "providers/openai/openai-video-model.ts",
       ]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
@@ -2302,30 +2306,30 @@ describe("excludeFiles", () => {
 
   it("block-level excludeFiles with if condition", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "if-exclude",
-          paths: "src/{name}/index.ts",
           must: [
             {
-              if: { hasFile: "config.ts" },
               excludeFiles: ["src/auth/index.ts"],
+              if: { hasFile: "config.ts" },
               must: { haveType: "directory" },
             },
           ],
+          name: "if-exclude",
+          paths: "src/{name}/index.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([
-        ["src/*/index.ts", ["src/auth/index.ts", "src/billing/index.ts"]],
-      ]),
       files: new Set([
         "src/auth/index.ts",
         "src/auth/config.ts",
         "src/billing/index.ts",
         "src/billing/config.ts",
+      ]),
+      globResults: new Map([
+        ["src/*/index.ts", ["src/auth/index.ts", "src/billing/index.ts"]],
       ]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
@@ -2335,23 +2339,28 @@ describe("excludeFiles", () => {
 
   it("block-level excludeFiles with if and for combined", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "if-for-exclude",
-          paths: "components/{name}",
           must: [
             {
-              if: { hasFile: "${name}.test.tsx" },
-              for: { files: "*.test.tsx" },
               excludeFiles: ["components/Button/Button.test.tsx"],
+              for: { files: "*.test.tsx" },
+              if: { hasFile: "${name}.test.tsx" },
               must: { haveType: "directory" },
             },
           ],
+          name: "if-for-exclude",
+          paths: "components/{name}",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
+      directories: new Set(["components/Button"]),
+      files: new Set([
+        "components/Button/Button.test.tsx",
+        "components/Button/utils.test.tsx",
+      ]),
       globResults: new Map([
         ["components/*", ["components/Button"]],
         [
@@ -2362,11 +2371,6 @@ describe("excludeFiles", () => {
           ],
         ],
       ]),
-      directories: new Set(["components/Button"]),
-      files: new Set([
-        "components/Button/Button.test.tsx",
-        "components/Button/utils.test.tsx",
-      ]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -2375,11 +2379,8 @@ describe("excludeFiles", () => {
 
   it("convention-level and block-level excludeFiles coexist", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "coexist-exclude",
-          paths: "src/**/*.ts",
           excludeFiles: ["src/a.ts"],
           must: [
             {
@@ -2387,14 +2388,17 @@ describe("excludeFiles", () => {
               must: { haveType: "file" },
             },
           ],
+          name: "coexist-exclude",
+          paths: "src/**/*.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
+      directories: new Set(["src/a.ts", "src/b.ts", "src/c.ts"]),
       globResults: new Map([
         ["src/**/*.ts", ["src/a.ts", "src/b.ts", "src/c.ts"]],
       ]),
-      directories: new Set(["src/a.ts", "src/b.ts", "src/c.ts"]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -2405,23 +2409,23 @@ describe("excludeFiles", () => {
 describe("must block name", () => {
   it("uses block-level name instead of convention-level name", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "convention-name",
-          paths: "src/**/*.ts",
           must: [
             {
-              name: "block-name",
               must: { haveType: "file" },
+              name: "block-name",
             },
           ],
+          name: "convention-name",
+          paths: "src/**/*.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/**/*.ts", ["src/utils"]]]),
       directories: new Set(["src/utils"]),
+      globResults: new Map([["src/**/*.ts", ["src/utils"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -2430,22 +2434,22 @@ describe("must block name", () => {
 
   it("falls back to convention-level name when block has no name", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "convention-name",
-          paths: "src/**/*.ts",
           must: [
             {
               must: { haveType: "file" },
             },
           ],
+          name: "convention-name",
+          paths: "src/**/*.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/**/*.ts", ["src/utils"]]]),
       directories: new Set(["src/utils"]),
+      globResults: new Map([["src/**/*.ts", ["src/utils"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -2454,26 +2458,26 @@ describe("must block name", () => {
 
   it("mixed blocks: some with name, some without", async () => {
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "convention-name",
-          paths: "src/**/*.ts",
           must: [
             {
-              name: "block-a",
               must: { haveType: "file" },
+              name: "block-a",
             },
             {
               must: { haveType: "directory" },
             },
           ],
+          name: "convention-name",
+          paths: "src/**/*.ts",
         },
       ],
+      version: "v1",
     };
     const fs = createMockFileSystem({
-      globResults: new Map([["src/**/*.ts", ["src/utils"]]]),
       directories: new Set(["src/utils"]),
+      globResults: new Map([["src/**/*.ts", ["src/utils"]]]),
     });
     const { diagnostics } = await run({ config, fileSystem: fs });
     expect(diagnostics).toHaveLength(1);
@@ -2488,6 +2492,8 @@ describe("caching behavior", () => {
   it("parses the same file only once across multiple conventions", async () => {
     const readFileSpy = vi.fn().mockReturnValue("export const x = 1;");
     const fs: FileSystem = {
+      directoryExists: () => false,
+      fileExists: (p: string) => p === "src/shared.ts",
       glob: vi.fn((patterns: string[]) => {
         const key = patterns.sort().join(",");
         const results = new Map<string, string[]>([
@@ -2497,25 +2503,23 @@ describe("caching behavior", () => {
       }),
       isDirectory: () => false,
       isFile: (p: string) => p === "src/shared.ts",
-      directoryExists: () => false,
-      fileExists: (p: string) => p === "src/shared.ts",
       readDir: () => [],
       readFile: readFileSpy,
     };
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
+          must: { exportValues: [{ name: "x" }] },
           name: "convention-a",
           paths: "src/shared.ts",
-          must: { exportValues: [{ name: "x" }] },
         },
         {
+          must: { exportValues: [{ name: "x" }] },
           name: "convention-b",
           paths: "src/shared.ts",
-          must: { exportValues: [{ name: "x" }] },
         },
       ],
+      version: "v1",
     };
     await run({ config, fileSystem: fs });
     expect(readFileSpy).toHaveBeenCalledTimes(1);
@@ -2524,6 +2528,9 @@ describe("caching behavior", () => {
   it("parses the same file only once when referenced in for blocks", async () => {
     const readFileSpy = vi.fn().mockReturnValue("export const x = 1;");
     const fs: FileSystem = {
+      directoryExists: (p: string) => p === "components/Button",
+      fileExists: (p: string) =>
+        p === "components/Button" || p === "components/Button/shared.ts",
       glob: vi.fn((patterns: string[]) => {
         const key = patterns.sort().join(",");
         const results = new Map<string, string[]>([
@@ -2534,18 +2541,12 @@ describe("caching behavior", () => {
       }),
       isDirectory: (p: string) => p === "components/Button",
       isFile: (p: string) => p === "components/Button/shared.ts",
-      directoryExists: (p: string) => p === "components/Button",
-      fileExists: (p: string) =>
-        p === "components/Button" || p === "components/Button/shared.ts",
       readDir: () => [],
       readFile: readFileSpy,
     };
     const config: ConfigV1 = {
-      version: "v1",
       conventions: [
         {
-          name: "convention-a",
-          paths: "components/{name}",
           must: [
             {
               for: { files: "*.ts" },
@@ -2556,8 +2557,11 @@ describe("caching behavior", () => {
               must: { exportValues: [{ name: "x" }] },
             },
           ],
+          name: "convention-a",
+          paths: "components/{name}",
         },
       ],
+      version: "v1",
     };
     await run({ config, fileSystem: fs });
     expect(readFileSpy).toHaveBeenCalledTimes(1);

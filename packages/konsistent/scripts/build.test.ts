@@ -16,10 +16,10 @@ describe("CLI build", () => {
     try {
       await writeFile(join(outdir, "stale.js"), "stale");
       await build({
-        cwd: packageDirectory,
         config: join(packageDirectory, "tsdown.config.ts"),
-        outDir: outdir,
+        cwd: packageDirectory,
         logLevel: "silent",
+        outDir: outdir,
       });
       expect(await readdir(outdir)).toEqual(["cli.js"]);
       const cli = await readFile(join(outdir, "cli.js"), "utf8");
@@ -29,7 +29,7 @@ describe("CLI build", () => {
       expect(cli).toMatch(typescriptImportPattern);
       expect(cli.includes("__commonJS")).toBe(false);
     } finally {
-      await rm(outdir, { recursive: true, force: true });
+      await rm(outdir, { force: true, recursive: true });
     }
   });
 });

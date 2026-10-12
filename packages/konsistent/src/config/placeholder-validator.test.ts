@@ -6,8 +6,6 @@ describe("validatePlaceholders", () => {
   it("checks placeholders in directory conditions and predicates", () => {
     const conventions: ConventionV1[] = [
       {
-        name: "directory-check",
-        paths: "modules/{module}",
         must: [
           {
             if: { hasDirectory: "${unknown}/*" },
@@ -15,6 +13,8 @@ describe("validatePlaceholders", () => {
             mustNot: { haveDirectories: ["${missing}/*"] },
           },
         ],
+        name: "directory-check",
+        paths: "modules/{module}",
       },
     ];
     const result = validatePlaceholders({
@@ -31,9 +31,9 @@ describe("validatePlaceholders", () => {
   it("accepts a placeholder declared in paths and used in must.haveFiles", () => {
     const conventions: ConventionV1[] = [
       {
+        must: { haveFiles: ["${packageName}/README.md"] },
         name: "package-must-have-readme",
         paths: ["packages/{packageName}"],
-        must: { haveFiles: ["${packageName}/README.md"] },
       },
     ];
 
@@ -48,9 +48,9 @@ describe("validatePlaceholders", () => {
   it("rejects a placeholder used in must but absent from paths", () => {
     const conventions: ConventionV1[] = [
       {
+        must: { haveFiles: ["${componentName}.tsx"] },
         name: "broken",
         paths: ["packages/{packageName}"],
-        must: { haveFiles: ["${componentName}.tsx"] },
       },
     ];
 
@@ -70,9 +70,9 @@ describe("validatePlaceholders", () => {
   it("rejects a placeholder used in mustNot but absent from paths", () => {
     const conventions: ConventionV1[] = [
       {
+        mustNot: { exportConstants: ["${componentName}Debug"] },
         name: "broken",
         paths: ["packages/{packageName}"],
-        mustNot: { exportConstants: ["${componentName}Debug"] },
       },
     ];
 
@@ -92,9 +92,9 @@ describe("validatePlaceholders", () => {
   it("reports only the missing placeholder when multiple are used and one is missing", () => {
     const conventions: ConventionV1[] = [
       {
+        must: { haveFiles: ["${packageName}/${missing}.ts"] },
         name: "partial",
         paths: ["packages/{packageName}"],
-        must: { haveFiles: ["${packageName}/${missing}.ts"] },
       },
     ];
 
@@ -113,11 +113,11 @@ describe("validatePlaceholders", () => {
   it("detects a placeholder inside an object-form export entry", () => {
     const conventions: ConventionV1[] = [
       {
+        must: {
+          exportValues: [{ from: "${Y}", name: "${X}" }],
+        },
         name: "object-export",
         paths: ["src/{x}"],
-        must: {
-          exportValues: [{ name: "${X}", from: "${Y}" }],
-        },
       },
     ];
 
@@ -136,15 +136,13 @@ describe("validatePlaceholders", () => {
   it("accepts declared placeholders in inner type constraints", () => {
     const conventions: ConventionV1[] = [
       {
-        name: "schema-types",
-        paths: ["src/{harnessId}.ts"],
         must: {
           declareTypes: [
             {
               name: "InternalSettings",
               schema: {
-                type: "array",
                 items: "${harnessId.toPascalCase()}Data",
+                type: "array",
               },
             },
           ],
@@ -152,14 +150,16 @@ describe("validatePlaceholders", () => {
             {
               name: "Settings",
               schema: {
-                type: "object",
                 properties: {
                   data: "${harnessId.toPascalCase()}Data",
                 },
+                type: "object",
               },
             },
           ],
         },
+        name: "schema-types",
+        paths: ["src/{harnessId}.ts"],
       },
     ];
 
@@ -174,15 +174,13 @@ describe("validatePlaceholders", () => {
   it("rejects undeclared placeholders in inner type constraints", () => {
     const conventions: ConventionV1[] = [
       {
-        name: "schema-types",
-        paths: ["src/{harnessId}.ts"],
         must: {
           declareConstants: [
             {
               name: "data",
               schema: {
-                type: "array",
                 items: "${missingArrayType}",
+                type: "array",
               },
             },
           ],
@@ -190,12 +188,14 @@ describe("validatePlaceholders", () => {
             {
               name: "data",
               schema: {
-                type: "object",
                 properties: { data: "${missingPropertyType}" },
+                type: "object",
               },
             },
           ],
         },
+        name: "schema-types",
+        paths: ["src/{harnessId}.ts"],
       },
     ];
 
@@ -216,8 +216,6 @@ describe("validatePlaceholders", () => {
   it("validates placeholders in top-level type constraints", () => {
     const conventions: ConventionV1[] = [
       {
-        name: "exact-types",
-        paths: ["src/{harnessId}.ts"],
         must: {
           declareTypes: [
             {
@@ -232,6 +230,8 @@ describe("validatePlaceholders", () => {
             },
           ],
         },
+        name: "exact-types",
+        paths: ["src/{harnessId}.ts"],
       },
     ];
 
@@ -246,14 +246,14 @@ describe("validatePlaceholders", () => {
   it("rejects undeclared placeholders in top-level type constraints", () => {
     const conventions: ConventionV1[] = [
       {
-        name: "exact-types",
-        paths: ["src/{harnessId}.ts"],
         must: {
           declareConstants: [
             { name: "internalSettings", type: "${missingLocal}Settings" },
           ],
           exportTypes: [{ name: "Settings", type: "${missingExport}Settings" }],
         },
+        name: "exact-types",
+        paths: ["src/{harnessId}.ts"],
       },
     ];
 
@@ -274,14 +274,14 @@ describe("validatePlaceholders", () => {
   it("detects placeholders inside import and export aliases", () => {
     const conventions: ConventionV1[] = [
       {
+        must: {
+          exportTypes: [{ alias: "${missingTypeExport}", name: "SourceType" }],
+          exportValues: [{ alias: "${missingExport}", name: "sourceValue" }],
+          importTypes: [{ alias: "${missingTypeImport}", name: "SourceType" }],
+          importValues: [{ alias: "${missingImport}", name: "sourceValue" }],
+        },
         name: "aliases",
         paths: ["src/{x}"],
-        must: {
-          importValues: [{ name: "sourceValue", alias: "${missingImport}" }],
-          importTypes: [{ name: "SourceType", alias: "${missingTypeImport}" }],
-          exportValues: [{ name: "sourceValue", alias: "${missingExport}" }],
-          exportTypes: [{ name: "SourceType", alias: "${missingTypeExport}" }],
-        },
       },
     ];
 
@@ -302,14 +302,14 @@ describe("validatePlaceholders", () => {
   it("detects a placeholder inside a nested MustBlock predicate", () => {
     const conventions: ConventionV1[] = [
       {
-        name: "block-form",
-        paths: ["packages/{packageName}"],
         must: [
           {
             if: { hasFile: "${missing}.ts" },
             must: { haveFiles: ["index.ts"] },
           },
         ],
+        name: "block-form",
+        paths: ["packages/{packageName}"],
       },
     ];
 
@@ -328,13 +328,13 @@ describe("validatePlaceholders", () => {
   it("detects a placeholder inside a nested MustBlock mustNot predicate", () => {
     const conventions: ConventionV1[] = [
       {
-        name: "block-form",
-        paths: ["packages/{packageName}"],
         must: [
           {
             mustNot: { exportConstants: ["${missing}Debug"] },
           },
         ],
+        name: "block-form",
+        paths: ["packages/{packageName}"],
       },
     ];
 
@@ -353,9 +353,9 @@ describe("validatePlaceholders", () => {
   it("scans a single-string paths value for declared placeholders", () => {
     const conventions: ConventionV1[] = [
       {
+        must: { haveFiles: ["${packageName}/README.md"] },
         name: "single-path",
         paths: "packages/{packageName}",
-        must: { haveFiles: ["${packageName}/README.md"] },
       },
     ];
 
@@ -370,8 +370,8 @@ describe("validatePlaceholders", () => {
   it("uses the convention name when hand-written without a name field falls back to conventions[i]", () => {
     const conventions: ConventionV1[] = [
       {
-        paths: ["src/{x}"],
         must: { haveFiles: ["${missing}.ts"] },
+        paths: ["src/{x}"],
       },
     ];
 
@@ -389,9 +389,9 @@ describe("validatePlaceholders", () => {
   it("uses the hand-written convention name when supplied", () => {
     const conventions: ConventionV1[] = [
       {
+        must: { haveFiles: ["${missing}.ts"] },
         name: "manual",
         paths: ["src/{x}"],
-        must: { haveFiles: ["${missing}.ts"] },
       },
     ];
 
@@ -409,9 +409,9 @@ describe("validatePlaceholders", () => {
   it("uses the <vendor>/<name> identifier for ref-expanded conventions", () => {
     const conventions: ConventionV1[] = [
       {
+        must: { haveFiles: ["${componentName}.tsx"] },
         name: "package-must-have-readme",
         paths: ["packages/{packageName}"],
-        must: { haveFiles: ["${componentName}.tsx"] },
       },
     ];
 
@@ -431,14 +431,14 @@ describe("validatePlaceholders", () => {
   it("reports placeholders inside placeholderSatisfies", () => {
     const conventions: ConventionV1[] = [
       {
-        name: "satisfies",
-        paths: ["packages/{packageName}"],
         must: [
           {
             if: { placeholderSatisfies: "${missing}.matches(/foo/)" },
             must: { haveFiles: ["index.ts"] },
           },
         ],
+        name: "satisfies",
+        paths: ["packages/{packageName}"],
       },
     ];
 
@@ -456,8 +456,6 @@ describe("validatePlaceholders", () => {
   it("reports placeholders inside import conditions", () => {
     const conventions: ConventionV1[] = [
       {
-        name: "import-conditions",
-        paths: ["packages/{packageName}/index.ts"],
         must: [
           {
             if: { hasValueImport: "${missingValue}" },
@@ -466,8 +464,8 @@ describe("validatePlaceholders", () => {
           {
             if: {
               hasTypeImport: {
-                name: "${missingType}",
                 from: "${missingTypeSource}",
+                name: "${missingType}",
               },
             },
             must: { haveType: "file" },
@@ -481,6 +479,8 @@ describe("validatePlaceholders", () => {
             must: { haveType: "file" },
           },
         ],
+        name: "import-conditions",
+        paths: ["packages/{packageName}/index.ts"],
       },
     ];
 
@@ -501,8 +501,6 @@ describe("validatePlaceholders", () => {
   it("reports placeholders inside top-level and block ifNot conditions", () => {
     const conventions: ConventionV1[] = [
       {
-        name: "negative-conditions",
-        paths: ["packages/{packageName}/index.ts"],
         ifNot: { hasFile: "${missingTopLevel}.ts" },
         must: [
           {
@@ -510,6 +508,8 @@ describe("validatePlaceholders", () => {
             must: { haveType: "file" },
           },
         ],
+        name: "negative-conditions",
+        paths: ["packages/{packageName}/index.ts"],
       },
     ];
 
@@ -528,26 +528,26 @@ describe("validatePlaceholders", () => {
   it("reports placeholders inside for.files (string and array form)", () => {
     const stringForm: ConventionV1[] = [
       {
-        name: "for-string",
-        paths: ["packages/{packageName}"],
         must: [
           {
             for: { files: "${missing}.ts" },
             must: { haveFiles: ["index.ts"] },
           },
         ],
+        name: "for-string",
+        paths: ["packages/{packageName}"],
       },
     ];
     const arrayForm: ConventionV1[] = [
       {
-        name: "for-array",
-        paths: ["packages/{packageName}"],
         must: [
           {
             for: { files: ["${missing}.ts"] },
             must: { haveFiles: ["index.ts"] },
           },
         ],
+        name: "for-array",
+        paths: ["packages/{packageName}"],
       },
     ];
 
@@ -568,17 +568,17 @@ describe("validatePlaceholders", () => {
   it("detects placeholders inside class extend and implement entries", () => {
     const conventions: ConventionV1[] = [
       {
-        name: "classes",
-        paths: ["src/{x}"],
         must: {
           exportClasses: [
             {
-              name: "Foo",
-              extend: { type: "${missing}", allowOmissions: true },
+              extend: { allowOmissions: true, type: "${missing}" },
               implement: ["${alsoMissing}"],
+              name: "Foo",
             },
           ],
         },
+        name: "classes",
+        paths: ["src/{x}"],
       },
     ];
 
@@ -597,10 +597,13 @@ describe("validatePlaceholders", () => {
   it("detects placeholders inside declaration predicates", () => {
     const conventions: ConventionV1[] = [
       {
-        name: "declarations",
-        paths: ["src/{x}"],
         must: {
-          declareTypes: [{ name: "${missingType}" }],
+          declareClasses: [
+            {
+              implement: ["${missingImplement}"],
+              name: "LocalClass",
+            },
+          ],
           declareConstants: ["${missingConstant}"],
           declareFunctions: [
             {
@@ -612,18 +615,15 @@ describe("validatePlaceholders", () => {
           ],
           declareInterfaces: [
             {
+              extend: { allowOmissions: true, type: "${missingExtend}" },
               name: "Local",
-              extend: { type: "${missingExtend}", allowOmissions: true },
             },
           ],
-          declareClasses: [
-            {
-              name: "LocalClass",
-              implement: ["${missingImplement}"],
-            },
-          ],
+          declareTypes: [{ name: "${missingType}" }],
           useDeclarationOrder: ["${missingOrder}"],
         },
+        name: "declarations",
+        paths: ["src/{x}"],
       },
     ];
 
@@ -644,11 +644,11 @@ describe("validatePlaceholders", () => {
   it("detects placeholders inside exact import source predicates", () => {
     const conventions: ConventionV1[] = [
       {
-        name: "imports",
-        paths: ["src/{x}"],
         must: {
           importValuesFrom: ["@scope/pkg", "@scope/${missingPackage}/*"],
         },
+        name: "imports",
+        paths: ["src/{x}"],
       },
     ];
 
@@ -667,11 +667,11 @@ describe("validatePlaceholders", () => {
   it("validates placeholders in both export source predicates and exclusions", () => {
     const conventions: ConventionV1[] = [
       {
-        paths: "src/{x}",
         must: { exportValuesFrom: "@scope/${missingValue}" },
         mustNot: {
           exportTypesFrom: ["pkg/*", "!pkg/${missingType}/*"],
         },
+        paths: "src/{x}",
       },
     ];
     const result = validatePlaceholders({
@@ -688,8 +688,6 @@ describe("validatePlaceholders", () => {
   it("treats placeholders declared in for.files as in-scope for the block's predicates", () => {
     const conventions: ConventionV1[] = [
       {
-        name: "for-declares",
-        paths: "packages/{providerId}",
         must: [
           {
             for: { files: "*/${providerId}-{modelKind:segments(2)}-model.ts" },
@@ -698,6 +696,8 @@ describe("validatePlaceholders", () => {
             },
           },
         ],
+        name: "for-declares",
+        paths: "packages/{providerId}",
       },
     ];
 
@@ -712,9 +712,9 @@ describe("validatePlaceholders", () => {
   it("treats constraint syntax in paths as a valid declaration", () => {
     const conventions: ConventionV1[] = [
       {
+        must: { haveFiles: ["${providerId}.ts"] },
         name: "constraint-paths",
         paths: "packages/{providerId:matches(^[a-z]+$)}",
-        must: { haveFiles: ["${providerId}.ts"] },
       },
     ];
 
@@ -729,10 +729,10 @@ describe("validatePlaceholders", () => {
   it("accepts a usage backed by a static placeholders entry", () => {
     const conventions: ConventionV1[] = [
       {
+        must: { exportValues: ["${providerId}"] },
         name: "static-providers",
         paths: "packages/openai/src/index.ts",
         placeholders: { providerId: "openai" },
-        must: { exportValues: ["${providerId}"] },
       },
     ];
 
@@ -747,16 +747,16 @@ describe("validatePlaceholders", () => {
   it("validates placeholders in callFunction names and arguments", () => {
     const conventions: ConventionV1[] = [
       {
-        name: "call-function",
-        paths: "packages/{providerId}/src/index.ts",
         must: {
           callFunction: [
             {
-              name: "initialize${providerId}",
               arguments: ["'${providerId}'"],
+              name: "initialize${providerId}",
             },
           ],
         },
+        name: "call-function",
+        paths: "packages/{providerId}/src/index.ts",
       },
     ];
 
@@ -774,8 +774,8 @@ describe("validatePlaceholders", () => {
           must: {
             callFunction: [
               {
-                name: "initialize${missing}",
                 arguments: ["'${missingArgument}'"],
+                name: "initialize${missing}",
               },
             ],
           },
@@ -795,10 +795,10 @@ describe("validatePlaceholders", () => {
   it("rejects a name declared in both paths and placeholders", () => {
     const conventions: ConventionV1[] = [
       {
+        must: { exportValues: ["${providerId}"] },
         name: "double-declared",
         paths: "packages/{providerId}/src/index.ts",
         placeholders: { providerId: "openai" },
-        must: { exportValues: ["${providerId}"] },
       },
     ];
 
@@ -818,9 +818,9 @@ describe("validatePlaceholders", () => {
   it("returns ok when no must placeholders are used", () => {
     const conventions: ConventionV1[] = [
       {
+        must: { haveFiles: ["index.ts"], haveType: "directory" },
         name: "static",
         paths: "src/lib",
-        must: { haveType: "directory", haveFiles: ["index.ts"] },
       },
     ];
 

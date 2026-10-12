@@ -5,24 +5,24 @@ import { checkDeclareClasses } from "./declare-classes.js";
 
 function createMockContext(opts: { path: string }): PredicateContext {
   return {
-    path: opts.path,
-    placeholders: {} as PredicateContext["placeholders"],
-    resolveTemplate: (t: string) => t,
     directoryExists: () => false,
     fileExists: () => false,
+    path: opts.path,
+    placeholders: {} as PredicateContext["placeholders"],
     readDir: () => [],
+    resolveTemplate: (t: string) => t,
   };
 }
 
 function parseSource(opts: { source: string }) {
-  return parseFileStructure({ source: opts.source, filePath: "src/index.ts" });
+  return parseFileStructure({ filePath: "src/index.ts", source: opts.source });
 }
 
 describe("checkDeclareClasses", () => {
   it("passes for local class declarations", () => {
     const result = checkDeclareClasses({
-      expected: ["Thing"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["Thing"],
       fileStructure: parseSource({
         source: "class Thing {}",
       }),
@@ -32,10 +32,10 @@ describe("checkDeclareClasses", () => {
 
   it("checks local class heritage", () => {
     const result = checkDeclareClasses({
-      expected: [
-        { name: "Thing", extend: "BaseThing", implement: ["Serializable"] },
-      ],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: [
+        { extend: "BaseThing", implement: ["Serializable"], name: "Thing" },
+      ],
       fileStructure: parseSource({
         source: "class Thing extends OtherThing {}",
       }),

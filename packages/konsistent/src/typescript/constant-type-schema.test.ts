@@ -90,22 +90,20 @@ describe("exact type expression matching", () => {
 });
 
 describe("constant type schemas", () => {
-  it.each([
-    "string",
-    "number",
-    "boolean",
-    "null",
-  ])("matches the %s scalar type", (type) => {
-    expect(
-      matches({
-        type,
-        schema: { type: type as "string" },
-      })
-    ).toBe(true);
-  });
+  it.each(["string", "number", "boolean", "null"])(
+    "matches the %s scalar type",
+    (type) => {
+      expect(
+        matches({
+          schema: { type: type as "string" },
+          type,
+        })
+      ).toBe(true);
+    }
+  );
 
   it("requires scalar types to match exactly", () => {
-    expect(matches({ type: '"value"', schema: { type: "string" } })).toBe(
+    expect(matches({ schema: { type: "string" }, type: '"value"' })).toBe(
       false
     );
   });
@@ -113,29 +111,29 @@ describe("constant type schemas", () => {
   it("matches exact homogeneous enum values regardless of order", () => {
     expect(
       matches({
-        type: '"production" | "development"',
         schema: {
-          type: "string",
           enum: ["development", "production"],
+          type: "string",
         },
+        type: '"production" | "development"',
       })
     ).toBe(true);
   });
 
   it("matches a null enum", () => {
     expect(
-      matches({ type: "null", schema: { type: "null", enum: [null] } })
+      matches({ schema: { enum: [null], type: "null" }, type: "null" })
     ).toBe(true);
   });
 
   it("rejects enum omissions and additions", () => {
     const schema = {
-      type: "string" as const,
       enum: ["development", "production"],
+      type: "string" as const,
     };
-    expect(matches({ type: '"development"', schema })).toBe(false);
+    expect(matches({ schema, type: '"development"' })).toBe(false);
     expect(
-      matches({ type: '"development" | "production" | "test"', schema })
+      matches({ schema, type: '"development" | "production" | "test"' })
     ).toBe(false);
   });
 
@@ -146,22 +144,21 @@ describe("constant type schemas", () => {
     "ReadonlyArray<string>",
   ])("matches the supported array annotation %s", (type) => {
     expect(
-      matches({ type, schema: { type: "array", items: { type: "string" } } })
+      matches({ schema: { items: { type: "string" }, type: "array" }, type })
     ).toBe(true);
   });
 
-  it.each([
-    "number[]",
-    "[string, string]",
-    'Array<"value">',
-  ])("rejects non-matching or unsupported array annotation %s", (type) => {
-    expect(
-      matches({
-        type,
-        schema: { type: "array", items: { type: "string" } },
-      })
-    ).toBe(false);
-  });
+  it.each(["number[]", "[string, string]", 'Array<"value">'])(
+    "rejects non-matching or unsupported array annotation %s",
+    (type) => {
+      expect(
+        matches({
+          schema: { items: { type: "string" }, type: "array" },
+          type,
+        })
+      ).toBe(false);
+    }
+  );
 
   it.each([
     { annotation: "MyType[]", itemType: "MyType" },
@@ -177,8 +174,8 @@ describe("constant type schemas", () => {
   ])("matches an array containing type references for $annotation", (entry) => {
     expect(
       matches({
+        schema: { items: entry.itemType, type: "array" },
         type: entry.annotation,
-        schema: { type: "array", items: entry.itemType },
       })
     ).toBe(true);
   });
@@ -186,8 +183,8 @@ describe("constant type schemas", () => {
   it("compares array item type references exactly", () => {
     expect(
       matches({
+        schema: { items: "Readonly<MyType>", type: "array" },
         type: "Array<Readonly< MyType >>",
-        schema: { type: "array", items: "Readonly<MyType>" },
       })
     ).toBe(false);
   });
@@ -195,17 +192,17 @@ describe("constant type schemas", () => {
   it("matches required, optional, typed, and unconstrained properties", () => {
     expect(
       matches({
-        type: "{ name: string; enabled?: boolean; metadata: unknown }",
         schema: {
-          type: "object",
+          additionalProperties: false,
           properties: {
-            name: { type: "string" },
             enabled: { type: "boolean" },
             metadata: {},
+            name: { type: "string" },
           },
           required: ["name", "metadata"],
-          additionalProperties: false,
+          type: "object",
         },
+        type: "{ name: string; enabled?: boolean; metadata: unknown }",
       })
     ).toBe(true);
   });
@@ -213,15 +210,15 @@ describe("constant type schemas", () => {
   it("matches exact type references on object properties", () => {
     expect(
       matches({
-        type: "{ auth: Readonly<MyAuth>; modelId: string }",
         schema: {
-          type: "object",
           properties: {
             auth: "Readonly<MyAuth>",
             modelId: { type: "string" },
           },
           required: ["auth", "modelId"],
+          type: "object",
         },
+        type: "{ auth: Readonly<MyAuth>; modelId: string }",
       })
     ).toBe(true);
   });
@@ -229,74 +226,72 @@ describe("constant type schemas", () => {
   it("compares object property type references exactly", () => {
     expect(
       matches({
-        type: "{ auth: Readonly< MyAuth > }",
         schema: {
-          type: "object",
           properties: { auth: "Readonly<MyAuth>" },
           required: ["auth"],
+          type: "object",
         },
+        type: "{ auth: Readonly< MyAuth > }",
       })
     ).toBe(false);
   });
 
-  it.each([
-    "object",
-    "MyAuth | null",
-    "[MyAuth]",
-    "{ id: string }",
-  ])("rejects unsupported object property type %s", (type) => {
-    expect(
-      matches({
-        type: `{ auth: ${type} }`,
-        schema: {
-          type: "object",
-          properties: { auth: "MyAuth" },
-          required: ["auth"],
-        },
-      })
-    ).toBe(false);
-  });
+  it.each(["object", "MyAuth | null", "[MyAuth]", "{ id: string }"])(
+    "rejects unsupported object property type %s",
+    (type) => {
+      expect(
+        matches({
+          schema: {
+            properties: { auth: "MyAuth" },
+            required: ["auth"],
+            type: "object",
+          },
+          type: `{ auth: ${type} }`,
+        })
+      ).toBe(false);
+    }
+  );
 
   it("matches quoted empty property names", () => {
     expect(
       matches({
-        type: '{ "": string }',
         schema: {
-          type: "object",
           properties: { "": { type: "string" } },
           required: [""],
+          type: "object",
         },
+        type: '{ "": string }',
       })
     ).toBe(true);
   });
 
   it("enforces required and additional object properties", () => {
     const schema = {
-      type: "object" as const,
+      additionalProperties: false,
       properties: { name: { type: "string" as const } },
       required: ["name"],
-      additionalProperties: false,
+      type: "object" as const,
     };
-    expect(matches({ type: "{ name?: string }", schema })).toBe(false);
-    expect(matches({ type: "{ name: string; extra: number }", schema })).toBe(
+    expect(matches({ schema, type: "{ name?: string }" })).toBe(false);
+    expect(matches({ schema, type: "{ name: string; extra: number }" })).toBe(
       false
     );
   });
 
   it("requires configured non-required properties to exist and be optional", () => {
     const schema = {
-      type: "object" as const,
       properties: { name: { type: "string" as const } },
+      type: "object" as const,
     };
-    expect(matches({ type: "{ name?: string }", schema })).toBe(true);
-    expect(matches({ type: "{}", schema })).toBe(false);
-    expect(matches({ type: "{ name: string }", schema })).toBe(false);
+    expect(matches({ schema, type: "{ name?: string }" })).toBe(true);
+    expect(matches({ schema, type: "{}" })).toBe(false);
+    expect(matches({ schema, type: "{ name: string }" })).toBe(false);
   });
 
   it("reports exact object property declaration mismatches", () => {
     const schema = {
-      type: "object" as const,
       properties: { name: { type: "string" as const } },
+      type: "object" as const,
     };
     expect(
       matchConstantTypeSchema({ actual: getTypeInfo({ type: "{}" }), schema })
@@ -318,25 +313,24 @@ describe("constant type schemas", () => {
   it("allows additional properties by default", () => {
     expect(
       matches({
-        type: "{ name: string; extra: number }",
         schema: {
-          type: "object",
           properties: { name: { type: "string" } },
           required: ["name"],
+          type: "object",
         },
+        type: "{ name: string; extra: number }",
       })
     ).toBe(true);
   });
 
-  it.each([
-    "Config",
-    "{ run(): void }",
-    "{ [key: string]: string }",
-  ])("rejects unsupported annotation %s", (type) => {
-    expect(matches({ type, schema: { type: "object", properties: {} } })).toBe(
-      false
-    );
-  });
+  it.each(["Config", "{ run(): void }", "{ [key: string]: string }"])(
+    "rejects unsupported annotation %s",
+    (type) => {
+      expect(
+        matches({ schema: { properties: {}, type: "object" }, type })
+      ).toBe(false);
+    }
+  );
 
   it("rejects constants without explicit annotations", () => {
     const result = matchConstantTypeSchema({
@@ -353,11 +347,11 @@ describe("constant type schemas", () => {
 
 describe("type definition schemas", () => {
   const partialSettingsSchema = {
-    type: "object" as const,
     properties: {
       model: { type: "string" as const },
       timeout: { type: "number" as const },
     },
+    type: "object" as const,
   };
 
   it("partially matches configured optional type alias properties", () => {
@@ -396,8 +390,8 @@ describe("type definition schemas", () => {
     const result = matchDefinition({
       name: "Settings",
       schema: {
-        type: "object",
         properties: { enabled: { type: "boolean" } },
+        type: "object",
       },
       source: "interface Settings { enabled?: boolean }",
     });
@@ -408,9 +402,9 @@ describe("type definition schemas", () => {
     const result = matchDefinition({
       name: "Settings",
       schema: {
-        type: "object",
         properties: { auth: "Readonly<MyAuth>" },
         required: ["auth"],
+        type: "object",
       },
       source: "type Settings = { auth: Readonly<MyAuth> }",
     });
@@ -424,7 +418,7 @@ describe("type definition schemas", () => {
   ])("rejects unsupported type definition %s", (source) => {
     const result = matchDefinition({
       name: "Settings",
-      schema: { type: "object", properties: {} },
+      schema: { properties: {}, type: "object" },
       source,
     });
     expect(result).toEqual({
@@ -437,7 +431,7 @@ describe("type definition schemas", () => {
     expect(
       matchTypeDefinitionSchema({
         actual: undefined,
-        schema: { type: "object", properties: {} },
+        schema: { properties: {}, type: "object" },
       })
     ).toEqual({
       matches: false,

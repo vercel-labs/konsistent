@@ -13,8 +13,8 @@ const fixturesDirectory = resolve(
 );
 const fixturePaths = globSync({
   cwd: fixturesDirectory,
-  patterns: "**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs}",
   ignore: ["**/node_modules/**", "**/dist/**", "typescript-runtime*/**"],
+  patterns: "**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs}",
 }).sort();
 
 const sourceCases = [
@@ -113,13 +113,42 @@ const expressionPairs = [
 ];
 
 const context: PredicateContext = {
-  path: "source.ts",
-  placeholders: {},
-  resolveTemplate: (text) => text,
   directoryExists: () => false,
   fileExists: () => false,
+  path: "source.ts",
+  placeholders: {},
   readDir: () => [],
+  resolveTemplate: (text) => text,
 };
+
+function sortObjectKeys(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(sortObjectKeys);
+  }
+  if (value === null || typeof value !== "object") {
+    return value;
+  }
+
+  const entries = Object.entries(value).sort(([left], [right]) => {
+    if (left < right) {
+      return -1;
+    }
+    if (left > right) {
+      return 1;
+    }
+    return 0;
+  });
+  const sorted: Record<string, unknown> = Object.create(null);
+  for (const [key, entry] of entries) {
+    sorted[key] = sortObjectKeys(entry);
+  }
+  return sorted;
+}
+
+function stringifySnapshot(value: unknown): string {
+  const result = JSON.stringify(sortObjectKeys(value), null, 2);
+  return result;
+}
 
 describe("TypeScript 5.9 compatibility contract", () => {
   it("preserves the structure of the existing CLI fixture corpus", () => {
@@ -130,36 +159,32 @@ describe("TypeScript 5.9 compatibility contract", () => {
     > = Object.create(null);
     for (const filePath of fixturePaths) {
       structures[filePath] = parseFileStructure({
-        source: readFileSync(resolve(fixturesDirectory, filePath), "utf8"),
         filePath,
+        source: readFileSync(resolve(fixturesDirectory, filePath), "utf8"),
       });
     }
-    expect(JSON.stringify(structures, null, 2)).toMatchSnapshot();
+    expect(stringifySnapshot(structures)).toMatchSnapshot();
   });
 
   it("preserves source text, Unicode positions, and syntax recovery", () => {
     expect(
-      JSON.stringify(
-        sourceCases.map((source) => parseFileStructure({ source })),
-        null,
-        2
+      stringifySnapshot(
+        sourceCases.map((source) => parseFileStructure({ source }))
       )
     ).toMatchSnapshot();
     expect(
-      JSON.stringify(
+      stringifySnapshot(
         parseFileStructure({
-          source: 'export const View = () => <div title="😀"/>;',
           filePath: "view.tsx",
-        }),
-        null,
-        2
+          source: 'export const View = () => <div title="😀"/>;',
+        })
       )
     ).toMatchSnapshot();
   });
 
   it("preserves exact type-expression matching", () => {
     expect(
-      JSON.stringify(
+      stringifySnapshot(
         typePairs.map(([actual, expected]) => ({
           actual,
           expected,
@@ -168,27 +193,23 @@ describe("TypeScript 5.9 compatibility contract", () => {
             expected,
             missingReason: "missing",
           }),
-        })),
-        null,
-        2
+        }))
       )
     ).toMatchSnapshot();
   });
 
   it("preserves configured call-argument matching", () => {
     expect(
-      JSON.stringify(
+      stringifySnapshot(
         expressionPairs.map(([actual, expected]) => ({
           actual,
-          expected,
           diagnostics: checkCallFunction({
             context,
-            expected: [{ name: "send", arguments: [expected] }],
+            expected: [{ arguments: [expected], name: "send" }],
             fileStructure: parseFileStructure({ source: `send(${actual});` }),
           }),
-        })),
-        null,
-        2
+          expected,
+        }))
       )
     ).toMatchSnapshot();
   });

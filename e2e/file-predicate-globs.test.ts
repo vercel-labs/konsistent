@@ -29,7 +29,11 @@ describe("file predicate glob fixtures", () => {
       await runCli({ cwd });
       expect.fail("Expected check to exit with code 1");
     } catch (err: unknown) {
-      const error = err as { stdout: string; code: number; status: number };
+      const error = err as {
+        stdout: string;
+        code: number | null;
+        status: number;
+      };
       expect(error.code ?? error.status).toBe(1);
       expect(error.stdout).toContain("modules/missing");
       expect(error.stdout).toContain("modules/directory-only");

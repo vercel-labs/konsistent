@@ -14,12 +14,12 @@ function runCli(opts: { fixture: string; args?: string[] }) {
     [cli, ...(opts.args ?? ["check", "--format=json"])],
     {
       cwd: resolve(fixturesDirectory, opts.fixture),
-      timeout: 10_000,
       env: {
         ...process.env,
-        KONSISTENT_NO_UPDATE_CHECK: "true",
         GITHUB_ACTIONS: "",
+        KONSISTENT_NO_UPDATE_CHECK: "true",
       },
+      timeout: 10_000,
     }
   );
 }
@@ -51,16 +51,16 @@ describe("TypeScript 7 runtime", () => {
       expect(diagnostics).toHaveLength(4);
       expect(diagnostics).toContainEqual(
         expect.objectContaining({
-          predicateName: "exportConstants",
           line: 2,
           message: 'Constant "café" must be of type "number"',
+          predicateName: "exportConstants",
         })
       );
       expect(diagnostics).toContainEqual(
         expect.objectContaining({
-          predicateName: "exportConstants",
           line: 4,
           message: 'Constant "count" must have type "16"',
+          predicateName: "exportConstants",
         })
       );
       expect(diagnostics).toContainEqual(
@@ -68,8 +68,8 @@ describe("TypeScript 7 runtime", () => {
       );
       expect(diagnostics).toContainEqual(
         expect.objectContaining({
-          predicateName: "exportTypes",
           line: 3,
+          predicateName: "exportTypes",
         })
       );
     }
@@ -82,7 +82,7 @@ describe("TypeScript 7 runtime", () => {
       )
     ).toEqual([]);
     expect(
-      (await runCli({ fixture: "typescript-runtime", args: ["validate"] }))
+      (await runCli({ args: ["validate"], fixture: "typescript-runtime" }))
         .stdout
     ).toContain("Configuration is valid.");
   });

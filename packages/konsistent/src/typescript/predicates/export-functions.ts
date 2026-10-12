@@ -51,12 +51,12 @@ function checkSignature(opts: {
     if (!hasParam) {
       diagnostics.push(
         createDiagnostic({
-          filePath: context.path,
-          predicateName: "exportFunctions",
-          message: `Function "${resolvedName}" must receive a parameter of type "${resolvedParamType}"`,
-          conventionName,
-          line: funcInfo.pos.line,
           column: funcInfo.pos.column,
+          conventionName,
+          filePath: context.path,
+          line: funcInfo.pos.line,
+          message: `Function "${resolvedName}" must receive a parameter of type "${resolvedParamType}"`,
+          predicateName: "exportFunctions",
           severity,
         })
       );
@@ -71,12 +71,12 @@ function checkSignature(opts: {
       }
       diagnostics.push(
         createDiagnostic({
-          filePath: context.path,
-          predicateName: "exportFunctions",
-          message: `Function "${resolvedName}" parameter ${index + 1} must be of type "${expectedType}"`,
-          conventionName,
-          line: funcInfo.pos.line,
           column: funcInfo.pos.column,
+          conventionName,
+          filePath: context.path,
+          line: funcInfo.pos.line,
+          message: `Function "${resolvedName}" parameter ${index + 1} must be of type "${expectedType}"`,
+          predicateName: "exportFunctions",
           severity,
         })
       );
@@ -89,12 +89,12 @@ function checkSignature(opts: {
   ) {
     diagnostics.push(
       createDiagnostic({
-        filePath: context.path,
-        predicateName: "exportFunctions",
-        message: `Function "${resolvedName}" must return value of type "${resolvedReturnType}"`,
-        conventionName,
-        line: funcInfo.pos.line,
         column: funcInfo.pos.column,
+        conventionName,
+        filePath: context.path,
+        line: funcInfo.pos.line,
+        message: `Function "${resolvedName}" must return value of type "${resolvedReturnType}"`,
+        predicateName: "exportFunctions",
         severity,
       })
     );
@@ -138,10 +138,10 @@ export function checkExportFunctions(opts: {
     if (!(isExported && funcInfo)) {
       diagnostics.push(
         createDiagnostic({
-          filePath: context.path,
-          predicateName: "exportFunctions",
-          message: `Missing export function "${resolvedName}"`,
           conventionName,
+          filePath: context.path,
+          message: `Missing export function "${resolvedName}"`,
+          predicateName: "exportFunctions",
           severity,
         })
       );
@@ -150,13 +150,13 @@ export function checkExportFunctions(opts: {
 
     diagnostics.push(
       ...checkSignature({
+        context,
+        conventionName,
         funcInfo,
         resolvedName,
         resolvedParamType,
         resolvedParamTypes,
         resolvedReturnType,
-        context,
-        conventionName,
         severity,
       })
     );

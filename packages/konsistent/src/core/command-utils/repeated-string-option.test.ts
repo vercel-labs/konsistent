@@ -5,8 +5,8 @@ describe("parseRepeatedStringOption", () => {
   it("collects separate and assigned values", () => {
     expect(
       parseRepeatedStringOption({
-        rawArgs: ["--paths", "src/index.ts", "--paths=packages/**/*.ts"],
         name: "--paths",
+        rawArgs: ["--paths", "src/index.ts", "--paths=packages/**/*.ts"],
       })
     ).toEqual({
       success: true,
@@ -17,8 +17,8 @@ describe("parseRepeatedStringOption", () => {
   it("ignores unrelated options", () => {
     expect(
       parseRepeatedStringOption({
-        rawArgs: ["--format", "json", "--staged"],
         name: "--paths",
+        rawArgs: ["--format", "json", "--staged"],
       })
     ).toEqual({ success: true, values: [] });
   });
@@ -26,30 +26,30 @@ describe("parseRepeatedStringOption", () => {
   it("rejects missing and empty values", () => {
     expect(
       parseRepeatedStringOption({
+        name: "--paths",
         rawArgs: ["--paths"],
-        name: "--paths",
       })
     ).toEqual({
-      success: false,
       error: "--paths requires a non-empty value",
+      success: false,
     });
     expect(
       parseRepeatedStringOption({
+        name: "--paths",
         rawArgs: ["--paths="],
-        name: "--paths",
       })
     ).toEqual({
-      success: false,
       error: "--paths requires a non-empty value",
+      success: false,
     });
     expect(
       parseRepeatedStringOption({
-        rawArgs: ["--paths", ""],
         name: "--paths",
+        rawArgs: ["--paths", ""],
       })
     ).toEqual({
-      success: false,
       error: "--paths requires a non-empty value",
+      success: false,
     });
   });
 });

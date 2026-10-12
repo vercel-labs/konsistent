@@ -31,11 +31,11 @@ export function checkDeclareConstants(opts: {
   for (const entry of expected) {
     const definition: ConstantDefinitionV1 =
       typeof entry === "string" ? { name: entry } : entry;
-    const resolvedName = resolveDefinitionName({ entry, context });
+    const resolvedName = resolveDefinitionName({ context, entry });
     const symbol = findDeclarationSymbol({
       fileStructure,
-      name: resolvedName,
       kinds: ["const"],
+      name: resolvedName,
     });
 
     if (!symbol) {

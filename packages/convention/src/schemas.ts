@@ -9,8 +9,8 @@ import { compileImportSourceConstraints } from "./import-source-selector.js";
 
 export const ExportDefinitionV1Schema = z.strictObject({
   alias: z.string().optional(),
-  name: z.string(),
   from: z.string().optional(),
+  name: z.string(),
 });
 
 export const DeclarationDefinitionV1Schema = z.strictObject({
@@ -19,8 +19,8 @@ export const DeclarationDefinitionV1Schema = z.strictObject({
 
 export const ImportDefinitionV1Schema = z.strictObject({
   alias: z.string().optional(),
-  name: z.string(),
   from: z.string().optional(),
+  name: z.string(),
 });
 
 const ImportConditionDefinitionV1Schema = ImportDefinitionV1Schema.omit({
@@ -43,13 +43,13 @@ export const IfConditionV1Schema = z.union([
 ]);
 
 const LegacyExportDefinitionV1Schema = z.strictObject({
-  name: z.string(),
   from: z.string().optional(),
+  name: z.string(),
 });
 
 const LegacyImportDefinitionV1Schema = z.strictObject({
-  name: z.string(),
   from: z.string().optional(),
+  name: z.string(),
 });
 
 export const FunctionDefinitionV1Schema = z.strictObject({
@@ -63,27 +63,27 @@ export const FunctionDefinitionV1Schema = z.strictObject({
 });
 
 export const CallFunctionDefinitionV1Schema = z.strictObject({
-  name: z.string(),
   arguments: z.array(z.string()).optional(),
+  name: z.string(),
 });
 
 const ExtendDefinitionV1Schema = z.union([
   z.string(),
   z.strictObject({
-    type: z.string(),
     allowOmissions: z.boolean().optional(),
+    type: z.string(),
   }),
 ]);
 
 export const InterfaceDefinitionV1Schema = z.strictObject({
-  name: z.string(),
   extend: ExtendDefinitionV1Schema.optional(),
+  name: z.string(),
 });
 
 export const ClassDefinitionV1Schema = z.strictObject({
-  name: z.string(),
   extend: ExtendDefinitionV1Schema.optional(),
   implement: z.array(ExtendDefinitionV1Schema).optional(),
+  name: z.string(),
 });
 
 const ExportValuesPredicateV1Schema = z.array(
@@ -127,11 +127,12 @@ const ExportSourceSelectorPredicateV1Schema =
   createSourceSelectorPredicateV1Schema({ sourceLabel: "Export" });
 
 export const MustPredicatesV1Schema = z.strictObject({
-  haveType: z.enum(["file", "directory"]).optional(),
-  haveFiles: z.array(z.string()).optional(),
-  haveDirectories: z.array(z.string()).optional(),
-  declareTypes: z
-    .array(z.union([z.string(), TypeDefinitionV1Schema]))
+  areBarrelFiles: z.boolean().optional(),
+  callFunction: z
+    .array(z.union([z.string(), CallFunctionDefinitionV1Schema]))
+    .optional(),
+  declareClasses: z
+    .array(z.union([z.string(), ClassDefinitionV1Schema]))
     .optional(),
   declareConstants: z
     .array(z.union([z.string(), ConstantDefinitionV1Schema]))
@@ -139,16 +140,12 @@ export const MustPredicatesV1Schema = z.strictObject({
   declareFunctions: z
     .array(z.union([z.string(), FunctionDefinitionV1Schema]))
     .optional(),
-  callFunction: z
-    .array(z.union([z.string(), CallFunctionDefinitionV1Schema]))
-    .optional(),
   declareInterfaces: z
     .array(z.union([z.string(), InterfaceDefinitionV1Schema]))
     .optional(),
-  declareClasses: z
-    .array(z.union([z.string(), ClassDefinitionV1Schema]))
+  declareTypes: z
+    .array(z.union([z.string(), TypeDefinitionV1Schema]))
     .optional(),
-  exportValues: ExportValuesPredicateV1Schema.optional(),
   /**
    * @deprecated Use exportValues instead.
    */
@@ -156,17 +153,9 @@ export const MustPredicatesV1Schema = z.strictObject({
     deprecated: true,
     description: "Use exportValues instead.",
   }),
-  exportTypes: z
-    .array(z.union([z.string(), ExportTypeDefinitionV1Schema]))
+  exportClasses: z
+    .array(z.union([z.string(), ClassDefinitionV1Schema]))
     .optional(),
-  exportValuesFrom: ExportSourceSelectorPredicateV1Schema.optional(),
-  exportTypesFrom: ExportSourceSelectorPredicateV1Schema.optional(),
-  exportValuesFromCurrentDir: z.boolean().optional(),
-  exportValuesFromParents: z.boolean().optional(),
-  exportValuesFromExternals: z.boolean().optional(),
-  exportTypesFromCurrentDir: z.boolean().optional(),
-  exportTypesFromParents: z.boolean().optional(),
-  exportTypesFromExternals: z.boolean().optional(),
   exportConstants: z
     .array(z.union([z.string(), ExportConstantDefinitionV1Schema]))
     .optional(),
@@ -176,10 +165,21 @@ export const MustPredicatesV1Schema = z.strictObject({
   exportInterfaces: z
     .array(z.union([z.string(), InterfaceDefinitionV1Schema]))
     .optional(),
-  exportClasses: z
-    .array(z.union([z.string(), ClassDefinitionV1Schema]))
+  exportTypes: z
+    .array(z.union([z.string(), ExportTypeDefinitionV1Schema]))
     .optional(),
-  importValues: ImportValuesPredicateV1Schema.optional(),
+  exportTypesFrom: ExportSourceSelectorPredicateV1Schema.optional(),
+  exportTypesFromCurrentDir: z.boolean().optional(),
+  exportTypesFromExternals: z.boolean().optional(),
+  exportTypesFromParents: z.boolean().optional(),
+  exportValues: ExportValuesPredicateV1Schema.optional(),
+  exportValuesFrom: ExportSourceSelectorPredicateV1Schema.optional(),
+  exportValuesFromCurrentDir: z.boolean().optional(),
+  exportValuesFromExternals: z.boolean().optional(),
+  exportValuesFromParents: z.boolean().optional(),
+  haveDirectories: z.array(z.string()).optional(),
+  haveFiles: z.array(z.string()).optional(),
+  haveType: z.enum(["file", "directory"]).optional(),
   /**
    * @deprecated Use importValues instead.
    */
@@ -187,8 +187,6 @@ export const MustPredicatesV1Schema = z.strictObject({
     deprecated: true,
     description: "Use importValues instead.",
   }),
-  importValuesFrom: ImportSourceSelectorPredicateV1Schema.optional(),
-  importTypesFrom: ImportSourceSelectorPredicateV1Schema.optional(),
   /**
    * @deprecated Use importValuesFrom or importTypesFrom instead.
    */
@@ -196,10 +194,6 @@ export const MustPredicatesV1Schema = z.strictObject({
     deprecated: true,
     description: "Use importValuesFrom or importTypesFrom instead.",
   }),
-  importTypes: z
-    .array(z.union([z.string(), ImportDefinitionV1Schema]))
-    .optional(),
-  importValuesFromCurrentDir: z.boolean().optional(),
   /**
    * @deprecated Use importValuesFromCurrentDir instead.
    */
@@ -207,15 +201,6 @@ export const MustPredicatesV1Schema = z.strictObject({
     deprecated: true,
     description: "Use importValuesFromCurrentDir instead.",
   }),
-  importValuesFromParents: z.boolean().optional(),
-  /**
-   * @deprecated Use importValuesFromParents instead.
-   */
-  importFromParents: z.boolean().optional().meta({
-    deprecated: true,
-    description: "Use importValuesFromParents instead.",
-  }),
-  importValuesFromExternals: z.boolean().optional(),
   /**
    * @deprecated Use importValuesFromExternals instead.
    */
@@ -223,25 +208,40 @@ export const MustPredicatesV1Schema = z.strictObject({
     deprecated: true,
     description: "Use importValuesFromExternals instead.",
   }),
+  /**
+   * @deprecated Use importValuesFromParents instead.
+   */
+  importFromParents: z.boolean().optional().meta({
+    deprecated: true,
+    description: "Use importValuesFromParents instead.",
+  }),
+  importTypes: z
+    .array(z.union([z.string(), ImportDefinitionV1Schema]))
+    .optional(),
+  importTypesFrom: ImportSourceSelectorPredicateV1Schema.optional(),
   importTypesFromCurrentDir: z.boolean().optional(),
-  importTypesFromParents: z.boolean().optional(),
   importTypesFromExternals: z.boolean().optional(),
+  importTypesFromParents: z.boolean().optional(),
+  importValues: ImportValuesPredicateV1Schema.optional(),
+  importValuesFrom: ImportSourceSelectorPredicateV1Schema.optional(),
+  importValuesFromCurrentDir: z.boolean().optional(),
+  importValuesFromExternals: z.boolean().optional(),
+  importValuesFromParents: z.boolean().optional(),
   useDeclarationOrder: z.array(z.string()).optional(),
-  areBarrelFiles: z.boolean().optional(),
 });
 
 const MustBlockV1Shape = {
+  description: z.string().optional(),
+  excludeFiles: z.array(z.string()).optional(),
+  for: z
+    .strictObject({ files: z.union([z.string(), z.array(z.string())]) })
+    .optional(),
+  if: IfConditionV1Schema.optional(),
+  ifNot: IfConditionV1Schema.optional(),
   name: z
     .string()
     .regex(/^[a-z0-9-]+$/, "Must block name must match [a-z0-9-]+")
     .optional(),
-  description: z.string().optional(),
-  if: IfConditionV1Schema.optional(),
-  ifNot: IfConditionV1Schema.optional(),
-  for: z
-    .strictObject({ files: z.union([z.string(), z.array(z.string())]) })
-    .optional(),
-  excludeFiles: z.array(z.string()).optional(),
 };
 
 export const MustBlockV1Schema = z.union([
@@ -258,18 +258,18 @@ export const MustBlockV1Schema = z.union([
 ]);
 
 const ReusableConventionV1Shape = {
-  name: z
-    .string()
-    .regex(/^[a-z0-9-]+$/, "Convention name must match [a-z0-9-]+"),
   description: z.string(),
-  severity: z.enum(["error", "warning"]).optional(),
-  paths: z.union([z.string(), z.array(z.string())]).optional(),
   excludeFiles: z.array(z.string()).optional(),
-  if: IfConditionV1Schema.optional(),
-  ifNot: IfConditionV1Schema.optional(),
   for: z
     .strictObject({ files: z.union([z.string(), z.array(z.string())]) })
     .optional(),
+  if: IfConditionV1Schema.optional(),
+  ifNot: IfConditionV1Schema.optional(),
+  name: z
+    .string()
+    .regex(/^[a-z0-9-]+$/, "Convention name must match [a-z0-9-]+"),
+  paths: z.union([z.string(), z.array(z.string())]).optional(),
+  severity: z.enum(["error", "warning"]).optional(),
 };
 
 export const ReusableConventionV1Schema = z.union([

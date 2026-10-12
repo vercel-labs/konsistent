@@ -25,8 +25,8 @@ export const InnerTypeConstraintV1Schema = z.union([
 
 export const ConstantEnumSchemaV1Schema = z
   .strictObject({
-    type: ConstantScalarTypeV1Schema,
     enum: z.array(ConstantScalarValueV1Schema).min(1),
+    type: ConstantScalarTypeV1Schema,
   })
   .superRefine((schema, context) => {
     const seen = new Set<string>();
@@ -36,8 +36,8 @@ export const ConstantEnumSchemaV1Schema = z
       if (valueType !== schema.type) {
         context.addIssue({
           code: "custom",
-          path: ["enum", index],
           message: `Enum value must be of type "${schema.type}"`,
+          path: ["enum", index],
         });
       }
 
@@ -45,8 +45,8 @@ export const ConstantEnumSchemaV1Schema = z
       if (seen.has(key)) {
         context.addIssue({
           code: "custom",
-          path: ["enum", index],
           message: "Enum values must be unique",
+          path: ["enum", index],
         });
       }
       seen.add(key);
@@ -59,16 +59,16 @@ const ConstantObjectPropertySchemaV1Schema = z.union([
 ]);
 
 export const ConstantArraySchemaV1Schema = z.strictObject({
-  type: z.literal("array"),
   items: InnerTypeConstraintV1Schema,
+  type: z.literal("array"),
 });
 
 export const ConstantObjectSchemaV1Schema = z
   .strictObject({
-    type: z.literal("object"),
+    additionalProperties: z.boolean().optional(),
     properties: z.record(z.string(), ConstantObjectPropertySchemaV1Schema),
     required: z.array(z.string()).optional(),
-    additionalProperties: z.boolean().optional(),
+    type: z.literal("object"),
   })
   .superRefine((schema, context) => {
     const seen = new Set<string>();
@@ -77,8 +77,8 @@ export const ConstantObjectSchemaV1Schema = z
       if (seen.has(name)) {
         context.addIssue({
           code: "custom",
-          path: ["required", index],
           message: "Required property names must be unique",
+          path: ["required", index],
         });
       }
       seen.add(name);
@@ -86,8 +86,8 @@ export const ConstantObjectSchemaV1Schema = z
       if (!Object.hasOwn(schema.properties, name)) {
         context.addIssue({
           code: "custom",
-          path: ["required", index],
           message: `Required property "${name}" must be defined in properties`,
+          path: ["required", index],
         });
       }
     }
@@ -137,8 +137,8 @@ export const ExportTypeDefinitionV1Schema = z.union([
   }),
   z.strictObject({
     alias: z.string().optional(),
-    name: z.string(),
     from: z.string(),
+    name: z.string(),
   }),
 ]);
 

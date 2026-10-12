@@ -5,33 +5,33 @@ import { checkDeclareConstants } from "./declare-constants.js";
 
 function createMockContext(opts: {
   path: string;
-  placeholders?: Record<string, { toString(): string }>;
+  placeholders?: Record<string, { toString: () => string }>;
 }): PredicateContext {
   const placeholders = opts.placeholders ?? {};
   return {
+    directoryExists: () => false,
+    fileExists: () => false,
     path: opts.path,
     placeholders: placeholders as PredicateContext["placeholders"],
+    readDir: () => [],
     resolveTemplate(t: string): string {
       return t.replace(/\$\{(\w+)\}/g, (match, name) => {
         const placeholder = placeholders[name];
         return placeholder ? placeholder.toString() : match;
       });
     },
-    directoryExists: () => false,
-    fileExists: () => false,
-    readDir: () => [],
   };
 }
 
 function parseSource(opts: { source: string }) {
-  return parseFileStructure({ source: opts.source, filePath: "src/index.ts" });
+  return parseFileStructure({ filePath: "src/index.ts", source: opts.source });
 }
 
 describe("checkDeclareConstants", () => {
   it("passes for local constant declarations", () => {
     const result = checkDeclareConstants({
-      expected: ["thingId"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["thingId"],
       fileStructure: parseSource({
         source: "const thingId = 'thing';",
       }),
@@ -41,8 +41,8 @@ describe("checkDeclareConstants", () => {
 
   it("rejects named exported local constants", () => {
     const result = checkDeclareConstants({
-      expected: ["thingId"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["thingId"],
       fileStructure: parseSource({
         source: "const thingId = 'thing';\nexport { thingId };",
       }),
@@ -56,16 +56,16 @@ describe("checkDeclareConstants", () => {
 
   it("validates a configured constant schema", () => {
     const result = checkDeclareConstants({
+      context: createMockContext({ path: "src/index.ts" }),
       expected: [
         {
           name: "modes",
           schema: {
-            type: "array",
             items: { type: "string" },
+            type: "array",
           },
         },
       ],
-      context: createMockContext({ path: "src/index.ts" }),
       fileStructure: parseSource({
         source: "const modes: readonly string[] = [];",
       }),
@@ -75,21 +75,21 @@ describe("checkDeclareConstants", () => {
 
   it("validates type references in a configured array schema", () => {
     const result = checkDeclareConstants({
-      expected: [
-        {
-          name: "authProviders",
-          schema: {
-            type: "array",
-            items: "${authType}",
-          },
-        },
-      ],
       context: createMockContext({
         path: "src/index.ts",
         placeholders: {
           authType: { toString: () => "Readonly<MyAuth>" },
         },
       }),
+      expected: [
+        {
+          name: "authProviders",
+          schema: {
+            items: "${authType}",
+            type: "array",
+          },
+        },
+      ],
       fileStructure: parseSource({
         source: "const authProviders: ReadonlyArray<Readonly<MyAuth>> = [];",
       }),
@@ -99,8 +99,8 @@ describe("checkDeclareConstants", () => {
 
   it("reports a mismatched constant schema", () => {
     const result = checkDeclareConstants({
-      expected: [{ name: "port", schema: { type: "number" } }],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ name: "port", schema: { type: "number" } }],
       fileStructure: parseSource({ source: 'const port: string = "3000";' }),
     });
     expect(result).toHaveLength(1);
@@ -109,8 +109,8 @@ describe("checkDeclareConstants", () => {
 
   it("requires an explicit annotation when a schema is configured", () => {
     const result = checkDeclareConstants({
-      expected: [{ name: "port", schema: { type: "number" } }],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ name: "port", schema: { type: "number" } }],
       fileStructure: parseSource({ source: "const port = 3000;" }),
     });
     expect(result).toHaveLength(1);
@@ -121,11 +121,11 @@ describe("checkDeclareConstants", () => {
 
   it("validates an exact template-expanded type annotation", () => {
     const result = checkDeclareConstants({
-      expected: [{ name: "settings", type: "Readonly<${name}Settings>" }],
       context: createMockContext({
         path: "src/index.ts",
         placeholders: { name: { toString: () => "Module" } },
       }),
+      expected: [{ name: "settings", type: "Readonly<${name}Settings>" }],
       fileStructure: parseSource({
         source: "const settings: Readonly<ModuleSettings> = {};",
       }),
@@ -135,8 +135,8 @@ describe("checkDeclareConstants", () => {
 
   it("reports a mismatched exact type annotation", () => {
     const result = checkDeclareConstants({
-      expected: [{ name: "settings", type: "Readonly<ModuleSettings>" }],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ name: "settings", type: "Readonly<ModuleSettings>" }],
       fileStructure: parseSource({
         source: "const settings: ModuleSettings = {};",
       }),
@@ -148,8 +148,8 @@ describe("checkDeclareConstants", () => {
 
   it("requires an explicit annotation for an exact type constraint", () => {
     const result = checkDeclareConstants({
-      expected: [{ name: "settings", type: "ModuleSettings" }],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ name: "settings", type: "ModuleSettings" }],
       fileStructure: parseSource({ source: "const settings = {};" }),
     });
     expect(result[0].message).toBe(

@@ -22,8 +22,8 @@ describe("parseVersion", () => {
       major: 1,
       minor: 2,
       patch: 3,
-      prereleaseTag: null,
       prereleaseNum: null,
+      prereleaseTag: null,
     });
   });
 
@@ -32,8 +32,8 @@ describe("parseVersion", () => {
       major: 0,
       minor: 0,
       patch: 1,
-      prereleaseTag: "alpha",
       prereleaseNum: 4,
+      prereleaseTag: "alpha",
     });
   });
 
@@ -42,8 +42,8 @@ describe("parseVersion", () => {
       major: 1,
       minor: 0,
       patch: 0,
-      prereleaseTag: "beta",
       prereleaseNum: 12,
+      prereleaseTag: "beta",
     });
   });
 
@@ -52,8 +52,8 @@ describe("parseVersion", () => {
       major: 2,
       minor: 1,
       patch: 0,
-      prereleaseTag: "rc",
       prereleaseNum: 1,
+      prereleaseTag: "rc",
     });
   });
 
@@ -132,26 +132,26 @@ describe("getPrereleaseChannel", () => {
 
 describe("isNewerVersion", () => {
   it("returns true when candidate is newer", () => {
-    expect(isNewerVersion({ current: "1.0.0", candidate: "1.0.1" })).toBe(true);
+    expect(isNewerVersion({ candidate: "1.0.1", current: "1.0.0" })).toBe(true);
     expect(
       isNewerVersion({
-        current: "0.0.1-alpha.4",
         candidate: "0.0.1-alpha.5",
+        current: "0.0.1-alpha.4",
       })
     ).toBe(true);
   });
 
   it("returns false when candidate is older or equal", () => {
-    expect(isNewerVersion({ current: "1.0.1", candidate: "1.0.0" })).toBe(
+    expect(isNewerVersion({ candidate: "1.0.0", current: "1.0.1" })).toBe(
       false
     );
-    expect(isNewerVersion({ current: "1.0.0", candidate: "1.0.0" })).toBe(
+    expect(isNewerVersion({ candidate: "1.0.0", current: "1.0.0" })).toBe(
       false
     );
   });
 
   it("returns false for invalid versions", () => {
-    expect(isNewerVersion({ current: "invalid", candidate: "1.0.0" })).toBe(
+    expect(isNewerVersion({ candidate: "1.0.0", current: "invalid" })).toBe(
       false
     );
   });

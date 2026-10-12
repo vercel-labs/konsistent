@@ -5,12 +5,12 @@ import { checkAreBarrelFiles } from "./are-barrel-files.js";
 
 function createMockContext(opts: { path: string }): PredicateContext {
   return {
-    path: opts.path,
-    placeholders: {} as PredicateContext["placeholders"],
-    resolveTemplate: (t: string) => t,
     directoryExists: () => false,
     fileExists: () => false,
+    path: opts.path,
+    placeholders: {} as PredicateContext["placeholders"],
     readDir: () => [],
+    resolveTemplate: (t: string) => t,
   };
 }
 
@@ -18,16 +18,16 @@ function createMockFileStructure(opts: {
   nonBarrelStatements?: FileStructure["nonBarrelStatements"];
 }): FileStructure {
   return {
-    exports: [],
-    imports: [],
-    interfaces: [],
-    classes: [],
     calls: [],
-    functions: [],
+    classes: [],
     constants: [],
     declarationSymbols: [],
     defaultExportSymbols: [],
+    exports: [],
+    functions: [],
     importSources: [],
+    imports: [],
+    interfaces: [],
     namedExportSymbols: [],
     nonBarrelStatements: opts.nonBarrelStatements ?? [],
     typeAliases: [],
@@ -37,11 +37,11 @@ function createMockFileStructure(opts: {
 describe("checkAreBarrelFiles", () => {
   it("returns no diagnostics when expected is false", () => {
     const result = checkAreBarrelFiles({
-      expected: false,
       context: createMockContext({ path: "src/index.ts" }),
+      expected: false,
       fileStructure: createMockFileStructure({
         nonBarrelStatements: [
-          { kind: "declaration", pos: { line: 1, column: 1 } },
+          { kind: "declaration", pos: { column: 1, line: 1 } },
         ],
       }),
     });
@@ -50,8 +50,8 @@ describe("checkAreBarrelFiles", () => {
 
   it("returns no diagnostics when file has no non-barrel statements", () => {
     const result = checkAreBarrelFiles({
-      expected: true,
       context: createMockContext({ path: "src/index.ts" }),
+      expected: true,
       fileStructure: createMockFileStructure({ nonBarrelStatements: [] }),
     });
     expect(result).toEqual([]);
@@ -59,12 +59,12 @@ describe("checkAreBarrelFiles", () => {
 
   it("emits one diagnostic per non-barrel statement", () => {
     const result = checkAreBarrelFiles({
-      expected: true,
       context: createMockContext({ path: "src/index.ts" }),
+      expected: true,
       fileStructure: createMockFileStructure({
         nonBarrelStatements: [
-          { kind: "declaration", pos: { line: 3, column: 1 } },
-          { kind: "expression", pos: { line: 7, column: 1 } },
+          { kind: "declaration", pos: { column: 1, line: 3 } },
+          { kind: "expression", pos: { column: 1, line: 7 } },
         ],
       }),
     });
@@ -82,13 +82,13 @@ describe("checkAreBarrelFiles", () => {
 
   it("uses kind-specific messages for default-expression, named-export-local, and export-equals", () => {
     const result = checkAreBarrelFiles({
-      expected: true,
       context: createMockContext({ path: "src/index.ts" }),
+      expected: true,
       fileStructure: createMockFileStructure({
         nonBarrelStatements: [
-          { kind: "default-expression", pos: { line: 1, column: 1 } },
-          { kind: "named-export-local", pos: { line: 2, column: 1 } },
-          { kind: "export-equals", pos: { line: 3, column: 1 } },
+          { kind: "default-expression", pos: { column: 1, line: 1 } },
+          { kind: "named-export-local", pos: { column: 1, line: 2 } },
+          { kind: "export-equals", pos: { column: 1, line: 3 } },
         ],
       }),
     });
@@ -101,14 +101,14 @@ describe("checkAreBarrelFiles", () => {
 
   it("includes conventionName when provided", () => {
     const result = checkAreBarrelFiles({
-      expected: true,
       context: createMockContext({ path: "src/index.ts" }),
+      conventionName: "barrel-only",
+      expected: true,
       fileStructure: createMockFileStructure({
         nonBarrelStatements: [
-          { kind: "declaration", pos: { line: 1, column: 1 } },
+          { kind: "declaration", pos: { column: 1, line: 1 } },
         ],
       }),
-      conventionName: "barrel-only",
     });
     expect(result[0].conventionName).toBe("barrel-only");
   });

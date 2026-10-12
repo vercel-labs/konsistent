@@ -8,7 +8,7 @@ const NPM_REGISTRY_URL = "https://registry.npmjs.org";
 const DEFAULT_TIMEOUT_MS = 5000;
 
 interface AbbreviatedPackageMetadata {
-  versions: Record<string, unknown>;
+  versions?: Record<string, unknown> | null;
 }
 
 export async function fetchLatestVersion(opts: {
@@ -35,7 +35,7 @@ export async function fetchLatestVersion(opts: {
     }
 
     const versions = Object.keys(data.versions);
-    return findLatestInChannel({ versions, channel });
+    return findLatestInChannel({ channel, versions });
   } catch {
     return null;
   }

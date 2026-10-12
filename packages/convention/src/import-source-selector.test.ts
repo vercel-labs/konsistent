@@ -170,20 +170,20 @@ describe("doesImportSourceConstraintMatch", () => {
 
     expect(
       doesImportSourceConstraintMatch({
+        constraint,
         source: "@vendor/project",
-        constraint,
       })
     ).toBe(true);
     expect(
       doesImportSourceConstraintMatch({
+        constraint,
         source: "@vendor/project/entrypoint",
-        constraint,
       })
     ).toBe(true);
     expect(
       doesImportSourceConstraintMatch({
-        source: "@other/project",
         constraint,
+        source: "@other/project",
       })
     ).toBe(false);
   });
@@ -194,26 +194,26 @@ describe("doesImportSourceConstraintMatch", () => {
 
     expect(
       doesImportSourceConstraintMatch({
-        source: "project/entrypoint",
         constraint: unvendored,
+        source: "project/entrypoint",
       })
     ).toBe(true);
     expect(
       doesImportSourceConstraintMatch({
-        source: "project",
         constraint: unvendored,
+        source: "project",
       })
     ).toBe(false);
     expect(
       doesImportSourceConstraintMatch({
-        source: "@vendor/project/entrypoint",
         constraint: vendored,
+        source: "@vendor/project/entrypoint",
       })
     ).toBe(true);
     expect(
       doesImportSourceConstraintMatch({
-        source: "@vendor/project",
         constraint: vendored,
+        source: "@vendor/project",
       })
     ).toBe(false);
   });
@@ -227,7 +227,7 @@ describe("doesImportSourceConstraintMatch", () => {
     ]);
 
     for (const source of ["@ai-sdk/core", "@ai-sdk/core/testing"]) {
-      expect(doesImportSourceConstraintMatch({ source, constraint })).toBe(
+      expect(doesImportSourceConstraintMatch({ constraint, source })).toBe(
         true
       );
     }
@@ -236,14 +236,14 @@ describe("doesImportSourceConstraintMatch", () => {
       "@ai-sdk/harness/testing",
       "@ai-sdk/harness/bridge/testing",
     ]) {
-      expect(doesImportSourceConstraintMatch({ source, constraint })).toBe(
+      expect(doesImportSourceConstraintMatch({ constraint, source })).toBe(
         false
       );
     }
     expect(
       doesImportSourceConstraintMatch({
-        source: "@ai-sdk/harness/bridge",
         constraint,
+        source: "@ai-sdk/harness/bridge",
       })
     ).toBe(true);
   });
@@ -258,20 +258,20 @@ describe("doesImportSourceConstraintMatch", () => {
 
     expect(
       doesImportSourceConstraintMatch({
-        source: "@vendor/project/internal/secret",
         constraint,
+        source: "@vendor/project/internal/secret",
       })
     ).toBe(false);
     expect(
       doesImportSourceConstraintMatch({
-        source: "@vendor/project/internal/public/api",
         constraint,
+        source: "@vendor/project/internal/public/api",
       })
     ).toBe(true);
     expect(
       doesImportSourceConstraintMatch({
-        source: "@vendor/project/internal/public/private",
         constraint,
+        source: "@vendor/project/internal/public/private",
       })
     ).toBe(false);
   });

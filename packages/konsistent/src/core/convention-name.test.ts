@@ -230,7 +230,7 @@ describe("generateConventionName", () => {
       expect(
         generateConventionName({
           must: {
-            importValues: [{ name: "BaseAdapter", from: "@app/core" }],
+            importValues: [{ from: "@app/core", name: "BaseAdapter" }],
           },
         })
       ).toBe("must-import-base-adapter");
@@ -301,7 +301,7 @@ describe("generateConventionName", () => {
       expect(
         generateConventionName({
           must: {
-            importTypes: [{ name: "ProviderV1", from: "@ai-toolkit/core" }],
+            importTypes: [{ from: "@ai-toolkit/core", name: "ProviderV1" }],
           },
         })
       ).toBe("must-import-provider-v1-type");
@@ -393,8 +393,8 @@ describe("generateConventionName", () => {
       expect(
         generateConventionName({
           must: {
-            exportValues: ["activate"],
             exportConstants: ["pluginId"],
+            exportValues: ["activate"],
           },
         })
       ).toBe("must-export-activate-and-more");
@@ -412,8 +412,8 @@ describe("generateConventionName", () => {
       expect(
         generateConventionName({
           must: {
-            exportValues: ["activate", "deactivate"],
             exportConstants: ["pluginId"],
+            exportValues: ["activate", "deactivate"],
           },
         })
       ).toBe("must-export-activate-and-more");
@@ -458,8 +458,8 @@ describe("generateConventionName", () => {
       expect(
         generateConventionName({
           must: {
-            exportValues: ["${providerId}"],
             exportTypes: ["${providerId.toPascalCase()}Provider"],
+            exportValues: ["${providerId}"],
           },
         })
       ).toBe("must-export-and-more");

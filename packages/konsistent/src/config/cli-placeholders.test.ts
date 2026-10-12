@@ -7,14 +7,14 @@ import {
 describe("parseCliPlaceholders", () => {
   it("returns an empty record when no entries are passed", () => {
     const result = parseCliPlaceholders({ raw: [] });
-    expect(result).toEqual({ success: true, placeholders: {} });
+    expect(result).toEqual({ placeholders: {}, success: true });
   });
 
   it("parses a single name:value pair", () => {
     const result = parseCliPlaceholders({ raw: ["providerId:openai"] });
     expect(result).toEqual({
-      success: true,
       placeholders: { providerId: "openai" },
+      success: true,
     });
   });
 
@@ -23,8 +23,8 @@ describe("parseCliPlaceholders", () => {
       raw: ["a:1", "b:2", "a:overridden"],
     });
     expect(result).toEqual({
-      success: true,
       placeholders: { a: "overridden", b: "2" },
+      success: true,
     });
   });
 

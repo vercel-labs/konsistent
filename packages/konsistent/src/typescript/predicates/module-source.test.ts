@@ -4,16 +4,16 @@ import { parseFileStructure } from "../parser.js";
 import { checkModuleSource, checkModuleSourceGroup } from "./module-source.js";
 
 const context: PredicateContext = {
-  path: "src/index.ts",
-  placeholders: {},
-  resolveTemplate: (value) => value.replace("${package}", "pkg"),
   directoryExists: () => false,
   fileExists: () => false,
+  path: "src/index.ts",
+  placeholders: {},
   readDir: () => [],
+  resolveTemplate: (value) => value.replace("${package}", "pkg"),
 };
 
 function structure(source: string) {
-  return parseFileStructure({ source, filePath: context.path });
+  return parseFileStructure({ filePath: context.path, source });
 }
 
 function exact(opts: {
@@ -22,13 +22,13 @@ function exact(opts: {
   kind: "type" | "value";
 }) {
   return checkModuleSource({
-    expected: opts.expected,
+    context,
     direction: "export",
+    expected: opts.expected,
+    fileStructure: structure(opts.source),
     kind: opts.kind,
     predicateName:
       opts.kind === "type" ? "exportTypesFrom" : "exportValuesFrom",
-    context,
-    fileStructure: structure(opts.source),
   });
 }
 
@@ -38,19 +38,19 @@ describe("export source predicates", () => {
 export * from "./values";
 export type * from "./types";`;
     expect(
-      exact({ source, expected: ["pkg", "./values"], kind: "value" })
+      exact({ expected: ["pkg", "./values"], kind: "value", source })
     ).toEqual([]);
     expect(
-      exact({ source, expected: ["pkg", "./types"], kind: "type" })
+      exact({ expected: ["pkg", "./types"], kind: "type", source })
     ).toEqual([]);
     expect(
-      exact({ source: 'export * from "pkg";', expected: "pkg", kind: "type" })
+      exact({ expected: "pkg", kind: "type", source: 'export * from "pkg";' })
     ).toHaveLength(1);
     expect(
       exact({
-        source: 'export type * from "pkg";',
         expected: "pkg",
         kind: "value",
+        source: 'export type * from "pkg";',
       })
     ).toHaveLength(1);
   });
@@ -61,9 +61,9 @@ export { value };
 export * as ns from "pkg/sub";
 export * from "pkg";`;
     expect(
-      exact({ source, expected: "pkg/*", kind: "value" })[0]?.message
+      exact({ expected: "pkg/*", kind: "value", source })[0]?.message
     ).toBe('Missing export from "pkg/*"');
-    expect(exact({ source, expected: "pkg", kind: "value" })).toEqual([]);
+    expect(exact({ expected: "pkg", kind: "value", source })).toEqual([]);
   });
 
   it("resolves placeholders and handles exclusions and nested re-inclusions", () => {
@@ -74,16 +74,16 @@ export * from "pkg";`;
     ];
     expect(
       exact({
-        source: 'export * from "pkg/internal/public/api";',
         expected,
         kind: "value",
+        source: 'export * from "pkg/internal/public/api";',
       })
     ).toEqual([]);
     expect(
       exact({
-        source: 'export * from "pkg/internal/private";',
         expected,
         kind: "value",
+        source: 'export * from "pkg/internal/private";',
       })
     ).toHaveLength(1);
   });
@@ -100,25 +100,25 @@ export * as ns from "external";`);
     ] as const) {
       expect(
         checkModuleSourceGroup({
-          expected,
-          direction: "export",
-          kind,
-          group,
-          predicateName: "test",
           context,
+          direction: "export",
+          expected,
           fileStructure,
+          group,
+          kind,
+          predicateName: "test",
         })
       ).toEqual([]);
     }
     expect(
       checkModuleSourceGroup({
-        expected: false,
-        direction: "export",
-        kind: "value",
-        group: "currentDir",
-        predicateName: "test",
         context,
+        direction: "export",
+        expected: false,
         fileStructure,
+        group: "currentDir",
+        kind: "value",
+        predicateName: "test",
       })[0]?.message
     ).toBe("Export from current directory is not allowed");
   });

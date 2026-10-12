@@ -18,8 +18,8 @@ export function parseVersion(version: string): ParsedVersion | null {
     major: Number(match[1]),
     minor: Number(match[2]),
     patch: Number(match[3]),
+    prereleaseNum: match[5] === undefined ? null : Number(match[5]),
     prereleaseTag: match[4] ?? null,
-    prereleaseNum: match[5] == null ? null : Number(match[5]),
   };
 }
 

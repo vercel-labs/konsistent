@@ -48,9 +48,9 @@ describe("resolvePathSelectors", () => {
   it("selects a concrete file without globbing", async () => {
     const fileSystem = createMockFileSystem({ files: ["src/index.ts"] });
     const selection = await resolvePathSelectors({
-      selectors: ["src/index.ts"],
       cwd: "/repo",
       fileSystem,
+      selectors: ["src/index.ts"],
     });
 
     expect(selection).toMatchObject({
@@ -62,16 +62,16 @@ describe("resolvePathSelectors", () => {
 
   it("recursively expands a concrete directory from its bounded root", async () => {
     const fileSystem = createMockFileSystem({
-      files: ["components/Button/Button.tsx"],
       directories: ["components/Button"],
+      files: ["components/Button/Button.tsx"],
       globResults: {
         "components/Button/**": ["components/Button/Button.tsx"],
       },
     });
     const selection = await resolvePathSelectors({
-      selectors: ["components/Button"],
       cwd: "/repo",
       fileSystem,
+      selectors: ["components/Button"],
     });
 
     expect(selection).toMatchObject({
@@ -90,9 +90,9 @@ describe("resolvePathSelectors", () => {
       },
     });
     const selection = await resolvePathSelectors({
-      selectors: ["packages/a/*.ts", "src/*.ts"],
       cwd: "/repo",
       fileSystem,
+      selectors: ["packages/a/*.ts", "src/*.ts"],
     });
 
     expect(selection).toMatchObject({
@@ -114,9 +114,9 @@ describe("resolvePathSelectors", () => {
       },
     });
     const selection = await resolvePathSelectors({
-      selectors: ["components/**/*.tsx", "!components/Input"],
       cwd: "/repo",
       fileSystem,
+      selectors: ["components/**/*.tsx", "!components/Input"],
     });
 
     expect(selection).toMatchObject({
@@ -136,9 +136,9 @@ describe("resolvePathSelectors", () => {
       },
     });
     const selection = await resolvePathSelectors({
-      selectors: ["components/**/*.tsx", "!components/[!B]*/**"],
       cwd: "/repo",
       fileSystem,
+      selectors: ["components/**/*.tsx", "!components/[!B]*/**"],
     });
 
     expect(selection).toMatchObject({
@@ -149,9 +149,9 @@ describe("resolvePathSelectors", () => {
 
   it("returns an explicit empty targeted selection", async () => {
     const selection = await resolvePathSelectors({
-      selectors: ["missing/**/*.ts"],
       cwd: "/repo",
       fileSystem: createMockFileSystem({}),
+      selectors: ["missing/**/*.ts"],
     });
 
     expect(selection).toEqual({
@@ -165,16 +165,16 @@ describe("resolvePathSelectors", () => {
     const fileSystem = createMockFileSystem({});
     await expect(
       resolvePathSelectors({
-        selectors: ["../outside/**/*.ts"],
         cwd: "/repo",
         fileSystem,
+        selectors: ["../outside/**/*.ts"],
       })
     ).rejects.toThrow("must stay within the current directory");
     await expect(
       resolvePathSelectors({
-        selectors: ["!src/**/*.ts"],
         cwd: "/repo",
         fileSystem,
+        selectors: ["!src/**/*.ts"],
       })
     ).rejects.toThrow("at least one positive path selector");
   });

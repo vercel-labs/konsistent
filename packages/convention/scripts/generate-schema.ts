@@ -4,8 +4,8 @@ import { z } from "zod";
 import { ReusableConventionsPackageV1Schema } from "../src/schemas.js";
 
 const jsonSchema = z.toJSONSchema(ReusableConventionsPackageV1Schema, {
-  target: "draft-7",
   reused: "inline",
+  target: "draft-7",
 }) as Record<string, unknown>;
 
 jsonSchema.$schema = "http://json-schema.org/draft-07/schema#";

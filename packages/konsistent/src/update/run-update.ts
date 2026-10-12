@@ -72,8 +72,8 @@ export function runUpdate(opts: {
   if (updateInfo.mode === "local") {
     const changed = updatePackageJsonVersion({
       cwd,
-      packageName: PACKAGE_NAME,
       newVersion: opts.latestVersion,
+      packageName: PACKAGE_NAME,
     });
     if (changed) {
       console.error(
@@ -98,8 +98,8 @@ export function runUpdate(opts: {
 
   try {
     execSync(`${command} ${args.join(" ")}`, {
-      stdio: "inherit",
       cwd,
+      stdio: "inherit",
     });
     console.error(
       `\n${pc.green("✓")} Successfully updated ${PACKAGE_NAME} to v${opts.latestVersion}`

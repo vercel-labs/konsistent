@@ -29,23 +29,23 @@ export function checkExportTypes(opts: {
         : undefined;
 
     const found = findExportedType({
-      fileStructure,
-      name: resolvedName,
       alias: resolvedAlias,
+      fileStructure,
       from: resolvedFrom,
+      name: resolvedName,
     });
 
     if (!found) {
       diagnostics.push(
         createDiagnostic({
+          conventionName,
           filePath: context.path,
-          predicateName: "exportTypes",
           message: formatMissingExportMessage({
-            name: resolvedName,
             alias: resolvedAlias,
             from: resolvedFrom,
+            name: resolvedName,
           }),
-          conventionName,
+          predicateName: "exportTypes",
           severity,
         })
       );

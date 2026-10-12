@@ -14,7 +14,7 @@ describe("syntax comparisons", () => {
           session.withSourceFile({
             source: `type Value = ${type};`,
             visit(source) {
-              const node = source.sourceFile.statements[0];
+              const [node] = source.sourceFile.statements;
               if (!(node && isTypeAliasDeclaration(node))) {
                 throw new Error("Expected a type alias");
               }
@@ -46,7 +46,7 @@ describe("syntax comparisons", () => {
     withTypeScriptSession({
       run(session) {
         const normalize = (text: string) =>
-          normalizeArgumentExpression({ text, session });
+          normalizeArgumentExpression({ session, text });
         for (const [actual, expected] of [
           ['("email")', "'email'"],
           ['"\\u0061"', '"a"'],

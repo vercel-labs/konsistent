@@ -60,14 +60,14 @@ export function checkModuleSource(opts: {
   const resolvedExpected =
     typeof opts.expected === "string"
       ? resolveConfiguredSource({
-          source: opts.expected,
           context,
           selectorSyntax,
+          source: opts.expected,
         })
       : opts.expected.map((source) =>
-          resolveConfiguredSource({ source, context, selectorSyntax })
+          resolveConfiguredSource({ context, selectorSyntax, source })
         );
-  const sources = getSources({ fileStructure, direction }).filter(
+  const sources = getSources({ direction, fileStructure }).filter(
     (source) => kind === "either" || source.isType === (kind === "type")
   );
   const noun = `${kind === "type" ? "type " : ""}${direction}`;
@@ -84,17 +84,17 @@ export function checkModuleSource(opts: {
     for (const constraint of compiled.constraints) {
       if (
         sources.some((source) =>
-          doesImportSourceConstraintMatch({ source: source.from, constraint })
+          doesImportSourceConstraintMatch({ constraint, source: source.from })
         )
       ) {
         continue;
       }
       diagnostics.push(
         createDiagnostic({
-          filePath: context.path,
-          predicateName,
-          message: `Missing ${noun} from "${constraint.source}"`,
           conventionName: opts.conventionName,
+          filePath: context.path,
+          message: `Missing ${noun} from "${constraint.source}"`,
+          predicateName,
           severity: opts.severity,
         })
       );
@@ -108,16 +108,16 @@ export function checkModuleSource(opts: {
       : resolvedExpected;
   for (const expected of expectedSources) {
     if (
-      sources.some((source) => doesSourceMatch({ from: source.from, expected }))
+      sources.some((source) => doesSourceMatch({ expected, from: source.from }))
     ) {
       continue;
     }
     diagnostics.push(
       createDiagnostic({
-        filePath: context.path,
-        predicateName,
-        message: `Missing ${noun} from "${expected}"`,
         conventionName: opts.conventionName,
+        filePath: context.path,
+        message: `Missing ${noun} from "${expected}"`,
+        predicateName,
         severity: opts.severity,
       })
     );
@@ -171,10 +171,10 @@ export function checkModuleSourceGroup(opts: {
   if (opts.expected && !found) {
     return [
       createDiagnostic({
-        filePath: opts.context.path,
-        predicateName: opts.predicateName,
-        message: `Missing ${noun} from ${label}`,
         conventionName: opts.conventionName,
+        filePath: opts.context.path,
+        message: `Missing ${noun} from ${label}`,
+        predicateName: opts.predicateName,
         severity: opts.severity,
       }),
     ];
@@ -182,12 +182,12 @@ export function checkModuleSourceGroup(opts: {
   if (!opts.expected && found) {
     return [
       createDiagnostic({
-        filePath: opts.context.path,
-        predicateName: opts.predicateName,
-        message: `${noun[0]?.toUpperCase()}${noun.slice(1)} from ${label} is not allowed`,
-        conventionName: opts.conventionName,
-        line: found.pos.line,
         column: found.pos.column,
+        conventionName: opts.conventionName,
+        filePath: opts.context.path,
+        line: found.pos.line,
+        message: `${noun[0]?.toUpperCase()}${noun.slice(1)} from ${label} is not allowed`,
+        predicateName: opts.predicateName,
         severity: opts.severity,
       }),
     ];

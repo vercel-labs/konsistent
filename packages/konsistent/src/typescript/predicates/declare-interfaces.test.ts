@@ -5,33 +5,33 @@ import { checkDeclareInterfaces } from "./declare-interfaces.js";
 
 function createMockContext(opts: {
   path: string;
-  placeholders?: Record<string, { toString(): string }>;
+  placeholders?: Record<string, { toString: () => string }>;
 }): PredicateContext {
   const placeholders = opts.placeholders ?? {};
   return {
+    directoryExists: () => false,
+    fileExists: () => false,
     path: opts.path,
     placeholders: placeholders as PredicateContext["placeholders"],
+    readDir: () => [],
     resolveTemplate(t: string): string {
       return t.replace(/\$\{(\w+)\}/g, (_match, name) => {
         const ph = placeholders[name];
         return ph ? ph.toString() : _match;
       });
     },
-    directoryExists: () => false,
-    fileExists: () => false,
-    readDir: () => [],
   };
 }
 
 function parseSource(opts: { source: string }) {
-  return parseFileStructure({ source: opts.source, filePath: "src/index.ts" });
+  return parseFileStructure({ filePath: "src/index.ts", source: opts.source });
 }
 
 describe("checkDeclareInterfaces", () => {
   it("passes for local interface declarations", () => {
     const result = checkDeclareInterfaces({
-      expected: ["Thing"],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: ["Thing"],
       fileStructure: parseSource({
         source: "interface Thing {}",
       }),
@@ -41,8 +41,8 @@ describe("checkDeclareInterfaces", () => {
 
   it("checks local interface extends clauses", () => {
     const result = checkDeclareInterfaces({
-      expected: [{ name: "Thing", extend: "BaseThing" }],
       context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ extend: "BaseThing", name: "Thing" }],
       fileStructure: parseSource({
         source: "interface Thing extends OtherThing {}",
       }),
@@ -53,11 +53,11 @@ describe("checkDeclareInterfaces", () => {
 
   it("resolves declaration templates", () => {
     const result = checkDeclareInterfaces({
-      expected: [{ name: "${name}Config" }],
       context: createMockContext({
         path: "src/index.ts",
         placeholders: { name: { toString: () => "Thing" } },
       }),
+      expected: [{ name: "${name}Config" }],
       fileStructure: parseSource({
         source: "interface ThingConfig {}",
       }),

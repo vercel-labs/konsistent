@@ -7,43 +7,43 @@ import {
 describe("parsePlaceholderConstraint", () => {
   it("parses constraint with argument", () => {
     expect(parsePlaceholderConstraint("segments(2)")).toEqual({
-      name: "segments",
       arg: "2",
+      name: "segments",
     });
   });
 
   it("parses constraint without argument", () => {
     expect(parsePlaceholderConstraint("segments")).toEqual({
-      name: "segments",
       arg: undefined,
+      name: "segments",
     });
   });
 
   it("parses constraint with alphanumeric argument", () => {
     expect(parsePlaceholderConstraint("pattern(abc123)")).toEqual({
-      name: "pattern",
       arg: "abc123",
+      name: "pattern",
     });
   });
 
   it("parses constraint with regex-shaped argument", () => {
     expect(parsePlaceholderConstraint("matches(^[a-z]+ai$)")).toEqual({
-      name: "matches",
       arg: "^[a-z]+ai$",
+      name: "matches",
     });
   });
 
   it("parses constraint with argument containing parens", () => {
     expect(parsePlaceholderConstraint("extract(^([a-z]+)ai$)")).toEqual({
-      name: "extract",
       arg: "^([a-z]+)ai$",
+      name: "extract",
     });
   });
 
   it("parses constraint with empty argument", () => {
     expect(parsePlaceholderConstraint("matches()")).toEqual({
-      name: "matches",
       arg: "",
+      name: "matches",
     });
   });
 
@@ -64,8 +64,8 @@ describe("validatePlaceholderConstraint", () => {
   it("dispatches to segments constraint", () => {
     expect(
       validatePlaceholderConstraint({
+        constraint: { arg: "2", name: "segments" },
         value: "chat-language",
-        constraint: { name: "segments", arg: "2" },
       })
     ).toBe(true);
   });
@@ -73,8 +73,8 @@ describe("validatePlaceholderConstraint", () => {
   it("returns false when segments constraint fails", () => {
     expect(
       validatePlaceholderConstraint({
+        constraint: { arg: "2", name: "segments" },
         value: "chat",
-        constraint: { name: "segments", arg: "2" },
       })
     ).toBe(false);
   });
@@ -82,8 +82,8 @@ describe("validatePlaceholderConstraint", () => {
   it("dispatches to matches constraint and returns true on match", () => {
     expect(
       validatePlaceholderConstraint({
+        constraint: { arg: "^[a-z]+ai$", name: "matches" },
         value: "openai",
-        constraint: { name: "matches", arg: "^[a-z]+ai$" },
       })
     ).toBe(true);
   });
@@ -91,8 +91,8 @@ describe("validatePlaceholderConstraint", () => {
   it("dispatches to matches constraint and returns false on no match", () => {
     expect(
       validatePlaceholderConstraint({
+        constraint: { arg: "^[a-z]+ai$", name: "matches" },
         value: "google",
-        constraint: { name: "matches", arg: "^[a-z]+ai$" },
       })
     ).toBe(false);
   });
@@ -100,8 +100,8 @@ describe("validatePlaceholderConstraint", () => {
   it("returns true for unknown constraint names", () => {
     expect(
       validatePlaceholderConstraint({
+        constraint: { arg: "1", name: "unknownConstraint" },
         value: "anything",
-        constraint: { name: "unknownConstraint", arg: "1" },
       })
     ).toBe(true);
   });

@@ -16,10 +16,10 @@ export function checkHaveDirectories(opts: {
     if (!context.directoryExists(resolved)) {
       diagnostics.push(
         createDiagnostic({
-          filePath: context.path,
-          predicateName: "haveDirectories",
-          message: `Missing required directory: ${resolved}`,
           conventionName,
+          filePath: context.path,
+          message: `Missing required directory: ${resolved}`,
+          predicateName: "haveDirectories",
           severity,
         })
       );

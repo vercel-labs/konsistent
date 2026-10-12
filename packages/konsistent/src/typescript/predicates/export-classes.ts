@@ -33,7 +33,7 @@ function resolveImplementTypes(opts: {
     return [];
   }
   return implement
-    .filter((entry) => entry != null)
+    .filter((entry) => entry !== undefined)
     .map((entry) => {
       if (typeof entry === "string") {
         return context.resolveTemplate(entry);
@@ -59,37 +59,37 @@ function checkClassHeritage(opts: {
   const diagnostics: Diagnostic[] = [];
 
   const resolvedExtend = resolveExtendType({
-    extend: definition.extend,
     context,
+    extend: definition.extend,
   });
   if (resolvedExtend && classInfo.extends !== resolvedExtend) {
     diagnostics.push(
       createDiagnostic({
-        filePath: context.path,
-        predicateName: "exportClasses",
-        message: `Class "${resolvedName}" must extend "${resolvedExtend}"`,
-        conventionName,
-        line: classInfo.pos.line,
         column: classInfo.pos.column,
+        conventionName,
+        filePath: context.path,
+        line: classInfo.pos.line,
+        message: `Class "${resolvedName}" must extend "${resolvedExtend}"`,
+        predicateName: "exportClasses",
         severity,
       })
     );
   }
 
   const resolvedImplements = resolveImplementTypes({
-    implement: definition.implement,
     context,
+    implement: definition.implement,
   });
   for (const resolvedImpl of resolvedImplements) {
     if (!classInfo.implements.includes(resolvedImpl)) {
       diagnostics.push(
         createDiagnostic({
-          filePath: context.path,
-          predicateName: "exportClasses",
-          message: `Class "${resolvedName}" must implement "${resolvedImpl}"`,
-          conventionName,
-          line: classInfo.pos.line,
           column: classInfo.pos.column,
+          conventionName,
+          filePath: context.path,
+          line: classInfo.pos.line,
+          message: `Class "${resolvedName}" must implement "${resolvedImpl}"`,
+          predicateName: "exportClasses",
           severity,
         })
       );
@@ -134,10 +134,10 @@ export function checkExportClasses(opts: {
     if (!(isExported || classInfo)) {
       diagnostics.push(
         createDiagnostic({
-          filePath: context.path,
-          predicateName: "exportClasses",
-          message: `Missing export class "${resolvedName}"`,
           conventionName,
+          filePath: context.path,
+          message: `Missing export class "${resolvedName}"`,
+          predicateName: "exportClasses",
           severity,
         })
       );
@@ -147,10 +147,10 @@ export function checkExportClasses(opts: {
     if (!isExported) {
       diagnostics.push(
         createDiagnostic({
-          filePath: context.path,
-          predicateName: "exportClasses",
-          message: `Missing export class "${resolvedName}"`,
           conventionName,
+          filePath: context.path,
+          message: `Missing export class "${resolvedName}"`,
+          predicateName: "exportClasses",
           severity,
         })
       );
@@ -160,10 +160,10 @@ export function checkExportClasses(opts: {
     if (classInfo) {
       diagnostics.push(
         ...checkClassHeritage({
-          definition,
-          classInfo,
-          resolvedName,
           checkContext,
+          classInfo,
+          definition,
+          resolvedName,
         })
       );
     }

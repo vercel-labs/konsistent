@@ -71,8 +71,8 @@ function collectPlaceholders(segment: string): CollectedPlaceholder[] {
   let match = PLACEHOLDER_REGEX.exec(segment);
   while (match !== null) {
     result.push({
-      name: match[1],
       constraintRaw: match[2],
+      name: match[1],
     });
     match = PLACEHOLDER_REGEX.exec(segment);
   }
@@ -112,11 +112,11 @@ function extractValueFromSegment(opts: {
 
   if (placeholders.length === 0) {
     if (patternSegment === pathSegment) {
-      return { values: {}, constraints: {} };
+      return { constraints: {}, values: {} };
     }
     if (GLOB_WILDCARD_REGEX.test(patternSegment)) {
-      return matchSegmentAsGlob({ patternSegment, pathSegment })
-        ? { values: {}, constraints: {} }
+      return matchSegmentAsGlob({ pathSegment, patternSegment })
+        ? { constraints: {}, values: {} }
         : null;
     }
     return null;
@@ -135,14 +135,14 @@ function extractValueFromSegment(opts: {
 
   const values: Record<string, string> = {};
   const constraints: Record<string, string> = {};
-  for (let i = 0; i < placeholders.length; i++) {
+  for (let i = 0; i < placeholders.length; i += 1) {
     values[placeholders[i].name] = segmentMatch[i + 1];
     const { constraintRaw } = placeholders[i];
     if (constraintRaw) {
       constraints[placeholders[i].name] = constraintRaw;
     }
   }
-  return { values, constraints };
+  return { constraints, values };
 }
 
 function satisfiesConstraints(opts: {
@@ -154,8 +154,8 @@ function satisfiesConstraints(opts: {
     if (
       constraint &&
       !validatePlaceholderConstraint({
-        value: opts.values[name],
         constraint,
+        value: opts.values[name],
       })
     ) {
       return false;
@@ -217,13 +217,13 @@ function matchPatternSegments(opts: {
     for (
       let consumedUpTo = pathIndex;
       consumedUpTo <= pathSegments.length;
-      consumedUpTo++
+      consumedUpTo += 1
     ) {
       const rest = matchPatternSegments({
-        patternSegments,
+        pathIndex: consumedUpTo,
         pathSegments,
         patternIndex: patternIndex + 1,
-        pathIndex: consumedUpTo,
+        patternSegments,
         values,
       });
       if (rest !== null) {
@@ -238,8 +238,8 @@ function matchPatternSegments(opts: {
   }
 
   const segmentResult = extractValueFromSegment({
-    patternSegment: segment,
     pathSegment: pathSegments[pathIndex],
+    patternSegment: segment,
   });
   if (segmentResult === null) {
     return null;
@@ -257,10 +257,10 @@ function matchPatternSegments(opts: {
   }
 
   return matchPatternSegments({
-    patternSegments,
+    pathIndex: pathIndex + 1,
     pathSegments,
     patternIndex: patternIndex + 1,
-    pathIndex: pathIndex + 1,
+    patternSegments,
     values: mergedValues,
   });
 }
@@ -273,10 +273,10 @@ function tryExtractPlaceholders(opts: {
   const patternSegments = pattern.split("/");
 
   return matchPatternSegments({
-    patternSegments,
+    pathIndex: 0,
     pathSegments,
     patternIndex: 0,
-    pathIndex: 0,
+    patternSegments,
     values: {},
   });
 }
@@ -334,13 +334,13 @@ function toPlaceholderMap(opts: {
   const result: Record<string, PlaceholderValue> = {};
   for (const [name, value] of Object.entries(raw)) {
     result[name] = new PlaceholderValue({
-      value,
-      kebabToPascalMap,
-      kebabToCamelMap,
-      pascalToKebabMap,
       camelToKebabMap,
       camelToPascalMap,
+      kebabToCamelMap,
+      kebabToPascalMap,
       pascalToCamelMap,
+      pascalToKebabMap,
+      value,
     });
   }
   return result;
@@ -378,7 +378,7 @@ async function resolvePositivePatterns(opts: {
     const paths =
       candidatePaths === undefined
         ? await fileSystem.glob(patterns)
-        : matchCandidatePaths({ patterns, candidatePaths });
+        : matchCandidatePaths({ candidatePaths, patterns });
     return paths.map((p) => ({
       path: p.endsWith("/") ? p.slice(0, -1) : p,
       placeholders: {},
@@ -390,8 +390,8 @@ async function resolvePositivePatterns(opts: {
     candidatePaths === undefined
       ? await fileSystem.glob(globPatterns)
       : matchCandidatePaths({
-          patterns: globPatterns,
           candidatePaths,
+          patterns: globPatterns,
         });
   const results: MatchedPath[] = [];
 
@@ -403,18 +403,18 @@ async function resolvePositivePatterns(opts: {
       if (!hasPlaceholders(pattern)) {
         continue;
       }
-      const extracted = tryExtractPlaceholders({ pattern, pathSegments });
+      const extracted = tryExtractPlaceholders({ pathSegments, pattern });
       if (extracted !== null) {
         results.push({
           path: matchedPath,
           placeholders: toPlaceholderMap({
-            raw: extracted,
-            kebabToPascalMap,
-            kebabToCamelMap,
-            pascalToKebabMap,
             camelToKebabMap,
             camelToPascalMap,
+            kebabToCamelMap,
+            kebabToPascalMap,
             pascalToCamelMap,
+            pascalToKebabMap,
+            raw: extracted,
           }),
         });
         break;
@@ -465,15 +465,15 @@ export async function matchPaths(opts: {
   }
 
   const positiveResults = await resolvePositivePatterns({
-    patterns: positivePatterns,
-    fileSystem,
-    candidatePaths,
-    kebabToPascalMap,
-    kebabToCamelMap,
-    pascalToKebabMap,
     camelToKebabMap,
     camelToPascalMap,
+    candidatePaths,
+    fileSystem,
+    kebabToCamelMap,
+    kebabToPascalMap,
     pascalToCamelMap,
+    pascalToKebabMap,
+    patterns: positivePatterns,
   });
 
   if (negativePatterns.length === 0) {

@@ -97,9 +97,9 @@ function extractTypeAnnotation(opts: {
   }
   const text = parsedSource.getText({ node });
   if (isTypeReferenceNode(node)) {
-    return { text, baseName: parsedSource.getText({ node: node.typeName }) };
+    return { baseName: parsedSource.getText({ node: node.typeName }), text };
   }
-  return { text, baseName: text };
+  return { baseName: text, text };
 }
 
 function extractParams(opts: {
@@ -150,16 +150,16 @@ function processExportDeclaration(opts: {
   const from = node.moduleSpecifier
     ? (node.moduleSpecifier as StringLiteral).text
     : undefined;
-  const pos = getPosition({ parsedSource, node });
+  const pos = getPosition({ node, parsedSource });
 
   if (node.exportClause && isNamedExports(node.exportClause)) {
     for (const element of node.exportClause.elements) {
       const exportInfo: ExportInfo = {
+        isType: isType || element.isTypeOnly,
+        kind: "re-export",
         name: parsedSource.getText({
           node: element.propertyName ?? element.name,
         }),
-        kind: "re-export",
-        isType: isType || element.isTypeOnly,
         pos,
       };
       if (from !== undefined) {
@@ -169,10 +169,10 @@ function processExportDeclaration(opts: {
     }
   } else if (!node.exportClause && from) {
     exports.push({
-      name: "*",
-      kind: "re-export",
-      isType,
       from,
+      isType,
+      kind: "re-export",
+      name: "*",
       pos,
     });
   }
@@ -196,12 +196,12 @@ function processNamedExportSymbols(opts: {
 
   for (const element of node.exportClause.elements) {
     const symbol: NamedExportSymbolInfo = {
+      isType: node.isTypeOnly || element.isTypeOnly,
       name: parsedSource.getText({ node: element.name }),
+      pos: getPosition({ node: element.name, parsedSource }),
       sourceName: parsedSource.getText({
         node: element.propertyName ?? element.name,
       }),
-      isType: node.isTypeOnly || element.isTypeOnly,
-      pos: getPosition({ parsedSource, node: element.name }),
     };
     if (from !== undefined) {
       symbol.from = from;
@@ -217,61 +217,59 @@ function processExportedDeclaration(opts: {
   parsedSource: ParsedSource;
 }): ExportInfo | undefined {
   const { node, parsedSource } = opts;
-  const pos = getPosition({ parsedSource, node });
+  const pos = getPosition({ node, parsedSource });
 
   if (isFunctionDeclaration(node) && node.name) {
     return {
-      name: parsedSource.getText({ node: node.name }),
-      kind: "function",
       isType: false,
+      kind: "function",
+      name: parsedSource.getText({ node: node.name }),
       pos,
     };
   }
   if (isClassDeclaration(node) && node.name) {
     return {
-      name: parsedSource.getText({ node: node.name }),
-      kind: "class",
       isType: false,
+      kind: "class",
+      name: parsedSource.getText({ node: node.name }),
       pos,
     };
   }
   if (isInterfaceDeclaration(node)) {
     return {
-      name: parsedSource.getText({ node: node.name }),
-      kind: "interface",
       isType: true,
+      kind: "interface",
+      name: parsedSource.getText({ node: node.name }),
       pos,
     };
   }
   if (isEnumDeclaration(node)) {
     return {
-      name: parsedSource.getText({ node: node.name }),
-      kind: "enum",
       isType: false,
+      kind: "enum",
+      name: parsedSource.getText({ node: node.name }),
       pos,
     };
   }
   if (isTypeAliasDeclaration(node)) {
     return {
-      name: parsedSource.getText({ node: node.name }),
-      kind: "interface",
       isType: true,
+      kind: "interface",
+      name: parsedSource.getText({ node: node.name }),
       pos,
     };
   }
   if (isVariableStatement(node)) {
-    const decl = node.declarationList.declarations[0];
+    const [decl] = node.declarationList.declarations;
     if (decl?.name && isIdentifier(decl.name)) {
       return {
-        name: parsedSource.getText({ node: decl.name }),
-        kind: "const",
         isType: false,
+        kind: "const",
+        name: parsedSource.getText({ node: decl.name }),
         pos,
       };
     }
   }
-
-  return;
 }
 
 interface ParseCollector {
@@ -330,7 +328,7 @@ function processImportDeclaration(opts: {
   collector: ParseCollector;
 }): void {
   const { node, parsedSource, collector } = opts;
-  const pos = getPosition({ parsedSource, node });
+  const pos = getPosition({ node, parsedSource });
   const moduleSpecifier = (node.moduleSpecifier as StringLiteral).text;
   const isTypeOnly =
     node.importClause?.phaseModifier === SyntaxKind.TypeKeyword;
@@ -355,24 +353,24 @@ function processImportDeclaration(opts: {
     if (isNamedImports(node.importClause.namedBindings)) {
       for (const element of node.importClause.namedBindings.elements) {
         collector.imports.push({
+          from: moduleSpecifier,
+          isType: isTypeOnly || element.isTypeOnly,
           kind: "named",
           name: parsedSource.getText({ node: element.name }),
+          pos,
           sourceName: parsedSource.getText({
             node: element.propertyName ?? element.name,
           }),
-          from: moduleSpecifier,
-          isType: isTypeOnly || element.isTypeOnly,
-          pos,
         });
       }
     } else if (isNamespaceImport(node.importClause.namedBindings)) {
       collector.imports.push({
+        from: moduleSpecifier,
+        isType: isTypeOnly,
         kind: "namespace",
         name: parsedSource.getText({
           node: node.importClause.namedBindings.name,
         }),
-        from: moduleSpecifier,
-        isType: isTypeOnly,
         pos,
       });
     }
@@ -380,10 +378,10 @@ function processImportDeclaration(opts: {
 
   if (node.importClause?.name) {
     collector.imports.push({
-      kind: "default",
-      name: parsedSource.getText({ node: node.importClause.name }),
       from: moduleSpecifier,
       isType: isTypeOnly,
+      kind: "default",
+      name: parsedSource.getText({ node: node.importClause.name }),
       pos,
     });
   }
@@ -400,51 +398,51 @@ function processDeclarationSymbols(opts: {
 
   if (isFunctionDeclaration(node) && node.name) {
     collector.declarationSymbols.push({
-      name: parsedSource.getText({ node: node.name }),
-      kind: "function",
-      isExported,
       isDefaultExport,
-      pos: getPosition({ parsedSource, node: node.name }),
+      isExported,
+      kind: "function",
+      name: parsedSource.getText({ node: node.name }),
+      pos: getPosition({ node: node.name, parsedSource }),
     });
   }
 
   if (isClassDeclaration(node) && node.name) {
     collector.declarationSymbols.push({
-      name: parsedSource.getText({ node: node.name }),
-      kind: "class",
-      isExported,
       isDefaultExport,
-      pos: getPosition({ parsedSource, node: node.name }),
+      isExported,
+      kind: "class",
+      name: parsedSource.getText({ node: node.name }),
+      pos: getPosition({ node: node.name, parsedSource }),
     });
   }
 
   if (isInterfaceDeclaration(node)) {
     collector.declarationSymbols.push({
-      name: parsedSource.getText({ node: node.name }),
-      kind: "interface",
-      isExported,
       isDefaultExport,
-      pos: getPosition({ parsedSource, node: node.name }),
+      isExported,
+      kind: "interface",
+      name: parsedSource.getText({ node: node.name }),
+      pos: getPosition({ node: node.name, parsedSource }),
     });
   }
 
   if (isTypeAliasDeclaration(node)) {
     collector.declarationSymbols.push({
-      name: parsedSource.getText({ node: node.name }),
-      kind: "type",
-      isExported,
       isDefaultExport,
-      pos: getPosition({ parsedSource, node: node.name }),
+      isExported,
+      kind: "type",
+      name: parsedSource.getText({ node: node.name }),
+      pos: getPosition({ node: node.name, parsedSource }),
     });
   }
 
   if (isEnumDeclaration(node)) {
     collector.declarationSymbols.push({
-      name: parsedSource.getText({ node: node.name }),
-      kind: "enum",
-      isExported,
       isDefaultExport,
-      pos: getPosition({ parsedSource, node: node.name }),
+      isExported,
+      kind: "enum",
+      name: parsedSource.getText({ node: node.name }),
+      pos: getPosition({ node: node.name, parsedSource }),
     });
   }
 
@@ -457,11 +455,11 @@ function processDeclarationSymbols(opts: {
     for (const decl of node.declarationList.declarations) {
       if (isIdentifier(decl.name)) {
         collector.declarationSymbols.push({
-          name: parsedSource.getText({ node: decl.name }),
-          kind: "const",
-          isExported,
           isDefaultExport,
-          pos: getPosition({ parsedSource, node: decl.name }),
+          isExported,
+          kind: "const",
+          name: parsedSource.getText({ node: decl.name }),
+          pos: getPosition({ node: decl.name, parsedSource }),
         });
       }
     }
@@ -481,12 +479,12 @@ function processVariableStatement(opts: {
   }
   for (const decl of node.declarationList.declarations) {
     if (isIdentifier(decl.name)) {
-      const pos = getPosition({ parsedSource, node });
+      const pos = getPosition({ node, parsedSource });
       collector.constants.push({
         name: parsedSource.getText({ node: decl.name }),
+        pos,
         typeInfo: parseTypeShape({ node: decl.type, source: parsedSource }),
         typeName: extractTypeAnnotation({ node: decl.type, parsedSource }),
-        pos,
       });
     }
   }
@@ -500,21 +498,21 @@ function processDeclaration(opts: {
   const { node, parsedSource, collector } = opts;
 
   if (isInterfaceDeclaration(node)) {
-    const pos = getPosition({ parsedSource, node });
+    const pos = getPosition({ node, parsedSource });
     collector.interfaces.push({
-      name: parsedSource.getText({ node: node.name }),
       extends: extractExtendsFromHeritage({
         clauses: node.heritageClauses,
         kind: SyntaxKind.ExtendsKeyword,
         parsedSource,
       }),
-      typeInfo: parseInterfaceTypeShape({ node, source: parsedSource }),
+      name: parsedSource.getText({ node: node.name }),
       pos,
+      typeInfo: parseInterfaceTypeShape({ node, source: parsedSource }),
     });
   }
 
   if (isClassDeclaration(node) && node.name) {
-    const pos = getPosition({ parsedSource, node });
+    const pos = getPosition({ node, parsedSource });
     const extendsClauses = extractExtendsFromHeritage({
       clauses: node.heritageClauses,
       kind: SyntaxKind.ExtendsKeyword,
@@ -526,37 +524,37 @@ function processDeclaration(opts: {
       parsedSource,
     });
     collector.classes.push({
-      name: parsedSource.getText({ node: node.name }),
       extends: extendsClauses[0]?.name,
       implements: implementsClauses.map((c) => c.name),
+      name: parsedSource.getText({ node: node.name }),
       pos,
     });
   }
 
   if (isFunctionDeclaration(node) && node.name) {
-    const pos = getPosition({ parsedSource, node });
+    const pos = getPosition({ node, parsedSource });
     collector.functions.push({
       name: parsedSource.getText({ node: node.name }),
       params: extractParams({ params: node.parameters, parsedSource }),
-      returnType: extractTypeAnnotation({ node: node.type, parsedSource }),
       pos,
+      returnType: extractTypeAnnotation({ node: node.type, parsedSource }),
     });
   }
 
   if (isVariableStatement(node)) {
-    processVariableStatement({ node, parsedSource, collector });
+    processVariableStatement({ collector, node, parsedSource });
   }
 
   if (isTypeAliasDeclaration(node)) {
-    const pos = getPosition({ parsedSource, node });
+    const pos = getPosition({ node, parsedSource });
     collector.typeAliases.push({
       name: parsedSource.getText({ node: node.name }),
+      pos,
       typeInfo: parseTypeShape({ node: node.type, source: parsedSource }),
       typeName: extractTypeAnnotation({
         node: node.type,
         parsedSource,
       }) as TypeAnnotationInfo,
-      pos,
     });
   }
 }
@@ -568,11 +566,11 @@ function processExportModifier(opts: {
 }): void {
   const { node, parsedSource, collector } = opts;
   if (hasDefaultModifier(node)) {
-    const pos = getPosition({ parsedSource, node });
+    const pos = getPosition({ node, parsedSource });
     collector.exports.push({
-      name: "default",
-      kind: "const",
       isType: false,
+      kind: "const",
+      name: "default",
       pos,
     });
   } else {
@@ -608,7 +606,6 @@ function extractCallName(opts: {
   if (isPropertyAccessExpression(expression)) {
     return opts.parsedSource.getText({ node: expression.name });
   }
-  return;
 }
 
 function processCalls(opts: {
@@ -628,13 +625,13 @@ function processCalls(opts: {
           parsedSource.getText({ node: argument })
         ),
         name,
-        pos: getPosition({ parsedSource, node }),
+        pos: getPosition({ node, parsedSource }),
       });
     }
   }
 
   node.forEachChild((child) => {
-    processCalls({ node: child, parsedSource, collector });
+    processCalls({ collector, node: child, parsedSource });
   });
 }
 
@@ -644,13 +641,13 @@ export function parseFileStructure(opts: {
   session?: TypeScriptSession;
 }): FileStructure {
   return withTypeScriptSession({
-    session: opts.session,
     run: (session) =>
       session.withSourceFile({
-        source: opts.source,
         filePath: opts.filePath,
+        source: opts.source,
         visit: (parsedSource) => collectFileStructure({ parsedSource }),
       }),
+    session: opts.session,
   });
 }
 
@@ -661,16 +658,16 @@ function collectFileStructure(opts: {
 
   const collector: ParseCollector = {
     calls: [],
-    exports: [],
-    imports: [],
-    importSources: [],
-    interfaces: [],
     classes: [],
-    functions: [],
     constants: [],
     declarationSymbols: [],
-    namedExportSymbols: [],
     defaultExportSymbols: [],
+    exports: [],
+    functions: [],
+    importSources: [],
+    imports: [],
+    interfaces: [],
+    namedExportSymbols: [],
     nonBarrelStatements: [],
     typeAliases: [],
   };
@@ -687,38 +684,38 @@ function collectFileStructure(opts: {
     }
 
     if (isExportAssignment(node)) {
-      const pos = getPosition({ parsedSource, node });
+      const pos = getPosition({ node, parsedSource });
       collector.exports.push({
-        name: "default",
-        kind: "const",
         isType: false,
+        kind: "const",
+        name: "default",
         pos,
       });
       if (!node.isExportEquals && isIdentifier(node.expression)) {
         collector.defaultExportSymbols.push({
           name: parsedSource.getText({ node: node.expression }),
-          pos: getPosition({ parsedSource, node: node.expression }),
+          pos: getPosition({ node: node.expression, parsedSource }),
         });
       }
       return;
     }
 
     if (isImportDeclaration(node)) {
-      processImportDeclaration({ node, parsedSource, collector });
+      processImportDeclaration({ collector, node, parsedSource });
       return;
     }
 
-    processDeclaration({ node, parsedSource, collector });
-    processDeclarationSymbols({ node, parsedSource, collector });
+    processDeclaration({ collector, node, parsedSource });
+    processDeclarationSymbols({ collector, node, parsedSource });
 
     if (hasExportModifier(node)) {
-      processExportModifier({ node, parsedSource, collector });
+      processExportModifier({ collector, node, parsedSource });
     }
   });
 
-  processCalls({ node: parsedSource.sourceFile, parsedSource, collector });
+  processCalls({ collector, node: parsedSource.sourceFile, parsedSource });
 
-  classifyNonBarrelStatements({ parsedSource, collector });
+  classifyNonBarrelStatements({ collector, parsedSource });
 
   return collector;
 }
@@ -731,11 +728,11 @@ function classifyNonBarrelStatements(opts: {
   const importedNames = new Set(collector.imports.map((i) => i.name));
 
   parsedSource.sourceFile.forEachChild((node) => {
-    const kind = classifyTopLevelNode({ node, parsedSource, importedNames });
+    const kind = classifyTopLevelNode({ importedNames, node, parsedSource });
     if (kind) {
       collector.nonBarrelStatements.push({
         kind,
-        pos: getPosition({ parsedSource, node }),
+        pos: getPosition({ node, parsedSource }),
       });
     }
   });
@@ -761,7 +758,6 @@ function classifyExportDeclaration(opts: {
       return "named-export-local";
     }
   }
-  return;
 }
 
 function classifyExportAssignment(opts: {
@@ -804,10 +800,10 @@ function classifyTopLevelNode(opts: {
     return;
   }
   if (isExportDeclaration(node)) {
-    return classifyExportDeclaration({ node, parsedSource, importedNames });
+    return classifyExportDeclaration({ importedNames, node, parsedSource });
   }
   if (isExportAssignment(node)) {
-    return classifyExportAssignment({ node, parsedSource, importedNames });
+    return classifyExportAssignment({ importedNames, node, parsedSource });
   }
   if (isExpressionStatement(node)) {
     return "expression";
@@ -815,5 +811,4 @@ function classifyTopLevelNode(opts: {
   if (isDeclarationNode(node)) {
     return "declaration";
   }
-  return;
 }

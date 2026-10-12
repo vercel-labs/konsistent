@@ -25,10 +25,10 @@ describe("convention build", () => {
     try {
       await writeFile(join(outdir, "stale.js"), "stale");
       await build({
-        cwd: packageDirectory,
         config: join(packageDirectory, "tsdown.config.ts"),
-        outDir: outdir,
+        cwd: packageDirectory,
         logLevel: "silent",
+        outDir: outdir,
       });
       expect((await readdir(outdir)).sort()).toEqual([
         "cli.js",
@@ -44,7 +44,7 @@ describe("convention build", () => {
       expect(library).toContain("defineConventions");
       expect(cli).toMatch(jitiImportPattern);
     } finally {
-      await rm(outdir, { recursive: true, force: true });
+      await rm(outdir, { force: true, recursive: true });
     }
   });
 });

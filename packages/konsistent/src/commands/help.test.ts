@@ -8,7 +8,7 @@ afterEach(() => {
 
 describe("help command", () => {
   it("defines metadata and arguments", () => {
-    expect(helpCommand).toMatchObject({ meta: { name: "help" }, args: {} });
+    expect(helpCommand).toMatchObject({ args: {}, meta: { name: "help" } });
   });
 
   it("prints help text to stdout", async () => {
