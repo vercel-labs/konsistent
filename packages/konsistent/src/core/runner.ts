@@ -5,6 +5,8 @@ import {
 } from "@konsistent/convention";
 import type {
   ConfigV1,
+  IfConditionPredicateV1,
+  IfConditionSetV1,
   IfConditionV1,
   ImportDefinitionV1,
   MustBlockV1,
@@ -260,12 +262,17 @@ function evaluatePlaceholderSatisfies(opts: {
   });
 }
 
-function evaluateCondition(opts: {
-  condition: IfConditionV1;
+interface ConditionEvaluationContext {
   context: PredicateContext;
-  fileSystem: FileSystem;
   fileStructureCache: Map<string, FileStructure>;
-}): boolean {
+  fileSystem: FileSystem;
+}
+
+function evaluateConditionPredicate(
+  opts: ConditionEvaluationContext & {
+    condition: IfConditionPredicateV1;
+  }
+): boolean {
   const { condition, context, fileSystem, fileStructureCache } = opts;
   if (Object.hasOwn(condition, "hasFile")) {
     const resolvedPath = context.resolveTemplate(
@@ -331,6 +338,31 @@ function evaluateCondition(opts: {
   });
 }
 
+function evaluateCondition(
+  opts: ConditionEvaluationContext & {
+    condition: IfConditionV1;
+    negate: boolean;
+  }
+): boolean {
+  const { condition, negate } = opts;
+  const matches = (predicate: IfConditionPredicateV1): boolean => {
+    const result = evaluateConditionPredicate({
+      condition: predicate,
+      context: opts.context,
+      fileStructureCache: opts.fileStructureCache,
+      fileSystem: opts.fileSystem,
+    });
+    return negate ? !result : result;
+  };
+  if (Object.hasOwn(condition, "conditions")) {
+    const set = condition as IfConditionSetV1;
+    return (set.operator ?? "and") === "and"
+      ? set.conditions.every(matches)
+      : set.conditions.some(matches);
+  }
+  return matches(condition as IfConditionPredicateV1);
+}
+
 function evaluateConditions(opts: {
   ifCondition?: IfConditionV1;
   ifNotCondition?: IfConditionV1;
@@ -352,17 +384,19 @@ function evaluateConditions(opts: {
       context,
       fileStructureCache,
       fileSystem,
+      negate: false,
     })
   ) {
     return false;
   }
   if (
     ifNotCondition &&
-    evaluateCondition({
+    !evaluateCondition({
       condition: ifNotCondition,
       context,
       fileStructureCache,
       fileSystem,
+      negate: true,
     })
   ) {
     return false;

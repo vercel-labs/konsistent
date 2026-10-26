@@ -45,6 +45,66 @@ function collectDeprecatedPropertySchemas(opts: {
 }
 
 describe("reusable-convention-package.schema.json", () => {
+  it.each(["if", "ifNot"])(
+    "validates %s condition sets like the runtime schema",
+    (field) => {
+      const conditions = [
+        { hasFile: "index.ts" },
+        { hasFile: "index.test.ts" },
+        { hasDirectory: "tests" },
+        { placeholderSatisfies: "name:segments(1)" },
+        { hasValueImport: { from: "./client", name: "createClient" } },
+        { hasValueImportFrom: "./client" },
+        { hasTypeImport: "Client" },
+        { hasTypeImportFrom: "./client" },
+      ];
+      const cases = [
+        { condition: { conditions }, valid: true },
+        { condition: { conditions, operator: "and" }, valid: true },
+        { condition: { conditions, operator: "or" }, valid: true },
+        { condition: { conditions: [conditions[0]] }, valid: true },
+        { condition: { conditions: [] }, valid: false },
+        { condition: { conditions: [{ conditions }] }, valid: false },
+        { condition: { conditions, operator: "xor" }, valid: false },
+        { condition: { conditions, extra: true }, valid: false },
+        { condition: { conditions, hasFile: "index.ts" }, valid: false },
+        {
+          condition: {
+            conditions: [{ hasDirectory: "tests", hasFile: "index.ts" }],
+          },
+          valid: false,
+        },
+        { condition: { conditions: [{}] }, valid: false },
+        { condition: { conditions: [{ unknown: "index.ts" }] }, valid: false },
+        {
+          condition: {
+            conditions: [
+              { hasValueImport: { alias: "local", name: "source" } },
+            ],
+          },
+          valid: false,
+        },
+        { condition: { hasFile: "index.ts", operator: "or" }, valid: false },
+        { condition: conditions, valid: false },
+      ];
+      for (const { condition, valid } of cases) {
+        expect(
+          validate({
+            conventionSpecVersion: "v1",
+            conventions: [
+              {
+                [field]: condition,
+                description: "Combined conditions.",
+                must: { haveType: "file" },
+                name: "combined",
+              },
+            ],
+          })
+        ).toBe(valid);
+      }
+    }
+  );
+
   it("accepts directory conditions and assertions in reusable conventions", () => {
     expect(
       validate({

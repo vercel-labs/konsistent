@@ -2,6 +2,69 @@ import { describe, expect, it } from "vitest";
 import { ConfigV1Schema, ConventionV1Schema } from "./schema.js";
 
 describe("ConfigV1Schema", () => {
+  it.each(["if", "ifNot"])(
+    "accepts sets at every supported %s location",
+    (field) => {
+      for (const options of [{}, { operator: "and" }, { operator: "or" }]) {
+        const condition = {
+          conditions: [{ hasFile: "index.ts" }, { hasDirectory: "tests" }],
+          ...options,
+        };
+        expect(
+          ConfigV1Schema.safeParse({
+            conventions: [
+              { [field]: condition, paths: "src", use: "common/check" },
+              {
+                must: [
+                  { [field]: condition, must: { haveType: "file" } },
+                  { [field]: condition, use: "common/check" },
+                ],
+                paths: "src",
+              },
+            ],
+            version: "v1",
+          }).success
+        ).toBe(true);
+        expect(
+          ConventionV1Schema.safeParse({
+            [field]: condition,
+            must: { haveType: "directory" },
+            paths: "src",
+          }).success
+        ).toBe(true);
+        expect(
+          ConfigV1Schema.safeParse({
+            conventions: [
+              { [field]: condition, must: { haveType: "file" }, paths: "src" },
+            ],
+            version: "v1",
+          }).success
+        ).toBe(false);
+      }
+    }
+  );
+
+  it.each(["if", "ifNot"])("rejects nested and empty %s sets", (field) => {
+    for (const condition of [
+      { conditions: [] },
+      {
+        conditions: [{ conditions: [{ hasFile: "index.ts" }], operator: "or" }],
+      },
+    ]) {
+      expect(
+        ConfigV1Schema.safeParse({
+          conventions: [
+            {
+              must: [{ [field]: condition, must: { haveType: "file" } }],
+              paths: "src",
+            },
+          ],
+          version: "v1",
+        }).success
+      ).toBe(false);
+    }
+  });
+
   it("accepts a minimal valid config with empty conventions", () => {
     const result = ConfigV1Schema.safeParse({
       conventions: [],

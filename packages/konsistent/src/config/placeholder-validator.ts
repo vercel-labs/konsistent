@@ -1,5 +1,6 @@
 import type {
   ConventionV1,
+  IfConditionSetV1,
   IfConditionV1,
   MustBlockV1,
   MustPredicatesV1,
@@ -127,6 +128,18 @@ function collectUsagesInCondition(opts: {
   usages: Usage[];
 }): void {
   const { condition, keyPrefix, declared, usages } = opts;
+  if (Object.hasOwn(condition, "conditions")) {
+    const set = condition as IfConditionSetV1;
+    for (const [index, predicate] of set.conditions.entries()) {
+      collectUsagesInCondition({
+        condition: predicate,
+        declared,
+        keyPrefix: `${keyPrefix}.conditions[${index}]`,
+        usages,
+      });
+    }
+    return;
+  }
   if (Object.hasOwn(condition, "hasFile")) {
     pushStringUsages({
       declared,
