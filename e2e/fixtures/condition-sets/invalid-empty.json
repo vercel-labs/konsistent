@@ -1,0 +1,9 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "paths": "src/*.ts",
+      "must": [{ "if": { "conditions": [] }, "must": { "haveType": "file" } }]
+    }
+  ]
+}

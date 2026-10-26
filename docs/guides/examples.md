@@ -284,6 +284,29 @@ Use `hasValueImport` or `hasTypeImport` to check one imported symbol. Use `hasVa
 
 Put any of these same condition objects under `ifNot` to apply predicates only when the import is absent. `ifNot` always uses the same condition catalog and matching behavior as `if`.
 
+## Combining import conditions
+
+Require a `client` export only when a file imports both the client factory and its configuration type:
+
+```json
+{
+  "paths": "src/{moduleName}.ts",
+  "must": [
+    {
+      "if": {
+        "conditions": [
+          { "hasValueImport": "createClient" },
+          { "hasTypeImport": "ClientOptions" }
+        ]
+      },
+      "must": { "exportConstants": ["client"] }
+    }
+  ]
+}
+```
+
+The omitted `operator` defaults to `"and"`. Use `"operator": "or"` to run when either import is present. Under `ifNot`, AND runs when both imports are absent, while OR runs when either import is absent. Existing single-predicate conditions still work, and nested sets are not supported. See [Condition sets](../reference/conditional-rules.md#condition-sets).
+
 ## Iterating over file patterns
 
 Every test file in a module must import the project's shared test context helper:

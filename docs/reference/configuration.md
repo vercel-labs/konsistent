@@ -94,6 +94,8 @@ All listed predicates apply unconditionally to every matched path. See [predicat
 
 Each entry is a `MustBlock` that can have `if`, `ifNot`, `for`, `excludeFiles`, `name`, and `description`. See [conditional-rules.md](./conditional-rules.md). An entry may alternatively be a reusable-convention reference of the form `{ "use": "<vendor>/<name>", ...overrides }`, which expands into a `MustBlock` — see [reusable-conventions.md](./reusable-conventions.md#use-inside-a-parents-must).
 
+Both `if` and `ifNot` accept either a single-predicate object or a [condition set](./conditional-rules.md#condition-sets): `{ "conditions": [...], "operator": "and" | "or" }`. Sets require at least one predicate and default to AND when `operator` is omitted. `ifNot` inverts each predicate before combination. Nested sets are not supported.
+
 ## `mustNot`: negated predicates
 
 `mustNot` accepts the same predicate object shape as object-form `must`, but reverses the result. For example, this fails when a matched file exports `debug`:

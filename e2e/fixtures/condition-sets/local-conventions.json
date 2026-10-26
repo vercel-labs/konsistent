@@ -1,0 +1,43 @@
+{
+  "conventionSpecVersion": "v1",
+  "conventions": [
+    {
+      "name": "inherited-set",
+      "description": "Files importing both client symbols must export an enabled flag.",
+      "paths": "src/{name}.ts",
+      "if": {
+        "conditions": [
+          { "hasValueImport": "createClient" },
+          { "hasTypeImportFrom": "./dependencies" }
+        ],
+        "operator": "and"
+      },
+      "must": { "exportConstants": ["enabled"] }
+    },
+    {
+      "name": "override-set",
+      "description": "Consumers can replace a complete condition set.",
+      "paths": "src/{name}.ts",
+      "if": {
+        "conditions": [
+          { "hasValueImport": "createClient" },
+          { "hasTypeImport": "Client" }
+        ],
+        "operator": "or"
+      },
+      "must": { "exportConstants": ["enabled"] }
+    },
+    {
+      "name": "negative-set",
+      "description": "Files missing either client import must export an enabled flag.",
+      "ifNot": {
+        "conditions": [
+          { "hasValueImport": "createClient" },
+          { "hasTypeImport": "Client" }
+        ],
+        "operator": "or"
+      },
+      "must": { "exportConstants": ["enabled"] }
+    }
+  ]
+}

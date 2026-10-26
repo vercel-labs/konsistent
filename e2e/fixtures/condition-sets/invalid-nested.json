@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "paths": "src/*.ts",
+      "must": [
+        {
+          "ifNot": {
+            "conditions": [{ "conditions": [{ "hasFile": "both.ts" }], "operator": "or" }]
+          },
+          "must": { "haveType": "file" }
+        }
+      ]
+    }
+  ]
+}

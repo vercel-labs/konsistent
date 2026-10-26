@@ -1,0 +1,66 @@
+{
+  "version": "v1",
+  "conventionSources": { "local": "./local-conventions.json" },
+  "conventions": [
+    {
+      "paths": ".",
+      "must": [
+        {
+          "if": { "conditions": [{ "hasFile": "src/both.ts" }, { "hasFile": "src/partial.ts" }] },
+          "must": { "haveFiles": ["src/dependencies.ts"] }
+        },
+        {
+          "if": { "conditions": [{ "hasDirectory": "src" }, { "hasFile": "src/both.ts" }], "operator": "and" },
+          "ifNot": { "conditions": [{ "hasFile": "skip.ts" }, { "hasFile": "legacy.ts" }] },
+          "must": { "haveDirectories": ["src"] }
+        }
+      ]
+    },
+    {
+      "paths": "src",
+      "must": [
+        {
+          "for": { "files": "{name}.ts" },
+          "excludeFiles": ["dependencies.ts"],
+          "if": { "conditions": [{ "hasValueImport": "createClient" }, { "hasTypeImport": "Client" }] },
+          "must": { "exportConstants": ["enabled"] }
+        },
+        {
+          "for": { "files": "{name}.ts" },
+          "excludeFiles": ["dependencies.ts"],
+          "if": { "conditions": [{ "hasValueImportFrom": "./dependencies" }, { "hasTypeImportFrom": "./dependencies" }], "operator": "or" },
+          "ifNot": { "conditions": [{ "hasFile": "skip.ts" }, { "hasFile": "legacy.ts" }] },
+          "must": { "exportConstants": ["enabled"] }
+        },
+        {
+          "for": { "files": "{name}.ts" },
+          "excludeFiles": ["dependencies.ts"],
+          "ifNot": { "conditions": [{ "hasValueImport": "createClient" }, { "hasTypeImport": "Client" }] },
+          "must": { "exportConstants": ["enabled"] }
+        },
+        {
+          "for": { "files": "{name}.ts" },
+          "excludeFiles": ["dependencies.ts"],
+          "ifNot": { "conditions": [{ "hasValueImport": "createClient" }, { "hasTypeImport": "Client" }], "operator": "or" },
+          "must": { "exportConstants": ["enabled"] }
+        },
+        {
+          "for": { "files": "{name}.ts" },
+          "if": { "conditions": [{ "placeholderSatisfies": "name:matches(^both$)" }, { "hasFile": "${name}.ts" }] },
+          "must": { "exportConstants": ["enabled"] }
+        },
+        {
+          "use": "local/negative-set",
+          "for": { "files": "{name}.ts" },
+          "excludeFiles": ["dependencies.ts"],
+          "ifNot": { "conditions": [{ "hasValueImport": "createClient" }, { "hasTypeImport": "Client" }] }
+        }
+      ]
+    },
+    "local/inherited-set",
+    {
+      "use": "local/override-set",
+      "if": { "conditions": [{ "hasValueImport": "createClient" }, { "hasTypeImport": "Client" }] }
+    }
+  ]
+}
