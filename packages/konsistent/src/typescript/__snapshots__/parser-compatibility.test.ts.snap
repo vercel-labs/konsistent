@@ -7367,6 +7367,410 @@ exports[`TypeScript 5.9 compatibility contract > preserves the structure of the 
     ],
     "typeAliases": []
   },
+  "condition-sets/src/both.ts": {
+    "calls": [
+      {
+        "arguments": [],
+        "name": "createClient",
+        "pos": {
+          "column": 31,
+          "line": 3
+        }
+      }
+    ],
+    "classes": [],
+    "constants": [
+      {
+        "name": "client",
+        "pos": {
+          "column": 1,
+          "line": 3
+        },
+        "typeInfo": {
+          "kind": "unsupported"
+        },
+        "typeName": {
+          "baseName": "Client",
+          "text": "Client"
+        }
+      },
+      {
+        "name": "enabled",
+        "pos": {
+          "column": 1,
+          "line": 4
+        }
+      }
+    ],
+    "declarationSymbols": [
+      {
+        "isDefaultExport": false,
+        "isExported": true,
+        "kind": "const",
+        "name": "client",
+        "pos": {
+          "column": 14,
+          "line": 3
+        }
+      },
+      {
+        "isDefaultExport": false,
+        "isExported": true,
+        "kind": "const",
+        "name": "enabled",
+        "pos": {
+          "column": 14,
+          "line": 4
+        }
+      }
+    ],
+    "defaultExportSymbols": [],
+    "exports": [
+      {
+        "isType": false,
+        "kind": "const",
+        "name": "client",
+        "pos": {
+          "column": 1,
+          "line": 3
+        }
+      },
+      {
+        "isType": false,
+        "kind": "const",
+        "name": "enabled",
+        "pos": {
+          "column": 1,
+          "line": 4
+        }
+      }
+    ],
+    "functions": [],
+    "importSources": [
+      {
+        "from": "./dependencies",
+        "isType": false,
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      },
+      {
+        "from": "./dependencies",
+        "isType": true,
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      }
+    ],
+    "imports": [
+      {
+        "from": "./dependencies",
+        "isType": true,
+        "kind": "named",
+        "name": "Client",
+        "pos": {
+          "column": 1,
+          "line": 1
+        },
+        "sourceName": "Client"
+      },
+      {
+        "from": "./dependencies",
+        "isType": false,
+        "kind": "named",
+        "name": "createClient",
+        "pos": {
+          "column": 1,
+          "line": 1
+        },
+        "sourceName": "createClient"
+      }
+    ],
+    "interfaces": [],
+    "namedExportSymbols": [],
+    "nonBarrelStatements": [
+      {
+        "kind": "declaration",
+        "pos": {
+          "column": 1,
+          "line": 3
+        }
+      },
+      {
+        "kind": "declaration",
+        "pos": {
+          "column": 1,
+          "line": 4
+        }
+      }
+    ],
+    "typeAliases": []
+  },
+  "condition-sets/src/dependencies.ts": {
+    "calls": [],
+    "classes": [],
+    "constants": [],
+    "declarationSymbols": [
+      {
+        "isDefaultExport": false,
+        "isExported": true,
+        "kind": "interface",
+        "name": "Client",
+        "pos": {
+          "column": 18,
+          "line": 1
+        }
+      },
+      {
+        "isDefaultExport": false,
+        "isExported": true,
+        "kind": "function",
+        "name": "createClient",
+        "pos": {
+          "column": 17,
+          "line": 3
+        }
+      }
+    ],
+    "defaultExportSymbols": [],
+    "exports": [
+      {
+        "isType": true,
+        "kind": "interface",
+        "name": "Client",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      },
+      {
+        "isType": false,
+        "kind": "function",
+        "name": "createClient",
+        "pos": {
+          "column": 1,
+          "line": 3
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "createClient",
+        "params": [],
+        "pos": {
+          "column": 1,
+          "line": 3
+        },
+        "returnType": {
+          "baseName": "Client",
+          "text": "Client"
+        }
+      }
+    ],
+    "importSources": [],
+    "imports": [],
+    "interfaces": [
+      {
+        "extends": [],
+        "name": "Client",
+        "pos": {
+          "column": 1,
+          "line": 1
+        },
+        "typeInfo": {
+          "kind": "object",
+          "properties": []
+        }
+      }
+    ],
+    "namedExportSymbols": [],
+    "nonBarrelStatements": [
+      {
+        "kind": "declaration",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      },
+      {
+        "kind": "declaration",
+        "pos": {
+          "column": 1,
+          "line": 3
+        }
+      }
+    ],
+    "typeAliases": []
+  },
+  "condition-sets/src/neither.ts": {
+    "calls": [],
+    "classes": [],
+    "constants": [
+      {
+        "name": "enabled",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      }
+    ],
+    "declarationSymbols": [
+      {
+        "isDefaultExport": false,
+        "isExported": true,
+        "kind": "const",
+        "name": "enabled",
+        "pos": {
+          "column": 14,
+          "line": 1
+        }
+      }
+    ],
+    "defaultExportSymbols": [],
+    "exports": [
+      {
+        "isType": false,
+        "kind": "const",
+        "name": "enabled",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      }
+    ],
+    "functions": [],
+    "importSources": [],
+    "imports": [],
+    "interfaces": [],
+    "namedExportSymbols": [],
+    "nonBarrelStatements": [
+      {
+        "kind": "declaration",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      }
+    ],
+    "typeAliases": []
+  },
+  "condition-sets/src/partial.ts": {
+    "calls": [
+      {
+        "arguments": [],
+        "name": "createClient",
+        "pos": {
+          "column": 23,
+          "line": 3
+        }
+      }
+    ],
+    "classes": [],
+    "constants": [
+      {
+        "name": "client",
+        "pos": {
+          "column": 1,
+          "line": 3
+        }
+      },
+      {
+        "name": "enabled",
+        "pos": {
+          "column": 1,
+          "line": 4
+        }
+      }
+    ],
+    "declarationSymbols": [
+      {
+        "isDefaultExport": false,
+        "isExported": true,
+        "kind": "const",
+        "name": "client",
+        "pos": {
+          "column": 14,
+          "line": 3
+        }
+      },
+      {
+        "isDefaultExport": false,
+        "isExported": true,
+        "kind": "const",
+        "name": "enabled",
+        "pos": {
+          "column": 14,
+          "line": 4
+        }
+      }
+    ],
+    "defaultExportSymbols": [],
+    "exports": [
+      {
+        "isType": false,
+        "kind": "const",
+        "name": "client",
+        "pos": {
+          "column": 1,
+          "line": 3
+        }
+      },
+      {
+        "isType": false,
+        "kind": "const",
+        "name": "enabled",
+        "pos": {
+          "column": 1,
+          "line": 4
+        }
+      }
+    ],
+    "functions": [],
+    "importSources": [
+      {
+        "from": "./dependencies",
+        "isType": false,
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      }
+    ],
+    "imports": [
+      {
+        "from": "./dependencies",
+        "isType": false,
+        "kind": "named",
+        "name": "createClient",
+        "pos": {
+          "column": 1,
+          "line": 1
+        },
+        "sourceName": "createClient"
+      }
+    ],
+    "interfaces": [],
+    "namedExportSymbols": [],
+    "nonBarrelStatements": [
+      {
+        "kind": "declaration",
+        "pos": {
+          "column": 1,
+          "line": 3
+        }
+      },
+      {
+        "kind": "declaration",
+        "pos": {
+          "column": 1,
+          "line": 4
+        }
+      }
+    ],
+    "typeAliases": []
+  },
   "constant-schemas-broken/src/constants.ts": {
     "calls": [],
     "classes": [],

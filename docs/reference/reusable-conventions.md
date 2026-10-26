@@ -100,12 +100,20 @@ See [Static placeholder values](./path-patterns.md#static-placeholder-values) fo
 {
   "use": "common/conditionally-require-tests",
   "paths": "packages/{packageName}",
-  "if": { "hasFile": "${packageName}.spec.ts" },
+  "if": {
+    "conditions": [
+      { "hasFile": "${packageName}.spec.ts" },
+      { "hasFile": "${packageName}.test.ts" }
+    ],
+    "operator": "or"
+  },
   "ifNot": { "hasFile": "skip-tests.ts" }
 }
 ```
 
 The conditions are evaluated separately for every matched path. A failed gate skips the expanded convention's complete `must` and `mustNot` work for that path. A match continues into its predicates and any block-level conditions. See [Conditional rules](./conditional-rules.md#top-level-conditions-on-reusable-references).
+
+Both fields accept single predicates or non-nested [condition sets](./conditional-rules.md#condition-sets). A set override replaces the entire inherited condition, including its `conditions` and `operator`. If the override omits `operator`, it uses the default AND even when the inherited set used OR.
 
 ### Hand-written convention
 
@@ -145,7 +153,7 @@ When you write `{ use: "<vendor>/<name>", ...overrides }`, `konsistent` deep-mer
 | Field kind | Rule |
 | --- | --- |
 | Plain object (e.g. `must`, `mustNot`, nested predicate definitions) | Recursive deep-merge. Keys you supply replace the inherited value; keys you omit pass through. |
-| `if` or `ifNot` condition object | The complete use-site condition replaces the corresponding inherited condition. The two fields remain independent, and condition properties are never combined. |
+| `if` or `ifNot` predicate object or condition set | The complete use-site condition replaces the corresponding inherited condition, including its operator. The two fields remain independent, and condition properties are never combined. |
 | Array (e.g. `paths`, `excludeFiles`, predicate lists like `haveFiles`, `declareFunctions`, `exportValues`, `exportFunctions`) | Your array fully replaces the inherited array. Use `"excludeFiles": []` to clear an inherited list. |
 | Primitive (e.g. `severity`, `description`) | Your value replaces the inherited value. |
 

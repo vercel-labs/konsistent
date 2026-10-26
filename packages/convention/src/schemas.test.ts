@@ -78,6 +78,53 @@ describe("symbol definition schemas", () => {
 });
 
 describe("predicate and block schemas", () => {
+  it.each([{}, { operator: "and" }, { operator: "or" }])(
+    "accepts condition sets with options %j",
+    (options) => {
+      const condition = {
+        conditions: [
+          { hasFile: "index.ts" },
+          { hasFile: "index.test.ts" },
+          { hasDirectory: "tests" },
+          { placeholderSatisfies: "name:segments(1)" },
+          { hasValueImport: { from: "./client", name: "createClient" } },
+          { hasValueImportFrom: "./client" },
+          { hasTypeImport: "Client" },
+          { hasTypeImportFrom: "./client" },
+        ],
+        ...options,
+      };
+      expect(IfConditionV1Schema.parse(condition)).toEqual(condition);
+      expect(
+        IfConditionV1Schema.safeParse({
+          conditions: [{ hasFile: "index.ts" }],
+          ...options,
+        }).success
+      ).toBe(true);
+    }
+  );
+
+  it.each([
+    {},
+    { conditions: [] },
+    { conditions: "index.ts" },
+    { conditions: [{ conditions: [{ hasFile: "index.ts" }] }] },
+    { conditions: [{ hasFile: "index.ts" }], operator: "xor" },
+    { conditions: [{ hasFile: "index.ts" }], unexpected: true },
+    { conditions: [{ hasFile: "index.ts" }], hasDirectory: "src" },
+    { conditions: [{}] },
+    { conditions: [{ unknown: "index.ts" }] },
+    { conditions: [{ hasDirectory: "src", hasFile: "index.ts" }] },
+    { conditions: [{ hasFile: "index.ts", operator: "or" }] },
+    { conditions: [{ hasFile: ["index.ts"] }] },
+    { conditions: [{ hasValueImport: { alias: "local", name: "source" } }] },
+    { hasFile: "index.ts", operator: "and" },
+    { operator: "or" },
+    [{ hasFile: "index.ts" }],
+  ])("rejects invalid condition set %j", (condition) => {
+    expect(IfConditionV1Schema.safeParse(condition).success).toBe(false);
+  });
+
   it.each([
     {
       condition: { hasValueImport: "createClient" },

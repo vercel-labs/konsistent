@@ -1,0 +1,44 @@
+{
+  "version": "v1",
+  "conventionSources": { "local": "./local-conventions.json" },
+  "conventions": [
+    {
+      "paths": "src",
+      "must": [
+        {
+          "name": "if-and",
+          "for": { "files": "{name}.ts" },
+          "excludeFiles": ["dependencies.ts"],
+          "if": { "conditions": [{ "hasValueImport": "createClient" }, { "hasTypeImport": "Client" }] },
+          "must": { "exportConstants": ["missing"] }
+        },
+        {
+          "name": "if-or",
+          "for": { "files": "{name}.ts" },
+          "excludeFiles": ["dependencies.ts"],
+          "if": { "conditions": [{ "hasValueImport": "createClient" }, { "hasTypeImport": "Client" }], "operator": "or" },
+          "must": { "exportConstants": ["missing"] }
+        },
+        {
+          "name": "if-not-and",
+          "for": { "files": "{name}.ts" },
+          "excludeFiles": ["dependencies.ts"],
+          "ifNot": { "conditions": [{ "hasValueImport": "createClient" }, { "hasTypeImport": "Client" }] },
+          "must": { "exportConstants": ["missing"] }
+        },
+        {
+          "name": "if-not-or",
+          "for": { "files": "{name}.ts" },
+          "excludeFiles": ["dependencies.ts"],
+          "ifNot": { "conditions": [{ "hasValueImport": "createClient" }, { "hasTypeImport": "Client" }], "operator": "or" },
+          "must": { "exportConstants": ["missing"] }
+        }
+      ]
+    },
+    {
+      "use": "local/override-set",
+      "if": { "conditions": [{ "hasValueImport": "createClient" }, { "hasTypeImport": "Client" }] },
+      "must": { "exportConstants": ["missing"] }
+    }
+  ]
+}

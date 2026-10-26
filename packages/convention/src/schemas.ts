@@ -32,7 +32,7 @@ const ImportConditionEntryV1Schema = z.union([
   ImportConditionDefinitionV1Schema,
 ]);
 
-export const IfConditionV1Schema = z.union([
+export const IfConditionPredicateV1Schema = z.union([
   z.strictObject({ hasFile: z.string() }),
   z.strictObject({ hasDirectory: z.string() }),
   z.strictObject({ placeholderSatisfies: z.string() }),
@@ -40,6 +40,16 @@ export const IfConditionV1Schema = z.union([
   z.strictObject({ hasValueImportFrom: z.string() }),
   z.strictObject({ hasTypeImport: ImportConditionEntryV1Schema }),
   z.strictObject({ hasTypeImportFrom: z.string() }),
+]);
+
+export const IfConditionSetV1Schema = z.strictObject({
+  conditions: z.array(IfConditionPredicateV1Schema).min(1),
+  operator: z.enum(["and", "or"]).optional(),
+});
+
+export const IfConditionV1Schema = z.union([
+  ...IfConditionPredicateV1Schema.options,
+  IfConditionSetV1Schema,
 ]);
 
 const LegacyExportDefinitionV1Schema = z.strictObject({
@@ -295,6 +305,10 @@ export type DeclarationDefinitionV1 = z.infer<
   typeof DeclarationDefinitionV1Schema
 >;
 export type ImportDefinitionV1 = z.infer<typeof ImportDefinitionV1Schema>;
+export type IfConditionPredicateV1 = z.infer<
+  typeof IfConditionPredicateV1Schema
+>;
+export type IfConditionSetV1 = z.infer<typeof IfConditionSetV1Schema>;
 export type IfConditionV1 = z.infer<typeof IfConditionV1Schema>;
 export type FunctionDefinitionV1 = z.infer<typeof FunctionDefinitionV1Schema>;
 export type CallFunctionDefinitionV1 = z.infer<

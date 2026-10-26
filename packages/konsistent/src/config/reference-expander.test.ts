@@ -2,7 +2,7 @@ import type { ReusableConventionV1 } from "@konsistent/convention";
 import { describe, expect, it } from "vitest";
 import { validatePlaceholders } from "./placeholder-validator.js";
 import { expandReferences } from "./reference-expander.js";
-import type { ConventionV1 } from "./schema.js";
+import type { ConventionV1, IfConditionV1 } from "./schema.js";
 import type { SourceMap } from "./source-resolver.js";
 
 function buildSourceMap(
@@ -20,6 +20,108 @@ function buildSourceMap(
 }
 
 describe("expandReferences", () => {
+  it("preserves a condition set inherited through a top-level string reference", () => {
+    const condition: IfConditionV1 = {
+      conditions: [{ hasFile: "index.ts" }],
+      operator: "or",
+    };
+    const result = expandReferences({
+      conventions: ["common/check"],
+      sourceMap: buildSourceMap({
+        common: [
+          {
+            description: "Require an index when enabled.",
+            if: condition,
+            ifNot: condition,
+            must: { haveType: "file" },
+            name: "check",
+            paths: "src/*.ts",
+          },
+        ],
+      }),
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.conventions[0]?.if).toEqual(condition);
+      expect(result.conventions[0]?.ifNot).toEqual(condition);
+    }
+  });
+
+  describe.each(["top-level", "block"] as const)(
+    "condition sets in %s references",
+    (placement) => {
+      const single: IfConditionV1 = { hasFile: "single.ts" };
+      const set: IfConditionV1 = {
+        conditions: [{ hasFile: "first.ts" }, { hasFile: "second.ts" }],
+        operator: "or",
+      };
+      const replacementSet: IfConditionV1 = {
+        conditions: [{ hasDirectory: "tests" }],
+      };
+      const cases = [
+        {
+          inherited: single,
+          name: "single-to-set",
+          replacement: replacementSet,
+        },
+        { inherited: set, name: "set-to-single", replacement: single },
+        {
+          inherited: set,
+          name: "set-to-set without inheriting the operator",
+          replacement: replacementSet,
+        },
+      ].flatMap((entry) =>
+        (["if", "ifNot"] as const).map((field) => ({ ...entry, field }))
+      );
+
+      it.each(cases)(
+        "atomically replaces $field $name",
+        ({ field, inherited, replacement }) => {
+          const otherField = field === "if" ? "ifNot" : "if";
+          const result = expandReferences({
+            conventions:
+              placement === "top-level"
+                ? [
+                    { paths: "src", use: "common/check" },
+                    { [field]: replacement, paths: "src", use: "common/check" },
+                  ]
+                : [
+                    {
+                      must: [
+                        "common/check",
+                        { [field]: replacement, use: "common/check" },
+                      ],
+                      paths: "src",
+                    },
+                  ],
+            sourceMap: buildSourceMap({
+              common: [
+                {
+                  [field]: inherited,
+                  [otherField]: single,
+                  description: "Require an index when enabled.",
+                  must: { haveFiles: ["index.ts"] },
+                  name: "check",
+                },
+              ],
+            }),
+          });
+          expect(result.success).toBe(true);
+          if (result.success) {
+            const must = result.conventions[0]?.must;
+            const blocks = Array.isArray(must) ? must : [];
+            const entries =
+              placement === "top-level" ? result.conventions : blocks;
+            expect(entries[0]?.[field]).toEqual(inherited);
+            expect(entries[1]?.[field]).toEqual(replacement);
+            expect(entries[0]?.[otherField]).toEqual(single);
+            expect(entries[1]?.[otherField]).toEqual(single);
+          }
+        }
+      );
+    }
+  );
+
   it("expands a string-ref to the matching reusable convention", () => {
     const sourceMap = buildSourceMap({
       common: [

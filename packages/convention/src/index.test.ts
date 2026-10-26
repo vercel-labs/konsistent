@@ -1,10 +1,30 @@
 import { describe, expect, it } from "vitest";
 import {
+  IfConditionPredicateV1Schema,
+  IfConditionSetV1Schema,
+  IfConditionV1Schema,
   ReusableConventionsPackageV1Schema,
   ReusableConventionV1Schema,
 } from "./index.js";
 
 describe("ReusableConventionV1Schema", () => {
+  it("exports predicate and set schemas and accepts sets in reusable conventions", () => {
+    const predicate = { hasFile: "index.ts" };
+    const set = { conditions: [predicate] };
+    expect(IfConditionPredicateV1Schema.parse(predicate)).toEqual(predicate);
+    expect(IfConditionSetV1Schema.parse(set)).toEqual(set);
+    expect(IfConditionV1Schema.parse(set)).toEqual(set);
+    expect(
+      ReusableConventionV1Schema.safeParse({
+        description: "Require public exports when source files exist.",
+        if: set,
+        ifNot: { conditions: [{ hasFile: "skip.ts" }], operator: "or" },
+        must: { exportValues: ["createClient"] },
+        name: "public-exports",
+      }).success
+    ).toBe(true);
+  });
+
   it("accepts a minimal reusable convention", () => {
     const result = ReusableConventionV1Schema.safeParse({
       description: "Every package must have a README.md.",

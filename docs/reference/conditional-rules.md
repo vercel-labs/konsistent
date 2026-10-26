@@ -21,14 +21,57 @@ This top-level form is specific to reusable-convention references; hand-written 
 
 ## Positive and negative gates
 
-`if` and `ifNot` accept exactly the same condition object. Both use the same condition evaluator; `ifNot` reverses its result rather than defining a separate list of predicates. Adding support for a condition automatically makes it available through both fields.
+`if` and `ifNot` accept the same single-predicate objects and condition sets. Both use the same predicate evaluator. `ifNot` reverses each predicate's result before combining results, rather than reversing the combined result. Adding support for a predicate automatically makes it available through both fields.
 
 | Fields present | The rule runs when |
 | --- | --- |
 | neither | Always. |
-| `if` | `if` matches. |
-| `ifNot` | `ifNot` does not match. |
-| both | `if` matches and `ifNot` does not match. |
+| `if` | The positive gate passes. |
+| `ifNot` | The negative gate passes. |
+| both | Both gates pass independently. |
+
+## Condition sets
+
+To combine predicates inside one gate, use a nonempty `conditions` array and an optional `operator`. The operator defaults to `"and"`; `"or"` is also supported. Existing single-predicate objects remain valid.
+
+```json
+{
+  "paths": "modules/{moduleName}",
+  "must": [
+    {
+      "if": {
+        "conditions": [
+          { "hasFile": "index.ts" },
+          { "hasDirectory": "tests" }
+        ]
+      },
+      "ifNot": {
+        "operator": "or",
+        "conditions": [
+          { "hasFile": "skip-tests.ts" },
+          { "hasFile": "legacy.ts" }
+        ]
+      },
+      "must": { "haveFiles": ["tests/index.test.ts"] }
+    }
+  ]
+}
+```
+
+This block runs when `index.ts` and the `tests` directory exist, and at least one of `skip-tests.ts` or `legacy.ts` is absent.
+
+| Field | Operator | Gate passes when |
+| --- | --- | --- |
+| `if` | `and` (default) | Every predicate is true. |
+| `if` | `or` | At least one predicate is true. |
+| `ifNot` | `and` (default) | Every predicate is false. |
+| `ifNot` | `or` | At least one predicate is false. |
+
+For example, `ifNot` with AND means `!A && !B`, not `!(A && B)`. A one-entry set behaves exactly like its single-predicate object. Predicates are evaluated in array order and stop once the gate result is determined.
+
+Each array entry must contain exactly one supported predicate. Repeated predicate kinds are allowed, such as two `hasFile` checks. Empty arrays, nested sets, bare arrays, unknown fields, and mixing `conditions` with predicate properties are rejected. `operator` is only valid alongside `conditions`, not on an individual predicate or its enclosing block.
+
+Sets work wherever conditions are already supported, including reusable conventions and their overrides. With `for.files`, the complete set uses each selected file's context independently. All entries are checked for undeclared placeholders when loading the config, including entries runtime evaluation might skip.
 
 ## Object form vs. array form
 
@@ -89,8 +132,8 @@ Switch from object to array form when you need:
 | --- | --- | --- | --- |
 | `must` | `MustPredicates` | yes, unless `mustNot` is present | The predicates this block enforces. See [predicates.md](./predicates.md). |
 | `mustNot` | `MustPredicates` | yes, unless `must` is present | The predicates this block forbids. |
-| `if` | condition object | no | Gate. Block runs only if one supported condition holds. |
-| `ifNot` | condition object | no | Negative gate. Block runs only if the condition does not hold. |
+| `if` | predicate object or condition set | no | Positive gate. See [Condition sets](#condition-sets) for combination rules. |
+| `ifNot` | predicate object or condition set | no | Negative gate. Inverts each predicate before combination. |
 | `for` | `{ files: string \| string[] }` | no | Scope. Conditions and predicates apply to files matching this pattern within the parent path. |
 | `excludeFiles` | `string[]` | no | Glob patterns to exclude from the block. |
 | `name` | string matching `[a-z0-9-]+` | no | Identifier shown in violation reports. |
@@ -199,7 +242,7 @@ Value and type imports remain separate:
 
 Only static ES import declarations count. Re-exports, dynamic `import()`, `require()`, and TypeScript import-equals do not.
 
-Each `if` or `ifNot` condition has exactly **one** condition property — not multiple and not an empty object.
+Each single-predicate object, whether used directly or inside a [condition set](#condition-sets), has exactly **one** condition property. Multiple predicate properties and empty objects are not supported.
 
 ## `for.files`
 

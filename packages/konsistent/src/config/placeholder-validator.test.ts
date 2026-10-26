@@ -3,6 +3,109 @@ import { validatePlaceholders } from "./placeholder-validator.js";
 import type { ConventionV1 } from "./schema.js";
 
 describe("validatePlaceholders", () => {
+  it.each(["if", "ifNot"])(
+    "checks every entry of top-level and block %s sets",
+    (field) => {
+      const result = validatePlaceholders({
+        conventions: [
+          {
+            [field]: {
+              conditions: [
+                { hasFile: "exists.ts" },
+                { hasDirectory: "${missingDirectory}" },
+              ],
+              operator: "or",
+            },
+            must: [
+              {
+                [field]: {
+                  conditions: [
+                    { hasFile: "${missingFile}.ts" },
+                    {
+                      placeholderSatisfies:
+                        "name:matches(${missingConstraint})",
+                    },
+                    {
+                      hasValueImport: {
+                        from: "${missingValueSource}",
+                        name: "${missingValue}",
+                      },
+                    },
+                    {
+                      hasTypeImport: {
+                        from: "${missingTypeSource}",
+                        name: "${missingType}",
+                      },
+                    },
+                    { hasValueImportFrom: "${missingValueFrom}" },
+                    { hasTypeImportFrom: "${missingTypeFrom}" },
+                    { hasFile: "${missingFile}.test.ts" },
+                  ],
+                  operator: "or",
+                },
+                must: { haveType: "file" },
+              },
+            ],
+            paths: "src/{name}.ts",
+          },
+        ],
+        identifiers: ["sets"],
+      });
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error).toContain(`${field}.conditions[1].hasDirectory`);
+        for (const [index, predicate] of [
+          "hasFile",
+          "placeholderSatisfies",
+          "hasValueImport",
+          "hasTypeImport",
+          "hasValueImportFrom",
+          "hasTypeImportFrom",
+        ].entries()) {
+          expect(result.error).toContain(
+            `must.${field}.conditions[${index}].${predicate}`
+          );
+        }
+        expect(result.error.match(/"\$\{missingFile\}"/g)).toHaveLength(1);
+      }
+    }
+  );
+
+  it("accepts inherited, static, and for.files placeholders in condition sets", () => {
+    expect(
+      validatePlaceholders({
+        conventions: [
+          {
+            if: {
+              conditions: [
+                { hasFile: "${module}.ts" },
+                { hasDirectory: "${directory}" },
+              ],
+            },
+            must: [
+              {
+                for: { files: "{file}.ts" },
+                if: {
+                  conditions: [
+                    { hasFile: "${file}.ts" },
+                    {
+                      hasValueImport: { from: "./${module}", name: "${file}" },
+                    },
+                  ],
+                },
+                ifNot: { conditions: [{ hasTypeImportFrom: "./${file}" }] },
+                must: { haveType: "file" },
+              },
+            ],
+            paths: "src/{module}",
+            placeholders: { directory: "tests" },
+          },
+        ],
+        identifiers: ["scoped-sets"],
+      })
+    ).toEqual({ ok: true });
+  });
+
   it("checks placeholders in directory conditions and predicates", () => {
     const conventions: ConventionV1[] = [
       {

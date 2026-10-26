@@ -1,6 +1,10 @@
 import { API } from "typescript/unstable/sync";
 import { describe, expect, it, vi } from "vitest";
-import type { ConfigV1, IfConditionV1 } from "../config/schema.js";
+import type {
+  ConfigV1,
+  IfConditionPredicateV1,
+  IfConditionV1,
+} from "../config/schema.js";
 import { createTypeScriptSession } from "../typescript/native-session.js";
 import { parseFileStructure } from "../typescript/parser.js";
 import type { FileSystem } from "./filesystem.js";
@@ -30,7 +34,7 @@ function createMockFileSystem(opts: {
   };
 }
 
-function createMatchingConditions(): IfConditionV1[] {
+function createMatchingConditions(): IfConditionPredicateV1[] {
   return [
     { hasFile: "marker.ts" },
     { placeholderSatisfies: "moduleName:matches(^client$)" },
@@ -45,6 +49,328 @@ function createMatchingConditions(): IfConditionV1[] {
     { hasTypeImportFrom: "./${moduleName}" },
   ];
 }
+
+describe.each(["convention", "block", "for"] as const)(
+  "condition sets at %s level",
+  (placement) => {
+    const truthTable = [
+      {
+        first: false,
+        ifAnd: false,
+        ifNotAnd: true,
+        ifNotOr: true,
+        ifOr: false,
+        second: false,
+      },
+      {
+        first: false,
+        ifAnd: false,
+        ifNotAnd: false,
+        ifNotOr: true,
+        ifOr: true,
+        second: true,
+      },
+      {
+        first: true,
+        ifAnd: false,
+        ifNotAnd: false,
+        ifNotOr: true,
+        ifOr: true,
+        second: false,
+      },
+      {
+        first: true,
+        ifAnd: true,
+        ifNotAnd: false,
+        ifNotOr: false,
+        ifOr: true,
+        second: true,
+      },
+    ];
+    const cases = truthTable.flatMap((row) =>
+      (["if", "ifNot"] as const).flatMap((field) =>
+        ([undefined, "and", "or"] as const).map((operator) => ({
+          ...row,
+          field,
+          operator,
+        }))
+      )
+    );
+
+    it.each(cases)(
+      "$field operator=$operator with $first/$second",
+      async ({
+        field,
+        operator,
+        first,
+        second,
+        ifAnd,
+        ifOr,
+        ifNotAnd,
+        ifNotOr,
+      }) => {
+        const condition: IfConditionV1 = {
+          conditions: [{ hasFile: "first.ts" }, { hasFile: "second.ts" }],
+          operator,
+        };
+        const gate = { [field]: condition };
+        const config: ConfigV1 = {
+          conventions: [
+            placement === "convention"
+              ? {
+                  ...gate,
+                  must: { haveType: "directory" },
+                  paths: "src/input.ts",
+                }
+              : {
+                  must: [
+                    {
+                      ...gate,
+                      for:
+                        placement === "for" ? { files: "input.ts" } : undefined,
+                      must: { haveType: "directory" },
+                    },
+                  ],
+                  paths: placement === "for" ? "src" : "src/input.ts",
+                },
+          ],
+          version: "v1",
+        };
+        const fs = createMockFileSystem({
+          directories: new Set(["src"]),
+          files: new Set([
+            "src/input.ts",
+            ...(first ? ["src/first.ts"] : []),
+            ...(second ? ["src/second.ts"] : []),
+          ]),
+          globResults: new Map([
+            ["src", ["src"]],
+            ["src/input.ts", ["src/input.ts"]],
+          ]),
+        });
+        const positivePasses = operator === "or" ? ifOr : ifAnd;
+        const negativePasses = operator === "or" ? ifNotOr : ifNotAnd;
+        const passes = field === "if" ? positivePasses : negativePasses;
+        const { diagnostics } = await run({ config, fileSystem: fs });
+        expect(diagnostics).toHaveLength(passes ? 1 : 0);
+      }
+    );
+  }
+);
+
+describe("condition set evaluation", () => {
+  const singleEntryCases = (["if", "ifNot"] as const).flatMap((field) =>
+    ([undefined, "and", "or"] as const).flatMap((operator) =>
+      [false, true].map((exists) => ({ exists, field, operator }))
+    )
+  );
+  it.each(singleEntryCases)(
+    "keeps single-entry $field/$operator sets equivalent to single predicates with exists=$exists",
+    async ({ field, operator, exists }) => {
+      const predicate: IfConditionPredicateV1 = { hasFile: "marker.ts" };
+      const conditions: IfConditionV1[] = [
+        predicate,
+        { conditions: [predicate], operator },
+      ];
+      const { diagnostics } = await run({
+        config: {
+          conventions: conditions.map((condition, index) => ({
+            [field]: condition,
+            must: { haveType: "directory" },
+            name: `condition-${index}`,
+            paths: "src/input.ts",
+          })),
+          version: "v1",
+        },
+        fileSystem: createMockFileSystem({
+          files: new Set([
+            "src/input.ts",
+            ...(exists ? ["src/marker.ts"] : []),
+          ]),
+          globResults: new Map([["src/input.ts", ["src/input.ts"]]]),
+        }),
+      });
+      const passes = field === "if" ? exists : !exists;
+      expect(
+        diagnostics.map((diagnostic) => diagnostic.conventionName)
+      ).toEqual(passes ? ["condition-0", "condition-1"] : []);
+    }
+  );
+
+  it.each([
+    { negative: false, passes: false, positive: false },
+    { negative: true, passes: false, positive: false },
+    { negative: false, passes: true, positive: true },
+    { negative: true, passes: false, positive: true },
+  ])(
+    "requires both sets to pass with positive=$positive and negative=$negative",
+    async ({ positive, negative, passes }) => {
+      const { diagnostics } = await run({
+        config: {
+          conventions: [
+            {
+              if: { conditions: [{ hasFile: "positive.ts" }] },
+              ifNot: {
+                conditions: [{ hasFile: "negative.ts" }],
+                operator: "or",
+              },
+              must: { haveType: "directory" },
+              paths: "src/input.ts",
+            },
+          ],
+          version: "v1",
+        },
+        fileSystem: createMockFileSystem({
+          files: new Set([
+            "src/input.ts",
+            ...(positive ? ["src/positive.ts"] : []),
+            ...(negative ? ["src/negative.ts"] : []),
+          ]),
+          globResults: new Map([["src/input.ts", ["src/input.ts"]]]),
+        }),
+      });
+      expect(diagnostics).toHaveLength(passes ? 1 : 0);
+    }
+  );
+
+  it.each([
+    { exists: false, field: "if", operator: "and" },
+    { exists: true, field: "if", operator: "or" },
+    { exists: true, field: "ifNot", operator: "and" },
+    { exists: false, field: "ifNot", operator: "or" },
+  ] as const)(
+    "short-circuits $field/$operator before parsing imports",
+    async ({ field, operator, exists }) => {
+      const fs = createMockFileSystem({
+        files: new Set(["src/input.ts", ...(exists ? ["src/marker.ts"] : [])]),
+        globResults: new Map([["src/input.ts", ["src/input.ts"]]]),
+      });
+      const read = vi.spyOn(fs, "readFile");
+      await run({
+        config: {
+          conventions: [
+            {
+              must: [
+                {
+                  [field]: {
+                    conditions: [
+                      { hasFile: "marker.ts" },
+                      { hasValueImportFrom: "pkg" },
+                    ],
+                    operator,
+                  },
+                  must: { haveType: "file" },
+                },
+              ],
+              paths: "src/input.ts",
+            },
+          ],
+          version: "v1",
+        },
+        fileSystem: fs,
+      });
+      expect(read).not.toHaveBeenCalled();
+    }
+  );
+
+  it("combines both gates, resolves all predicate kinds, and shares a borrowed session and file parse", async () => {
+    const session = createTypeScriptSession();
+    const close = vi.spyOn(session, "close");
+    const fs = createMockFileSystem({
+      directories: new Set(["src", "src/tests"]),
+      fileContents: new Map([
+        [
+          "src/input.ts",
+          'import { createClient, type Client } from "./input"; export const ready = true;',
+        ],
+      ]),
+      files: new Set(["src/input.ts"]),
+      globResults: new Map([["src/*.ts", ["src/input.ts"]]]),
+    });
+    const read = vi.spyOn(fs, "readFile");
+    try {
+      const { diagnostics } = await run({
+        config: {
+          conventions: [
+            {
+              if: {
+                conditions: [
+                  { hasFile: "${name}.ts" },
+                  { hasDirectory: "tests" },
+                  { placeholderSatisfies: "name:matches(^input$)" },
+                  {
+                    hasValueImport: { from: "./${name}", name: "createClient" },
+                  },
+                  { hasValueImportFrom: "./${name}" },
+                  { hasTypeImport: "Client" },
+                  { hasTypeImportFrom: "./${name}" },
+                ],
+              },
+              ifNot: {
+                conditions: [{ hasFile: "skip.ts" }, { hasFile: "legacy.ts" }],
+              },
+              must: { exportConstants: ["ready"] },
+              paths: "src/{name}.ts",
+            },
+          ],
+          version: "v1",
+        },
+        fileSystem: fs,
+        typescriptSession: session,
+      });
+      expect(diagnostics).toEqual([]);
+      expect(read).toHaveBeenCalledTimes(1);
+      expect(close).not.toHaveBeenCalled();
+    } finally {
+      session.close();
+    }
+  });
+
+  it("evaluates mixed import and placeholder sets separately for each for.files match", async () => {
+    const fs = createMockFileSystem({
+      directories: new Set(["src"]),
+      fileContents: new Map([
+        [
+          "src/matching.ts",
+          'import { createClient, type Client } from "./dependencies";',
+        ],
+        ["src/skipped.ts", 'import type { Client } from "./dependencies";'],
+      ]),
+      files: new Set(["src/matching.ts", "src/skipped.ts"]),
+      globResults: new Map([
+        ["src", ["src"]],
+        ["src/*.ts", ["src/matching.ts", "src/skipped.ts"]],
+      ]),
+    });
+    const { diagnostics } = await run({
+      config: {
+        conventions: [
+          {
+            must: [
+              {
+                for: { files: "{name}.ts" },
+                if: {
+                  conditions: [
+                    { hasValueImport: "createClient" },
+                    { hasTypeImportFrom: "./dependencies" },
+                    { placeholderSatisfies: "name:matches(^matching$)" },
+                  ],
+                },
+                must: { haveType: "directory" },
+              },
+            ],
+            paths: "src",
+          },
+        ],
+        version: "v1",
+      },
+      fileSystem: fs,
+    });
+    expect(diagnostics.map((diagnostic) => diagnostic.filePath)).toEqual([
+      "src/matching.ts",
+    ]);
+  });
+});
 
 describe("run", () => {
   it("threads a borrowed session through conditions, nested files, and comparisons", async () => {

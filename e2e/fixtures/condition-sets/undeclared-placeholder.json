@@ -1,0 +1,17 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "paths": "src/*.ts",
+      "must": [
+        {
+          "if": {
+            "conditions": [{ "hasFile": "both.ts" }, { "hasValueImportFrom": "${missing}" }],
+            "operator": "or"
+          },
+          "must": { "haveType": "file" }
+        }
+      ]
+    }
+  ]
+}
