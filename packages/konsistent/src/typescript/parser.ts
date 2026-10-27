@@ -41,7 +41,11 @@ import {
   parseInterfaceTypeShape,
   parseTypeShape,
 } from "./constant-type-schema.js";
-import type { ParsedSource, TypeScriptSession } from "./native-session.js";
+import type {
+  ParsedSource,
+  SourceInput,
+  TypeScriptSession,
+} from "./native-session.js";
 import { withTypeScriptSession } from "./native-session.js";
 import type {
   CallInfo,
@@ -635,20 +639,33 @@ function processCalls(opts: {
   });
 }
 
+export function parseFileStructures(opts: {
+  sources: readonly SourceInput[];
+  session?: TypeScriptSession;
+}): FileStructure[] {
+  return withTypeScriptSession({
+    run: (session) =>
+      session.withSourceFiles({
+        sources: opts.sources,
+        visit: (parsedSources) =>
+          parsedSources.map((parsedSource) =>
+            collectFileStructure({ parsedSource })
+          ),
+      }),
+    session: opts.session,
+  });
+}
+
 export function parseFileStructure(opts: {
   source: string;
   filePath?: string;
   session?: TypeScriptSession;
 }): FileStructure {
-  return withTypeScriptSession({
-    run: (session) =>
-      session.withSourceFile({
-        filePath: opts.filePath,
-        source: opts.source,
-        visit: (parsedSource) => collectFileStructure({ parsedSource }),
-      }),
+  const [structure] = parseFileStructures({
     session: opts.session,
+    sources: [{ filePath: opts.filePath, source: opts.source }],
   });
+  return structure;
 }
 
 function collectFileStructure(opts: {

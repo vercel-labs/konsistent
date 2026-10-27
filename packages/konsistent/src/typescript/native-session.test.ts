@@ -1,4 +1,3 @@
-import type { FileChangeSummary } from "typescript/unstable/proto";
 import { API, Program, Snapshot } from "typescript/unstable/sync";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
@@ -6,7 +5,7 @@ import {
   TypeScriptRuntimeError,
   withTypeScriptSession,
 } from "./native-session.js";
-import { parseFileStructure } from "./parser.js";
+import { parseFileStructure, parseFileStructures } from "./parser.js";
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -24,7 +23,7 @@ describe("native TypeScript session", () => {
     );
   });
 
-  it("reuses one process with fixed slots and clears disposed snapshot caches", () => {
+  it("reuses one process, opens one project per batch, and closes the previous batch project", () => {
     const update = vi.spyOn(API.prototype, "updateSnapshot");
     const close = vi.spyOn(API.prototype, "close");
     const dispose = vi.spyOn(Snapshot.prototype, "dispose");
@@ -46,16 +45,70 @@ describe("native TypeScript session", () => {
       expect(update).toHaveBeenCalledTimes(30);
       expect(dispose).toHaveBeenCalledTimes(30);
       expect(clear).toHaveBeenCalledTimes(30);
-      const changedPaths = update.mock.calls.slice(1).flatMap(([params]) => {
-        const changes = params?.fileChanges;
-        return (changes as FileChangeSummary | undefined)?.changed ?? [];
-      });
-      expect(new Set(changedPaths).size).toBe(1);
+      const params = update.mock.calls.map(([call]) => call);
+      expect(params[0]?.closeProjects).toBeUndefined();
+      const opened = params.map((call) => call?.openProjects?.[0]);
+      expect(new Set(opened).size).toBe(30);
+      for (let index = 1; index < params.length; index += 1) {
+        expect(params[index]?.closeProjects).toEqual([opened[index - 1]]);
+      }
     } finally {
       session.close();
     }
     session.close();
     expect(close).toHaveBeenCalledTimes(1);
+  });
+
+  it("parses many sources with one snapshot update and keeps input order", () => {
+    const update = vi.spyOn(API.prototype, "updateSnapshot");
+    withTypeScriptSession({
+      run(session) {
+        const structures = parseFileStructures({
+          session,
+          sources: [
+            { filePath: "src/a.ts", source: "export const a = 1;" },
+            { filePath: "src/b.tsx", source: "export const b = <div />;" },
+            { source: "export const c = 3;" },
+            { filePath: "src/a.ts", source: "export const d = 4;" },
+          ],
+        });
+        expect(
+          structures.map((structure) => structure.constants[0]?.name)
+        ).toEqual(["a", "b", "c", "d"]);
+      },
+    });
+    expect(update).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns an empty batch without starting the native process", () => {
+    const update = vi.spyOn(API.prototype, "updateSnapshot");
+    const session = createTypeScriptSession();
+    expect(
+      session.withSourceFiles({
+        sources: [],
+        visit: (sources) => sources.length,
+      })
+    ).toBe(0);
+    expect(update).not.toHaveBeenCalled();
+    session.close();
+    expect(() =>
+      session.withSourceFiles({ sources: [], visit: () => undefined })
+    ).toThrow(TypeScriptRuntimeError);
+  });
+
+  it("names the first file and counts the others when a batch fails", () => {
+    vi.spyOn(API.prototype, "updateSnapshot").mockImplementation(() => {
+      throw new Error("Native executable is unavailable");
+    });
+    expect(() =>
+      parseFileStructures({
+        sources: [
+          { filePath: "src/a.ts", source: "" },
+          { filePath: "src/b.ts", source: "" },
+          { filePath: "src/c.ts", source: "" },
+        ],
+      })
+    ).toThrow('while parsing "src/a.ts" and 2 other files');
   });
 
   it("keeps concurrent sessions independent", () => {
@@ -124,36 +177,54 @@ describe("native TypeScript session", () => {
     expect(close).toHaveBeenCalledTimes(2);
   });
 
-  it("extracts original text and positions across supported source extensions", () => {
-    withTypeScriptSession({
-      run(session) {
-        for (const extension of [
-          "ts",
-          "tsx",
-          "js",
-          "jsx",
-          "mts",
-          "cts",
-          "mjs",
-          "cjs",
-          "d.ts",
-          "d.mts",
-          "d.cts",
-        ]) {
-          const structure = parseFileStructure({
-            filePath: `src/value.${extension}`,
-            session,
-            source: '\ufeff/* 😀 */\r\nexport const café: "\ud800" = "\ud800";',
-          });
-          expect(structure.constants[0]).toMatchObject({
-            name: "café",
-            pos: { column: 1, line: 2 },
-            typeName: { text: '"\ud800"' },
-          });
-        }
-      },
-    });
-  });
+  it.each(["per file", "in one batch"] as const)(
+    "extracts original text and positions across supported source extensions %s",
+    (mode) => {
+      const extensions = [
+        "ts",
+        "tsx",
+        "js",
+        "jsx",
+        "mts",
+        "cts",
+        "mjs",
+        "cjs",
+        "d.ts",
+        "d.mts",
+        "d.cts",
+      ];
+      const source =
+        '\ufeff/* 😀 */\r\nexport const café: "\ud800" = "\ud800";';
+      withTypeScriptSession({
+        run(session) {
+          const structures =
+            mode === "per file"
+              ? extensions.map((extension) =>
+                  parseFileStructure({
+                    filePath: `src/value.${extension}`,
+                    session,
+                    source,
+                  })
+                )
+              : parseFileStructures({
+                  session,
+                  sources: extensions.map((extension) => ({
+                    filePath: `src/value.${extension}`,
+                    source,
+                  })),
+                });
+          expect(structures).toHaveLength(extensions.length);
+          for (const structure of structures) {
+            expect(structure.constants[0]).toMatchObject({
+              name: "café",
+              pos: { column: 1, line: 2 },
+              typeName: { text: '"\ud800"' },
+            });
+          }
+        },
+      });
+    }
+  );
 
   it("reports syntax diagnostics without requesting semantic diagnostics", () => {
     const semantic = vi.spyOn(Program.prototype, "getSemanticDiagnostics");

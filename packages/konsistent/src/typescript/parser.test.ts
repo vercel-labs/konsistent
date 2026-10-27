@@ -1,5 +1,45 @@
 import { describe, expect, it } from "vitest";
-import { parseFileStructure } from "./parser.js";
+import { withTypeScriptSession } from "./native-session.js";
+import { parseFileStructure, parseFileStructures } from "./parser.js";
+
+describe("parseFileStructures", () => {
+  it("matches per-file parsing for every source in input order", () => {
+    const sources = [
+      {
+        filePath: "src/index.ts",
+        source:
+          'import { a, type B } from "./a";\nexport * from "./b";\nexport { a };\nexport type { B };',
+      },
+      {
+        filePath: "src/view.tsx",
+        source:
+          "export function View(props: { label: string }) {\n  return <span>{props.label}</span>;\n}",
+      },
+      {
+        filePath: "src/client.mts",
+        source:
+          'export class Client extends Base<string> implements Api {}\nexport const client = createClient("x", 1_000);',
+      },
+      {
+        filePath: "src/types.d.ts",
+        source:
+          "export interface Options { enabled?: boolean }\nexport type Mode = 'a' | 'b';\ndeclare const value: Options;\nexport default value;",
+      },
+      { filePath: "src/legacy.cjs", source: "module.exports = { run() {} };" },
+    ];
+    withTypeScriptSession({
+      run(session) {
+        expect(parseFileStructures({ session, sources })).toEqual(
+          sources.map((input) => parseFileStructure({ ...input, session }))
+        );
+      },
+    });
+  });
+
+  it("returns no structures for no sources", () => {
+    expect(parseFileStructures({ sources: [] })).toEqual([]);
+  });
+});
 
 describe("parseFileStructure", () => {
   describe("exports", () => {

@@ -18,7 +18,6 @@ import { checkHaveType } from "../predicates/have-type.js";
 import { hasImport, hasImportFrom } from "../typescript/import-matcher.js";
 import type { TypeScriptSession } from "../typescript/native-session.js";
 import { createTypeScriptSession } from "../typescript/native-session.js";
-import { parseFileStructure } from "../typescript/parser.js";
 import { checkAreBarrelFiles } from "../typescript/predicates/are-barrel-files.js";
 import { checkCallFunction } from "../typescript/predicates/call-function.js";
 import { checkDeclareClasses } from "../typescript/predicates/declare-classes.js";
@@ -47,6 +46,8 @@ import type { PredicateContext } from "./context.js";
 import { generateConventionName } from "./convention-name.js";
 import type { Diagnostic, DiagnosticSeverity } from "./diagnostics.js";
 import { createDiagnostic } from "./diagnostics.js";
+import type { FileStructureLoader } from "./file-structure-loader.js";
+import { createFileStructureLoader } from "./file-structure-loader.js";
 import type { FileSystem } from "./filesystem.js";
 import type { MatchedPath } from "./path-matcher.js";
 import { matchesPathPattern, matchPaths } from "./path-matcher.js";
@@ -264,16 +265,16 @@ function evaluatePlaceholderSatisfies(opts: {
 
 interface ConditionEvaluationContext {
   context: PredicateContext;
-  fileStructureCache: Map<string, FileStructure>;
+  fileStructures: FileStructureLoader;
   fileSystem: FileSystem;
 }
 
-function evaluateConditionPredicate(
+async function evaluateConditionPredicate(
   opts: ConditionEvaluationContext & {
     condition: IfConditionPredicateV1;
   }
-): boolean {
-  const { condition, context, fileSystem, fileStructureCache } = opts;
+): Promise<boolean> {
+  const { condition, context, fileSystem, fileStructures } = opts;
   if (Object.hasOwn(condition, "hasFile")) {
     const resolvedPath = context.resolveTemplate(
       (condition as { hasFile: string }).hasFile
@@ -296,12 +297,7 @@ function evaluateConditionPredicate(
     return false;
   }
 
-  const fileStructure = getOrParseFileStructure({
-    cache: fileStructureCache,
-    filePath: context.path,
-    fileSystem,
-    session: context.typescriptSession,
-  });
+  const fileStructure = await fileStructures.load(context.path);
 
   if (Object.hasOwn(condition, "hasValueImport")) {
     return hasImport({
@@ -338,66 +334,68 @@ function evaluateConditionPredicate(
   });
 }
 
-function evaluateCondition(
+async function evaluateCondition(
   opts: ConditionEvaluationContext & {
     condition: IfConditionV1;
     negate: boolean;
   }
-): boolean {
+): Promise<boolean> {
   const { condition, negate } = opts;
-  const matches = (predicate: IfConditionPredicateV1): boolean => {
-    const result = evaluateConditionPredicate({
+  const matches = async (
+    predicate: IfConditionPredicateV1
+  ): Promise<boolean> => {
+    const result = await evaluateConditionPredicate({
       condition: predicate,
       context: opts.context,
-      fileStructureCache: opts.fileStructureCache,
+      fileStructures: opts.fileStructures,
       fileSystem: opts.fileSystem,
     });
     return negate ? !result : result;
   };
-  if (Object.hasOwn(condition, "conditions")) {
-    const set = condition as IfConditionSetV1;
-    return (set.operator ?? "and") === "and"
-      ? set.conditions.every(matches)
-      : set.conditions.some(matches);
+  if (!Object.hasOwn(condition, "conditions")) {
+    return await matches(condition as IfConditionPredicateV1);
   }
-  return matches(condition as IfConditionPredicateV1);
+  const set = condition as IfConditionSetV1;
+  const isAnd = (set.operator ?? "and") === "and";
+  for (const predicate of set.conditions) {
+    // biome-ignore lint/performance/noAwaitInLoops: Condition sets short-circuit in array order, so later predicates must not load files early.
+    if ((await matches(predicate)) !== isAnd) {
+      return !isAnd;
+    }
+  }
+  return isAnd;
 }
 
-function evaluateConditions(opts: {
+async function evaluateConditions(opts: {
   ifCondition?: IfConditionV1;
   ifNotCondition?: IfConditionV1;
   context: PredicateContext;
   fileSystem: FileSystem;
-  fileStructureCache: Map<string, FileStructure>;
-}): boolean {
-  const {
-    ifCondition,
-    ifNotCondition,
-    context,
-    fileSystem,
-    fileStructureCache,
-  } = opts;
+  fileStructures: FileStructureLoader;
+}): Promise<boolean> {
+  const { ifCondition, ifNotCondition, context, fileSystem, fileStructures } =
+    opts;
   if (
     ifCondition &&
-    !evaluateCondition({
+    !(await evaluateCondition({
       condition: ifCondition,
       context,
-      fileStructureCache,
+      fileStructures,
       fileSystem,
       negate: false,
-    })
+    }))
   ) {
     return false;
   }
   if (
     ifNotCondition &&
-    !evaluateCondition({
+    !(await evaluateCondition({
       condition: ifNotCondition,
       context,
-      fileStructureCache,
+      fileStructures,
       fileSystem,
       negate: true,
-    })
+    }))
   ) {
     return false;
   }
@@ -1053,27 +1051,6 @@ function checkTsPredicate(opts: {
   return handler(opts);
 }
 
-function getOrParseFileStructure(opts: {
-  filePath: string;
-  fileSystem: FileSystem;
-  cache: Map<string, FileStructure>;
-  session?: TypeScriptSession;
-}): FileStructure {
-  const cached = opts.cache.get(opts.filePath);
-  if (cached) {
-    return cached;
-  }
-
-  const source = opts.fileSystem.readFile(opts.filePath);
-  const structure = parseFileStructure({
-    filePath: opts.filePath,
-    session: opts.session,
-    source,
-  });
-  opts.cache.set(opts.filePath, structure);
-  return structure;
-}
-
 const ITEM_LEVEL_MUST_NOT_PREDICATES = new Set<string>([
   "haveFiles",
   "haveDirectories",
@@ -1328,36 +1305,29 @@ function buildMustNotChecks(opts: {
   return checks;
 }
 
-function checkMustPredicates(opts: {
+async function checkMustPredicates(opts: {
   must: MustPredicatesV1;
   conventionName?: string;
   context: PredicateContext;
   fileSystem: FileSystem;
-  fileStructureCache: Map<string, FileStructure>;
+  fileStructures: FileStructureLoader;
   severity?: DiagnosticSeverity;
-}): Diagnostic[] {
+}): Promise<Diagnostic[]> {
   const {
     must,
     conventionName,
     context,
     fileSystem,
-    fileStructureCache,
+    fileStructures,
     severity,
   } = opts;
   const diagnostics: Diagnostic[] = [];
   const keys = Object.keys(must);
 
-  let fileStructure: FileStructure | undefined;
-
   const needsTs = keys.some((k) => TS_PREDICATES.has(k));
-  if (needsTs) {
-    fileStructure = getOrParseFileStructure({
-      cache: fileStructureCache,
-      filePath: context.path,
-      fileSystem,
-      session: context.typescriptSession,
-    });
-  }
+  const fileStructure: FileStructure | undefined = needsTs
+    ? await fileStructures.load(context.path)
+    : undefined;
 
   for (const key of keys) {
     if (key === "haveType" && must.haveType) {
@@ -1408,82 +1378,150 @@ function checkMustPredicates(opts: {
   return diagnostics;
 }
 
-function checkMustNotPredicates(opts: {
+async function checkMustNotPredicates(opts: {
   mustNot: MustPredicatesV1;
   conventionName?: string;
   context: PredicateContext;
   fileSystem: FileSystem;
-  fileStructureCache: Map<string, FileStructure>;
+  fileStructures: FileStructureLoader;
   severity?: DiagnosticSeverity;
-}): Diagnostic[] {
-  const diagnostics: Diagnostic[] = [];
+}): Promise<Diagnostic[]> {
   const checks = buildMustNotChecks({ mustNot: opts.mustNot });
-
-  for (const check of checks) {
-    const normalDiagnostics = checkMustPredicates({
-      context: opts.context,
-      conventionName: opts.conventionName,
-      fileStructureCache: opts.fileStructureCache,
-      fileSystem: opts.fileSystem,
-      must: check.predicate,
-      severity: opts.severity,
-    });
-    if (normalDiagnostics.length > 0) {
-      continue;
-    }
-    diagnostics.push(
-      createDiagnostic({
+  const normalResults = await Promise.all(
+    checks.map((check) =>
+      checkMustPredicates({
+        context: opts.context,
         conventionName: opts.conventionName,
-        filePath: opts.context.path,
-        message: formatForbiddenMessage({
-          context: opts.context,
-          key: check.key,
-          value: check.value,
-        }),
-        predicateName: `mustNot.${check.key}`,
+        fileStructures: opts.fileStructures,
+        fileSystem: opts.fileSystem,
+        must: check.predicate,
         severity: opts.severity,
       })
-    );
-  }
+    )
+  );
 
-  return diagnostics;
+  return checks.flatMap((check, index) =>
+    normalResults[index].length > 0
+      ? []
+      : [
+          createDiagnostic({
+            conventionName: opts.conventionName,
+            filePath: opts.context.path,
+            message: formatForbiddenMessage({
+              context: opts.context,
+              key: check.key,
+              value: check.value,
+            }),
+            predicateName: `mustNot.${check.key}`,
+            severity: opts.severity,
+          }),
+        ]
+  );
 }
 
-function checkPredicates(opts: {
+async function checkPredicates(opts: {
   must?: MustPredicatesV1;
   mustNot?: MustPredicatesV1;
   conventionName?: string;
   context: PredicateContext;
   fileSystem: FileSystem;
-  fileStructureCache: Map<string, FileStructure>;
+  fileStructures: FileStructureLoader;
   severity?: DiagnosticSeverity;
-}): Diagnostic[] {
+}): Promise<Diagnostic[]> {
   const diagnostics: Diagnostic[] = [];
   if (opts.must) {
     diagnostics.push(
-      ...checkMustPredicates({
+      ...(await checkMustPredicates({
         context: opts.context,
         conventionName: opts.conventionName,
-        fileStructureCache: opts.fileStructureCache,
+        fileStructures: opts.fileStructures,
         fileSystem: opts.fileSystem,
         must: opts.must,
         severity: opts.severity,
-      })
+      }))
     );
   }
   if (opts.mustNot) {
     diagnostics.push(
-      ...checkMustNotPredicates({
+      ...(await checkMustNotPredicates({
         context: opts.context,
         conventionName: opts.conventionName,
-        fileStructureCache: opts.fileStructureCache,
+        fileStructures: opts.fileStructures,
         fileSystem: opts.fileSystem,
         mustNot: opts.mustNot,
         severity: opts.severity,
-      })
+      }))
     );
   }
   return diagnostics;
+}
+
+async function evaluateForBlockEntry(opts: {
+  block: MustBlockV1;
+  entry: MatchedPath;
+  parentContext: PredicateContext;
+  fileSystem: FileSystem;
+  conventionName?: string;
+  fileStructures: FileStructureLoader;
+  severity?: DiagnosticSeverity;
+  checkedPaths: Set<string>;
+}): Promise<Diagnostic[]> {
+  const {
+    block,
+    entry,
+    parentContext,
+    fileSystem,
+    conventionName,
+    fileStructures,
+    severity,
+    checkedPaths,
+  } = opts;
+  checkedPaths.add(entry.path);
+  const mergedPlaceholders = { ...entry.placeholders };
+  for (const [key, value] of Object.entries(parentContext.placeholders)) {
+    mergedPlaceholders[key] = value;
+  }
+
+  const forContext = buildContext({
+    fileSystem,
+    matched: {
+      path: entry.path,
+      placeholders: mergedPlaceholders,
+    },
+    typescriptSession: parentContext.typescriptSession,
+  });
+
+  if (
+    !(await evaluateConditions({
+      context: forContext,
+      fileStructures,
+      fileSystem,
+      ifCondition: block.if,
+      ifNotCondition: block.ifNot,
+    }))
+  ) {
+    return [];
+  }
+
+  if (
+    isFileExcluded({
+      context: forContext,
+      excludeFiles: block.excludeFiles,
+      filePath: entry.path,
+    })
+  ) {
+    return [];
+  }
+
+  return await checkPredicates({
+    context: forContext,
+    conventionName,
+    fileStructures,
+    fileSystem,
+    must: block.must,
+    mustNot: block.mustNot,
+    severity,
+  });
 }
 
 async function evaluateForBlock(opts: {
@@ -1491,7 +1529,7 @@ async function evaluateForBlock(opts: {
   parentContext: PredicateContext;
   fileSystem: FileSystem;
   conventionName?: string;
-  fileStructureCache: Map<string, FileStructure>;
+  fileStructures: FileStructureLoader;
   severity?: DiagnosticSeverity;
   checkedPaths: Set<string>;
   pathSelection?: PathSelection;
@@ -1507,7 +1545,7 @@ async function evaluateForBlock(opts: {
     parentContext,
     fileSystem,
     conventionName,
-    fileStructureCache,
+    fileStructures,
     severity,
     checkedPaths,
     pathSelection,
@@ -1521,13 +1559,13 @@ async function evaluateForBlock(opts: {
 
   if (!block.for) {
     if (
-      !evaluateConditions({
+      !(await evaluateConditions({
         context: parentContext,
-        fileStructureCache,
+        fileStructures,
         fileSystem,
         ifCondition: block.if,
         ifNotCondition: block.ifNot,
-      })
+      }))
     ) {
       return [];
     }
@@ -1540,10 +1578,10 @@ async function evaluateForBlock(opts: {
     ) {
       return [];
     }
-    return checkPredicates({
+    return await checkPredicates({
       context: parentContext,
       conventionName,
-      fileStructureCache,
+      fileStructures,
       fileSystem,
       must: block.must,
       mustNot: block.mustNot,
@@ -1562,84 +1600,106 @@ async function evaluateForBlock(opts: {
   const fullPatterns = filesPatterns.map((f) =>
     posix.join(basePath, parentContext.resolveTemplate(f))
   );
-  const matched = await matchPaths({
-    camelToKebabMap,
-    camelToPascalMap,
-    candidatePaths:
-      pathSelection?.mode === "targeted"
-        ? pathSelection.selectedPaths
-        : undefined,
-    fileSystem,
-    kebabToCamelMap,
-    kebabToPascalMap,
-    pascalToCamelMap,
-    pascalToKebabMap,
-    patterns: fullPatterns,
-  });
+  const matched = await fileStructures.track(
+    matchPaths({
+      camelToKebabMap,
+      camelToPascalMap,
+      candidatePaths:
+        pathSelection?.mode === "targeted"
+          ? pathSelection.selectedPaths
+          : undefined,
+      fileSystem,
+      kebabToCamelMap,
+      kebabToPascalMap,
+      pascalToCamelMap,
+      pascalToKebabMap,
+      patterns: fullPatterns,
+    })
+  );
 
   if (matched.length === 0) {
     return [];
   }
 
-  const diagnostics: Diagnostic[] = [];
-  for (const entry of matched) {
-    checkedPaths.add(entry.path);
-    const mergedPlaceholders = { ...entry.placeholders };
-    for (const [key, value] of Object.entries(parentContext.placeholders)) {
-      mergedPlaceholders[key] = value;
-    }
-
-    const forContext = buildContext({
-      fileSystem,
-      matched: {
-        path: entry.path,
-        placeholders: mergedPlaceholders,
-      },
-      typescriptSession: parentContext.typescriptSession,
-    });
-
-    if (
-      !evaluateConditions({
-        context: forContext,
-        fileStructureCache,
-        fileSystem,
-        ifCondition: block.if,
-        ifNotCondition: block.ifNot,
-      })
-    ) {
-      continue;
-    }
-
-    if (
-      isFileExcluded({
-        context: forContext,
-        excludeFiles: block.excludeFiles,
-        filePath: entry.path,
-      })
-    ) {
-      continue;
-    }
-
-    diagnostics.push(
-      ...checkPredicates({
-        context: forContext,
+  const results = await Promise.all(
+    matched.map((entry) =>
+      evaluateForBlockEntry({
+        block,
+        checkedPaths,
         conventionName,
-        fileStructureCache,
+        entry,
+        fileStructures,
         fileSystem,
-        must: block.must,
-        mustNot: block.mustNot,
+        parentContext,
         severity,
       })
-    );
-  }
-
-  return diagnostics;
+    )
+  );
+  return results.flat();
 }
 
 export interface RunResult {
   diagnostics: Diagnostic[];
   elapsed: number;
   filesChecked: number;
+}
+
+async function evaluateConventionEntry(opts: {
+  blocks: MustBlockV1[];
+  caseMaps: CaseMaps;
+  checkedPaths: Set<string>;
+  context: PredicateContext;
+  conventionName: string;
+  excludeFiles?: string[];
+  fileStructures: FileStructureLoader;
+  fileSystem: FileSystem;
+  ifCondition?: IfConditionV1;
+  ifNotCondition?: IfConditionV1;
+  pathSelection?: PathSelection;
+  severity: DiagnosticSeverity;
+}): Promise<Diagnostic[]> {
+  const { context, fileStructures, fileSystem } = opts;
+  if (
+    isFileExcluded({
+      context,
+      excludeFiles: opts.excludeFiles,
+      filePath: context.path,
+    })
+  ) {
+    return [];
+  }
+
+  if (
+    !(await evaluateConditions({
+      context,
+      fileStructures,
+      fileSystem,
+      ifCondition: opts.ifCondition,
+      ifNotCondition: opts.ifNotCondition,
+    }))
+  ) {
+    return [];
+  }
+
+  const results = await Promise.all(
+    opts.blocks.map((block) =>
+      evaluateForBlock({
+        ...opts.caseMaps,
+        block,
+        checkedPaths: opts.checkedPaths,
+        conventionName: resolveBlockConventionName({
+          block,
+          conventionName: opts.conventionName,
+        }),
+        fileStructures,
+        fileSystem,
+        parentContext: context,
+        pathSelection: opts.pathSelection,
+        severity: opts.severity,
+      })
+    )
+  );
+  return results.flat();
 }
 
 export async function run(opts: {
@@ -1666,8 +1726,32 @@ async function runWithSession(opts: {
 }): Promise<RunResult> {
   const startTime = performance.now();
   const { config, fileSystem, pathSelection } = opts;
-  const fileStructureCache = new Map<string, FileStructure>();
+  const fileStructures = createFileStructureLoader({
+    fileSystem,
+    session: opts.typescriptSession,
+  });
+  try {
+    const result = await evaluateConventions({
+      config,
+      fileStructures,
+      fileSystem,
+      pathSelection,
+      typescriptSession: opts.typescriptSession,
+    });
+    return { ...result, elapsed: performance.now() - startTime };
+  } finally {
+    fileStructures.dispose();
+  }
+}
 
+async function evaluateConventions(opts: {
+  config: ConfigV1;
+  fileStructures: FileStructureLoader;
+  fileSystem: FileSystem;
+  pathSelection?: PathSelection;
+  typescriptSession: TypeScriptSession;
+}): Promise<Omit<RunResult, "elapsed">> {
+  const { config, fileStructures, fileSystem, pathSelection } = opts;
   const { kebabToPascalMap, kebabToCamelMap } = config;
   const pascalToKebabMap = invertMap(kebabToPascalMap);
   const camelToKebabMap = invertMap(kebabToCamelMap);
@@ -1742,51 +1826,22 @@ async function runWithSession(opts: {
         typescriptSession: opts.typescriptSession,
       });
 
-      if (
-        isFileExcluded({
+      diagnosticTasks.push(
+        evaluateConventionEntry({
+          blocks,
+          caseMaps,
+          checkedPaths,
           context,
+          conventionName,
           excludeFiles: convention.excludeFiles,
-          filePath: entry.path,
-        })
-      ) {
-        continue;
-      }
-
-      if (
-        !evaluateConditions({
-          context,
-          fileStructureCache,
+          fileStructures,
           fileSystem,
           ifCondition: convention.if,
           ifNotCondition: convention.ifNot,
+          pathSelection,
+          severity,
         })
-      ) {
-        continue;
-      }
-
-      for (const block of blocks) {
-        diagnosticTasks.push(
-          evaluateForBlock({
-            block,
-            camelToKebabMap,
-            camelToPascalMap,
-            checkedPaths,
-            conventionName: resolveBlockConventionName({
-              block,
-              conventionName,
-            }),
-            fileStructureCache,
-            fileSystem,
-            kebabToCamelMap,
-            kebabToPascalMap,
-            parentContext: context,
-            pascalToCamelMap,
-            pascalToKebabMap,
-            pathSelection,
-            severity,
-          })
-        );
-      }
+      );
     }
   }
 
@@ -1794,7 +1849,6 @@ async function runWithSession(opts: {
 
   return {
     diagnostics,
-    elapsed: performance.now() - startTime,
     filesChecked: checkedPaths.size,
   };
 }

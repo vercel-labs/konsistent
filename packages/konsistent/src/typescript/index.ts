@@ -1,4 +1,4 @@
-export { parseFileStructure } from "./parser.js";
+export { parseFileStructure, parseFileStructures } from "./parser.js";
 export type {
   CallInfo,
   ClassInfo,
