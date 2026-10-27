@@ -1,6 +1,6 @@
 {
   "name": "konsistent",
-  "version": "1.0.0-beta.12",
+  "version": "1.0.0-beta.13",
   "description": "konsistent is a CLI tool that enforces structural conventions in TypeScript codebases.",
   "keywords": [
     "lint",
