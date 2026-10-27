@@ -24,12 +24,13 @@ Consistency has always been a crucial part of good API design, but there has nev
 - `pnpm test:e2e` — run e2e tests (requires build)
 - `pnpm check` — lint/format check via Ultracite
 - `pnpm fix` — auto-fix lint/format issues
+- `pnpm konsistent` — check this project's code conventions
 
 ## Testing Requirements
 
-Every change needs test coverage. Include Vitest unit tests, but more holistically every feature must also be covered by e2e CLI tests using fixtures, which in this case are actual TypeScript demo projects with their own `konsistent.json` configuration files each.
+Every change needs test coverage. Include Vitest unit tests, but more holistically every feature or bug fix must also be covered by e2e CLI tests using fixtures, which in this case are actual TypeScript demo projects with their own `konsistent.json` configuration files each.
 
-Additionally, you can use the locally built `konsistent` tool via `pnpm konsistent`.
+Code changes that do not result in any different user-facing behavior (e.g. internal performance improvements or internal refactoring) are the only kind of change that should not receive additional e2e coverage. For those, focus on comprehensive unit test coverage and ensure existing e2e tests all continue to pass.
 
 ## Documentation Requirements
 

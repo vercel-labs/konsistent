@@ -10,6 +10,8 @@ import { parseFileStructure } from "../typescript/parser.js";
 import type { FileSystem } from "./filesystem.js";
 import { run } from "./runner.js";
 
+const QUOTED_NAME_PATTERN = /"(\w+)"/;
+
 function createMockFileSystem(opts: {
   globResults?: Map<string, string[]>;
   files?: Set<string>;
@@ -373,6 +375,180 @@ describe("condition set evaluation", () => {
 });
 
 describe("run", () => {
+  it("parses every file of a run with one snapshot update when no import condition gates it", async () => {
+    const updates = vi.spyOn(API.prototype, "updateSnapshot");
+    const fs = createMockFileSystem({
+      directories: new Set(["src", "lib"]),
+      fileContents: new Map([
+        ["src/a.ts", "export const value = 1;"],
+        ["src/b.ts", "export const value = 2;"],
+        ["lib/c.ts", "export const value = 3;"],
+        ["lib/d.tsx", "export const value = <div />;"],
+      ]),
+      files: new Set(["src/a.ts", "src/b.ts", "lib/c.ts", "lib/d.tsx"]),
+      globResults: new Map([
+        ["src", ["src"]],
+        ["lib", ["lib"]],
+        ["src/*.ts", ["src/a.ts", "src/b.ts"]],
+        ["lib/*.ts,lib/*.tsx", ["lib/c.ts", "lib/d.tsx"]],
+        ["src/a.ts", ["src/a.ts"]],
+      ]),
+    });
+    const read = vi.spyOn(fs, "readFile");
+    try {
+      const { diagnostics, filesChecked } = await run({
+        config: {
+          conventions: [
+            {
+              must: [
+                {
+                  for: { files: "*.ts" },
+                  must: { exportConstants: ["value"] },
+                },
+              ],
+              paths: "src",
+            },
+            {
+              must: [
+                {
+                  for: { files: ["*.ts", "*.tsx"] },
+                  must: { exportConstants: ["value"] },
+                },
+              ],
+              paths: "lib",
+            },
+            { must: { exportValues: ["value"] }, paths: "src/a.ts" },
+          ],
+          version: "v1",
+        },
+        fileSystem: fs,
+      });
+      expect(diagnostics).toEqual([]);
+      expect(filesChecked).toBe(6);
+      expect(updates).toHaveBeenCalledTimes(1);
+      expect(read.mock.calls.map(([path]) => path).sort()).toEqual([
+        "lib/c.ts",
+        "lib/d.tsx",
+        "src/a.ts",
+        "src/b.ts",
+      ]);
+    } finally {
+      updates.mockRestore();
+    }
+  });
+
+  it("parses convention-level import conditions before nested files and never reads gated-off files", async () => {
+    const updates = vi.spyOn(API.prototype, "updateSnapshot");
+    const fs = createMockFileSystem({
+      directories: new Set(["src"]),
+      fileContents: new Map([
+        ["src/a.ts", 'import { createClient } from "client";'],
+        ["src/b.ts", 'import { other } from "client";'],
+        ["src/a.test.ts", "export const other = 1;"],
+        ["src/b.test.ts", "export const other = 1;"],
+      ]),
+      files: new Set([
+        "src/a.ts",
+        "src/b.ts",
+        "src/a.test.ts",
+        "src/b.test.ts",
+      ]),
+      globResults: new Map([
+        ["src/*.ts", ["src/a.ts", "src/b.ts"]],
+        ["src/a.test.ts", ["src/a.test.ts"]],
+        ["src/b.test.ts", ["src/b.test.ts"]],
+      ]),
+    });
+    const read = vi.spyOn(fs, "readFile");
+    try {
+      const { diagnostics } = await run({
+        config: {
+          conventions: [
+            {
+              if: { hasValueImport: "createClient" },
+              must: [
+                {
+                  for: { files: "${name}.test.ts" },
+                  must: { exportConstants: ["value"] },
+                },
+              ],
+              paths: "src/{name}.ts",
+            },
+          ],
+          version: "v1",
+        },
+        fileSystem: fs,
+      });
+      expect(diagnostics.map((diagnostic) => diagnostic.filePath)).toEqual([
+        "src/a.test.ts",
+      ]);
+      expect(updates).toHaveBeenCalledTimes(2);
+      expect(read.mock.calls.map(([path]) => path)).toEqual([
+        "src/a.ts",
+        "src/b.ts",
+        "src/a.test.ts",
+      ]);
+    } finally {
+      updates.mockRestore();
+    }
+  });
+
+  it("reports diagnostics in convention, entry, block, and nested file order", async () => {
+    const fs = createMockFileSystem({
+      directories: new Set(["lib"]),
+      fileContents: new Map([
+        ["src/a.ts", ""],
+        ["src/b.ts", ""],
+        ["lib/c.ts", ""],
+        ["lib/d.ts", ""],
+      ]),
+      files: new Set(["src/a.ts", "src/b.ts", "lib/c.ts", "lib/d.ts"]),
+      globResults: new Map([
+        ["src/*.ts", ["src/a.ts", "src/b.ts"]],
+        ["lib", ["lib"]],
+        ["lib/*.ts", ["lib/c.ts", "lib/d.ts"]],
+      ]),
+    });
+    const { diagnostics } = await run({
+      config: {
+        conventions: [
+          {
+            must: [
+              { must: { exportConstants: ["x"] } },
+              {
+                if: { hasValueImportFrom: "missing" },
+                must: { exportConstants: ["skipped"] },
+              },
+              { must: { exportConstants: ["y"] } },
+            ],
+            paths: "src/*.ts",
+          },
+          {
+            must: [
+              { for: { files: "*.ts" }, must: { exportConstants: ["z"] } },
+            ],
+            paths: "lib",
+          },
+        ],
+        version: "v1",
+      },
+      fileSystem: fs,
+    });
+    expect(
+      diagnostics.map(
+        (diagnostic) =>
+          `${diagnostic.filePath}:${diagnostic.message.match(QUOTED_NAME_PATTERN)?.[1]}`
+      )
+    ).toEqual([
+      "src/a.ts:x",
+      "src/a.ts:y",
+      "src/b.ts:x",
+      "src/b.ts:y",
+      "lib/c.ts:z",
+      "lib/d.ts:z",
+    ]);
+  });
+
   it("threads a borrowed session through conditions, nested files, and comparisons", async () => {
     const session = createTypeScriptSession();
     const close = vi.spyOn(session, "close");
