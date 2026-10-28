@@ -1,5 +1,20 @@
 # konsistent
 
+## 1.0.0-beta.13
+
+### Patch Changes
+
+- 813a510: feat(konsistent): support `if` and `ifNot` to support top-level condition sets with `and` / `or` operator
+- 2038913: chore(konsistent): migrate from `tsup` to `tsdown`
+- 170417b: feat(konsistent): use TypeScript 7 for TS parsing and internal tooling
+- 53a6635: chore(konsistent): improve performance by batching TS7-required parsing into one snapshot per evaluation round
+- f7f0234: chore(konsistent): update linting dependencies and fix newly flagged violations
+- Updated dependencies [813a510]
+- Updated dependencies [2038913]
+- Updated dependencies [170417b]
+- Updated dependencies [f7f0234]
+  - @konsistent/convention@1.0.0-beta.13
+
 ## 1.0.0-beta.12
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@konsistent/common-conventions",
-  "version": "1.0.0-beta.12",
+  "version": "1.0.0-beta.13",
   "description": "Common reusable conventions for konsistent. Authored in TypeScript via @konsistent/convention, shipped as a JSON artifact via the \"./konsistent\" exports condition.",
   "keywords": [
     "lint",
