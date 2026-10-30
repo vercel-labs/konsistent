@@ -13,7 +13,7 @@ const cli = path.resolve(
   import.meta.dirname,
   "../packages/konsistent/dist/cli.js"
 );
-const preload = path.resolve(import.meta.dirname, "helpers/update-preload.mjs");
+const preload = new URL("./helpers/update-preload.mjs", import.meta.url).href;
 const fixtures = path.resolve(
   import.meta.dirname,
   "fixtures/update-release-age"
