@@ -56,15 +56,59 @@ describe("readCache", () => {
   it("reads a valid cache file", () => {
     const dir = path.join(tmpDir, "konsistent");
     fs.mkdirSync(dir, { recursive: true });
-    const data = { lastChecked: 1000, latestVersion: "1.0.0" };
+    const data = {
+      channel: null,
+      lastChecked: 1000,
+      latestVersion: "1.0.0",
+      publishedAt: 500,
+    };
     fs.writeFileSync(path.join(dir, "update-check.json"), JSON.stringify(data));
     expect(readCache()).toEqual(data);
+  });
+
+  it("invalidates legacy cache entries", () => {
+    fs.mkdirSync(path.dirname(getCachePath()), { recursive: true });
+    fs.writeFileSync(
+      getCachePath(),
+      JSON.stringify({ lastChecked: Date.now(), latestVersion: "1.0.0" })
+    );
+    expect(readCache()).toBeNull();
+  });
+
+  it("preserves an explicitly unknown publication time", () => {
+    const data = {
+      channel: "beta",
+      lastChecked: 1000,
+      latestVersion: "1.0.0-beta.14",
+      publishedAt: null,
+    };
+    writeCache(data);
+    expect(readCache()).toEqual(data);
+  });
+
+  it.each([
+    { channel: 1, publishedAt: 1000 },
+    { channel: null, publishedAt: "1000" },
+    { channel: null },
+    { publishedAt: 1000 },
+  ])("rejects malformed cache metadata %j", (metadata) => {
+    fs.mkdirSync(path.dirname(getCachePath()), { recursive: true });
+    fs.writeFileSync(
+      getCachePath(),
+      JSON.stringify({ lastChecked: 2000, latestVersion: "1.0.0", ...metadata })
+    );
+    expect(readCache()).toBeNull();
   });
 });
 
 describe("writeCache", () => {
   it("creates directory and writes file", () => {
-    const cache = { lastChecked: Date.now(), latestVersion: "2.0.0" };
+    const cache = {
+      channel: null,
+      lastChecked: Date.now(),
+      latestVersion: "2.0.0",
+      publishedAt: 500,
+    };
     writeCache(cache);
 
     const raw = fs.readFileSync(getCachePath(), "utf-8");
@@ -74,7 +118,12 @@ describe("writeCache", () => {
   it("does not throw on write failure", () => {
     vi.stubEnv("XDG_CONFIG_HOME", "/nonexistent/readonly/path");
     expect(() =>
-      writeCache({ lastChecked: 1, latestVersion: "1.0.0" })
+      writeCache({
+        channel: null,
+        lastChecked: 1,
+        latestVersion: "1.0.0",
+        publishedAt: 0,
+      })
     ).not.toThrow();
   });
 });
@@ -86,19 +135,31 @@ describe("isCacheStale", () => {
 
   it("returns true when cache is older than max age", () => {
     const old = {
+      channel: null,
       lastChecked: Date.now() - 4 * 60 * 60 * 1000,
       latestVersion: "1.0.0",
+      publishedAt: 500,
     };
     expect(isCacheStale({ cache: old })).toBe(true);
   });
 
   it("returns false when cache is fresh", () => {
-    const fresh = { lastChecked: Date.now() - 1000, latestVersion: "1.0.0" };
+    const fresh = {
+      channel: null,
+      lastChecked: Date.now() - 1000,
+      latestVersion: "1.0.0",
+      publishedAt: 500,
+    };
     expect(isCacheStale({ cache: fresh })).toBe(false);
   });
 
   it("respects custom max age", () => {
-    const cache = { lastChecked: Date.now() - 5000, latestVersion: "1.0.0" };
+    const cache = {
+      channel: null,
+      lastChecked: Date.now() - 5000,
+      latestVersion: "1.0.0",
+      publishedAt: 500,
+    };
     expect(isCacheStale({ cache, maxAgeMs: 3000 })).toBe(true);
     expect(isCacheStale({ cache, maxAgeMs: 10_000 })).toBe(false);
   });

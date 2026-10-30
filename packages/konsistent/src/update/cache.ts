@@ -3,8 +3,10 @@ import os from "node:os";
 import path from "node:path";
 
 export interface UpdateCache {
+  channel: string | null;
   lastChecked: number;
   latestVersion: string;
+  publishedAt: number | null;
 }
 
 const CACHE_FILENAME = "update-check.json";
@@ -23,14 +25,23 @@ export function readCache(): UpdateCache | null {
 
     if (
       typeof data.lastChecked !== "number" ||
-      typeof data.latestVersion !== "string"
+      !Number.isFinite(data.lastChecked) ||
+      typeof data.latestVersion !== "string" ||
+      !(
+        data.publishedAt === null ||
+        (typeof data.publishedAt === "number" &&
+          Number.isFinite(data.publishedAt))
+      ) ||
+      !(data.channel === null || typeof data.channel === "string")
     ) {
       return null;
     }
 
     return {
+      channel: data.channel,
       lastChecked: data.lastChecked,
       latestVersion: data.latestVersion,
+      publishedAt: data.publishedAt,
     };
   } catch {
     return null;

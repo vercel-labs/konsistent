@@ -15,7 +15,8 @@ export {
 } from "./package-manager.js";
 export { PACKAGE_NAME } from "./package-name.js";
 export { promptYesNo } from "./prompt.js";
-export { fetchLatestVersion, findLatestInChannel } from "./registry.js";
+export { fetchLatestRelease, findLatestInChannel } from "./registry.js";
+export { isReleaseOldEnough, readMinimumReleaseAgeMs } from "./release-age.js";
 export {
   canAutoUpdate,
   getManualInstallHint,
