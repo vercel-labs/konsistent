@@ -7,21 +7,27 @@ import {
 const NPM_REGISTRY_URL = "https://registry.npmjs.org";
 const DEFAULT_TIMEOUT_MS = 5000;
 
-interface AbbreviatedPackageMetadata {
+export interface LatestRelease {
+  publishedAt: number | null;
+  version: string;
+}
+
+interface PackageMetadata {
+  time?: Record<string, unknown> | null;
   versions?: Record<string, unknown> | null;
 }
 
-export async function fetchLatestVersion(opts: {
+export async function fetchLatestRelease(opts: {
   packageName: string;
   currentVersion: string;
   timeoutMs?: number;
-}): Promise<string | null> {
+}): Promise<LatestRelease | null> {
   const timeout = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const channel = getPrereleaseChannel(opts.currentVersion);
 
   try {
     const response = await fetch(`${NPM_REGISTRY_URL}/${opts.packageName}`, {
-      headers: { Accept: "application/vnd.npm.install-v1+json" },
+      headers: { Accept: "application/json" },
       signal: AbortSignal.timeout(timeout),
     });
 
@@ -29,13 +35,27 @@ export async function fetchLatestVersion(opts: {
       return null;
     }
 
-    const data = (await response.json()) as AbbreviatedPackageMetadata;
-    if (!data.versions || typeof data.versions !== "object") {
+    const data = (await response.json()) as PackageMetadata;
+    if (
+      !data.versions ||
+      typeof data.versions !== "object" ||
+      Array.isArray(data.versions)
+    ) {
       return null;
     }
 
     const versions = Object.keys(data.versions);
-    return findLatestInChannel({ channel, versions });
+    const version = findLatestInChannel({ channel, versions });
+    if (!version) {
+      return null;
+    }
+    const timestamp = data.time?.[version];
+    const publishedAt =
+      typeof timestamp === "string" ? Date.parse(timestamp) : Number.NaN;
+    return {
+      publishedAt: Number.isFinite(publishedAt) ? publishedAt : null,
+      version,
+    };
   } catch {
     return null;
   }

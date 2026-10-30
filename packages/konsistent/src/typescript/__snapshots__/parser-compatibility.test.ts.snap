@@ -24917,6 +24917,162 @@ exports[`TypeScript 5.9 compatibility contract > preserves the structure of the 
       }
     ]
   },
+  "update-release-age/bun/index.ts": {
+    "calls": [],
+    "classes": [],
+    "constants": [
+      {
+        "name": "example",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      }
+    ],
+    "declarationSymbols": [
+      {
+        "isDefaultExport": false,
+        "isExported": true,
+        "kind": "const",
+        "name": "example",
+        "pos": {
+          "column": 14,
+          "line": 1
+        }
+      }
+    ],
+    "defaultExportSymbols": [],
+    "exports": [
+      {
+        "isType": false,
+        "kind": "const",
+        "name": "example",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      }
+    ],
+    "functions": [],
+    "importSources": [],
+    "imports": [],
+    "interfaces": [],
+    "namedExportSymbols": [],
+    "nonBarrelStatements": [
+      {
+        "kind": "declaration",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      }
+    ],
+    "typeAliases": []
+  },
+  "update-release-age/none/index.ts": {
+    "calls": [],
+    "classes": [],
+    "constants": [
+      {
+        "name": "example",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      }
+    ],
+    "declarationSymbols": [
+      {
+        "isDefaultExport": false,
+        "isExported": true,
+        "kind": "const",
+        "name": "example",
+        "pos": {
+          "column": 14,
+          "line": 1
+        }
+      }
+    ],
+    "defaultExportSymbols": [],
+    "exports": [
+      {
+        "isType": false,
+        "kind": "const",
+        "name": "example",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      }
+    ],
+    "functions": [],
+    "importSources": [],
+    "imports": [],
+    "interfaces": [],
+    "namedExportSymbols": [],
+    "nonBarrelStatements": [
+      {
+        "kind": "declaration",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      }
+    ],
+    "typeAliases": []
+  },
+  "update-release-age/pnpm/index.ts": {
+    "calls": [],
+    "classes": [],
+    "constants": [
+      {
+        "name": "example",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      }
+    ],
+    "declarationSymbols": [
+      {
+        "isDefaultExport": false,
+        "isExported": true,
+        "kind": "const",
+        "name": "example",
+        "pos": {
+          "column": 14,
+          "line": 1
+        }
+      }
+    ],
+    "defaultExportSymbols": [],
+    "exports": [
+      {
+        "isType": false,
+        "kind": "const",
+        "name": "example",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      }
+    ],
+    "functions": [],
+    "importSources": [],
+    "imports": [],
+    "interfaces": [],
+    "namedExportSymbols": [],
+    "nonBarrelStatements": [
+      {
+        "kind": "declaration",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      }
+    ],
+    "typeAliases": []
+  },
   "warnings-only/modules/auth/index.ts": {
     "calls": [],
     "classes": [],

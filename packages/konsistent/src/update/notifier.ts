@@ -3,13 +3,16 @@ import { isCacheStale, readCache, writeCache } from "./cache.js";
 import { detectPackageManager, isMonorepo } from "./package-manager.js";
 import { PACKAGE_NAME } from "./package-name.js";
 import { promptYesNo } from "./prompt.js";
-import { fetchLatestVersion } from "./registry.js";
+import { fetchLatestRelease, type LatestRelease } from "./registry.js";
+import { isReleaseOldEnough, readMinimumReleaseAgeMs } from "./release-age.js";
 import {
   canAutoUpdate,
   getManualInstallHint,
   runUpdate,
 } from "./run-update.js";
-import { isNewerVersion } from "./semver.js";
+import { getPrereleaseChannel, isNewerVersion } from "./semver.js";
+
+const DEFAULT_MINIMUM_RELEASE_AGE_MS = 2 * 24 * 60 * 60 * 1000;
 
 export function shouldCheckForUpdate(commandName: string): boolean {
   if (commandName === "update") {
@@ -38,29 +41,51 @@ export async function checkAndPrompt(opts: {
   currentVersion: string;
 }): Promise<boolean> {
   const cache = readCache();
-  let latestVersion: string | null;
+  const channel = getPrereleaseChannel(opts.currentVersion);
+  let release: LatestRelease | null;
 
-  if (isCacheStale({ cache })) {
-    latestVersion = await fetchLatestVersion({
+  if (isCacheStale({ cache }) || cache?.channel !== channel) {
+    release = await fetchLatestRelease({
       currentVersion: opts.currentVersion,
       packageName: PACKAGE_NAME,
     });
 
-    if (latestVersion) {
-      writeCache({ lastChecked: Date.now(), latestVersion });
+    if (release) {
+      writeCache({
+        channel,
+        lastChecked: Date.now(),
+        latestVersion: release.version,
+        publishedAt: release.publishedAt,
+      });
     }
   } else {
-    latestVersion = cache?.latestVersion ?? null;
+    release = cache
+      ? { publishedAt: cache.publishedAt, version: cache.latestVersion }
+      : null;
   }
 
   if (
     !(
-      latestVersion &&
+      release &&
       isNewerVersion({
-        candidate: latestVersion,
+        candidate: release.version,
         current: opts.currentVersion,
       })
     )
+  ) {
+    return false;
+  }
+
+  const cwd = process.cwd();
+  const latestVersion = release.version;
+  const minimumReleaseAgeMs =
+    readMinimumReleaseAgeMs({ cwd, latestVersion }) ??
+    DEFAULT_MINIMUM_RELEASE_AGE_MS;
+  if (
+    !isReleaseOldEnough({
+      minimumReleaseAgeMs,
+      publishedAt: release.publishedAt,
+    })
   ) {
     return false;
   }
@@ -72,7 +97,6 @@ export async function checkAndPrompt(opts: {
     })
   );
 
-  const cwd = process.cwd();
   const updateInfo = canAutoUpdate(cwd);
 
   if (!updateInfo) {

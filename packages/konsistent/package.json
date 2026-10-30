@@ -45,13 +45,17 @@
     "picocolors": "^1",
     "picomatch": "^4",
     "resolve.exports": "^2",
+    "semver": "^7",
+    "smol-toml": "^1",
     "tinyglobby": "^0.2",
     "typescript": "catalog:",
+    "yaml": "^2",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "@types/picomatch": "^4",
+    "@types/semver": "^7",
     "ajv": "catalog:",
     "del-cli": "catalog:",
     "tsdown": "catalog:",

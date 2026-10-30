@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fetchLatestVersion, findLatestInChannel } from "./registry.js";
+import { fetchLatestRelease, findLatestInChannel } from "./registry.js";
 
 describe("findLatestInChannel", () => {
   it("finds latest stable version", () => {
@@ -49,7 +49,7 @@ describe("findLatestInChannel", () => {
   });
 });
 
-describe("fetchLatestVersion", () => {
+describe("fetchLatestRelease", () => {
   const originalFetch = globalThis.fetch;
 
   beforeEach(() => {
@@ -71,11 +71,11 @@ describe("fetchLatestVersion", () => {
       })
     );
 
-    const result = await fetchLatestVersion({
+    const result = await fetchLatestRelease({
       currentVersion: "0.0.1-alpha.1",
       packageName: "konsistent",
     });
-    expect(result).toBe("0.0.1-alpha.4");
+    expect(result).toEqual({ publishedAt: null, version: "0.0.1-alpha.4" });
   });
 
   it("filters by prerelease channel", async () => {
@@ -92,31 +92,31 @@ describe("fetchLatestVersion", () => {
     );
 
     expect(
-      await fetchLatestVersion({
+      await fetchLatestRelease({
         currentVersion: "0.0.1-alpha.1",
         packageName: "konsistent",
       })
-    ).toBe("0.0.1-alpha.5");
+    ).toEqual({ publishedAt: null, version: "0.0.1-alpha.5" });
 
     expect(
-      await fetchLatestVersion({
+      await fetchLatestRelease({
         currentVersion: "0.0.1-beta.1",
         packageName: "konsistent",
       })
-    ).toBe("0.0.1-beta.1");
+    ).toEqual({ publishedAt: null, version: "0.0.1-beta.1" });
 
     expect(
-      await fetchLatestVersion({
+      await fetchLatestRelease({
         currentVersion: "0.9.0",
         packageName: "konsistent",
       })
-    ).toBe("1.0.0");
+    ).toEqual({ publishedAt: null, version: "1.0.0" });
   });
 
   it("returns null on network error", async () => {
     vi.mocked(globalThis.fetch).mockRejectedValue(new Error("network error"));
 
-    const result = await fetchLatestVersion({
+    const result = await fetchLatestRelease({
       currentVersion: "1.0.0",
       packageName: "konsistent",
     });
@@ -128,7 +128,7 @@ describe("fetchLatestVersion", () => {
       new Response(null, { status: 500 })
     );
 
-    const result = await fetchLatestVersion({
+    const result = await fetchLatestRelease({
       currentVersion: "1.0.0",
       packageName: "konsistent",
     });
@@ -140,7 +140,7 @@ describe("fetchLatestVersion", () => {
       Response.json({ versions: {} })
     );
 
-    await fetchLatestVersion({
+    await fetchLatestRelease({
       currentVersion: "1.0.0",
       packageName: "konsistent",
     });
@@ -148,8 +148,68 @@ describe("fetchLatestVersion", () => {
     expect(globalThis.fetch).toHaveBeenCalledWith(
       "https://registry.npmjs.org/konsistent",
       expect.objectContaining({
-        headers: { Accept: "application/vnd.npm.install-v1+json" },
+        headers: { Accept: "application/json" },
       })
     );
+  });
+
+  it("returns the latest publication time without selecting an older release", async () => {
+    const timestamp = "2026-10-29T12:00:00.000Z";
+    vi.mocked(globalThis.fetch).mockResolvedValue(
+      Response.json({
+        time: {
+          "1.0.0-beta.13": "2026-09-01T12:00:00.000Z",
+          "1.0.0-beta.14": timestamp,
+        },
+        versions: { "1.0.0-beta.13": {}, "1.0.0-beta.14": {} },
+      })
+    );
+    expect(
+      await fetchLatestRelease({
+        currentVersion: "1.0.0-beta.12",
+        packageName: "konsistent",
+      })
+    ).toEqual({ publishedAt: Date.parse(timestamp), version: "1.0.0-beta.14" });
+  });
+
+  it.each([null, "invalid", 123, {}])(
+    "returns an unknown publication time for %j",
+    async (timestamp) => {
+      vi.mocked(globalThis.fetch).mockResolvedValue(
+        Response.json({
+          time: { "1.0.0": timestamp },
+          versions: { "1.0.0": {} },
+        })
+      );
+      expect(
+        await fetchLatestRelease({
+          currentVersion: "0.9.0",
+          packageName: "konsistent",
+        })
+      ).toEqual({ publishedAt: null, version: "1.0.0" });
+    }
+  );
+
+  it.each([null, {}, { versions: [] }, { versions: "bad" }, { versions: {} }])(
+    "ignores invalid version metadata %j",
+    async (metadata) => {
+      vi.mocked(globalThis.fetch).mockResolvedValue(Response.json(metadata));
+      expect(
+        await fetchLatestRelease({
+          currentVersion: "1.0.0",
+          packageName: "konsistent",
+        })
+      ).toBeNull();
+    }
+  );
+
+  it("returns null for invalid JSON", async () => {
+    vi.mocked(globalThis.fetch).mockResolvedValue(new Response("not JSON"));
+    expect(
+      await fetchLatestRelease({
+        currentVersion: "1.0.0",
+        packageName: "konsistent",
+      })
+    ).toBeNull();
   });
 });
