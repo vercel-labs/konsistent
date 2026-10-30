@@ -1,0 +1,5 @@
+{
+  "name": "update-age-pnpm",
+  "private": true,
+  "packageManager": "pnpm@11.28.0"
+}
