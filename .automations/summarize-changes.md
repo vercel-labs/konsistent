@@ -55,7 +55,7 @@ omit credentials or sensitive source details. Send only to the configured channe
   "request": {
     "action": "slack.post_message",
     "key": "summarize-changes",
-    "channel": "#flixo0s-agent",
+    "channel": "#flix0s-agent",
     "text": "<the completed summary>"
   }
 }
