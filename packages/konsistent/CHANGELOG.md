@@ -1,5 +1,14 @@
 # konsistent
 
+## 1.0.0-beta.14
+
+### Patch Changes
+
+- 506ff7f: chore(konsistent): streamline TS and tsdown config for more appropriate build setup
+- 63e250a: fix(konsistent): respect repository minimum release age config in update notices and for explicit updates
+- Updated dependencies [506ff7f]
+  - @konsistent/convention@1.0.0-beta.14
+
 ## 1.0.0-beta.13
 
 ### Patch Changes
