@@ -3,22 +3,22 @@
   "private": true,
   "license": "Apache-2.0",
   "scripts": {
-    "build": "turbo run build --filter='./packages/*'",
+    "build": "turbo run build",
     "changeset": "changeset",
     "check": "ultracite check",
     "check:deps": "syncpack lint",
-    "ci:release": "turbo run build --filter='./packages/*' && changeset publish",
+    "ci:release": "turbo run build && changeset publish",
     "ci:version": "pnpm -F @konsistent/convention build && pnpm -F konsistent build && changeset version && pnpm install --no-frozen-lockfile",
     "fix": "ultracite fix",
     "fix:deps": "syncpack fix-mismatches && syncpack format",
     "konsistent": "KONSISTENT_NO_UPDATE_CHECK=true konsistent",
     "prepare": "husky",
     "set-latest-dist-tags": "node tools/scripts/set-latest-dist-tags.mjs",
-    "test": "turbo run test --filter='./packages/*'",
+    "test": "turbo run test",
     "test:e2e": "turbo run test:e2e:run",
     "test:e2e:run": "vitest run -c e2e/vitest.config.ts",
     "test:package": "turbo run test:package --filter=konsistent",
-    "typecheck": "turbo run typecheck --filter='./packages/*'"
+    "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
