@@ -1,21 +1,12 @@
-import { defineConfig } from "tsdown";
+import { defineConfig, mergeConfig } from "tsdown";
+import { cliBaseConfig } from "../../tsdown.base.ts";
 
-export default defineConfig({
-  banner: {
-    js: "#!/usr/bin/env node",
-  },
-  clean: true,
-  deps: {
-    neverBundle: ["@konsistent/convention"],
-  },
-  dts: false,
-  entry: ["src/cli.ts"],
-  fixedExtension: false,
-  format: ["esm"],
-  outDir: "dist",
-  outputOptions: {
-    codeSplitting: false,
-  },
-  sourcemap: false,
-  target: "es2022",
-});
+export default defineConfig(
+  mergeConfig(cliBaseConfig, {
+    deps: {
+      neverBundle: ["@konsistent/convention"],
+    },
+    entry: ["src/cli.ts"],
+    outDir: "dist",
+  })
+);

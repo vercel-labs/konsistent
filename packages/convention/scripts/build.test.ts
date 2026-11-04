@@ -34,6 +34,7 @@ describe("convention build", () => {
         "cli.js",
         "index.d.ts",
         "index.js",
+        "index.js.map",
       ]);
       const cli = await readFile(join(outdir, "cli.js"), "utf8");
       const library = await readFile(join(outdir, "index.js"), "utf8");
