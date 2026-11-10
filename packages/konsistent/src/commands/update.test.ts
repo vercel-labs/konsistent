@@ -78,7 +78,6 @@ describe("update command", () => {
     async (policy) => {
       vi.mocked(readMinimumReleaseAgeMs).mockReturnValue(policy);
       vi.mocked(fetchLatestRelease).mockResolvedValue({
-        publishedAt: null,
         version: "1.0.0-beta.14",
       });
       await runCommand(updateCommand, { rawArgs: [] });
@@ -95,7 +94,6 @@ describe("update command", () => {
 
   it("preserves the already-up-to-date response", async () => {
     vi.mocked(fetchLatestRelease).mockResolvedValue({
-      publishedAt: null,
       version: "1.0.0-beta.12",
     });
     await runCommand(updateCommand, { rawArgs: [] });

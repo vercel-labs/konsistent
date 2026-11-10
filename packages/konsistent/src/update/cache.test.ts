@@ -63,7 +63,11 @@ describe("readCache", () => {
       publishedAt: 500,
     };
     fs.writeFileSync(path.join(dir, "update-check.json"), JSON.stringify(data));
-    expect(readCache()).toEqual(data);
+    expect(readCache()).toEqual({
+      lastChecked: data.lastChecked,
+      latestVersion: data.latestVersion,
+      publishedAt: data.publishedAt,
+    });
   });
 
   it("invalidates legacy cache entries", () => {
@@ -75,14 +79,17 @@ describe("readCache", () => {
     expect(readCache()).toBeNull();
   });
 
-  it("preserves an explicitly unknown publication time", () => {
+  it("preserves the serialized unknown-time sentinel and omits it from the API", () => {
     const data = {
       channel: "beta",
       lastChecked: 1000,
       latestVersion: "1.0.0-beta.14",
-      publishedAt: null,
     };
     writeCache(data);
+    expect(JSON.parse(fs.readFileSync(getCachePath(), "utf-8"))).toEqual({
+      ...data,
+      publishedAt: null,
+    });
     expect(readCache()).toEqual(data);
   });
 
@@ -104,7 +111,6 @@ describe("readCache", () => {
 describe("writeCache", () => {
   it("creates directory and writes file", () => {
     const cache = {
-      channel: null,
       lastChecked: Date.now(),
       latestVersion: "2.0.0",
       publishedAt: 500,
@@ -112,14 +118,13 @@ describe("writeCache", () => {
     writeCache(cache);
 
     const raw = fs.readFileSync(getCachePath(), "utf-8");
-    expect(JSON.parse(raw)).toEqual(cache);
+    expect(JSON.parse(raw)).toEqual({ ...cache, channel: null });
   });
 
   it("does not throw on write failure", () => {
     vi.stubEnv("XDG_CONFIG_HOME", "/nonexistent/readonly/path");
     expect(() =>
       writeCache({
-        channel: null,
         lastChecked: 1,
         latestVersion: "1.0.0",
         publishedAt: 0,
@@ -129,13 +134,12 @@ describe("writeCache", () => {
 });
 
 describe("isCacheStale", () => {
-  it("returns true when cache is null", () => {
-    expect(isCacheStale({ cache: null })).toBe(true);
+  it("returns true when cache is absent", () => {
+    expect(isCacheStale({})).toBe(true);
   });
 
   it("returns true when cache is older than max age", () => {
     const old = {
-      channel: null,
       lastChecked: Date.now() - 4 * 60 * 60 * 1000,
       latestVersion: "1.0.0",
       publishedAt: 500,
@@ -145,7 +149,6 @@ describe("isCacheStale", () => {
 
   it("returns false when cache is fresh", () => {
     const fresh = {
-      channel: null,
       lastChecked: Date.now() - 1000,
       latestVersion: "1.0.0",
       publishedAt: 500,
@@ -155,7 +158,6 @@ describe("isCacheStale", () => {
 
   it("respects custom max age", () => {
     const cache = {
-      channel: null,
       lastChecked: Date.now() - 5000,
       latestVersion: "1.0.0",
       publishedAt: 500,

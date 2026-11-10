@@ -8,13 +8,12 @@ const NPM_REGISTRY_URL = "https://registry.npmjs.org";
 const DEFAULT_TIMEOUT_MS = 5000;
 
 export interface LatestRelease {
-  publishedAt: number | null;
+  publishedAt?: number;
   version: string;
 }
 
-interface PackageMetadata {
-  time?: Record<string, unknown> | null;
-  versions?: Record<string, unknown> | null;
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
 export async function fetchLatestRelease(opts: {
@@ -35,27 +34,32 @@ export async function fetchLatestRelease(opts: {
       return null;
     }
 
-    const data = (await response.json()) as PackageMetadata;
-    if (
-      !data.versions ||
-      typeof data.versions !== "object" ||
-      Array.isArray(data.versions)
-    ) {
+    const data: unknown = await response.json();
+    if (!(isRecord(data) && isRecord(data.versions))) {
       return null;
     }
 
     const versions = Object.keys(data.versions);
-    const version = findLatestInChannel({ channel, versions });
+    const channelOptions: { versions: string[]; channel?: string } = {
+      versions,
+    };
+    if (channel !== null) {
+      channelOptions.channel = channel;
+    }
+    const version = findLatestInChannel(channelOptions);
     if (!version) {
       return null;
     }
-    const timestamp = data.time?.[version];
+    const timestamp = isRecord(data.time) ? data.time[version] : undefined;
     const publishedAt =
       typeof timestamp === "string" ? Date.parse(timestamp) : Number.NaN;
-    return {
-      publishedAt: Number.isFinite(publishedAt) ? publishedAt : null,
+    const latestRelease: LatestRelease = {
       version,
     };
+    if (Number.isFinite(publishedAt)) {
+      latestRelease.publishedAt = publishedAt;
+    }
+    return latestRelease;
   } catch {
     return null;
   }
@@ -63,7 +67,7 @@ export async function fetchLatestRelease(opts: {
 
 export function findLatestInChannel(opts: {
   versions: string[];
-  channel: string | null;
+  channel?: string;
 }): string | null {
   let latestVersion: string | null = null;
   let latestParsed: NonNullable<ReturnType<typeof parseVersion>> | null = null;
@@ -74,8 +78,8 @@ export function findLatestInChannel(opts: {
       continue;
     }
 
-    if (opts.channel === null) {
-      if (parsed.prereleaseTag !== null) {
+    if (opts.channel === undefined) {
+      if (parsed.prereleaseTag !== undefined) {
         continue;
       }
     } else if (parsed.prereleaseTag !== opts.channel) {

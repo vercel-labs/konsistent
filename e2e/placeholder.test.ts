@@ -97,7 +97,7 @@ describe("plugin-system-broken-files fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -161,7 +161,7 @@ describe("ai-toolkit-broken-interfaces fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -196,7 +196,7 @@ describe("function-signatures-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -277,7 +277,7 @@ describe("ai-toolkit-broken-exports fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -303,7 +303,7 @@ describe("ai-toolkit-broken-interfaces fixture --format github", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -342,7 +342,7 @@ describe("class-and-function-contracts-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -390,7 +390,7 @@ describe("component-library-broken-conditionals fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -420,7 +420,7 @@ describe("for-files-array-broken fixture", () => {
     } catch (err: unknown) {
       const error = err as {
         stdout: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -441,7 +441,7 @@ describe("must-block-names fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -473,7 +473,7 @@ describe("ai-toolkit-broken-exports fixture --format markdown", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -499,7 +499,7 @@ describe("monorepo-with-negation-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -516,7 +516,7 @@ describe("monorepo-with-negation-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -551,7 +551,7 @@ describe("summary output", () => {
     } catch (err: unknown) {
       const error = err as {
         stdout: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -589,7 +589,7 @@ describe("--config-path flag", () => {
     } catch (err: unknown) {
       const error = err as {
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -640,7 +640,7 @@ describe("--config-package flag", () => {
     } catch (err: unknown) {
       const error = err as {
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -661,7 +661,7 @@ describe("--config-package flag", () => {
     } catch (err: unknown) {
       const error = err as {
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -685,7 +685,7 @@ describe("--config-package flag", () => {
     } catch (err: unknown) {
       const error = err as {
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -704,7 +704,7 @@ describe("--config-package flag", () => {
     } catch (err: unknown) {
       const error = err as {
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -724,7 +724,7 @@ describe("--colors flag", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -765,7 +765,7 @@ describe("mixed-severity fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -785,7 +785,7 @@ describe("mixed-severity fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -805,7 +805,7 @@ describe("--error-on-warnings flag", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -830,7 +830,7 @@ describe("--error-on-warnings flag", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -902,7 +902,7 @@ describe("mixed-severity fixture --format github", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -927,7 +927,7 @@ describe("mixed-severity fixture --format json", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -951,7 +951,7 @@ describe("mixed-severity fixture --format markdown", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -995,7 +995,7 @@ describe("--diagnostic-level flag", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -1018,7 +1018,7 @@ describe("--diagnostic-level flag", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -1049,7 +1049,7 @@ describe("--max-diagnostics flag", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -1067,7 +1067,7 @@ describe("--max-diagnostics flag", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -1104,7 +1104,7 @@ describe("case-maps-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -1140,7 +1140,7 @@ describe("re-export-from-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -1179,7 +1179,7 @@ describe("exclude-files-glob-syntax fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -1199,7 +1199,7 @@ describe("exclude-files-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -1240,7 +1240,7 @@ describe("placeholder-constraints-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -1276,7 +1276,7 @@ describe("regex-constraints-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -1307,7 +1307,7 @@ describe("placeholder-satisfies-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);

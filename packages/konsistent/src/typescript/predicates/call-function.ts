@@ -10,7 +10,7 @@ interface CallFunctionDefinition {
 }
 
 function parseExpectedArguments(opts: {
-  arguments: string[] | undefined;
+  arguments?: string[];
   context: PredicateContext;
 }): { expressions?: string[]; valid: boolean } {
   const { arguments: argumentsList, context } = opts;
@@ -33,7 +33,7 @@ function parseExpectedArguments(opts: {
 function callMatches(opts: {
   call: CallInfo;
   context: PredicateContext;
-  expectedArguments: string[] | undefined;
+  expectedArguments?: string[];
   expectedName: string;
 }): boolean {
   const { call, expectedArguments, expectedName } = opts;

@@ -504,7 +504,7 @@ function collectUsagesInPredicates(opts: {
 }
 
 function collectImportFromUsages(opts: {
-  sources: string | string[] | undefined;
+  sources?: string | string[];
   key: string;
   declared: Set<string>;
   usages: Usage[];
@@ -520,7 +520,7 @@ function collectImportFromUsages(opts: {
 }
 
 function collectUsagesInDefinitionList(opts: {
-  list: ReadonlyArray<string | Record<string, unknown>> | undefined;
+  list?: ReadonlyArray<string | Record<string, unknown>>;
   key: string;
   objectFields: string[];
   arrayFields?: string[];

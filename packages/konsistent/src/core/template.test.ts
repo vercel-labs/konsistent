@@ -8,7 +8,7 @@ function makePlaceholders(opts: {
   kebabToCamelMap?: Record<string, string>;
 }): Record<string, PlaceholderValue> {
   const { map, kebabToPascalMap, kebabToCamelMap } = opts;
-  const result: Record<string, PlaceholderValue> = {};
+  const result: Record<string, PlaceholderValue> = Object.create(null);
   for (const [key, value] of Object.entries(map)) {
     result[key] = new PlaceholderValue({
       kebabToCamelMap,

@@ -235,7 +235,7 @@ function addSelectorRule(opts: {
 type AddConfiguredPatternResult =
   | {
       success: true;
-      activeSelector: ImportSourceSelectorConstraint | undefined;
+      activeSelector?: ImportSourceSelectorConstraint;
     }
   | { success: false; index: number; error: string };
 
@@ -243,7 +243,7 @@ function addNegatedPattern(opts: {
   expectedIsArray: boolean;
   configuredSource: string;
   pattern: ImportSourcePattern;
-  activeSelector: ImportSourceSelectorConstraint | undefined;
+  activeSelector?: ImportSourceSelectorConstraint;
   index: number;
   sourceLabel: SourceLabel;
 }): AddConfiguredPatternResult {
@@ -277,7 +277,7 @@ function addNegatedPattern(opts: {
 function addPositivePattern(opts: {
   pattern: ImportSourcePattern;
   constraints: ImportSourceConstraint[];
-  activeSelector: ImportSourceSelectorConstraint | undefined;
+  activeSelector?: ImportSourceSelectorConstraint;
   index: number;
   sourceLabel: SourceLabel;
 }): AddConfiguredPatternResult {

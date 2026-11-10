@@ -4,7 +4,7 @@ import { fetchLatestRelease, findLatestInChannel } from "./registry.js";
 describe("findLatestInChannel", () => {
   it("finds latest stable version", () => {
     const versions = ["1.0.0", "1.1.0", "1.2.0", "2.0.0-beta.1"];
-    expect(findLatestInChannel({ channel: null, versions })).toBe("1.2.0");
+    expect(findLatestInChannel({ versions })).toBe("1.2.0");
   });
 
   it("finds latest alpha version", () => {
@@ -33,12 +33,12 @@ describe("findLatestInChannel", () => {
   });
 
   it("returns null for empty versions", () => {
-    expect(findLatestInChannel({ channel: null, versions: [] })).toBeNull();
+    expect(findLatestInChannel({ versions: [] })).toBeNull();
   });
 
   it("skips unparseable versions", () => {
     const versions = ["invalid", "1.0.0", "also-bad"];
-    expect(findLatestInChannel({ channel: null, versions })).toBe("1.0.0");
+    expect(findLatestInChannel({ versions })).toBe("1.0.0");
   });
 
   it("compares across patch and minor versions", () => {
@@ -75,7 +75,7 @@ describe("fetchLatestRelease", () => {
       currentVersion: "0.0.1-alpha.1",
       packageName: "konsistent",
     });
-    expect(result).toEqual({ publishedAt: null, version: "0.0.1-alpha.4" });
+    expect(result).toEqual({ version: "0.0.1-alpha.4" });
   });
 
   it("filters by prerelease channel", async () => {
@@ -96,21 +96,21 @@ describe("fetchLatestRelease", () => {
         currentVersion: "0.0.1-alpha.1",
         packageName: "konsistent",
       })
-    ).toEqual({ publishedAt: null, version: "0.0.1-alpha.5" });
+    ).toEqual({ version: "0.0.1-alpha.5" });
 
     expect(
       await fetchLatestRelease({
         currentVersion: "0.0.1-beta.1",
         packageName: "konsistent",
       })
-    ).toEqual({ publishedAt: null, version: "0.0.1-beta.1" });
+    ).toEqual({ version: "0.0.1-beta.1" });
 
     expect(
       await fetchLatestRelease({
         currentVersion: "0.9.0",
         packageName: "konsistent",
       })
-    ).toEqual({ publishedAt: null, version: "1.0.0" });
+    ).toEqual({ version: "1.0.0" });
   });
 
   it("returns null on network error", async () => {
@@ -186,7 +186,7 @@ describe("fetchLatestRelease", () => {
           currentVersion: "0.9.0",
           packageName: "konsistent",
         })
-      ).toEqual({ publishedAt: null, version: "1.0.0" });
+      ).toEqual({ version: "1.0.0" });
     }
   );
 

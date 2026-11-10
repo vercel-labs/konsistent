@@ -52,15 +52,16 @@ function copyFixture(fixture: string): string {
 function runCli(opts: {
   cwd: string;
   command?: "update" | "version";
-  publishedAt?: number | null;
-}): Promise<{ code: number | null; stdout: string; stderr: string }> {
+  publishedAt?: number;
+  omitPublishedAt?: boolean;
+}): Promise<{ code?: number; stdout: string; stderr: string }> {
   const publishedAt =
-    opts.publishedAt === undefined ? now - DAY_MS : opts.publishedAt;
-  const time: Record<string, string> = {
+    opts.publishedAt ?? (opts.omitPublishedAt ? undefined : now - DAY_MS);
+  const time: Record<string, string> = Object.assign(Object.create(null), {
     [currentVersion]: new Date(now - 60 * DAY_MS).toISOString(),
     [olderVersion]: new Date(now - 30 * DAY_MS).toISOString(),
-  };
-  if (publishedAt !== null) {
+  });
+  if (publishedAt !== undefined) {
     time[latestVersion] = new Date(publishedAt).toISOString();
   }
   const metadata = {
@@ -102,7 +103,16 @@ function runCli(opts: {
       }
     });
     child.on("error", reject);
-    child.on("close", (code) => resolve({ code, stderr, stdout }));
+    child.on("close", (code) => {
+      const result: { code?: number; stdout: string; stderr: string } = {
+        stderr,
+        stdout,
+      };
+      if (code !== null) {
+        result.code = code;
+      }
+      resolve(result);
+    });
   });
 }
 
@@ -140,10 +150,14 @@ describe("update minimum release age", () => {
 
   it("warns but allows an explicit update with an unknown timestamp under a Bun policy", async () => {
     const cwd = copyFixture("bun");
-    const notice = await runCli({ cwd, publishedAt: null });
+    const notice = await runCli({ cwd, omitPublishedAt: true });
     expect(notice.code, notice.stderr).toBe(0);
     expect(notice.stderr).not.toContain("Update available");
-    const update = await runCli({ command: "update", cwd, publishedAt: null });
+    const update = await runCli({
+      command: "update",
+      cwd,
+      omitPublishedAt: true,
+    });
     expect(update.code, update.stderr).toBe(0);
     expect(update.stderr).toContain("[test-install]");
     expect(update.stderr).toContain(latestVersion);

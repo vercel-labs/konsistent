@@ -15,7 +15,7 @@ interface FunctionDef {
 }
 
 function typeMatches(opts: {
-  actual: TypeAnnotationInfo | undefined;
+  actual?: TypeAnnotationInfo;
   expected: string;
 }): boolean {
   const { actual, expected } = opts;
@@ -25,9 +25,9 @@ function typeMatches(opts: {
 function checkSignature(opts: {
   funcInfo: FunctionInfo;
   resolvedName: string;
-  resolvedParamType: string | undefined;
-  resolvedParamTypes: string[] | undefined;
-  resolvedReturnType: string | undefined;
+  resolvedParamType?: string;
+  resolvedParamTypes?: string[];
+  resolvedReturnType?: string;
   context: PredicateContext;
   conventionName?: string;
   severity?: DiagnosticSeverity;

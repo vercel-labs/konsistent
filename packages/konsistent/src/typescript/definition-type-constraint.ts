@@ -41,7 +41,7 @@ function createConstraintDiagnostic(opts: {
   line?: number;
   name: string;
   predicateName: string;
-  reason: string | undefined;
+  reason?: string;
   severity?: DiagnosticSeverity;
 }): Diagnostic {
   return createDiagnostic({

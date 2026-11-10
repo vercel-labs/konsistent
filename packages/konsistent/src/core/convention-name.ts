@@ -32,10 +32,14 @@ function getItemName(item: string | { name: string }): string {
   return typeof item === "string" ? item : item.name;
 }
 
-const PREDICATE_RULES: Record<
-  string,
-  (opts: { items: unknown[]; negated: boolean; predicateKey: string }) => string
-> = {
+type PredicateRule = (opts: {
+  items: unknown[];
+  negated: boolean;
+  predicateKey: string;
+}) => string;
+
+const PREDICATE_RULES: Record<string, PredicateRule> = Object.create(null);
+Object.assign(PREDICATE_RULES, {
   declareClasses: ({ items, negated }) => {
     const kebab = deriveKebabFromName(
       getItemName(items[0] as string | { name: string })
@@ -248,7 +252,7 @@ const PREDICATE_RULES: Record<
       ? `${prefix}-${kebab}-declaration-order`
       : `${prefix}-declaration-order`;
   },
-};
+} satisfies Record<string, PredicateRule>);
 
 const PREDICATE_PRIORITY = [
   "haveType",

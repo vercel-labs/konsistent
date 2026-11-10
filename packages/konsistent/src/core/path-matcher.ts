@@ -133,8 +133,8 @@ function extractValueFromSegment(opts: {
     return null;
   }
 
-  const values: Record<string, string> = {};
-  const constraints: Record<string, string> = {};
+  const values: Record<string, string> = Object.create(null);
+  const constraints: Record<string, string> = Object.create(null);
   for (let i = 0; i < placeholders.length; i += 1) {
     values[placeholders[i].name] = segmentMatch[i + 1];
     const { constraintRaw } = placeholders[i];
@@ -331,7 +331,7 @@ function toPlaceholderMap(opts: {
     camelToPascalMap,
     pascalToCamelMap,
   } = opts;
-  const result: Record<string, PlaceholderValue> = {};
+  const result: Record<string, PlaceholderValue> = Object.create(null);
   for (const [name, value] of Object.entries(raw)) {
     result[name] = new PlaceholderValue({
       camelToKebabMap,

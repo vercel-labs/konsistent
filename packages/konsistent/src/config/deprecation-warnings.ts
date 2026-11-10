@@ -73,7 +73,7 @@ function collectBlockWarnings(opts: {
 }
 
 function collectPredicateWarnings(opts: {
-  predicates: MustPredicatesV1 | undefined;
+  predicates?: MustPredicatesV1;
   path: string;
   warnings: string[];
 }): void {
@@ -101,7 +101,7 @@ function collectPredicateWarnings(opts: {
 }
 
 function collectFunctionWarnings(opts: {
-  list: MustPredicatesV1["declareFunctions"] | undefined;
+  list?: MustPredicatesV1["declareFunctions"];
   path: string;
   warnings: string[];
 }): void {

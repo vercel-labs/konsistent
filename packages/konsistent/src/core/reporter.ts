@@ -109,13 +109,16 @@ export function createJsonReporter(): Reporter {
   return {
     format(result: RunResult): string {
       const output = result.diagnostics.map((d) => {
-        const obj: Record<string, unknown> = {
-          conventionName: d.conventionName,
-          filePath: d.filePath,
-          message: d.message,
-          predicateName: d.predicateName,
-          severity: d.severity,
-        };
+        const obj: Record<string, unknown> = Object.assign(
+          Object.create(null),
+          {
+            conventionName: d.conventionName,
+            filePath: d.filePath,
+            message: d.message,
+            predicateName: d.predicateName,
+            severity: d.severity,
+          }
+        );
         if (d.line !== undefined) {
           obj.line = d.line;
         }

@@ -47,7 +47,7 @@ describe("cli-placeholder-override fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -74,7 +74,7 @@ describe("cli-placeholder-override fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).not.toBe(0);
@@ -95,7 +95,7 @@ describe("cli-placeholder-override fixture", () => {
     } catch (err: unknown) {
       const error = err as {
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).not.toBe(0);
@@ -115,7 +115,7 @@ describe("convention-placeholders-broken fixture", () => {
       const error = err as {
         stdout: string;
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).not.toBe(0);

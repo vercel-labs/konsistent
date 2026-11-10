@@ -3,10 +3,10 @@ import os from "node:os";
 import path from "node:path";
 
 export interface UpdateCache {
-  channel: string | null;
+  channel?: string;
   lastChecked: number;
   latestVersion: string;
-  publishedAt: number | null;
+  publishedAt?: number;
 }
 
 const CACHE_FILENAME = "update-check.json";
@@ -37,12 +37,17 @@ export function readCache(): UpdateCache | null {
       return null;
     }
 
-    return {
-      channel: data.channel,
+    const cache: UpdateCache = {
       lastChecked: data.lastChecked,
       latestVersion: data.latestVersion,
-      publishedAt: data.publishedAt,
     };
+    if (typeof data.channel === "string") {
+      cache.channel = data.channel;
+    }
+    if (typeof data.publishedAt === "number") {
+      cache.publishedAt = data.publishedAt;
+    }
+    return cache;
   } catch {
     return null;
   }
@@ -52,14 +57,23 @@ export function writeCache(cache: UpdateCache): void {
   try {
     const cachePath = getCachePath();
     fs.mkdirSync(path.dirname(cachePath), { recursive: true });
-    fs.writeFileSync(cachePath, JSON.stringify(cache), "utf-8");
+    fs.writeFileSync(
+      cachePath,
+      JSON.stringify({
+        channel: cache.channel ?? null,
+        lastChecked: cache.lastChecked,
+        latestVersion: cache.latestVersion,
+        publishedAt: cache.publishedAt ?? null,
+      }),
+      "utf-8"
+    );
   } catch {
     // Silently ignore write failures (read-only fs, permissions, etc.)
   }
 }
 
 export function isCacheStale(opts: {
-  cache: UpdateCache | null;
+  cache?: UpdateCache;
   maxAgeMs?: number;
 }): boolean {
   if (!opts.cache) {

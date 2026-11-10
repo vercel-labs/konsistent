@@ -127,7 +127,7 @@ function normalizeTypeExpressionPair(opts: {
 }
 
 export function matchTypeExpression(opts: {
-  actual: string | undefined;
+  actual?: string;
   expected: string;
   missingReason: string;
   session?: TypeScriptSession;
@@ -311,7 +311,7 @@ function parseArrayType(opts: {
 }
 
 function parseInnerType(opts: {
-  node: TypeNode | undefined;
+  node?: TypeNode;
   source: ParsedSource;
 }): string | undefined {
   const { node, source } = opts;
@@ -359,7 +359,7 @@ function parseObjectType(opts: {
 }
 
 export function parseTypeShape(opts: {
-  node: TypeNode | undefined;
+  node?: TypeNode;
   source: ParsedSource;
 }): ConstantTypeInfo | undefined {
   const { node } = opts;
@@ -514,7 +514,7 @@ function matchObjectSchema(opts: {
 }
 
 function matchTypeSchema(opts: {
-  actual: ConstantTypeInfo | undefined;
+  actual?: ConstantTypeInfo;
   missingReason: string;
   schema: ConstantValueSchemaV1;
   unsupportedReason: string;
@@ -549,7 +549,7 @@ function matchTypeSchema(opts: {
 }
 
 export function matchConstantTypeSchema(opts: {
-  actual: ConstantTypeInfo | undefined;
+  actual?: ConstantTypeInfo;
   schema: ConstantValueSchemaV1;
 }): ConstantSchemaMatchResult {
   return matchTypeSchema({
@@ -560,7 +560,7 @@ export function matchConstantTypeSchema(opts: {
 }
 
 export function matchTypeDefinitionSchema(opts: {
-  actual: ConstantTypeInfo | undefined;
+  actual?: ConstantTypeInfo;
   schema: ConstantValueSchemaV1;
 }): ConstantSchemaMatchResult {
   return matchTypeSchema({

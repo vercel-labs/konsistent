@@ -8,7 +8,7 @@ import { PACKAGE_NAME } from "./package-name.js";
 
 interface PnpmExclusion {
   name: string;
-  versions: string[] | null;
+  versions?: string[];
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -18,7 +18,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function parsePnpmExclusion(pattern: string): PnpmExclusion {
   const atIndex = pattern.indexOf("@", pattern.startsWith("@") ? 1 : 0);
   if (atIndex === -1) {
-    return { name: pattern, versions: null };
+    return { name: pattern };
   }
   const name = pattern.slice(0, atIndex);
   const versions = pattern
@@ -44,7 +44,7 @@ function matchesPnpmExclusion(opts: {
   const matchesName = new RegExp(`^${pattern}$`).test(PACKAGE_NAME) !== negated;
   return (
     matchesName &&
-    (opts.exclusion.versions === null ||
+    (opts.exclusion.versions === undefined ||
       opts.exclusion.versions.includes(opts.latestVersion))
   );
 }
@@ -138,13 +138,13 @@ export function readMinimumReleaseAgeMs(opts: {
 }
 
 export function isReleaseOldEnough(opts: {
-  publishedAt: number | null;
+  publishedAt?: number;
   minimumReleaseAgeMs: number;
   now?: number;
 }): boolean {
   return (
     opts.minimumReleaseAgeMs === 0 ||
-    (opts.publishedAt !== null &&
+    (typeof opts.publishedAt === "number" &&
       Number.isFinite(opts.publishedAt) &&
       (opts.now ?? Date.now()) - opts.publishedAt >= opts.minimumReleaseAgeMs)
   );

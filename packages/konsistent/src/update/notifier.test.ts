@@ -346,11 +346,24 @@ describe("checkAndPrompt", () => {
       channel: "alpha",
       lastChecked: Date.now(),
       latestVersion: "0.0.1-alpha.5",
-      publishedAt: null,
     });
     const errorSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
     await checkAndPrompt({ currentVersion: "0.0.1-alpha.4" });
     expect(errorSpy).not.toHaveBeenCalled();
     expect(prompt.promptYesNo).not.toHaveBeenCalled();
+  });
+
+  it("reuses stable-channel cache entries whose channel is omitted", async () => {
+    vi.mocked(cache.isCacheStale).mockReturnValue(false);
+    vi.mocked(cache.readCache).mockReturnValue({
+      lastChecked: Date.now(),
+      latestVersion: "1.0.1",
+      publishedAt: 0,
+    });
+    vi.mocked(registry.fetchLatestRelease).mockResolvedValue(null);
+
+    await checkAndPrompt({ currentVersion: "1.0.0" });
+
+    expect(registry.fetchLatestRelease).not.toHaveBeenCalled();
   });
 });

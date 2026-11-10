@@ -37,7 +37,7 @@ describe("call-function-broken fixture", () => {
     } catch (err: unknown) {
       const error = err as {
         stdout: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -68,7 +68,7 @@ describe("declaration-predicates-broken fixture", () => {
     } catch (err: unknown) {
       const error = err as {
         stdout: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -101,7 +101,7 @@ describe("constant-schemas-broken fixture", () => {
     } catch (err: unknown) {
       const error = err as {
         stdout: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -154,7 +154,7 @@ describe("type-schemas-broken fixture", () => {
     } catch (err: unknown) {
       const error = err as {
         stdout: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -196,7 +196,7 @@ describe("declaration-order-broken fixture", () => {
     } catch (err: unknown) {
       const error = err as {
         stdout: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -226,7 +226,7 @@ describe("import-source-groups-broken fixture", () => {
     } catch (err: unknown) {
       const error = err as {
         stdout: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -280,7 +280,7 @@ describe("export-source-predicates-broken fixture", () => {
     } catch (err: unknown) {
       const error = err as {
         stdout: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -315,7 +315,7 @@ describe("import-values-and-types-from-broken fixture", () => {
     } catch (err: unknown) {
       const error = err as {
         stdout: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -359,7 +359,7 @@ describe("import-source-selectors-invalid fixture", () => {
     } catch (err: unknown) {
       const error = err as {
         stderr: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -396,7 +396,7 @@ describe("import-conditions-for-broken fixture", () => {
     } catch (err: unknown) {
       const error = err as {
         stdout: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -419,7 +419,7 @@ describe("import-conditions-broken fixture", () => {
     } catch (err: unknown) {
       const error = err as {
         stdout: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
@@ -450,7 +450,7 @@ describe("symbol-aliases-broken fixture", () => {
     } catch (err: unknown) {
       const error = err as {
         stdout: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);

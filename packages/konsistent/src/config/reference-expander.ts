@@ -178,7 +178,7 @@ function expandMustBlockReference(opts: {
     };
   }
 
-  const base: Record<string, unknown> = {};
+  const base: Record<string, unknown> = Object.create(null);
   if (reusable.must !== undefined) {
     base.must = reusable.must;
   }
@@ -283,11 +283,14 @@ function expandStringReference(opts: {
     };
   }
 
-  const candidate: Record<string, unknown> = {
-    description: reusable.description,
-    name: reusable.name,
-    paths,
-  };
+  const candidate: Record<string, unknown> = Object.assign(
+    Object.create(null),
+    {
+      description: reusable.description,
+      name: reusable.name,
+      paths,
+    }
+  );
   if (reusable.must !== undefined) {
     candidate.must = reusable.must;
   }
@@ -343,10 +346,10 @@ function expandUseReference(opts: {
     };
   }
 
-  const base: Record<string, unknown> = {
+  const base: Record<string, unknown> = Object.assign(Object.create(null), {
     description: reusable.description,
     name: reusable.name,
-  };
+  });
   if (reusable.must !== undefined) {
     base.must = reusable.must;
   }
@@ -423,7 +426,10 @@ function deepMerge(opts: {
   override: Record<string, unknown>;
 }): Record<string, unknown> {
   const { base, override } = opts;
-  const result: Record<string, unknown> = { ...base };
+  const result: Record<string, unknown> = Object.assign(
+    Object.create(null),
+    base
+  );
 
   for (const [key, overrideValue] of Object.entries(override)) {
     const baseValue = result[key];

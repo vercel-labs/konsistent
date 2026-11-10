@@ -287,12 +287,8 @@ describe("isReleaseOldEnough", () => {
   });
 
   it("allows missing timestamps only when no age applies", () => {
-    expect(
-      isReleaseOldEnough({ minimumReleaseAgeMs: 0, publishedAt: null })
-    ).toBe(true);
-    expect(
-      isReleaseOldEnough({ minimumReleaseAgeMs: DAY_MS, publishedAt: null })
-    ).toBe(false);
+    expect(isReleaseOldEnough({ minimumReleaseAgeMs: 0 })).toBe(true);
+    expect(isReleaseOldEnough({ minimumReleaseAgeMs: DAY_MS })).toBe(false);
     expect(
       isReleaseOldEnough({
         minimumReleaseAgeMs: DAY_MS,

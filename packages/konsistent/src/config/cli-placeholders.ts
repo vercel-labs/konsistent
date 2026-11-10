@@ -8,7 +8,7 @@ export type ParseCliPlaceholdersResult =
 export function parseCliPlaceholders(opts: {
   raw: readonly string[];
 }): ParseCliPlaceholdersResult {
-  const result: Record<string, string> = {};
+  const result: Record<string, string> = Object.create(null);
   for (const entry of opts.raw) {
     const colon = entry.indexOf(":");
     if (colon < 1 || colon === entry.length - 1) {

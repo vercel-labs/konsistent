@@ -69,14 +69,14 @@ interface CaseMaps {
 }
 
 function buildStaticPlaceholders(opts: {
-  raw: Record<string, string> | undefined;
+  raw?: Record<string, string>;
   caseMaps: CaseMaps;
 }): Record<string, PlaceholderValue> {
   const { raw, caseMaps } = opts;
   if (!raw) {
     return {};
   }
-  const result: Record<string, PlaceholderValue> = {};
+  const result: Record<string, PlaceholderValue> = Object.create(null);
   for (const [name, value] of Object.entries(raw)) {
     result[name] = new PlaceholderValue({ value, ...caseMaps });
   }
@@ -130,7 +130,7 @@ function invertMap(
   if (!map) {
     return;
   }
-  const inverted: Record<string, string> = {};
+  const inverted: Record<string, string> = Object.create(null);
   for (const [key, value] of Object.entries(map)) {
     inverted[value] = key;
   }
@@ -151,7 +151,7 @@ function deriveCamelToPascalMap(opts: {
     ...Object.keys(kebabToCamelMap ?? {}),
   ]);
 
-  const result: Record<string, string> = {};
+  const result: Record<string, string> = Object.create(null);
   for (const kebabKey of allKebabKeys) {
     const camelValue = kebabToCamelMap?.[kebabKey] ?? toCamelCase(kebabKey);
     const pascalValue = kebabToPascalMap?.[kebabKey] ?? toPascalCase(kebabKey);
@@ -219,7 +219,7 @@ function resolveBlockConventionName(opts: {
 
 function isFileExcluded(opts: {
   filePath: string;
-  excludeFiles: string[] | undefined;
+  excludeFiles?: string[];
   context: PredicateContext;
 }): boolean {
   const { filePath, excludeFiles, context } = opts;
@@ -402,16 +402,17 @@ async function evaluateConditions(opts: {
   return true;
 }
 
-const TS_PREDICATE_HANDLERS: Record<
-  string,
-  (opts: {
-    must: MustPredicatesV1;
-    conventionName?: string;
-    context: PredicateContext;
-    fileStructure: FileStructure;
-    severity?: DiagnosticSeverity;
-  }) => Diagnostic[]
-> = {
+type TsPredicateHandler = (opts: {
+  must: MustPredicatesV1;
+  conventionName?: string;
+  context: PredicateContext;
+  fileStructure: FileStructure;
+  severity?: DiagnosticSeverity;
+}) => Diagnostic[];
+
+const TS_PREDICATE_HANDLERS: Record<string, TsPredicateHandler> =
+  Object.create(null);
+Object.assign(TS_PREDICATE_HANDLERS, {
   areBarrelFiles: ({
     must,
     context,
@@ -1034,7 +1035,7 @@ const TS_PREDICATE_HANDLERS: Record<
           severity,
         })
       : [],
-};
+} satisfies Record<string, TsPredicateHandler>);
 
 function checkTsPredicate(opts: {
   key: string;

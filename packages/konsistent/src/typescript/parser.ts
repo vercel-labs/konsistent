@@ -92,7 +92,7 @@ function hasDefaultModifier(node: Node): boolean {
 }
 
 function extractTypeAnnotation(opts: {
-  node: TypeNode | undefined;
+  node?: TypeNode;
   parsedSource: ParsedSource;
 }): TypeAnnotationInfo | undefined {
   const { node, parsedSource } = opts;
@@ -118,7 +118,7 @@ function extractParams(opts: {
 }
 
 function extractExtendsFromHeritage(opts: {
-  clauses: NodeArray<HeritageClause> | undefined;
+  clauses?: NodeArray<HeritageClause>;
   kind: SyntaxKind;
   parsedSource: ParsedSource;
 }): ExtendsClauseInfo[] {

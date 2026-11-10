@@ -2,8 +2,8 @@ export interface ParsedVersion {
   major: number;
   minor: number;
   patch: number;
-  prereleaseNum: number | null;
-  prereleaseTag: string | null;
+  prereleaseNum?: number;
+  prereleaseTag?: string;
 }
 
 const VERSION_RE = /^(\d+)\.(\d+)\.(\d+)(?:-([a-z]+)\.(\d+))?$/;
@@ -14,13 +14,16 @@ export function parseVersion(version: string): ParsedVersion | null {
     return null;
   }
 
-  return {
+  const parsedVersion: ParsedVersion = {
     major: Number(match[1]),
     minor: Number(match[2]),
     patch: Number(match[3]),
-    prereleaseNum: match[5] === undefined ? null : Number(match[5]),
-    prereleaseTag: match[4] ?? null,
   };
+  if (match[4] !== undefined && match[5] !== undefined) {
+    parsedVersion.prereleaseNum = Number(match[5]);
+    parsedVersion.prereleaseTag = match[4];
+  }
+  return parsedVersion;
 }
 
 export function compareVersions({
@@ -39,20 +42,23 @@ export function compareVersions({
     }
   }
 
-  if (a.prereleaseTag === null && b.prereleaseTag === null) {
+  const aPrereleaseTag = a.prereleaseTag ?? null;
+  const bPrereleaseTag = b.prereleaseTag ?? null;
+
+  if (aPrereleaseTag === null && bPrereleaseTag === null) {
     return 0;
   }
-  if (a.prereleaseTag === null) {
+  if (aPrereleaseTag === null) {
     return 1;
   }
-  if (b.prereleaseTag === null) {
+  if (bPrereleaseTag === null) {
     return -1;
   }
 
-  if (a.prereleaseTag < b.prereleaseTag) {
+  if (aPrereleaseTag < bPrereleaseTag) {
     return -1;
   }
-  if (a.prereleaseTag > b.prereleaseTag) {
+  if (aPrereleaseTag > bPrereleaseTag) {
     return 1;
   }
 

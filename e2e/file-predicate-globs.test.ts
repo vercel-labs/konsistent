@@ -31,7 +31,7 @@ describe("file predicate glob fixtures", () => {
     } catch (err: unknown) {
       const error = err as {
         stdout: string;
-        code: number | null;
+        code?: number;
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);

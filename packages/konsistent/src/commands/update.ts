@@ -53,7 +53,7 @@ export default defineCommand({
      * defensive check allows explicit updates if registry metadata is incomplete
      * or malformed, since it cannot prove the release is too recent.
      */
-    if (release.publishedAt === null) {
+    if (release.publishedAt === undefined) {
       console.warn(
         `Warning: Could not verify the publication time of ${PACKAGE_NAME} v${latestVersion}. Proceeding without checking its minimum release age.`
       );

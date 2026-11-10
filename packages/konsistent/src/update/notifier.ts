@@ -1,5 +1,10 @@
 import pc from "picocolors";
-import { isCacheStale, readCache, writeCache } from "./cache.js";
+import {
+  isCacheStale,
+  readCache,
+  type UpdateCache,
+  writeCache,
+} from "./cache.js";
 import { detectPackageManager, isMonorepo } from "./package-manager.js";
 import { PACKAGE_NAME } from "./package-name.js";
 import { promptYesNo } from "./prompt.js";
@@ -13,6 +18,45 @@ import {
 import { getPrereleaseChannel, isNewerVersion } from "./semver.js";
 
 const DEFAULT_MINIMUM_RELEASE_AGE_MS = 2 * 24 * 60 * 60 * 1000;
+
+function cacheRelease(opts: {
+  currentVersion: string;
+  release: LatestRelease;
+}): void {
+  const channel = getPrereleaseChannel(opts.currentVersion);
+  const cache: UpdateCache = {
+    lastChecked: Date.now(),
+    latestVersion: opts.release.version,
+  };
+  if (channel !== null) {
+    cache.channel = channel;
+  }
+  if (opts.release.publishedAt !== undefined) {
+    cache.publishedAt = opts.release.publishedAt;
+  }
+  writeCache(cache);
+}
+
+function releaseFromCache(cache: UpdateCache): LatestRelease {
+  const release: LatestRelease = { version: cache.latestVersion };
+  if (cache.publishedAt !== undefined) {
+    release.publishedAt = cache.publishedAt;
+  }
+  return release;
+}
+
+function isReleaseOldEnoughForPolicy(opts: {
+  minimumReleaseAgeMs: number;
+  release: LatestRelease;
+}): boolean {
+  const ageOptions: { minimumReleaseAgeMs: number; publishedAt?: number } = {
+    minimumReleaseAgeMs: opts.minimumReleaseAgeMs,
+  };
+  if (opts.release.publishedAt !== undefined) {
+    ageOptions.publishedAt = opts.release.publishedAt;
+  }
+  return isReleaseOldEnough(ageOptions);
+}
 
 export function shouldCheckForUpdate(commandName: string): boolean {
   if (commandName === "update") {
@@ -44,24 +88,23 @@ export async function checkAndPrompt(opts: {
   const channel = getPrereleaseChannel(opts.currentVersion);
   let release: LatestRelease | null;
 
-  if (isCacheStale({ cache }) || cache?.channel !== channel) {
+  if (
+    isCacheStale({ cache: cache ?? undefined }) ||
+    cache?.channel !== (channel ?? undefined)
+  ) {
     release = await fetchLatestRelease({
       currentVersion: opts.currentVersion,
       packageName: PACKAGE_NAME,
     });
 
     if (release) {
-      writeCache({
-        channel,
-        lastChecked: Date.now(),
-        latestVersion: release.version,
-        publishedAt: release.publishedAt,
+      cacheRelease({
+        currentVersion: opts.currentVersion,
+        release,
       });
     }
   } else {
-    release = cache
-      ? { publishedAt: cache.publishedAt, version: cache.latestVersion }
-      : null;
+    release = cache ? releaseFromCache(cache) : null;
   }
 
   if (
@@ -82,9 +125,9 @@ export async function checkAndPrompt(opts: {
     readMinimumReleaseAgeMs({ cwd, latestVersion }) ??
     DEFAULT_MINIMUM_RELEASE_AGE_MS;
   if (
-    !isReleaseOldEnough({
+    !isReleaseOldEnoughForPolicy({
       minimumReleaseAgeMs,
-      publishedAt: release.publishedAt,
+      release,
     })
   ) {
     return false;
