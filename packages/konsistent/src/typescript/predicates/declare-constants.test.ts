@@ -15,10 +15,17 @@ function createMockContext(opts: {
     placeholders: placeholders as PredicateContext["placeholders"],
     readDir: () => [],
     resolveTemplate(t: string): string {
-      return t.replace(/\$\{(\w+)\}/g, (match, name) => {
-        const placeholder = placeholders[name];
-        return placeholder ? placeholder.toString() : match;
-      });
+      return t.replace(
+        /\$\{(?<name>\w+)\}/gu,
+        (match, _name, _offset, _input, groups) => {
+          const name = groups?.name;
+          if (!name) {
+            return match;
+          }
+          const placeholder = placeholders[name];
+          return placeholder ? placeholder.toString() : match;
+        }
+      );
     },
   };
 }

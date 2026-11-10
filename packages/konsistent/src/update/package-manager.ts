@@ -176,7 +176,8 @@ export function updatePackageJsonVersion(opts: {
     const newRange = `^${opts.newVersion}`;
     const updated = raw.replace(
       new RegExp(
-        `("${escapeRegex(opts.packageName)}"\\s*:\\s*)"${escapeRegex(currentRange)}"`
+        `("${escapeRegex(opts.packageName)}"\\s*:\\s*)"${escapeRegex(currentRange)}"`,
+        "u"
       ),
       `$1"${newRange}"`
     );
@@ -193,5 +194,5 @@ export function updatePackageJsonVersion(opts: {
 }
 
 function escapeRegex(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return str.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }

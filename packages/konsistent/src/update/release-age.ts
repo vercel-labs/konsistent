@@ -39,9 +39,10 @@ function matchesPnpmExclusion(opts: {
   const name = negated ? opts.exclusion.name.slice(1) : opts.exclusion.name;
   const pattern = name
     .split("*")
-    .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .map((part) => part.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&"))
     .join(".*");
-  const matchesName = new RegExp(`^${pattern}$`).test(PACKAGE_NAME) !== negated;
+  const matchesName =
+    new RegExp(`^${pattern}$`, "u").test(PACKAGE_NAME) !== negated;
   return (
     matchesName &&
     (opts.exclusion.versions === undefined ||

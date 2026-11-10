@@ -10,7 +10,7 @@ import { parseFileStructure } from "../typescript/parser.js";
 import type { FileSystem } from "./filesystem.js";
 import { run } from "./runner.js";
 
-const QUOTED_NAME_PATTERN = /"(\w+)"/;
+const QUOTED_NAME_PATTERN = /"(?<name>\w+)"/u;
 
 function createMockFileSystem(opts: {
   globResults?: Map<string, string[]>;
@@ -537,7 +537,7 @@ describe("run", () => {
     expect(
       diagnostics.map(
         (diagnostic) =>
-          `${diagnostic.filePath}:${diagnostic.message.match(QUOTED_NAME_PATTERN)?.[1]}`
+          `${diagnostic.filePath}:${diagnostic.message.match(QUOTED_NAME_PATTERN)?.groups?.name}`
       )
     ).toEqual([
       "src/a.ts:x",

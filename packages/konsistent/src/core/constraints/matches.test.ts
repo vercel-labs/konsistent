@@ -39,4 +39,10 @@ describe("validateMatchesConstraint", () => {
       validateMatchesConstraint({ arg: "^[a-z]+ai$", value: "OpenAI" })
     ).toBe(false);
   });
+
+  it("supports Unicode property escapes", () => {
+    expect(
+      validateMatchesConstraint({ arg: "^\\p{Script=Greek}+$", value: "αβ" })
+    ).toBe(true);
+  });
 });

@@ -2,10 +2,10 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 const ROOT = path.resolve(import.meta.dirname, "..", "..");
-const NEWLINE_RE = /\r?\n/;
-const FRONTMATTER_RE = /^---\n([\s\S]+?)\n---/;
-const QUOTE_RE = /^['"]|['"]$/g;
-const CHANGESET_PATH_RE = /^\.changeset\/[a-z0-9][a-z0-9-]*\.md$/;
+const NEWLINE_RE = /\r?\n/u;
+const FRONTMATTER_RE = /^---\n(?<frontmatter>[\s\S]+?)\n---/u;
+const QUOTE_RE = /^['"]|['"]$/gu;
+const CHANGESET_PATH_RE = /^\.changeset\/[a-z0-9][a-z0-9-]*\.md$/u;
 
 function splitLines(value) {
   return (value ?? "")
@@ -91,7 +91,7 @@ async function parseChangeset({ relativePath, root }) {
     );
   }
   const bumps = {};
-  for (const line of match[1].split("\n")) {
+  for (const line of match.groups.frontmatter.split("\n")) {
     const trimmed = line.trim();
     if (!trimmed) {
       continue;

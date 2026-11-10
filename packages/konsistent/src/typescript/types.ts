@@ -1,3 +1,8 @@
+import type {
+  ConstantTypeInfo,
+  TypeShapeInfo,
+} from "./constant-type-schema.js";
+
 export interface SourcePosition {
   column: number;
   line: number;
@@ -138,8 +143,3 @@ export interface FileStructure {
   nonBarrelStatements: NonBarrelStatementInfo[];
   typeAliases: TypeAliasInfo[];
 }
-
-import type {
-  ConstantTypeInfo,
-  TypeShapeInfo,
-} from "./constant-type-schema.js";

@@ -6,9 +6,9 @@ import { describe, expect, it } from "vitest";
 
 const packageDirectory = resolve(import.meta.dirname, "..");
 
-const shebangPattern = /#!\/usr\/bin\/env node/g;
-const zodImportPattern = /from ["']zod["']/;
-const jitiImportPattern = /from ["']jiti["']/;
+const shebangPattern = /#!\/usr\/bin\/env node/gu;
+const zodImportPattern = /from ["']zod["']/u;
+const jitiImportPattern = /from ["']jiti["']/u;
 
 describe("convention build", () => {
   it("includes shared compiler settings in the test cache inputs", async () => {

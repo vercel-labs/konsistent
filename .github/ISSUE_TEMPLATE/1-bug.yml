@@ -1,6 +1,6 @@
 name: Bug Report
 description: Report a bug you encountered while using the konsistent CLI.
-labels: ['bug']
+labels: [ "bug" ]
 body:
   - type: markdown
     attributes:

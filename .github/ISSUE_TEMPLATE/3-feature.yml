@@ -1,6 +1,6 @@
 name: Feature Request
 description: Suggest a new feature to add to the konsistent CLI.
-labels: ['feature']
+labels: [ "feature" ]
 body:
   - type: markdown
     attributes:

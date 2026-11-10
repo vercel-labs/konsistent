@@ -37,6 +37,6 @@ allowBuilds:
 minimumReleaseAge: 2880 # 2 days
 
 minimumReleaseAgeExclude:
-  - 'turbo'
-  - 'konsistent'
-  - '@konsistent/*'
+  - "turbo"
+  - "konsistent"
+  - "@konsistent/*"

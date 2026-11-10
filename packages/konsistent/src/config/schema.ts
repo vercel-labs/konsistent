@@ -64,12 +64,12 @@ const PlaceholdersMapSchema = z.record(
   z
     .string()
     .regex(
-      /^[a-zA-Z][a-zA-Z0-9]*$/,
+      /^[a-zA-Z][a-zA-Z0-9]*$/u,
       "Placeholder name must match [a-zA-Z][a-zA-Z0-9]*"
     ),
   z
     .string()
-    .regex(/^[a-zA-Z0-9_-]+$/, "Placeholder value must match [a-zA-Z0-9_-]+")
+    .regex(/^[a-zA-Z0-9_-]+$/u, "Placeholder value must match [a-zA-Z0-9_-]+")
 );
 
 const ForSchema = z.strictObject({
@@ -88,7 +88,7 @@ const ConventionV1Shape = {
   ifNot: IfConditionV1Schema.optional(),
   name: z
     .string()
-    .regex(/^[a-z0-9-]+$/, "Convention name must match [a-z0-9-]+")
+    .regex(/^[a-z0-9-]+$/u, "Convention name must match [a-z0-9-]+")
     .optional(),
   paths: z.union([z.string(), z.array(z.string())]),
   placeholders: PlaceholdersMapSchema.optional(),
@@ -118,12 +118,12 @@ export const MustBlockUseRefSchema = z.strictObject({
   mustNot: MustPredicatesV1Schema.optional(),
   name: z
     .string()
-    .regex(/^[a-z0-9-]+$/, "Must block name must match [a-z0-9-]+")
+    .regex(/^[a-z0-9-]+$/u, "Must block name must match [a-z0-9-]+")
     .optional(),
   use: z
     .string()
     .regex(
-      /^[a-z0-9-]+\/[a-z0-9-]+$/,
+      /^[a-z0-9-]+\/[a-z0-9-]+$/u,
       'Must block "use" must match "<vendor>/<name>"'
     ),
 });
@@ -131,7 +131,7 @@ export const MustBlockUseRefSchema = z.strictObject({
 const ConventionStringRefSchema = z
   .string()
   .regex(
-    /^[a-z0-9-]+\/[a-z0-9-]+$/,
+    /^[a-z0-9-]+\/[a-z0-9-]+$/u,
     'Convention reference must match "<vendor>/<name>"'
   );
 
@@ -151,7 +151,7 @@ const RawHandWrittenConventionV1Shape = {
   excludeFiles: z.array(z.string()).optional(),
   name: z
     .string()
-    .regex(/^[a-z0-9-]+$/, "Convention name must match [a-z0-9-]+")
+    .regex(/^[a-z0-9-]+$/u, "Convention name must match [a-z0-9-]+")
     .optional(),
   paths: z.union([z.string(), z.array(z.string())]),
   placeholders: PlaceholdersMapSchema.optional(),
@@ -184,7 +184,7 @@ export const ConventionUseRefSchema = z.strictObject({
   use: z
     .string()
     .regex(
-      /^[a-z0-9-]+\/[a-z0-9-]+$/,
+      /^[a-z0-9-]+\/[a-z0-9-]+$/u,
       'Convention reference "use" must match "<vendor>/<name>"'
     ),
 });
@@ -193,7 +193,7 @@ export const ConfigV1Schema = z.strictObject({
   $schema: z.string().optional(),
   conventionSources: z
     .record(
-      z.string().regex(/^[a-z0-9-]+$/, "Source prefix must match [a-z0-9-]+"),
+      z.string().regex(/^[a-z0-9-]+$/u, "Source prefix must match [a-z0-9-]+"),
       z.string()
     )
     .optional(),

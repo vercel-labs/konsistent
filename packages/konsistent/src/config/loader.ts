@@ -26,14 +26,14 @@ export interface LoadConfigOptions {
 }
 
 const DECLARATION_REGEX =
-  /\{([a-zA-Z][a-zA-Z0-9]*)(?::[a-zA-Z][a-zA-Z0-9]*(?:\([^}]*\))?)?\}/g;
+  /\{(?<name>[a-zA-Z][a-zA-Z0-9]*)(?::[a-zA-Z][a-zA-Z0-9]*(?:\([^}]*\))?)?\}/gu;
 
 function pathDeclaredNames(paths: string | string[]): Set<string> {
   const declared = new Set<string>();
   const entries = typeof paths === "string" ? [paths] : paths;
   for (const entry of entries) {
     for (const match of entry.matchAll(DECLARATION_REGEX)) {
-      const [, name] = match;
+      const name = match.groups?.name;
       if (name !== undefined) {
         declared.add(name);
       }

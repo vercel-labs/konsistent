@@ -20,11 +20,11 @@ const pkgVersion = JSON.parse(
   )
 ).version as string;
 
-const githubAnnotationPattern = /^::(error|warning) file=.+::.+/;
+const githubAnnotationPattern = /^::(?<level>error|warning) file=.+::.+/u;
 // biome-ignore lint/suspicious/noControlCharactersInRegex: checking for ANSI escape codes
-const ansiEscapePattern = /\x1b\[/;
-const summaryPattern = /Checked \d+ files? in \d+(ms|\.\d+s)\./;
-const githubWarningPattern = /^::warning file=/;
+const ansiEscapePattern = /\x1b\[/u;
+const summaryPattern = /Checked \d+ files? in \d+(?<duration>ms|\.\d+s)\./u;
+const githubWarningPattern = /^::warning file=/u;
 
 function runCli(opts: {
   args?: string[];

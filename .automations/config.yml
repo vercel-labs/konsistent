@@ -1,6 +1,6 @@
 # Owners need write access to the source and approved target repositories.
 version: 1
-owners: [github:felixarntz]
+owners: [ github:felixarntz ]
 # Extensions required by the default starter pack.
 extensions:
   github: {}

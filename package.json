@@ -21,7 +21,7 @@
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.15",
+    "@biomejs/biome": "^2.6.4",
     "@changesets/cli": "^2.31.0",
     "@felixarntz/biome": "^0.3.1",
     "@types/node": "catalog:",
@@ -30,7 +30,7 @@
     "syncpack": "^15.3.3",
     "turbo": "^2.11.7",
     "typescript": "catalog:",
-    "ultracite": "^7.12.4",
+    "ultracite": "^8.1.1",
     "vitest": "catalog:"
   },
   "packageManager": "pnpm@11.28.0",

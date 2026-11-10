@@ -1,6 +1,6 @@
 name: Question
 description: Ask a question about using the konsistent CLI.
-labels: ['question']
+labels: [ "question" ]
 body:
   - type: markdown
     attributes:

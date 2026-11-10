@@ -6,9 +6,9 @@ import { describe, expect, it } from "vitest";
 
 const packageDirectory = resolve(import.meta.dirname, "..");
 
-const shebangPattern = /#!\/usr\/bin\/env node/g;
-const conventionImportPattern = /from ["']@konsistent\/convention["']/;
-const typescriptImportPattern = /from ["']typescript(?:\/[^"']+)?["']/;
+const shebangPattern = /#!\/usr\/bin\/env node/gu;
+const conventionImportPattern = /from ["']@konsistent\/convention["']/u;
+const typescriptImportPattern = /from ["']typescript(?:\/[^"']+)?["']/u;
 
 describe("CLI build", () => {
   it("cleans stale output and preserves the standalone ESM CLI", async () => {

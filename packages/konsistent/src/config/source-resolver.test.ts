@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { resolveSources } from "./source-resolver.js";
 
-const NOT_INSTALLED_HINT_PATTERN = /may not be installed|could not resolve/;
+const NOT_INSTALLED_HINT_PATTERN = /may not be installed|could not resolve/u;
 
 let tmpDir: string;
 

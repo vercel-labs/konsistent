@@ -1,9 +1,9 @@
-const CAMEL_BOUNDARY = /([a-z])([A-Z])/g;
-const SEPARATORS = /[-_]/;
+const CAMEL_BOUNDARY = /(?<lower>[a-z])(?<upper>[A-Z])/gu;
+const SEPARATORS = /[-_]/u;
 
 export function splitWords(value: string): string[] {
   return value
-    .replace(CAMEL_BOUNDARY, "$1-$2")
+    .replace(CAMEL_BOUNDARY, "$<lower>-$<upper>")
     .split(SEPARATORS)
     .filter((w) => w.length > 0);
 }

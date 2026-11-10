@@ -16,7 +16,7 @@ Both contexts use the same `name:constraint(arg)` syntax.
 
 ## `matches(regex)`
 
-The placeholder value must match the JavaScript regex. Case-sensitive. The pattern is unanchored unless you anchor it explicitly with `^` and `$`.
+The placeholder value must match the JavaScript regex, which is compiled in Unicode (`u`) mode. Matching is case-sensitive and unanchored unless you anchor the pattern explicitly with `^` and `$`.
 
 ### Inline path constraint
 

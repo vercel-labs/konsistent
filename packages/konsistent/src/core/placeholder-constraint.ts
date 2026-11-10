@@ -6,7 +6,7 @@ export interface PlaceholderConstraint {
   name: string;
 }
 
-const CONSTRAINT_REGEX = /^([a-zA-Z][a-zA-Z0-9]*)(?:\((.*)\))?$/;
+const CONSTRAINT_REGEX = /^(?<name>[a-zA-Z][a-zA-Z0-9]*)(?:\((?<arg>.*)\))?$/u;
 
 export function parsePlaceholderConstraint(
   raw: string
@@ -16,8 +16,8 @@ export function parsePlaceholderConstraint(
     return null;
   }
   return {
-    arg: match[2],
-    name: match[1],
+    arg: match.groups?.arg,
+    name: match.groups?.name ?? "",
   };
 }
 

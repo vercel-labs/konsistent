@@ -10,9 +10,9 @@ const pnpmCommand = path.join(
   path.dirname(process.execPath),
   process.platform === "win32" ? "pnpm.cmd" : "pnpm"
 );
-const NUMERIC_IDENTIFIER_RE = /^\d+$/;
+const NUMERIC_IDENTIFIER_RE = /^\d+$/u;
 const SEMVER_RE =
-  /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
+  /^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(?:-(?<prerelease>[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/u;
 
 function getChildEnv() {
   const env = { ...process.env };
@@ -184,10 +184,10 @@ function parseVersion({ version }) {
   }
 
   return {
-    major: Number(match[1]),
-    minor: Number(match[2]),
-    patch: Number(match[3]),
-    prerelease: match[4]?.split(".") ?? [],
+    major: Number(match.groups.major),
+    minor: Number(match.groups.minor),
+    patch: Number(match.groups.patch),
+    prerelease: match.groups.prerelease?.split(".") ?? [],
     version,
   };
 }

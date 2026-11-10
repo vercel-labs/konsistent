@@ -1,6 +1,6 @@
 name: Enhancement Request
 description: Suggest an enhancement to an existing feature of the konsistent CLI.
-labels: ['enhancement']
+labels: [ "enhancement" ]
 body:
   - type: markdown
     attributes:

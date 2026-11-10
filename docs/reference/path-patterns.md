@@ -92,6 +92,7 @@ Inside `${...}` template substitutions, methods transform the captured value:
 | `${name.extract(regex)}` | `openai` with `^([a-z]+)ai$` → `open` |
 
 `extract` returns the first capture group when the regex has groups; otherwise it returns the full match. An empty string is returned when the regex does not match.
+The regex is compiled in Unicode (`u`) mode.
 
 The argument inside `(...)` is taken verbatim — no surrounding quotes. The argument may not contain `}` (use repetition like `\d\d?` instead of `\d{1,2}` if you need quantifiers).
 

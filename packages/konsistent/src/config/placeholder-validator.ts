@@ -6,9 +6,9 @@ import type {
   MustPredicatesV1,
 } from "./schema.js";
 
-const USAGE_REGEX = /\$\{([a-zA-Z][a-zA-Z0-9]*)/g;
+const USAGE_REGEX = /\$\{(?<name>[a-zA-Z][a-zA-Z0-9]*)/gu;
 const DECLARATION_REGEX =
-  /\{([a-zA-Z][a-zA-Z0-9]*)(?::[a-zA-Z][a-zA-Z0-9]*(?:\([^}]*\))?)?\}/g;
+  /\{(?<name>[a-zA-Z][a-zA-Z0-9]*)(?::[a-zA-Z][a-zA-Z0-9]*(?:\([^}]*\))?)?\}/gu;
 
 export type ValidatePlaceholdersResult =
   | { ok: true }
@@ -77,7 +77,7 @@ function addDeclarationsFromString(opts: {
 }): void {
   const { value, into } = opts;
   for (const match of value.matchAll(DECLARATION_REGEX)) {
-    const [, name] = match;
+    const name = match.groups?.name;
     if (name !== undefined) {
       into.add(name);
     }
@@ -696,7 +696,7 @@ function pushStringUsages(opts: {
 }): void {
   const { value, key, declared, usages } = opts;
   for (const match of value.matchAll(USAGE_REGEX)) {
-    const [, name] = match;
+    const name = match.groups?.name;
     if (name !== undefined && !declared.has(name)) {
       usages.push({ key, name });
     }

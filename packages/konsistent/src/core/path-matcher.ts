@@ -19,26 +19,26 @@ import {
  *   {modelKind:segments(2)}          — captures "modelKind", constraint raw = "segments(2)"
  *   {providerId:matches(^[a-z]+ai$)} — captures "providerId", constraint raw = "matches(^[a-z]+ai$)"
  *
- * Capture groups:
- *   [1] — placeholder name       (e.g. "modelKind")
- *   [2] — raw constraint string  (e.g. "segments(2)"), undefined when no constraint
+ * Named capture groups:
+ *   name       — placeholder name       (e.g. "modelKind")
+ *   constraint — raw constraint string  (e.g. "segments(2)"), undefined when no constraint
  *
  * Breakdown:
  *   \{                                — literal opening brace
- *   ([a-zA-Z][a-zA-Z0-9]*)            — group 1: placeholder name (letter, then alphanumeric)
+ *   (?<name>[a-zA-Z][a-zA-Z0-9]*)     — placeholder name (letter, then alphanumeric)
  *   (?:                               — optional non-capturing group for constraint:
  *     :                               —   literal colon separator
- *     ([a-zA-Z][a-zA-Z0-9]*           —   group 2 start: constraint name
+ *     (?<constraint>[a-zA-Z][a-zA-Z0-9]* — constraint name
  *       (?:\([^}]*\))?                —     optional parenthesised argument (anything except `}`)
- *     )                               —   group 2 end
+ *     )                               —   constraint group end
  *   )?                                — end optional constraint group
  *   }                                 — literal closing brace
  */
 const PLACEHOLDER_REGEX =
-  /\{([a-zA-Z][a-zA-Z0-9]*)(?::([a-zA-Z][a-zA-Z0-9]*(?:\([^}]*\))?))?}/g;
-const TEMPLATE_IN_PATH_REGEX = /\$\{([a-zA-Z][a-zA-Z0-9]*)\}/g;
-const VALID_VALUE_REGEX = /^[a-zA-Z0-9_-]+$/;
-const ESCAPE_REGEX = /[.*+?^${}()|[\]\\]/g;
+  /\{(?<name>[a-zA-Z][a-zA-Z0-9]*)(?::(?<constraint>[a-zA-Z][a-zA-Z0-9]*(?:\([^}]*\))?))?\}/gu;
+const TEMPLATE_IN_PATH_REGEX = /\$\{(?<name>[a-zA-Z][a-zA-Z0-9]*)\}/gu;
+const VALID_VALUE_REGEX = /^[a-zA-Z0-9_-]+$/u;
+const ESCAPE_REGEX = /[.*+?^${}()|[\]\\]/gu;
 
 export interface MatchedPath {
   path: string;
@@ -47,7 +47,7 @@ export interface MatchedPath {
 
 function normalizeTemplatesInPath(pattern: string): string {
   TEMPLATE_IN_PATH_REGEX.lastIndex = 0;
-  return pattern.replace(TEMPLATE_IN_PATH_REGEX, "{$1}");
+  return pattern.replace(TEMPLATE_IN_PATH_REGEX, "{$<name>}");
 }
 
 export function hasPlaceholders(pattern: string): boolean {
@@ -71,8 +71,8 @@ function collectPlaceholders(segment: string): CollectedPlaceholder[] {
   let match = PLACEHOLDER_REGEX.exec(segment);
   while (match !== null) {
     result.push({
-      constraintRaw: match[2],
-      name: match[1],
+      constraintRaw: match.groups?.constraint,
+      name: match.groups?.name ?? "",
     });
     match = PLACEHOLDER_REGEX.exec(segment);
   }
@@ -84,7 +84,7 @@ interface ExtractedValues {
   values: Record<string, string>;
 }
 
-const GLOB_WILDCARD_REGEX = /[*?[\]]/;
+const GLOB_WILDCARD_REGEX = /[*?[\]]/u;
 
 function matchSegmentAsGlob(opts: {
   patternSegment: string;
@@ -100,7 +100,7 @@ function matchSegmentAsGlob(opts: {
     }
     return `\\${ch}`;
   });
-  return new RegExp(`^${regexStr}$`).test(pathSegment);
+  return new RegExp(`^${regexStr}$`, "u").test(pathSegment);
 }
 
 function extractValueFromSegment(opts: {
@@ -127,7 +127,7 @@ function extractValueFromSegment(opts: {
   const withMarkers = patternSegment.replace(PLACEHOLDER_REGEX, CAPTURE_MARKER);
   const escaped = withMarkers.replace(ESCAPE_REGEX, (ch) => `\\${ch}`);
   const regexStr = escaped.replaceAll(CAPTURE_MARKER, "([a-zA-Z0-9_-]+)");
-  const regex = new RegExp(`^${regexStr}$`);
+  const regex = new RegExp(`^${regexStr}$`, "u");
   const segmentMatch = regex.exec(pathSegment);
   if (!segmentMatch) {
     return null;

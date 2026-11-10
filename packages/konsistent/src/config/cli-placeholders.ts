@@ -1,5 +1,5 @@
-const NAME_REGEX = /^[a-zA-Z][a-zA-Z0-9]*$/;
-const VALUE_REGEX = /^[a-zA-Z0-9_-]+$/;
+const NAME_REGEX = /^[a-zA-Z][a-zA-Z0-9]*$/u;
+const VALUE_REGEX = /^[a-zA-Z0-9_-]+$/u;
 
 export type ParseCliPlaceholdersResult =
   | { success: true; placeholders: Record<string, string> }

@@ -1,6 +1,6 @@
 name: Documentation Improvmeent
 description: Suggest improvements to the documentation of the konsistent CLI.
-labels: ['documentation']
+labels: [ "documentation" ]
 body:
   - type: markdown
     attributes:

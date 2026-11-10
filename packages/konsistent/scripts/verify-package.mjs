@@ -18,7 +18,7 @@ import { promisify } from "node:util";
 const execFile = promisify(execFileCallback);
 const packageDirectory = resolve(import.meta.dirname, "..");
 const repositoryDirectory = resolve(packageDirectory, "../..");
-const protocolPattern = /^(catalog:|workspace:)/;
+const protocolPattern = /^(?<protocol>catalog:|workspace:)/u;
 
 export function validatePublishedPackages(opts) {
   const { cliManifest, conventionManifest, typescriptVersion } = opts;

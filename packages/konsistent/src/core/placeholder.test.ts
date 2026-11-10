@@ -558,6 +558,14 @@ describe("PlaceholderValue", () => {
       ).toBe("open");
     });
 
+    it("supports Unicode property escapes", () => {
+      expect(
+        new PlaceholderValue({ value: "α-openai" }).extract(
+          "^(\\p{Script=Greek}+)-"
+        )
+      ).toBe("α");
+    });
+
     it("returns empty string when match captures empty group", () => {
       expect(
         new PlaceholderValue({ value: "openai" }).extract(

@@ -72,7 +72,7 @@ export class PlaceholderValue {
     const mapped =
       this.pascalToKebabMap?.[this.raw] ?? this.camelToKebabMap?.[this.raw];
     if (mapped) {
-      return mapped.replace(/-/g, "_");
+      return mapped.replace(/-/gu, "_");
     }
     return toSnakeCase(this.raw);
   }
@@ -84,13 +84,13 @@ export class PlaceholderValue {
     const mapped =
       this.pascalToKebabMap?.[this.raw] ?? this.camelToKebabMap?.[this.raw];
     if (mapped) {
-      return mapped.replace(/-/g, "_").toUpperCase();
+      return mapped.replace(/-/gu, "_").toUpperCase();
     }
     return toConstantCase(this.raw);
   }
 
   toFlatCase(): string {
-    return this.raw.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+    return this.raw.replace(/[^a-zA-Z0-9]/gu, "").toLowerCase();
   }
 
   toNthSegment(n: number): string {
@@ -131,7 +131,7 @@ export class PlaceholderValue {
   extract(pattern: string): string {
     let regex: RegExp;
     try {
-      regex = new RegExp(pattern);
+      regex = new RegExp(pattern, "u");
     } catch {
       return "";
     }

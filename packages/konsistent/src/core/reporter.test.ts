@@ -119,7 +119,7 @@ describe("createDefaultReporter", () => {
     expect(diagLine).toBeDefined();
     const esc = String.fromCharCode(27);
     const stripped = diagLine?.replace(
-      new RegExp(`${esc}\\[[0-9;]*m`, "g"),
+      new RegExp(`${esc}\\[[0-9;]*m`, "gu"),
       ""
     );
 

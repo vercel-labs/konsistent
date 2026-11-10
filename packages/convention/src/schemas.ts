@@ -250,7 +250,7 @@ const MustBlockV1Shape = {
   ifNot: IfConditionV1Schema.optional(),
   name: z
     .string()
-    .regex(/^[a-z0-9-]+$/, "Must block name must match [a-z0-9-]+")
+    .regex(/^[a-z0-9-]+$/u, "Must block name must match [a-z0-9-]+")
     .optional(),
 };
 
@@ -277,7 +277,7 @@ const ReusableConventionV1Shape = {
   ifNot: IfConditionV1Schema.optional(),
   name: z
     .string()
-    .regex(/^[a-z0-9-]+$/, "Convention name must match [a-z0-9-]+"),
+    .regex(/^[a-z0-9-]+$/u, "Convention name must match [a-z0-9-]+"),
   paths: z.union([z.string(), z.array(z.string())]).optional(),
   severity: z.enum(["error", "warning"]).optional(),
 };

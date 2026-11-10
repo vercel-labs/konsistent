@@ -8,7 +8,7 @@ export function validateMatchesConstraint(opts: {
   }
   let regex: RegExp;
   try {
-    regex = new RegExp(arg);
+    regex = new RegExp(arg, "u");
   } catch {
     return false;
   }

@@ -8,7 +8,7 @@ import type { ConventionV1, RawConfigV1 } from "./schema.js";
 import { ConventionV1Schema } from "./schema.js";
 import type { SourceMap } from "./source-resolver.js";
 
-const STRING_REF_PATTERN = /^[a-z0-9-]+\/[a-z0-9-]+$/;
+const STRING_REF_PATTERN = /^[a-z0-9-]+\/[a-z0-9-]+$/u;
 const CONDITION_FIELDS = ["if", "ifNot"] as const;
 
 export type ExpandReferencesResult =

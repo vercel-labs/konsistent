@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 const execFile = promisify(execFileCallback);
 const cli = resolve(import.meta.dirname, "../packages/konsistent/dist/cli.js");
 const fixturesDirectory = resolve(import.meta.dirname, "fixtures");
-const allowedTypeScriptStderr = /^(?:|context canceled\r?\n?)$/;
+const allowedTypeScriptStderr = /^(?:|context canceled\r?\n?)$/u;
 
 function runCli(opts: { fixture: string; args?: string[] }) {
   return execFile(

@@ -66,7 +66,7 @@ describe("validatePlaceholders", () => {
             `must.${field}.conditions[${index}].${predicate}`
           );
         }
-        expect(result.error.match(/"\$\{missingFile\}"/g)).toHaveLength(1);
+        expect(result.error.match(/"\$\{missingFile\}"/gu)).toHaveLength(1);
       }
     }
   );

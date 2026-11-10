@@ -15,8 +15,9 @@ function createContext(opts: {
     readDir: () => [],
     resolveTemplate(template: string): string {
       return template.replace(
-        /\$\{(\w+)\}/g,
-        (match, name) => placeholders[name]?.toString() ?? match
+        /\$\{(?<name>\w+)\}/gu,
+        (match, _name, _offset, _input, groups) =>
+          placeholders[groups?.name ?? ""]?.toString() ?? match
       );
     },
   };

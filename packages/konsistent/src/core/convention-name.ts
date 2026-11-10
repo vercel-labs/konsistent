@@ -1,31 +1,33 @@
 import type { MustBlockV1, MustPredicatesV1 } from "../config/schema.js";
 
 function stripTemplateExpressions(name: string): string {
-  return name.replace(/\$\{[^}]*\}/g, "");
+  return name.replace(/\$\{[^}]*\}/gu, "");
 }
 
 function camelToKebab(str: string): string {
-  return str.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+  return str
+    .replace(/(?<lower>[a-z0-9])(?<upper>[A-Z])/gu, "$<lower>-$<upper>")
+    .toLowerCase();
 }
 
 function deriveKebabFromName(name: string): string {
   const stripped = stripTemplateExpressions(name);
   const kebab = camelToKebab(stripped);
-  return kebab.replace(/-{2,}/g, "-").replace(/^-+|-+$/g, "");
+  return kebab.replace(/-{2,}/gu, "-").replace(/^-+|-+$/gu, "");
 }
 
 function fileToKebab(file: string): string {
-  return file.replace(/[./]/g, "-").replace(/^-+|-+$/g, "");
+  return file.replace(/[./]/gu, "-").replace(/^-+|-+$/gu, "");
 }
 
 function sourceToKebab(source: string): string {
   const stripped = stripTemplateExpressions(source);
   return stripped
-    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
-    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/(?<lower>[a-z0-9])(?<upper>[A-Z])/gu, "$<lower>-$<upper>")
+    .replace(/[^a-zA-Z0-9]+/gu, "-")
     .toLowerCase()
-    .replace(/-{2,}/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/-{2,}/gu, "-")
+    .replace(/^-+|-+$/gu, "");
 }
 
 function getItemName(item: string | { name: string }): string {
