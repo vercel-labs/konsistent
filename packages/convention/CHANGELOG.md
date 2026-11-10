@@ -1,5 +1,12 @@
 # @konsistent/convention
 
+## 1.0.0-beta.14
+
+### Patch Changes
+
+- 506ff7f: chore(konsistent): streamline TS and tsdown config for more appropriate build setup
+- 82d3e94: chore(konsistent): harden against certain problematic security and API design patterns
+
 ## 1.0.0-beta.13
 
 ### Patch Changes
