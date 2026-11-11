@@ -1344,6 +1344,19 @@
                               },
                               "required": ["name", "type"],
                               "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "from": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": ["from", "name"],
+                              "additionalProperties": false
                             }
                           ]
                         }
@@ -2701,6 +2714,19 @@
                                 }
                               },
                               "required": ["name", "type"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "from": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": ["from", "name"],
                               "additionalProperties": false
                             }
                           ]
@@ -4579,6 +4605,19 @@
                               },
                               "required": ["name", "type"],
                               "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "from": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": ["from", "name"],
+                              "additionalProperties": false
                             }
                           ]
                         }
@@ -5936,6 +5975,19 @@
                                 }
                               },
                               "required": ["name", "type"],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "from": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": ["from", "name"],
                               "additionalProperties": false
                             }
                           ]

@@ -134,6 +134,7 @@ describe("exported constant definition schemas", () => {
     { name: "settings" },
     { name: "settings", schema: { properties: {}, type: "object" } },
     { name: "settings", type: "SharedSettings<'generic-value'>" },
+    { from: "./settings", name: "settings" },
   ])("accepts exported constant definition %#", (definition) => {
     expect(ExportConstantDefinitionV1Schema.safeParse(definition).success).toBe(
       true
@@ -147,7 +148,11 @@ describe("exported constant definition schemas", () => {
       type: "SharedSettings",
     },
     { name: "settings", type: "" },
-    { from: "./settings", name: "settings" },
+    {
+      from: "./settings",
+      name: "settings",
+      schema: { properties: {}, type: "object" },
+    },
   ])("rejects invalid exported constant definition %#", (definition) => {
     expect(ExportConstantDefinitionV1Schema.safeParse(definition).success).toBe(
       false

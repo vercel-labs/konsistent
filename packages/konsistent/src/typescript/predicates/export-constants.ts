@@ -19,9 +19,16 @@ export function checkExportConstants(opts: {
     const definition: ExportConstantDefinitionV1 =
       typeof entry === "string" ? { name: entry } : entry;
     const resolvedName = context.resolveTemplate(definition.name);
+    const resolvedFrom = Object.hasOwn(definition, "from")
+      ? context.resolveTemplate(Reflect.get(definition, "from") as string)
+      : undefined;
 
     const found = fileStructure.exports.some(
-      (e) => e.name === resolvedName && e.kind === "const" && !e.isType
+      (e) =>
+        e.name === resolvedName &&
+        !e.isType &&
+        (e.kind === "const" || e.kind === "re-export") &&
+        (resolvedFrom === undefined || e.from === resolvedFrom)
     );
 
     if (!found) {
@@ -34,6 +41,17 @@ export function checkExportConstants(opts: {
           severity,
         })
       );
+      continue;
+    }
+
+    // A re-export has no local declaration to inspect, so schema and type
+    // checks only apply when the constant is declared in this file.
+    const hasLocalConstant =
+      resolvedFrom === undefined &&
+      fileStructure.constants.some(
+        (constant) => constant.name === resolvedName
+      );
+    if (!hasLocalConstant) {
       continue;
     }
 
