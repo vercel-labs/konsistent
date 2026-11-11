@@ -445,6 +445,10 @@ explicit type annotation.
         "required": ["endpoint"],
         "additionalProperties": false
       }
+    },
+    {
+      "name": "sharedSettings",
+      "from": "./settings"
     }
   ]
 }
@@ -453,11 +457,17 @@ explicit type annotation.
 | Field | Type | Description |
 | --- | --- | --- |
 | `name` | string | The constant name. Templates allowed. |
+| `from` | string | Optional. Require a constant re-export from this module specifier. |
 | `schema` | object | Optional. Supported JSON Schema subset for the constant's explicit type annotation. |
 | `type` | string | Optional. Require the exact TypeScript type annotation, ignoring formatting whitespace and comments. Templates allowed. |
 
-`schema` and `type` are mutually exclusive. `exportConstants` checks locally
-declared constants and does not accept `from`.
+`schema` and `type` are mutually exclusive. `from` cannot be combined with
+`schema` or `type`, because those checks need a local constant declaration.
+An entry with `from` matches a named re-export such as
+`export { sharedSettings } from "./settings"`. Without `from`, the predicate
+accepts a locally declared constant or a named re-export of a local constant.
+`schema` and `type` apply only when the constant is declared in the checked
+file.
 
 The supported `schema` forms are:
 

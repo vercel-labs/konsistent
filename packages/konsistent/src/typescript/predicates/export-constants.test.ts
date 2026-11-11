@@ -280,4 +280,52 @@ describe("checkExportConstants", () => {
       'Constant "settings" must have type "Readonly<ModuleSettings>"'
     );
   });
+
+  it("accepts a re-export from the configured module", () => {
+    const result = checkExportConstants({
+      context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ from: "./settings", name: "settings" }],
+      fileStructure: parseFileStructure({
+        source: 'export { settings } from "./settings";',
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("reports a re-export from a different module", () => {
+    const result = checkExportConstants({
+      context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ from: "./settings", name: "settings" }],
+      fileStructure: parseFileStructure({
+        source: 'export { settings } from "./other";',
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe('Missing export constant "settings"');
+  });
+
+  it("reports a local constant when a module source is required", () => {
+    const result = checkExportConstants({
+      context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ from: "./settings", name: "settings" }],
+      fileStructure: parseFileStructure({
+        source: "export const settings = {};",
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe('Missing export constant "settings"');
+  });
+
+  it("skips structural checks for constant re-exports", () => {
+    const result = checkExportConstants({
+      context: createMockContext({ path: "src/index.ts" }),
+      expected: [
+        { from: "./settings", name: "settings", type: "Readonly<Settings>" },
+      ],
+      fileStructure: parseFileStructure({
+        source: 'export { settings } from "./settings";',
+      }),
+    });
+    expect(result).toEqual([]);
+  });
 });
