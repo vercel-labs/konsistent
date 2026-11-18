@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "directory-import-restrictions",
+      "paths": "packages/{packageName}",
+      "mustNot": {
+        "importValuesFrom": ["react", "lodash"]
+      }
+    }
+  ]
+}
