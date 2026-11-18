@@ -116,7 +116,13 @@ export const ConstantDefinitionV1Schema = z.union([
   }),
 ]);
 
-export const ExportConstantDefinitionV1Schema = ConstantDefinitionV1Schema;
+export const ExportConstantDefinitionV1Schema = z.union([
+  ...ConstantDefinitionV1Schema.options,
+  z.strictObject({
+    from: z.string(),
+    name: z.string(),
+  }),
+]);
 
 export const TypeDefinitionV1Schema = ConstantDefinitionV1Schema;
 

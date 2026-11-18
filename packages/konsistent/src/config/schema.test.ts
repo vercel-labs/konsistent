@@ -336,12 +336,33 @@ describe("ConfigV1Schema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects from on exportConstants", () => {
+  it("accepts from on exportConstants", () => {
     const result = ConfigV1Schema.safeParse({
       conventions: [
         {
           must: {
             exportConstants: [{ from: "./settings", name: "settings" }],
+          },
+          paths: "src/*.ts",
+        },
+      ],
+      version: "v1",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects from combined with schema on exportConstants", () => {
+    const result = ConfigV1Schema.safeParse({
+      conventions: [
+        {
+          must: {
+            exportConstants: [
+              {
+                from: "./settings",
+                name: "settings",
+                schema: { type: "string" },
+              },
+            ],
           },
           paths: "src/*.ts",
         },
