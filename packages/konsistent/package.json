@@ -28,13 +28,14 @@
   "files": [
     "dist",
     "docs",
+    "skills/**/*",
     "konsistent.schema.json"
   ],
   "scripts": {
     "build": "tsdown",
     "generate-schema": "tsx scripts/generate-schema.ts",
-    "prepack": "node --input-type=module -e \"import { cp } from 'node:fs/promises'; await cp('../../docs', './docs', { recursive: true });\"",
-    "post-publish-clean": "del-cli docs",
+    "prepack": "node --input-type=module -e \"import { cp } from 'node:fs/promises'; await Promise.all([cp('../../docs', './docs', { recursive: true }), cp('../../skills', './skills', { recursive: true })]);\"",
+    "post-publish-clean": "del-cli docs skills",
     "test": "vitest run",
     "test:package": "node scripts/verify-package.mjs",
     "typecheck": "tsc --noEmit"

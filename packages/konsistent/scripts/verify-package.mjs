@@ -72,12 +72,20 @@ export async function verifyPackage() {
     join(tmpdir(), "konsistent-package-")
   );
   const docsDirectory = join(packageDirectory, "docs");
+  const skillsDirectory = join(packageDirectory, "skills");
   let hadDocs = false;
+  let hadSkills = false;
   try {
     await access(docsDirectory);
     hadDocs = true;
   } catch {
     hadDocs = false;
+  }
+  try {
+    await access(skillsDirectory);
+    hadSkills = true;
+  } catch {
+    hadSkills = false;
   }
   try {
     await Promise.all(
@@ -89,6 +97,17 @@ export async function verifyPackage() {
         })
       )
     );
+    await runCommand({
+      args: ["run", "post-publish-clean"],
+      command: "pnpm",
+      cwd: packageDirectory,
+    });
+    if (!hadDocs) {
+      await assert.rejects(access(docsDirectory));
+    }
+    if (!hadSkills) {
+      await assert.rejects(access(skillsDirectory));
+    }
     const tarballs = (await readdir(temporaryDirectory)).filter((name) =>
       name.endsWith(".tgz")
     );
@@ -162,6 +181,13 @@ export async function verifyPackage() {
     await access(
       join(installedDirectory, "konsistent", "docs", "reference", "cli.md")
     );
+    await Promise.all(
+      ["konsistent-config", "konsistent-fix-violations"].map((skill) =>
+        access(
+          join(installedDirectory, "konsistent", "skills", skill, "SKILL.md")
+        )
+      )
+    );
     await access(
       join(installedDirectory, "konsistent", "konsistent.schema.json")
     );
@@ -213,7 +239,7 @@ export async function verifyPackage() {
         }
       )
     );
-    const [versionResult] = await Promise.all([
+    const [, versionResult] = await Promise.all([
       runCommand({
         args: [installedCli, "help"],
         command: process.execPath,
@@ -321,6 +347,9 @@ export async function verifyPackage() {
     await rm(temporaryDirectory, { force: true, recursive: true });
     if (!hadDocs) {
       await rm(docsDirectory, { force: true, recursive: true });
+    }
+    if (!hadSkills) {
+      await rm(skillsDirectory, { force: true, recursive: true });
     }
   }
 }
