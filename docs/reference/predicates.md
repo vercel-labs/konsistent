@@ -50,6 +50,8 @@ The full machine-readable schema lives at `node_modules/konsistent/konsistent.sc
 
 All predicates support template substitutions in their string values — see [path-patterns.md](./path-patterns.md#case-transformations) for the full case-transformation catalog.
 
+TypeScript predicates inspect the contents of the matched file and cannot be applied directly to directories. If a `paths` pattern selects directories, scope TypeScript predicates to files with a `for.files` block or use a file-matching `paths` pattern. During `check`, a directory that reaches a TypeScript predicate is reported as a configuration error.
+
 `mustNot` accepts only the object form:
 
 ```json

@@ -1245,6 +1245,47 @@ function buildSingletonPredicate(opts: {
   return { [opts.key]: opts.value } as MustPredicatesV1;
 }
 
+function partitionDirectoryTypeScriptPredicates(opts: {
+  conventionName?: string;
+  context: PredicateContext;
+  fileSystem: FileSystem;
+  polarity: "must" | "mustNot";
+  predicates: MustPredicatesV1;
+}): { applicablePredicates: MustPredicatesV1; diagnostics: Diagnostic[] } {
+  const { conventionName, context, fileSystem, polarity, predicates } = opts;
+  const typeScriptKeys = Object.keys(predicates).filter(
+    (key) =>
+      TS_PREDICATES.has(key) &&
+      predicates[key as keyof MustPredicatesV1] !== undefined
+  );
+
+  if (typeScriptKeys.length === 0 || !fileSystem.isDirectory(context.path)) {
+    return { applicablePredicates: predicates, diagnostics: [] };
+  }
+
+  const invalidKeys = new Set(typeScriptKeys);
+  const applicablePredicates = Object.create(null) as MustPredicatesV1;
+  for (const [key, value] of Object.entries(predicates)) {
+    if (!invalidKeys.has(key)) {
+      (applicablePredicates as Record<string, unknown>)[key] = value;
+    }
+  }
+  const diagnostics = typeScriptKeys.map((key) => {
+    const fieldName = `${polarity}.${key}`;
+    const predicateName = polarity === "mustNot" ? fieldName : key;
+
+    return createDiagnostic({
+      conventionName,
+      filePath: context.path,
+      message: `TypeScript predicate "${fieldName}" requires a file, but matched path "${context.path}" is a directory. Use a "for.files" block or change "paths" to match files.`,
+      predicateName,
+      severity: "error",
+    });
+  });
+
+  return { applicablePredicates, diagnostics };
+}
+
 function validatedSourceConstraints(opts: { key: string; value: string[] }) {
   const compiled = compileImportSourceConstraints({
     expected: opts.value,
@@ -1322,8 +1363,16 @@ async function checkMustPredicates(opts: {
     fileStructures,
     severity,
   } = opts;
-  const diagnostics: Diagnostic[] = [];
-  const keys = Object.keys(must);
+  const partitioned = partitionDirectoryTypeScriptPredicates({
+    context,
+    conventionName,
+    fileSystem,
+    polarity: "must",
+    predicates: must,
+  });
+  const applicableMust = partitioned.applicablePredicates;
+  const diagnostics = [...partitioned.diagnostics];
+  const keys = Object.keys(applicableMust);
 
   const needsTs = keys.some((k) => TS_PREDICATES.has(k));
   const fileStructure: FileStructure | undefined = needsTs
@@ -1331,33 +1380,33 @@ async function checkMustPredicates(opts: {
     : undefined;
 
   for (const key of keys) {
-    if (key === "haveType" && must.haveType) {
+    if (key === "haveType" && applicableMust.haveType) {
       diagnostics.push(
         ...checkHaveType({
           context,
           conventionName,
-          expected: must.haveType,
+          expected: applicableMust.haveType,
           fileSystem,
           severity,
         })
       );
     }
-    if (key === "haveFiles" && must.haveFiles) {
+    if (key === "haveFiles" && applicableMust.haveFiles) {
       diagnostics.push(
         ...checkHaveFiles({
           context,
           conventionName,
-          expected: must.haveFiles,
+          expected: applicableMust.haveFiles,
           severity,
         })
       );
     }
-    if (key === "haveDirectories" && must.haveDirectories) {
+    if (key === "haveDirectories" && applicableMust.haveDirectories) {
       diagnostics.push(
         ...checkHaveDirectories({
           context,
           conventionName,
-          expected: must.haveDirectories,
+          expected: applicableMust.haveDirectories,
           severity,
         })
       );
@@ -1369,7 +1418,7 @@ async function checkMustPredicates(opts: {
           conventionName,
           fileStructure,
           key,
-          must,
+          must: applicableMust,
           severity,
         })
       );
@@ -1387,7 +1436,16 @@ async function checkMustNotPredicates(opts: {
   fileStructures: FileStructureLoader;
   severity?: DiagnosticSeverity;
 }): Promise<Diagnostic[]> {
-  const checks = buildMustNotChecks({ mustNot: opts.mustNot });
+  const partitioned = partitionDirectoryTypeScriptPredicates({
+    context: opts.context,
+    conventionName: opts.conventionName,
+    fileSystem: opts.fileSystem,
+    polarity: "mustNot",
+    predicates: opts.mustNot,
+  });
+  const checks = buildMustNotChecks({
+    mustNot: partitioned.applicablePredicates,
+  });
   const normalResults = await Promise.all(
     checks.map((check) =>
       checkMustPredicates({
@@ -1401,23 +1459,26 @@ async function checkMustNotPredicates(opts: {
     )
   );
 
-  return checks.flatMap((check, index) =>
-    normalResults[index].length > 0
-      ? []
-      : [
-          createDiagnostic({
-            conventionName: opts.conventionName,
-            filePath: opts.context.path,
-            message: formatForbiddenMessage({
-              context: opts.context,
-              key: check.key,
-              value: check.value,
+  return [
+    ...partitioned.diagnostics,
+    ...checks.flatMap((check, index) =>
+      normalResults[index].length > 0
+        ? []
+        : [
+            createDiagnostic({
+              conventionName: opts.conventionName,
+              filePath: opts.context.path,
+              message: formatForbiddenMessage({
+                context: opts.context,
+                key: check.key,
+                value: check.value,
+              }),
+              predicateName: `mustNot.${check.key}`,
+              severity: opts.severity,
             }),
-            predicateName: `mustNot.${check.key}`,
-            severity: opts.severity,
-          }),
-        ]
-  );
+          ]
+    ),
+  ];
 }
 
 async function checkPredicates(opts: {

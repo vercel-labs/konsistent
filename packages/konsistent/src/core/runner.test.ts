@@ -1642,6 +1642,116 @@ describe("run", () => {
     );
   });
 
+  it("reports TypeScript mustNot predicates on directories once per field", async () => {
+    const config: ConfigV1 = {
+      conventions: [
+        {
+          mustNot: {
+            haveDirectories: ["secret"],
+            importValuesFrom: ["react", "lodash"],
+          },
+          name: "directory-import-restrictions",
+          paths: "packages/{packageName}",
+          severity: "warning",
+        },
+      ],
+      version: "v1",
+    };
+    const fs = createMockFileSystem({
+      directories: new Set(["packages/widget", "packages/widget/secret"]),
+      globResults: new Map([["packages/*", ["packages/widget"]]]),
+    });
+    const readFile = vi.spyOn(fs, "readFile");
+
+    const { diagnostics } = await run({ config, fileSystem: fs });
+
+    expect(readFile).not.toHaveBeenCalled();
+    expect(diagnostics).toHaveLength(2);
+    expect(diagnostics[0]).toMatchObject({
+      conventionName: "directory-import-restrictions",
+      filePath: "packages/widget",
+      message:
+        'TypeScript predicate "mustNot.importValuesFrom" requires a file, but matched path "packages/widget" is a directory. Use a "for.files" block or change "paths" to match files.',
+      predicateName: "mustNot.importValuesFrom",
+      severity: "error",
+    });
+    expect(diagnostics[1]).toMatchObject({
+      message: 'Forbidden directory "secret"',
+      predicateName: "mustNot.haveDirectories",
+      severity: "warning",
+    });
+  });
+
+  it("reports TypeScript must predicates on directories and checks filesystem predicates", async () => {
+    const config: ConfigV1 = {
+      conventions: [
+        {
+          must: {
+            haveFiles: ["index.ts"],
+            importValuesFrom: "react",
+          },
+          name: "directory-file-requirements",
+          paths: "packages/{packageName}",
+        },
+      ],
+      version: "v1",
+    };
+    const fs = createMockFileSystem({
+      directories: new Set(["packages/widget"]),
+      globResults: new Map([["packages/*", ["packages/widget"]]]),
+    });
+    const readFile = vi.spyOn(fs, "readFile");
+
+    const { diagnostics } = await run({ config, fileSystem: fs });
+
+    expect(readFile).not.toHaveBeenCalled();
+    expect(diagnostics.map(({ predicateName }) => predicateName)).toEqual([
+      "importValuesFrom",
+      "haveFiles",
+    ]);
+    expect(diagnostics[1]?.message).toBe("Missing required file: index.ts");
+  });
+
+  it("reports TypeScript must predicates on directory for.files matches", async () => {
+    const config: ConfigV1 = {
+      conventions: [
+        {
+          must: [
+            {
+              for: { files: "src/**" },
+              must: { importValuesFrom: "react" },
+            },
+          ],
+          name: "nested-file-imports",
+          paths: "packages/widget",
+        },
+      ],
+      version: "v1",
+    };
+    const fs = createMockFileSystem({
+      directories: new Set([
+        "packages/widget",
+        "packages/widget/src/components",
+      ]),
+      globResults: new Map([
+        ["packages/widget", ["packages/widget"]],
+        ["packages/widget/src/**", ["packages/widget/src/components"]],
+      ]),
+    });
+    const readFile = vi.spyOn(fs, "readFile");
+
+    const { diagnostics } = await run({ config, fileSystem: fs });
+
+    expect(readFile).not.toHaveBeenCalled();
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0]).toMatchObject({
+      conventionName: "nested-file-imports",
+      filePath: "packages/widget/src/components",
+      predicateName: "importValuesFrom",
+      severity: "error",
+    });
+  });
+
   it("evaluates must block unconditionally when no if is present", async () => {
     const config: ConfigV1 = {
       conventions: [
