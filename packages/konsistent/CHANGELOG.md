@@ -1,5 +1,18 @@
 # konsistent
 
+## 1.0.0-beta.14
+
+### Patch Changes
+
+- 99cd35b: feat(konsistent): ship konsistent skills with the package for PNPM agent skills
+- 506ff7f: chore(konsistent): streamline TS and tsdown config for more appropriate build setup
+- 82d3e94: chore(konsistent): harden against certain problematic security and API design patterns
+- 1a0b72b: fix(konsistent): report TypeScript predicates matched to directories as a misconfiguration
+- 63e250a: fix(konsistent): respect repository minimum release age config in update notices and for explicit updates
+- Updated dependencies [506ff7f]
+- Updated dependencies [82d3e94]
+  - @konsistent/convention@1.0.0-beta.14
+
 ## 1.0.0-beta.13
 
 ### Patch Changes
