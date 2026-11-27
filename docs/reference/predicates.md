@@ -459,7 +459,10 @@ explicit type annotation.
 | `type` | string | Optional. Require the exact TypeScript type annotation, ignoring formatting whitespace and comments. Templates allowed. |
 
 `schema` and `type` are mutually exclusive. `exportConstants` checks locally
-declared constants and does not accept `from`.
+declared constants and does not accept `from`. A constant can be exported where
+it is declared (`export const pluginId = ...`) or later in the file
+(`export { pluginId }` or `export { localId as pluginId }`). A re-export from
+another module does not count; use `exportValues` with `from` for that.
 
 The supported `schema` forms are:
 

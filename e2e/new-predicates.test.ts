@@ -83,6 +83,39 @@ describe("declaration-predicates-broken fixture", () => {
   });
 });
 
+describe("export-constants-named fixture", () => {
+  const cwd = resolve(fixturesDir, "export-constants-named");
+
+  it("passes local constants exported by name or alias", async () => {
+    await expect(runCli({ cwd })).resolves.not.toThrow();
+  });
+});
+
+describe("export-constants-named-broken fixture", () => {
+  const cwd = resolve(fixturesDir, "export-constants-named-broken");
+
+  it("reports named exports that are not local constants", async () => {
+    try {
+      await runCli({ cwd });
+      expect.fail("Expected check to exit with code 1");
+    } catch (err: unknown) {
+      const error = err as {
+        stdout: string;
+        code?: number;
+        status: number;
+      };
+      expect(error.code ?? error.status).toBe(1);
+      expect(error.stdout).toContain('Missing export constant "createClient"');
+      expect(error.stdout).toContain('Missing export constant "retries"');
+      expect(error.stdout).toContain('Missing export constant "API_URL"');
+      expect(error.stdout).toContain('Missing export constant "LOCALE"');
+      expect(error.stdout).toContain('Missing export constant "TIMEOUT"');
+      expect(error.stdout).toContain('Constant "PORT" must have type "number"');
+      expect(error.stdout).toContain("Found 6 errors.");
+    }
+  });
+});
+
 describe("constant-schemas fixture", () => {
   const cwd = resolve(fixturesDir, "constant-schemas");
 

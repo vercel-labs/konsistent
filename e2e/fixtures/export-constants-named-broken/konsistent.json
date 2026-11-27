@@ -1,0 +1,22 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "export-constants-named-broken",
+      "paths": "src/index.ts",
+      "must": {
+        "exportConstants": [
+          "createClient",
+          "retries",
+          "API_URL",
+          "LOCALE",
+          "TIMEOUT",
+          {
+            "name": "PORT",
+            "type": "number"
+          }
+        ]
+      }
+    }
+  ]
+}
