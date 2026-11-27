@@ -11026,6 +11026,502 @@ exports[`TypeScript 5.9 compatibility contract > preserves the structure of the 
     ],
     "typeAliases": []
   },
+  "export-constants-named-broken/src/config.ts": {
+    "calls": [],
+    "classes": [],
+    "constants": [
+      {
+        "name": "API_URL",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      }
+    ],
+    "declarationSymbols": [
+      {
+        "isDefaultExport": false,
+        "isExported": true,
+        "kind": "const",
+        "name": "API_URL",
+        "pos": {
+          "column": 14,
+          "line": 1
+        }
+      }
+    ],
+    "defaultExportSymbols": [],
+    "exports": [
+      {
+        "isType": false,
+        "kind": "const",
+        "name": "API_URL",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      }
+    ],
+    "functions": [],
+    "importSources": [],
+    "imports": [],
+    "interfaces": [],
+    "namedExportSymbols": [],
+    "nonBarrelStatements": [
+      {
+        "kind": "declaration",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      }
+    ],
+    "typeAliases": []
+  },
+  "export-constants-named-broken/src/index.ts": {
+    "calls": [],
+    "classes": [],
+    "constants": [
+      {
+        "name": "LOCALE",
+        "pos": {
+          "column": 1,
+          "line": 10
+        }
+      },
+      {
+        "name": "TIMEOUT",
+        "pos": {
+          "column": 1,
+          "line": 13
+        }
+      },
+      {
+        "name": "PORT",
+        "pos": {
+          "column": 1,
+          "line": 16
+        },
+        "typeInfo": {
+          "kind": "scalar",
+          "type": "string"
+        },
+        "typeName": {
+          "baseName": "string",
+          "text": "string"
+        }
+      }
+    ],
+    "declarationSymbols": [
+      {
+        "isDefaultExport": false,
+        "isExported": false,
+        "kind": "function",
+        "name": "createClient",
+        "pos": {
+          "column": 10,
+          "line": 1
+        }
+      },
+      {
+        "isDefaultExport": false,
+        "isExported": false,
+        "kind": "const",
+        "name": "LOCALE",
+        "pos": {
+          "column": 7,
+          "line": 10
+        }
+      },
+      {
+        "isDefaultExport": false,
+        "isExported": false,
+        "kind": "const",
+        "name": "TIMEOUT",
+        "pos": {
+          "column": 7,
+          "line": 13
+        }
+      },
+      {
+        "isDefaultExport": false,
+        "isExported": false,
+        "kind": "const",
+        "name": "PORT",
+        "pos": {
+          "column": 7,
+          "line": 16
+        }
+      }
+    ],
+    "defaultExportSymbols": [],
+    "exports": [
+      {
+        "isType": false,
+        "kind": "re-export",
+        "name": "createClient",
+        "pos": {
+          "column": 1,
+          "line": 2
+        }
+      },
+      {
+        "isType": false,
+        "kind": "re-export",
+        "name": "retries",
+        "pos": {
+          "column": 1,
+          "line": 6
+        }
+      },
+      {
+        "from": "./config",
+        "isType": false,
+        "kind": "re-export",
+        "name": "API_URL",
+        "pos": {
+          "column": 1,
+          "line": 8
+        }
+      },
+      {
+        "isType": true,
+        "kind": "re-export",
+        "name": "LOCALE",
+        "pos": {
+          "column": 1,
+          "line": 11
+        }
+      },
+      {
+        "isType": false,
+        "kind": "re-export",
+        "name": "TIMEOUT",
+        "pos": {
+          "column": 1,
+          "line": 14
+        }
+      },
+      {
+        "isType": false,
+        "kind": "re-export",
+        "name": "PORT",
+        "pos": {
+          "column": 1,
+          "line": 17
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "createClient",
+        "params": [],
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      }
+    ],
+    "importSources": [],
+    "imports": [],
+    "interfaces": [],
+    "namedExportSymbols": [
+      {
+        "isType": false,
+        "name": "createClient",
+        "pos": {
+          "column": 10,
+          "line": 2
+        },
+        "sourceName": "createClient"
+      },
+      {
+        "isType": false,
+        "name": "retries",
+        "pos": {
+          "column": 10,
+          "line": 6
+        },
+        "sourceName": "retries"
+      },
+      {
+        "from": "./config",
+        "isType": false,
+        "name": "API_URL",
+        "pos": {
+          "column": 10,
+          "line": 8
+        },
+        "sourceName": "API_URL"
+      },
+      {
+        "isType": true,
+        "name": "LOCALE",
+        "pos": {
+          "column": 15,
+          "line": 11
+        },
+        "sourceName": "LOCALE"
+      },
+      {
+        "isType": false,
+        "name": "DEFAULT_TIMEOUT",
+        "pos": {
+          "column": 21,
+          "line": 14
+        },
+        "sourceName": "TIMEOUT"
+      },
+      {
+        "isType": false,
+        "name": "PORT",
+        "pos": {
+          "column": 10,
+          "line": 17
+        },
+        "sourceName": "PORT"
+      }
+    ],
+    "nonBarrelStatements": [
+      {
+        "kind": "declaration",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      },
+      {
+        "kind": "named-export-local",
+        "pos": {
+          "column": 1,
+          "line": 2
+        }
+      },
+      {
+        "kind": "declaration",
+        "pos": {
+          "column": 1,
+          "line": 4
+        }
+      },
+      {
+        "kind": "expression",
+        "pos": {
+          "column": 1,
+          "line": 5
+        }
+      },
+      {
+        "kind": "named-export-local",
+        "pos": {
+          "column": 1,
+          "line": 6
+        }
+      },
+      {
+        "kind": "declaration",
+        "pos": {
+          "column": 1,
+          "line": 10
+        }
+      },
+      {
+        "kind": "named-export-local",
+        "pos": {
+          "column": 1,
+          "line": 11
+        }
+      },
+      {
+        "kind": "declaration",
+        "pos": {
+          "column": 1,
+          "line": 13
+        }
+      },
+      {
+        "kind": "named-export-local",
+        "pos": {
+          "column": 1,
+          "line": 14
+        }
+      },
+      {
+        "kind": "declaration",
+        "pos": {
+          "column": 1,
+          "line": 16
+        }
+      },
+      {
+        "kind": "named-export-local",
+        "pos": {
+          "column": 1,
+          "line": 17
+        }
+      }
+    ],
+    "typeAliases": []
+  },
+  "export-constants-named/src/index.ts": {
+    "calls": [],
+    "classes": [],
+    "constants": [
+      {
+        "name": "VERSION",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      },
+      {
+        "name": "MAX_RETRIES",
+        "pos": {
+          "column": 1,
+          "line": 3
+        },
+        "typeInfo": {
+          "kind": "scalar",
+          "type": "number"
+        },
+        "typeName": {
+          "baseName": "number",
+          "text": "number"
+        }
+      },
+      {
+        "name": "defaultUrl",
+        "pos": {
+          "column": 1,
+          "line": 6
+        }
+      }
+    ],
+    "declarationSymbols": [
+      {
+        "isDefaultExport": false,
+        "isExported": true,
+        "kind": "const",
+        "name": "VERSION",
+        "pos": {
+          "column": 14,
+          "line": 1
+        }
+      },
+      {
+        "isDefaultExport": false,
+        "isExported": false,
+        "kind": "const",
+        "name": "MAX_RETRIES",
+        "pos": {
+          "column": 7,
+          "line": 3
+        }
+      },
+      {
+        "isDefaultExport": false,
+        "isExported": false,
+        "kind": "const",
+        "name": "defaultUrl",
+        "pos": {
+          "column": 7,
+          "line": 6
+        }
+      }
+    ],
+    "defaultExportSymbols": [],
+    "exports": [
+      {
+        "isType": false,
+        "kind": "const",
+        "name": "VERSION",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      },
+      {
+        "isType": false,
+        "kind": "re-export",
+        "name": "MAX_RETRIES",
+        "pos": {
+          "column": 1,
+          "line": 4
+        }
+      },
+      {
+        "isType": false,
+        "kind": "re-export",
+        "name": "defaultUrl",
+        "pos": {
+          "column": 1,
+          "line": 7
+        }
+      }
+    ],
+    "functions": [],
+    "importSources": [],
+    "imports": [],
+    "interfaces": [],
+    "namedExportSymbols": [
+      {
+        "isType": false,
+        "name": "MAX_RETRIES",
+        "pos": {
+          "column": 10,
+          "line": 4
+        },
+        "sourceName": "MAX_RETRIES"
+      },
+      {
+        "isType": false,
+        "name": "API_URL",
+        "pos": {
+          "column": 24,
+          "line": 7
+        },
+        "sourceName": "defaultUrl"
+      }
+    ],
+    "nonBarrelStatements": [
+      {
+        "kind": "declaration",
+        "pos": {
+          "column": 1,
+          "line": 1
+        }
+      },
+      {
+        "kind": "declaration",
+        "pos": {
+          "column": 1,
+          "line": 3
+        }
+      },
+      {
+        "kind": "named-export-local",
+        "pos": {
+          "column": 1,
+          "line": 4
+        }
+      },
+      {
+        "kind": "declaration",
+        "pos": {
+          "column": 1,
+          "line": 6
+        }
+      },
+      {
+        "kind": "named-export-local",
+        "pos": {
+          "column": 1,
+          "line": 7
+        }
+      }
+    ],
+    "typeAliases": []
+  },
   "export-source-predicates-broken/src/forbidden.ts": {
     "calls": [],
     "classes": [],

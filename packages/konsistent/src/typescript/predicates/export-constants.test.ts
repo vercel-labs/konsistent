@@ -280,4 +280,112 @@ describe("checkExportConstants", () => {
       'Constant "settings" must have type "Readonly<ModuleSettings>"'
     );
   });
+
+  it("accepts a local constant exported by name", () => {
+    const result = checkExportConstants({
+      context: createMockContext({ path: "src/index.ts" }),
+      expected: ["settings"],
+      fileStructure: parseFileStructure({
+        source: "const settings = {};\nexport { settings };",
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("accepts a local constant exported under an alias", () => {
+    const result = checkExportConstants({
+      context: createMockContext({ path: "src/index.ts" }),
+      expected: ["settings"],
+      fileStructure: parseFileStructure({
+        source: "const internal = {};\nexport { internal as settings };",
+      }),
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("reports the local name of a constant exported under an alias", () => {
+    const result = checkExportConstants({
+      context: createMockContext({ path: "src/index.ts" }),
+      expected: ["internal"],
+      fileStructure: parseFileStructure({
+        source: "const internal = {};\nexport { internal as settings };",
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe('Missing export constant "internal"');
+  });
+
+  it("reports a local function exported by name", () => {
+    const result = checkExportConstants({
+      context: createMockContext({ path: "src/index.ts" }),
+      expected: ["settings"],
+      fileStructure: parseFileStructure({
+        source: "function settings() {}\nexport { settings };",
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe('Missing export constant "settings"');
+  });
+
+  it("reports a local let exported by name", () => {
+    const result = checkExportConstants({
+      context: createMockContext({ path: "src/index.ts" }),
+      expected: ["settings"],
+      fileStructure: parseFileStructure({
+        source: "let settings = {};\nexport { settings };",
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe('Missing export constant "settings"');
+  });
+
+  it("reports a re-export from another module", () => {
+    const result = checkExportConstants({
+      context: createMockContext({ path: "src/index.ts" }),
+      expected: ["settings"],
+      fileStructure: parseFileStructure({
+        source: 'export { settings } from "./settings";',
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe('Missing export constant "settings"');
+  });
+
+  it("reports a re-export that shadows a local constant", () => {
+    const result = checkExportConstants({
+      context: createMockContext({ path: "src/index.ts" }),
+      expected: ["settings"],
+      fileStructure: parseFileStructure({
+        source: 'const settings = {};\nexport { settings } from "./settings";',
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe('Missing export constant "settings"');
+  });
+
+  it("reports a type-only export of a local constant", () => {
+    const result = checkExportConstants({
+      context: createMockContext({ path: "src/index.ts" }),
+      expected: ["settings"],
+      fileStructure: parseFileStructure({
+        source: "const settings = {};\nexport type { settings };",
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe('Missing export constant "settings"');
+  });
+
+  it("checks the type of a local constant exported under an alias", () => {
+    const result = checkExportConstants({
+      context: createMockContext({ path: "src/index.ts" }),
+      expected: [{ name: "settings", type: "Settings" }],
+      fileStructure: parseFileStructure({
+        source: "const internal: Other = {};\nexport { internal as settings };",
+      }),
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].message).toBe(
+      'Constant "internal" must have type "Settings"'
+    );
+  });
 });

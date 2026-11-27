@@ -20,11 +20,12 @@ export function checkExportConstants(opts: {
       typeof entry === "string" ? { name: entry } : entry;
     const resolvedName = context.resolveTemplate(definition.name);
 
-    const found = fileStructure.exports.some(
-      (e) => e.name === resolvedName && e.kind === "const" && !e.isType
-    );
+    const localName = findExportedConstant({
+      fileStructure,
+      name: resolvedName,
+    });
 
-    if (!found) {
+    if (localName === undefined) {
       diagnostics.push(
         createDiagnostic({
           conventionName,
@@ -42,7 +43,7 @@ export function checkExportConstants(opts: {
       conventionName,
       definition,
       fileStructure,
-      name: resolvedName,
+      name: localName,
       predicateName: "exportConstants",
       severity,
     });
@@ -52,4 +53,29 @@ export function checkExportConstants(opts: {
   }
 
   return diagnostics;
+}
+
+// Returns the local name of the constant exported as `name`, either declared
+// with `export const` or declared here and exported with `export { local as name }`.
+function findExportedConstant(opts: {
+  fileStructure: FileStructure;
+  name: string;
+}): string | undefined {
+  const { fileStructure, name } = opts;
+  if (
+    fileStructure.exports.some(
+      (e) => e.name === name && e.kind === "const" && !e.isType
+    )
+  ) {
+    return name;
+  }
+  return fileStructure.namedExportSymbols.find(
+    (symbol) =>
+      symbol.name === name &&
+      symbol.from === undefined &&
+      !symbol.isType &&
+      fileStructure.constants.some(
+        (constant) => constant.name === symbol.sourceName
+      )
+  )?.sourceName;
 }

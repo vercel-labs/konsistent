@@ -1,0 +1,19 @@
+{
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "export-constants-named",
+      "paths": "src/index.ts",
+      "must": {
+        "exportConstants": [
+          "VERSION",
+          {
+            "name": "MAX_RETRIES",
+            "type": "number"
+          },
+          "API_URL"
+        ]
+      }
+    }
+  ]
+}
